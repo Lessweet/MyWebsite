@@ -79,6 +79,22 @@ window.addEventListener('scroll', () => {
 }, { passive: true });
 
 /**
+ * Video Skeleton - hide when video is loaded
+ */
+document.querySelectorAll('.card-visual-padded video.card-img').forEach(video => {
+    const skeleton = video.parentElement.querySelector('.video-skeleton');
+    if (skeleton) {
+        video.addEventListener('loadeddata', () => {
+            skeleton.style.display = 'none';
+        });
+        // If already loaded
+        if (video.readyState >= 3) {
+            skeleton.style.display = 'none';
+        }
+    }
+});
+
+/**
  * QR Code Modal
  */
 const qrcodeModal = document.getElementById('qrcodeModal');
