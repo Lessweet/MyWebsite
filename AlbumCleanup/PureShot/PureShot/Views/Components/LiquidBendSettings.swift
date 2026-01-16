@@ -14,26 +14,32 @@ class LiquidBendParameters {
     /// 是否正在滚动/拖动 - 只有在交互时才产生扭曲
     var isScrolling: Bool = false
 
-    /// 弯曲强度 (0-2) - 控制梯形变形的程度
-    var intensity: Double = 0.3
+    /// 是否正在减速惯性滚动（手指已离开，但还在滑动）
+    var isDecelerating: Bool = false
+
+    /// 滚动速度 (归一化 0-1) - 速度越快弯曲越强，减速时弯曲自然减弱
+    var scrollSpeed: Double = 0
+
+    /// 弯曲强度 (0-2) - 控制液态收缩的程度
+    var intensity: Double = 0.4
 
     /// 触发区域比例 (0.05-0.3) - 屏幕边缘多大范围内开始变形
     /// 0.15 表示屏幕上下各15%的区域会触发变形，中间70%不变形
     var triggerZone: Double = 0.15
 
     /// 缩放效果强度 (0-0.3) - 接近边缘时的缩小程度
-    var scaleEffect: Double = 0.08
+    var scaleEffect: Double = 0.05
 
     /// 透明度效果强度 (0-0.5) - 接近边缘时的淡出程度
-    var opacityEffect: Double = 0.25
+    var opacityEffect: Double = 0.15
 
     private init() {}
 
     func reset() {
-        intensity = 0.3
+        intensity = 0.4
         triggerZone = 0.15
-        scaleEffect = 0.08
-        opacityEffect = 0.25
+        scaleEffect = 0.05
+        opacityEffect = 0.15
     }
 }
 

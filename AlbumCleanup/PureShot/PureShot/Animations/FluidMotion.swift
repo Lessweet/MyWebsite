@@ -336,23 +336,39 @@ struct LiquidCurveShape: Shape {
 // 使用 Metal Shader + visualEffect 实现 iOS 26 风格的液态滚动
 //
 // 视觉预期：
-// - 滑动中：照片像流动的河，中央是规整长方形，到两端像水滴收束
+// - 滑动中：整个照片列表作为一个整体弯曲，中央最宽，上下边缘收窄
+// - 减速中：弯曲随速度减弱自然恢复，不用等到完全停止
 // - 静止时：所有照片都是完美的高质感圆角卡片，无任何扭曲
+// - 关键改进：弯曲强度跟随滚动速度，减速时自然恢复到直线
 // ═══════════════════════════════════════════════════════════════
 private struct LiquidCurvatureEffect: ViewModifier {
     // 观察全局参数，确保 SwiftUI 追踪变化
     private var params = LiquidBendParameters.shared
 
-    // 使用 State 来平滑过渡扭曲效果
-    @State private var smoothedScrolling: Bool = false
+    // 平滑后的速度值，用于弯曲计算
+    @State private var smoothedSpeed: CGFloat = 0
 
     func body(content: Content) -> some View {
-        // 在 body 中访问 isScrolling，让 SwiftUI 追踪这个 @Observable 属性
+        // 在 body 中访问参数，让 SwiftUI 追踪这些 @Observable 属性
+        let scrollSpeed = params.scrollSpeed
         let isScrolling = params.isScrolling
+        let isDecelerating = params.isDecelerating
         let intensity = params.intensity
-        let triggerZone = params.triggerZone
         let scaleEffect = params.scaleEffect
         let opacityEffect = params.opacityEffect
+
+        // 计算有效速度
+        // - 滚动中：保底 0.8 + 速度加成
+        // - 停止：使用平滑恢复的 smoothedSpeed
+        let effectiveSpeed: CGFloat = {
+            if isScrolling {
+                // 滚动中：保底值确保有效果
+                return max(0.8, scrollSpeed)
+            } else {
+                // 已停止：使用平滑动画值恢复
+                return smoothedSpeed
+            }
+        }()
 
         content
             .visualEffect { view, proxy in
@@ -360,68 +376,51 @@ private struct LiquidCurvatureEffect: ViewModifier {
                 let size = proxy.size
 
                 let screenHeight = UIScreen.main.bounds.height
-                let threshold = screenHeight * triggerZone
-
-                var strength: Float = 0
-                var direction: Float = 0
+                let screenCenterY = screenHeight / 2
 
                 // ═══════════════════════════════════════════════════════
-                // 核心条件：只有在滚动/拖动时才产生扭曲
-                // 使用 smoothedScrolling 来平滑过渡
+                // 全局弯曲场：沙漏形状
+                // - 弯曲强度只由速度决定
+                // - Shader 内部根据像素在屏幕的Y位置计算收缩量
+                // - 屏幕中心最窄，上下边缘正常宽度
                 // ═══════════════════════════════════════════════════════
-                if smoothedScrolling {
-                    // 照片顶部进入屏幕顶部触发区域 → 顶部收缩
-                    if frame.minY < threshold {
-                        let overflow = threshold - frame.minY
-                        let normalized = min(overflow / threshold, 1.0)
-                        let smoothed = normalized * normalized * (3.0 - 2.0 * normalized)
-                        strength = Float(smoothed * intensity)
-                        direction = -1.0
-                    }
-                    // 照片底部进入屏幕底部触发区域 → 底部收缩
-                    else if frame.maxY > screenHeight - threshold {
-                        let overflow = frame.maxY - (screenHeight - threshold)
-                        let normalized = min(overflow / threshold, 1.0)
-                        let smoothed = normalized * normalized * (3.0 - 2.0 * normalized)
-                        strength = Float(smoothed * intensity)
-                        direction = 1.0
-                    }
-                }
-                // 未滚动时 strength = 0，所有照片保持正常形状
 
-                // 性能优化
-                let isEffectActive = strength > 0.01
+                // 弯曲强度 = 基础强度 × 速度因子
+                let strength = Float(intensity * effectiveSpeed)
 
-                // 辅助效果：只保留 distortion 和 scale，无模糊
-                let scale = isEffectActive ? 1.0 - Double(strength) * scaleEffect : 1.0
-                let opacityVal = isEffectActive ? 1.0 - Double(strength) * opacityEffect : 1.0
+                // shader 在有弯曲时启用
+                let isEffectActive = effectiveSpeed > 0.01
 
                 return view
                     .distortionEffect(
-                        ShaderLibrary.liquidBend(
-                            .float2(size.width, size.height),
-                            .float(strength),
-                            .float(direction)
+                        ShaderLibrary.liquidBendGlobal(
+                            .float2(size.width, size.height),  // 视图尺寸
+                            .float(strength),                   // 弯曲强度（只由速度决定）
+                            .float(frame.minY),                 // 卡片顶部在屏幕上的 Y 坐标
+                            .float(screenHeight),               // 屏幕高度
+                            .float(screenCenterY)               // 屏幕中心 Y 坐标
                         ),
                         maxSampleOffset: CGSize(width: 200, height: 100),
                         isEnabled: isEffectActive
                     )
-                    .scaleEffect(scale)
-                    .opacity(opacityVal)
             }
-            // 监听滚动状态变化，使用延迟来平滑过渡
+            // 监听滚动停止，使用弹簧动画平滑恢复最后一点弯曲
             .onChange(of: isScrolling) { _, newValue in
-                if newValue {
-                    // 开始滚动时，延迟一小段时间再启用扭曲效果
-                    // 避免滑动触发瞬间的突然扭曲
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        if params.isScrolling {
-                            smoothedScrolling = true
-                        }
+                if !newValue {
+                    // 完全停止时，非常缓慢柔和地恢复弯曲
+                    withAnimation(.easeInOut(duration: 1.6)) {
+                        smoothedSpeed = 0
                     }
-                } else {
-                    // 停止滚动时，立即禁用扭曲效果
-                    smoothedScrolling = false
+                }
+            }
+            // 减速过程中实时跟踪速度
+            .onChange(of: scrollSpeed) { _, newSpeed in
+                if params.isDecelerating {
+                    // 减速中：平滑跟随速度变化
+                    smoothedSpeed = newSpeed
+                } else if params.isScrolling {
+                    // 主动滚动中：记录当前速度
+                    smoothedSpeed = newSpeed
                 }
             }
     }

@@ -259,8 +259,14 @@ struct CleanupView: View {
                 scrollOffset = newOffset
                 isScrolling = abs(delta) > 0.5
 
-                // 同步滚动状态到全局参数，触发液态弯曲效果
+                // 同步滚动状态和速度到全局参数
                 LiquidBendParameters.shared.isScrolling = isScrolling
+
+                // 计算归一化速度 (0-1)，速度越快弯曲越强
+                let absVelocity = abs(delta)
+                let maxVelocity: CGFloat = 15  // 较小的阈值让弯曲更容易触发
+                let normalizedSpeed = min(1.0, absVelocity / maxVelocity)
+                LiquidBendParameters.shared.scrollSpeed = normalizedSpeed
 
                 if abs(delta) > 30 {
                     HapticManager.shared.lightTap()
@@ -273,9 +279,16 @@ struct CleanupView: View {
                 case .idle:
                     // 滚动完全停止
                     LiquidBendParameters.shared.isScrolling = false
-                case .interacting, .decelerating, .animating:
-                    // 正在交互或惯性滚动
+                    LiquidBendParameters.shared.isDecelerating = false
+                    LiquidBendParameters.shared.scrollSpeed = 0
+                case .interacting:
+                    // 手指正在触摸滚动
                     LiquidBendParameters.shared.isScrolling = true
+                    LiquidBendParameters.shared.isDecelerating = false
+                case .decelerating, .animating:
+                    // 手指已离开，惯性减速中 - 弯曲应随速度自然减弱
+                    LiquidBendParameters.shared.isScrolling = true
+                    LiquidBendParameters.shared.isDecelerating = true
                 default:
                     break
                 }
@@ -288,6 +301,7 @@ struct CleanupView: View {
 
 // MARK: - Photo Card View (照片卡片)
 // 支持各种比例，超长图等比缩小
+// 使用普通毛玻璃背景以支持液态变形效果
 
 @available(iOS 26.0, *)
 struct PhotoCardView: View {
@@ -330,7 +344,7 @@ struct PhotoCardView: View {
                         .strokeBorder(Color.psAccent, lineWidth: 3)
                 }
             }
-            // 左上角 - 最佳标签
+            // 左上角 - 最佳标签（普通毛玻璃背景，支持液态变形）
             .overlay(alignment: .topLeading) {
                 if photo.isBestInGroup {
                     Text("最佳")
@@ -338,18 +352,18 @@ struct PhotoCardView: View {
                         .foregroundStyle(Color.primary)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
-                        .glassEffect(.regular, in: Capsule())
+                        .background(Capsule().fill(.ultraThinMaterial))
                         .padding(12)
                 }
             }
-            // 右下角 - 选中标记 (LiquidGlass Button 样式)
+            // 右下角 - 选中标记（普通毛玻璃背景，支持液态变形）
             .overlay(alignment: .bottomTrailing) {
                 if isSelected {
                     Image(systemName: "checkmark")
                         .font(.system(size: 24, weight: .bold))
                         .foregroundStyle(Color.primary)
                         .frame(width: 56, height: 56)
-                        .glassEffect(.regular.interactive(), in: Circle())
+                        .background(Circle().fill(.ultraThinMaterial))
                         .padding(16)
                 }
             }
