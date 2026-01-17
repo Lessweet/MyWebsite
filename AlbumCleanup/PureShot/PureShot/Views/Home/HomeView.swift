@@ -11,6 +11,9 @@ struct HomeView: View {
     @State private var showCleanupView = false
     @State private var hasStartedScan = false
 
+    // 标题位移动画命名空间
+    @Namespace private var titleAnimation
+
     /// 扫描期间使用深色背景以突出光波效果
     private var backgroundColor: Color {
         switch viewModel.scanState {
@@ -58,8 +61,20 @@ struct HomeView: View {
                     LightWaveScanEffect(isActive: $viewModel.showLightWave)
                 }
 
-                // 扫描中只显示品牌名（按照README规范）
+                // 动画标题 - 扫描时居中，结果页在左上角
+                VStack {
+                    if isShowingResults {
+                        // 结果页：标题在顶部，但由 ScrollView 控制
+                        Spacer()
+                    } else {
+                        // 扫描时：标题居中
+                        Spacer()
+                        animatedTitle
+                        Spacer()
+                    }
+                }
             }
+            .animation(.spring(response: 0.6, dampingFraction: 0.8), value: isShowingResults)
             .navigationDestination(isPresented: $showCleanupView) {
                 if let group = viewModel.selectedGroup {
                     CleanupView(group: group) {
@@ -75,19 +90,6 @@ struct HomeView: View {
                 try? await Task.sleep(nanoseconds: 300_000_000)
                 await viewModel.startScan()
             }
-            .onChange(of: viewModel.scanState) { _, newState in
-                // 扫描完成且有结果时，自动跳转到清理视图
-                if case .completed = newState {
-                    if let firstGroup = viewModel.photoGroups.first {
-                        // 短暂延迟让光波消散动画完成
-                        Task {
-                            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5s
-                            viewModel.selectGroup(firstGroup)
-                            showCleanupView = true
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -95,34 +97,48 @@ struct HomeView: View {
 
     @ViewBuilder
     private var mainContent: some View {
-        VStack(spacing: 0) {
-            // 顶部标题区域
-            headerSection
-                .padding(.top, 60)
+        switch viewModel.scanState {
+        case .completed:
+            // 扫描完成时，标题和内容一起滚动
+            completedState
+                .padding(.horizontal, Constants.Layout.horizontalPadding)
+        default:
+            // 其他状态保持原有布局
+            VStack(spacing: 0) {
+                Spacer()
 
-            Spacer()
+                // 中间内容区域
+                centerContent
 
-            // 中间内容区域
-            centerContent
-
-            Spacer()
+                Spacer()
+            }
+            .padding(.horizontal, Constants.Layout.horizontalPadding)
         }
-        .padding(.horizontal, Constants.Layout.horizontalPadding)
     }
 
-    // MARK: - Header Section
+    /// 是否显示结果页（标题在左上角）
+    private var isShowingResults: Bool {
+        if case .completed = viewModel.scanState { return true }
+        return false
+    }
 
-    private var headerSection: some View {
-        VStack(spacing: 8) {
+    // MARK: - Animated Title (带动画的标题)
+
+    private var animatedTitle: some View {
+        VStack(alignment: isShowingResults ? .leading : .center, spacing: 4) {
             Text("PureShot")
                 .font(.system(size: 34, weight: .bold, design: .rounded))
                 .foregroundStyle(textPrimaryColor)
+                .matchedGeometryEffect(id: "title", in: titleAnimation)
 
             Text("智能相册清理")
                 .font(.subheadline)
                 .foregroundStyle(textSecondaryColor)
+                .matchedGeometryEffect(id: "subtitle", in: titleAnimation)
         }
-        .animation(.easeInOut(duration: 0.3), value: viewModel.scanState)
+        .frame(maxWidth: .infinity, alignment: isShowingResults ? .leading : .center)
+        .padding(.horizontal, Constants.Layout.horizontalPadding)
+        .padding(.top, isShowingResults ? 8 : 0)
         .onLongPressGesture {
             // 长按标题进入演示模式（开发测试用）
             Task {
@@ -182,87 +198,86 @@ struct HomeView: View {
     }
 
     private var completedState: some View {
-        ZStack(alignment: .top) {
-            // 可滚动内容
+        let columns = [
+            GridItem(.flexible(), spacing: 12),
+            GridItem(.flexible(), spacing: 12)
+        ]
+
+        return ZStack {
+            // 可滚动内容 - 标题 + 双列布局
             ScrollView {
-                VStack(spacing: 16) {
-                    // 顶部留白（为导航栏和渐变留空间）
-                    Color.clear.frame(height: 70)
+                VStack(alignment: .leading, spacing: 16) {
+                    // 标题区域 - 跟随滚动，使用 matchedGeometryEffect 实现平滑过渡
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("PureShot")
+                            .font(.system(size: 34, weight: .bold, design: .rounded))
+                            .foregroundStyle(textPrimaryColor)
+                            .matchedGeometryEffect(id: "title", in: titleAnimation)
 
-                    if viewModel.showResultCard {
-                        // 结果卡片
-                        ResultCard(
-                            groupCount: viewModel.similarGroupsFound,
-                            totalPhotos: viewModel.totalPhotosToClean + viewModel.similarGroupsFound,
-                            spaceSavable: viewModel.formattedSpaceSavable,
-                            onTap: {
-                                if let firstGroup = viewModel.photoGroups.first {
-                                    viewModel.selectGroup(firstGroup)
-                                    showCleanupView = true
-                                }
-                            }
-                        )
-                        .transition(.asymmetric(
-                            insertion: .scale(scale: 0.9).combined(with: .opacity),
-                            removal: .opacity
-                        ))
+                        Text("智能相册清理")
+                            .font(.subheadline)
+                            .foregroundStyle(textSecondaryColor)
+                            .matchedGeometryEffect(id: "subtitle", in: titleAnimation)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 8)  // 原生导航栏标准间距
 
-                    // 照片组列表
-                    if viewModel.photoGroups.count > 1 {
-                        LazyVStack(spacing: 12) {
-                            ForEach(viewModel.photoGroups) { group in
-                                GroupCard(group: group) {
-                                    viewModel.selectGroup(group)
-                                    showCleanupView = true
-                                }
+                    // 双列卡片 - 间距与标题对齐（外层已有 horizontalPadding）
+                    LazyVGrid(columns: columns, spacing: 12) {
+                        ForEach(Array(viewModel.photoGroups.enumerated()), id: \.element.id) { index, group in
+                            CompactGroupCard(group: group, index: index) {
+                                viewModel.selectGroup(group)
+                                showCleanupView = true
                             }
                         }
                     }
-
-                    // 重新扫描按钮
-                    Button {
-                        Task {
-                            await viewModel.rescan()
-                        }
-                    } label: {
-                        Text("重新扫描")
-                            .font(.subheadline.weight(.medium))
-                            .foregroundStyle(Color.psTextSecondaryAdaptive)
-                    }
-                    .padding(.top, 8)
-                    .padding(.bottom, 40)
                 }
+                .padding(.bottom, 100) // 底部留白给按钮
             }
             .scrollIndicators(.hidden)
 
-            // 顶部渐变遮罩 + 导航栏
-            VStack(spacing: 0) {
-                // 玻璃导航栏
-                HomeGlassNavBar(
-                    title: "扫描结果",
-                    onRescan: {
-                        Task {
-                            await viewModel.rescan()
-                        }
-                    }
-                )
-
-                // 渐变过渡效果
+            // 顶部渐变蒙层 - 复用 CleanupView 样式
+            VStack {
                 LinearGradient(
-                    colors: [
-                        Color.psBackgroundAdaptive,
-                        Color.psBackgroundAdaptive.opacity(0.8),
-                        Color.psBackgroundAdaptive.opacity(0)
+                    stops: [
+                        .init(color: Color(uiColor: .systemBackground), location: 0),
+                        .init(color: Color(uiColor: .systemBackground).opacity(0), location: 1)
                     ],
                     startPoint: .top,
                     endPoint: .bottom
                 )
-                .frame(height: 30)
+                .frame(height: 80)
+                .ignoresSafeArea(edges: .top)
 
                 Spacer()
             }
+            .allowsHitTesting(false)
+
+            // 底部重新扫描按钮 - 玻璃效果
+            VStack {
+                Spacer()
+
+                Button {
+                    Task {
+                        await viewModel.rescan()
+                    }
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 20, weight: .semibold))
+                        Text("重新扫描")
+                            .font(.system(size: 18, weight: .semibold))
+                    }
+                    .foregroundStyle(Color.primary)
+                    .padding(.horizontal, 32)
+                    .padding(.vertical, 18)
+                }
+                .glassEffect(.regular.interactive(), in: Capsule())
+                .padding(.bottom, 16)
+            }
+            .ignoresSafeArea(edges: .bottom)
         }
+        .ignoresSafeArea(edges: .bottom)
     }
 
     private var noPhotosState: some View {
@@ -324,39 +339,81 @@ struct HomeView: View {
     }
 }
 
-// MARK: - Home Glass Navigation Bar
+// MARK: - Compact Group Card (双列布局用)
 
 @available(iOS 26.0, *)
-struct HomeGlassNavBar: View {
-    let title: String
-    let onRescan: () -> Void
+struct CompactGroupCard: View {
+    let group: PhotoGroup
+    let index: Int  // 用于计算动画延迟
+    let onTap: () -> Void
+
+    @State private var isPressed = false
+    @State private var appeared = false
+
+    // 基于行号计算延迟：同一行左右列错开，行间也错开
+    // 行号 = index / 2，列号 = index % 2
+    // 初始可见（前3行=6个）用行延迟，之后只用列延迟
+    private var animationDelay: Double {
+        let row = index / 2
+        let column = index % 2
+
+        if row < 3 {
+            // 初始可见的前3行：行延迟 + 列延迟
+            return Double(row) * 0.1 + Double(column) * 0.05
+        } else {
+            // 滚动出现的卡片：只用列延迟（右列比左列晚一点）
+            return Double(column) * 0.06
+        }
+    }
 
     var body: some View {
-        HStack(spacing: 12) {
-            // 左侧占位（保持标题居中）
-            Color.clear.frame(width: 36, height: 36)
-
-            Spacer()
-
-            // 中间标题
-            Text(title)
-                .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(Color.primary)
-
-            Spacer()
-
-            // 右侧刷新按钮
-            Button(action: onRescan) {
-                Image(systemName: "arrow.clockwise")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(Color.primary)
-                    .frame(width: 36, height: 36)
+        VStack(alignment: .leading, spacing: 8) {
+            // 预览图 - 正方形
+            if let thumbnail = group.bestPhoto?.thumbnail {
+                Image(uiImage: thumbnail)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(maxWidth: .infinity)
+                    .aspectRatio(1, contentMode: .fit)
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            } else {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.psTextSecondaryAdaptive.opacity(0.2))
+                    .aspectRatio(1, contentMode: .fit)
             }
-            .glassEffect(.regular, in: Circle())
+
+            // 信息
+            VStack(alignment: .leading, spacing: 2) {
+                Text("\(group.photos.count) 张相似")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Color.psTextPrimaryAdaptive)
+
+                Text("可节省 \(group.formattedSpaceSaved)")
+                    .font(.caption)
+                    .foregroundStyle(Color.psAccent)
+            }
+            .padding(.horizontal, 4)
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 8)
-        .padding(.bottom, 12)
+        .padding(10)
+        .scaleEffect(isPressed ? 0.97 : 1.0)
+        // 入场动画：从下方上移 + 渐显
+        .offset(y: appeared ? 0 : 30)
+        .opacity(appeared ? 1 : 0)
+        .animation(
+            .spring(response: 0.4, dampingFraction: 0.85)
+            .delay(animationDelay),
+            value: appeared
+        )
+        .onAppear {
+            appeared = true
+        }
+        .animation(.spring(response: 0.2), value: isPressed)
+        .onTapGesture {
+            onTap()
+        }
+        .onLongPressGesture(minimumDuration: .infinity, pressing: { pressing in
+            isPressed = pressing
+        }, perform: {})
     }
 }
 

@@ -44,6 +44,23 @@ struct CleanupView: View {
                 // 灵动岛奶油色呼吸光晕
                 CleanupDynamicIslandGlow(isActive: $showDynamicIslandGlow)
 
+                // 顶部渐变蒙层 (soft style) - 放在最顶部
+                VStack {
+                    LinearGradient(
+                        stops: [
+                            .init(color: Color(uiColor: .systemBackground), location: 0),
+                            .init(color: Color(uiColor: .systemBackground).opacity(0), location: 1)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 120)
+                    .ignoresSafeArea(edges: .top)
+
+                    Spacer()
+                }
+                .allowsHitTesting(false)
+
                 // 顶部玻璃导航栏
                 VStack {
                     GlassNavigationBar(
@@ -274,6 +291,7 @@ struct CleanupView: View {
                 }
             }
             .scrollIndicators(.hidden)
+            .scrollEdgeEffectStyle(.soft, for: .top)  // 顶部渐变蒙层效果
             // 滚动结束时确保重置液态效果
             .onScrollPhaseChange { oldPhase, newPhase in
                 switch newPhase {
