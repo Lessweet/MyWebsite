@@ -63,7 +63,7 @@ struct ContentView: View {
                         .font(.system(size: 34, weight: .bold, design: .rounded))
                         .foregroundStyle(Color(hex: 0xF5F5F5))
 
-                    Text("智能相册清理")
+                    Text("Smart Album Cleanup")
                         .font(.subheadline)
                         .foregroundStyle(Color(hex: 0x8E8E93))
                 }
@@ -72,11 +72,11 @@ struct ContentView: View {
 
                 // 授权说明
                 VStack(spacing: 16) {
-                    Text("需要访问您的照片")
+                    Text("Photo Access Required")
                         .font(.headline)
                         .foregroundStyle(Color(hex: 0xF5F5F5))
 
-                    Text("PureShot 需要访问您的照片库来\n识别和清理相似照片")
+                    Text("PureShot needs access to your photo library to\nidentify and clean up similar photos")
                         .font(.subheadline)
                         .foregroundStyle(Color(hex: 0x8E8E93))
                         .multilineTextAlignment(.center)
@@ -90,7 +90,7 @@ struct ContentView: View {
                         Image(systemName: "photo.on.rectangle.angled")
                             .font(.title3)
 
-                        Text("授权访问照片")
+                        Text("Grant Access")
                             .font(.headline)
                     }
                     .foregroundStyle(Color(hex: 0xF5F5F5))
@@ -105,15 +105,15 @@ struct ContentView: View {
             }
             .padding(.horizontal, Constants.Layout.horizontalPadding)
         }
-        .alert("需要照片权限", isPresented: $showAuthorizationAlert) {
-            Button("去设置") {
+        .alert("Photo Permission Required", isPresented: $showAuthorizationAlert) {
+            Button("Settings") {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
                 }
             }
-            Button("取消", role: .cancel) {}
+            Button("Cancel", role: .cancel) {}
         } message: {
-            Text("请在设置中允许 PureShot 访问您的照片库")
+            Text("Please allow PureShot to access your photo library in Settings")
         }
     }
 

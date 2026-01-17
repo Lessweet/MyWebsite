@@ -14,6 +14,10 @@ struct HomeView: View {
     // 标题位移动画命名空间
     @Namespace private var titleAnimation
 
+    // 副标题切换状态
+    @State private var subtitleIndex = 0
+    private let subtitleTimer = Timer.publish(every: 3.0, on: .main, in: .common).autoconnect()
+
     /// 扫描期间使用深色背景以突出光波效果
     private var backgroundColor: Color {
         switch viewModel.scanState {
@@ -42,6 +46,17 @@ struct HomeView: View {
         default:
             return Color.psTextSecondaryAdaptive
         }
+    }
+
+    /// 副标题文案数组
+    private var subtitleTexts: [String] {
+        let groupCount = viewModel.photoGroups.count
+        let totalSpace = viewModel.photoGroups.reduce(Int64(0)) { $0 + $1.estimatedSpaceSaved }
+        let spaceString = ByteCountFormatter.string(fromByteCount: totalSpace, countStyle: .file)
+        return [
+            "Smart Album Cleanup",
+            "\(groupCount) groups · Save \(spaceString)"
+        ]
     }
 
     var body: some View {
@@ -74,7 +89,7 @@ struct HomeView: View {
                     }
                 }
             }
-            .animation(.spring(response: 0.6, dampingFraction: 0.8), value: isShowingResults)
+            .animation(.spring(response: 1.0, dampingFraction: 0.8), value: isShowingResults)
             .navigationDestination(isPresented: $showCleanupView) {
                 if let group = viewModel.selectedGroup {
                     CleanupView(group: group) {
@@ -89,6 +104,14 @@ struct HomeView: View {
                 // 短暂延迟让界面先渲染
                 try? await Task.sleep(nanoseconds: 300_000_000)
                 await viewModel.startScan()
+            }
+            .onReceive(subtitleTimer) { _ in
+                // 扫描结果页时切换副标题
+                if isShowingResults && !viewModel.photoGroups.isEmpty {
+                    withAnimation(.easeInOut(duration: 0.5)) {
+                        subtitleIndex = (subtitleIndex + 1) % subtitleTexts.count
+                    }
+                }
             }
         }
     }
@@ -127,18 +150,29 @@ struct HomeView: View {
     private var animatedTitle: some View {
         VStack(alignment: isShowingResults ? .leading : .center, spacing: 4) {
             Text("PureShot")
-                .font(.system(size: 34, weight: .bold, design: .rounded))
+                .font(.system(size: 44, weight: .bold, design: .default))
+                .scaleEffect(x: 0.85, y: 1.0, anchor: isShowingResults ? .leading : .center)
                 .foregroundStyle(textPrimaryColor)
                 .matchedGeometryEffect(id: "title", in: titleAnimation)
 
-            Text("智能相册清理")
-                .font(.subheadline)
-                .foregroundStyle(textSecondaryColor)
-                .matchedGeometryEffect(id: "subtitle", in: titleAnimation)
+            // 副标题 - 结果页时切换显示（始终从左到右）
+            ZStack(alignment: isShowingResults ? .leading : .center) {
+                Text(subtitleTexts[subtitleIndex])
+                    .font(.subheadline)
+                    .foregroundStyle(textSecondaryColor)
+                    .id(subtitleIndex)
+                    .transition(.asymmetric(
+                        insertion: .opacity.combined(with: .offset(x: 30)),
+                        removal: .opacity.combined(with: .offset(x: -30))
+                    ))
+            }
+            .frame(maxWidth: .infinity, alignment: isShowingResults ? .leading : .center)
+            .animation(.easeInOut(duration: 0.5), value: subtitleIndex)
+            .matchedGeometryEffect(id: "subtitle", in: titleAnimation)
         }
         .frame(maxWidth: .infinity, alignment: isShowingResults ? .leading : .center)
         .padding(.horizontal, Constants.Layout.horizontalPadding)
-        .padding(.top, isShowingResults ? 8 : 0)
+        .padding(.top, isShowingResults ? 20 : 0)
         .onLongPressGesture {
             // 长按标题进入演示模式（开发测试用）
             Task {
@@ -172,23 +206,8 @@ struct HomeView: View {
     // MARK: - States
 
     private var idleState: some View {
-        VStack(spacing: 24) {
-            // 准备扫描的提示
-            ZStack {
-                Circle()
-                    .fill(Color.psAccent.opacity(0.15))
-                    .frame(width: 120, height: 120)
-
-                Image(systemName: "photo.stack")
-                    .font(.system(size: 48))
-                    .foregroundStyle(Color.psAccent)
-            }
-
-            Text("准备扫描...")
-                .font(.body)
-                .foregroundStyle(textSecondaryColor)
-                .multilineTextAlignment(.center)
-        }
+        // 开屏只显示标题，无其他内容
+        EmptyView()
     }
 
     private var scanningState: some View {
@@ -199,28 +218,39 @@ struct HomeView: View {
 
     private var completedState: some View {
         let columns = [
-            GridItem(.flexible(), spacing: 12),
-            GridItem(.flexible(), spacing: 12)
+            GridItem(.flexible(), spacing: 24),
+            GridItem(.flexible(), spacing: 24)
         ]
 
         return ZStack {
             // 可滚动内容 - 标题 + 双列布局
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 28) {
                     // 标题区域 - 跟随滚动，使用 matchedGeometryEffect 实现平滑过渡
                     VStack(alignment: .leading, spacing: 4) {
                         Text("PureShot")
-                            .font(.system(size: 34, weight: .bold, design: .rounded))
+                            .font(.system(size: 44, weight: .bold, design: .default))
+                            .scaleEffect(x: 0.85, y: 1.0, anchor: .leading)
                             .foregroundStyle(textPrimaryColor)
                             .matchedGeometryEffect(id: "title", in: titleAnimation)
 
-                        Text("智能相册清理")
-                            .font(.subheadline)
-                            .foregroundStyle(textSecondaryColor)
-                            .matchedGeometryEffect(id: "subtitle", in: titleAnimation)
+                        // 副标题 - 切换显示（始终从左到右）
+                        ZStack(alignment: .leading) {
+                            Text(subtitleTexts[subtitleIndex])
+                                .font(.subheadline)
+                                .foregroundStyle(textSecondaryColor)
+                                .id(subtitleIndex)
+                                .transition(.asymmetric(
+                                    insertion: .opacity.combined(with: .offset(x: 30)),
+                                    removal: .opacity.combined(with: .offset(x: -30))
+                                ))
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .animation(.easeInOut(duration: 0.5), value: subtitleIndex)
+                        .matchedGeometryEffect(id: "subtitle", in: titleAnimation)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 8)  // 原生导航栏标准间距
+                    .padding(.top, 20)  // 距离顶部间距
 
                     // 双列卡片 - 间距与标题对齐（外层已有 horizontalPadding）
                     LazyVGrid(columns: columns, spacing: 12) {
@@ -253,26 +283,63 @@ struct HomeView: View {
             }
             .allowsHitTesting(false)
 
-            // 底部重新扫描按钮 - 玻璃效果
+            // 底部渐变蒙层
             VStack {
                 Spacer()
 
-                Button {
-                    Task {
-                        await viewModel.rescan()
+                LinearGradient(
+                    stops: [
+                        .init(color: Color(uiColor: .systemBackground).opacity(0), location: 0),
+                        .init(color: Color(uiColor: .systemBackground), location: 1)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(height: 180)
+                .ignoresSafeArea(edges: .bottom)
+            }
+            .allowsHitTesting(false)
+
+            // 底部按钮栏 - 左：重新扫描，右：一键清理
+            VStack {
+                Spacer()
+
+                HStack(spacing: 12) {
+                    // 重新扫描按钮
+                    Button {
+                        Task {
+                            await viewModel.rescan()
+                        }
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.system(size: 18, weight: .semibold))
+                            Text("Rescan")
+                                .font(.system(size: 16, weight: .semibold))
+                        }
+                        .foregroundStyle(Color.primary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
                     }
-                } label: {
-                    HStack(spacing: 10) {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 20, weight: .semibold))
-                        Text("重新扫描")
-                            .font(.system(size: 18, weight: .semibold))
+                    .glassEffect(.regular.interactive(), in: Capsule())
+
+                    // 一键清理按钮
+                    Button {
+                        // TODO: 一键清理功能
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "sparkles.2")
+                                .font(.system(size: 18, weight: .semibold))
+                            Text("Quick Clean")
+                                .font(.system(size: 16, weight: .semibold))
+                        }
+                        .foregroundStyle(Color.primary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
                     }
-                    .foregroundStyle(Color.primary)
-                    .padding(.horizontal, 32)
-                    .padding(.vertical, 18)
+                    .glassEffect(.regular.interactive(), in: Capsule())
                 }
-                .glassEffect(.regular.interactive(), in: Capsule())
+                .padding(.horizontal, Constants.Layout.horizontalPadding)
                 .padding(.bottom, 16)
             }
             .ignoresSafeArea(edges: .bottom)
@@ -292,7 +359,7 @@ struct HomeView: View {
                     .foregroundStyle(Color.psAccent)
             }
 
-            Text("太棒了！\n没有发现相似照片")
+            Text("Great!\nNo similar photos found")
                 .font(.body)
                 .foregroundStyle(Color.psTextSecondaryAdaptive)
                 .multilineTextAlignment(.center)
@@ -302,7 +369,7 @@ struct HomeView: View {
                     await viewModel.rescan()
                 }
             } label: {
-                Text("重新扫描")
+                Text("Rescan")
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(Color.psAccent)
             }
@@ -331,7 +398,7 @@ struct HomeView: View {
                     await viewModel.startScan()
                 }
             } label: {
-                Text("重试")
+                Text("Retry")
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(Color.psAccent)
             }
@@ -350,19 +417,17 @@ struct CompactGroupCard: View {
     @State private var isPressed = false
     @State private var appeared = false
 
-    // 基于行号计算延迟：同一行左右列错开，行间也错开
-    // 行号 = index / 2，列号 = index % 2
-    // 初始可见（前3行=6个）用行延迟，之后只用列延迟
-    private var animationDelay: Double {
-        let row = index / 2
-        let column = index % 2
+    // 列号：0=左，1=右
+    private var column: Int { index % 2 }
+    private var row: Int { index / 2 }
 
+    // 入场延迟：等标题位移完成后（0.5s）再开始，初始可见用行+列延迟
+    private var appearDelay: Double {
+        let titleAnimationDuration = 0.5  // 等待标题移动到左上角
         if row < 3 {
-            // 初始可见的前3行：行延迟 + 列延迟
-            return Double(row) * 0.1 + Double(column) * 0.05
+            return titleAnimationDuration + Double(row) * 0.1 + Double(column) * 0.08
         } else {
-            // 滚动出现的卡片：只用列延迟（右列比左列晚一点）
-            return Double(column) * 0.06
+            return titleAnimationDuration + Double(column) * 0.08
         }
     }
 
@@ -375,38 +440,56 @@ struct CompactGroupCard: View {
                     .aspectRatio(contentMode: .fill)
                     .frame(maxWidth: .infinity)
                     .aspectRatio(1, contentMode: .fit)
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
             } else {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
                     .fill(Color.psTextSecondaryAdaptive.opacity(0.2))
                     .aspectRatio(1, contentMode: .fit)
             }
 
             // 信息
             VStack(alignment: .leading, spacing: 2) {
-                Text("\(group.photos.count) 张相似")
+                Text("\(group.photos.count) Similar")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color.psTextPrimaryAdaptive)
 
-                Text("可节省 \(group.formattedSpaceSaved)")
+                Text(group.latestDate.formatted(.dateTime.month().day()))
+                    .font(.caption)
+                    .foregroundStyle(Color.psTextSecondaryAdaptive)
+
+                Text("Save \(group.formattedSpaceSaved)")
                     .font(.caption)
                     .foregroundStyle(Color.psAccent)
             }
             .padding(.horizontal, 4)
         }
-        .padding(10)
+        .padding(.vertical, 10)
         .scaleEffect(isPressed ? 0.97 : 1.0)
         // 入场动画：从下方上移 + 渐显
         .offset(y: appeared ? 0 : 30)
         .opacity(appeared ? 1 : 0)
         .animation(
             .spring(response: 0.4, dampingFraction: 0.85)
-            .delay(animationDelay),
+            .delay(appearDelay),
             value: appeared
         )
         .onAppear {
             appeared = true
         }
+        // 滚动过渡效果：只在底部边缘（上滑离开时）向下掉落
+        .scrollTransition(.animated(.spring(response: 0.8)), transition: { content, phase in
+            let threshold: Double = 0.15
+            // 只处理底部边缘，顶部边缘不做效果
+            let effectValue = phase.value > threshold ? (phase.value - threshold) : 0
+
+            // 行号越大偏移越多（下面先掉），右列额外偏移（右边先掉）
+            let rowFactor = 1.0 + min(Double(row), 5.0) * 0.2
+            let columnExtra = column == 1 ? effectValue * 15 : 0
+
+            return content
+                .offset(y: effectValue * 25 * rowFactor + columnExtra)
+                .opacity(1 - effectValue * 0.4)
+        })
         .animation(.spring(response: 0.2), value: isPressed)
         .onTapGesture {
             onTap()

@@ -56,11 +56,11 @@ struct QualityScore: Codable {
     // 评分等级描述
     var gradeDescription: String {
         switch overallScore {
-        case 90...100: return "极佳"
-        case 80..<90: return "优秀"
-        case 70..<80: return "良好"
-        case 60..<70: return "一般"
-        default: return "较差"
+        case 90...100: return "Excellent"
+        case 80..<90: return "Very Good"
+        case 70..<80: return "Good"
+        case 60..<70: return "Fair"
+        default: return "Poor"
         }
     }
 }

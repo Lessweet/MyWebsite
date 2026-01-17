@@ -31,12 +31,12 @@ struct LiquidGlassActionBar: View {
                     HStack(spacing: 8) {
                         Image(systemName: "trash")
                             .font(.system(size: 20, weight: .semibold))
-                        Text("删除 \(deleteCount) 张")
+                        Text("Delete \(deleteCount)")
                             .font(.system(size: 18, weight: .semibold))
                     }
                     .tint(.red)  // 使用 tint 让红色也能适配
 
-                    Text("保留 \(keepCount) 张")
+                    Text("Keep \(keepCount)")
                         .font(.system(size: 14, weight: .medium))
                     // 不设置 foregroundStyle，让系统自动适配
                 }

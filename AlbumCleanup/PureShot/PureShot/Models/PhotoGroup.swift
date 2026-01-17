@@ -79,7 +79,7 @@ final class PhotoGroup: Identifiable, @unchecked Sendable {
     var timeRangeDescription: String {
         guard let first = photos.first?.creationDate,
               let last = photos.last?.creationDate else {
-            return "未知时间"
+            return "Unknown time"
         }
 
         let formatter = DateFormatter()
@@ -125,6 +125,29 @@ final class PhotoGroup: Identifiable, @unchecked Sendable {
 
     var formattedSpaceSaved: String {
         ByteCountFormatter.string(fromByteCount: estimatedSpaceSaved, countStyle: .file)
+    }
+
+    /// 组内最新照片的日期（用于按时间排序）
+    var latestDate: Date {
+        photos.compactMap { $0.creationDate }.max() ?? createdAt
+    }
+
+    /// 组内所有照片的总大小（用于按容量排序）
+    var totalSize: Int64 {
+        photos.reduce(0) { total, photo in
+            if photo.id.hasPrefix("demo_") {
+                return total + photo.fileSize
+            }
+            guard !photo.asset.localIdentifier.isEmpty else {
+                return total + photo.fileSize
+            }
+            let resources = PHAssetResource.assetResources(for: photo.asset)
+            guard let resource = resources.first,
+                  let fileSize = resource.value(forKey: "fileSize") as? Int64 else {
+                return total
+            }
+            return total + fileSize
+        }
     }
 
     // MARK: - Methods

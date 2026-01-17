@@ -37,7 +37,7 @@ enum Constants {
 
     enum Layout {
         /// 屏幕边距
-        static let horizontalPadding: CGFloat = 20
+        static let horizontalPadding: CGFloat = 24
 
         /// 卡片圆角
         static let cardCornerRadius: CGFloat = 24

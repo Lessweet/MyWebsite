@@ -134,22 +134,18 @@ struct ResultCard: View {
             VStack(alignment: .leading, spacing: 6) {
                 // 主标题：相似照片数量
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text("相似照片")
-                        .font(.headline)
-                        .foregroundStyle(Color.psTextPrimaryAdaptive)
-
                     Text("\(totalPhotos)")
                         .font(.system(size: 20, weight: .bold, design: .rounded))
                         .foregroundStyle(Color.psAccent)
 
-                    Text("张")
+                    Text("Similar Photos")
                         .font(.headline)
                         .foregroundStyle(Color.psTextPrimaryAdaptive)
                 }
 
                 // 副标题：可释放空间
                 HStack(spacing: 4) {
-                    Text("可释放")
+                    Text("Free up")
                         .font(.subheadline)
                         .foregroundStyle(Color.psTextSecondaryAdaptive)
 
@@ -208,7 +204,7 @@ struct GroupCard: View {
 
             // 信息
             VStack(alignment: .leading, spacing: 4) {
-                Text("\(group.photos.count) 张相似照片")
+                Text("\(group.photos.count) Similar Photos")
                     .font(.headline)
                     .foregroundStyle(Color.psTextPrimaryAdaptive)
 
@@ -217,7 +213,7 @@ struct GroupCard: View {
                     .foregroundStyle(Color.psTextSecondaryAdaptive)
 
                 HStack(spacing: 4) {
-                    Text("可释放")
+                    Text("Free up")
                         .font(.caption)
                         .foregroundStyle(Color.psTextSecondaryAdaptive)
 

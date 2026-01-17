@@ -111,8 +111,8 @@ struct CompletionToast: View {
 
     var body: some View {
         DynamicIslandToast(
-            text: "✓ 已清理  释放 \(freedSpace)",
-            buttonText: "完成",
+            text: "✓ Cleaned  Freed \(freedSpace)",
+            buttonText: "Done",
             buttonAction: onDismiss,
             autoDismiss: 0 // 不自动消失
         )
@@ -128,8 +128,8 @@ struct ScanResultToast: View {
 
     var body: some View {
         DynamicIslandToast(
-            text: "发现 \(photoCount) 张相似照片",
-            buttonText: "查看",
+            text: "Found \(photoCount) similar photos",
+            buttonText: "View",
             buttonAction: onView,
             autoDismiss: 0
         )
@@ -144,8 +144,8 @@ struct ScanResultToast: View {
             .ignoresSafeArea()
 
         DynamicIslandToast(
-            text: "保留 1 张  删除 6 张",
-            buttonText: "确认",
+            text: "Keep 1  Delete 6",
+            buttonText: "Confirm",
             buttonAction: {},
             autoDismiss: 0
         )

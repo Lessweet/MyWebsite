@@ -278,7 +278,7 @@ struct ScanningTextView: View {
     private let timer = Timer.publish(every: 0.4, on: .main, in: .common).autoconnect()
 
     var body: some View {
-        Text("正在扫描您的相册" + String(repeating: ".", count: dotCount))
+        Text("Scanning your albums" + String(repeating: ".", count: dotCount))
             .font(.subheadline)
             .foregroundStyle(Color(hex: 0x8E8E93)) // 深色背景下使用浅色文字
             .onReceive(timer) { _ in

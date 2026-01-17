@@ -64,7 +64,7 @@ struct CleanupView: View {
                 // 顶部玻璃导航栏
                 VStack {
                     GlassNavigationBar(
-                        title: "\(group.photos.count) 张相似照片",
+                        title: "\(group.photos.count) Similar Photos",
                         onBack: { dismiss() },
                         showSettings: $showSettings
                     )
@@ -627,7 +627,7 @@ struct BestTagView: View {
         HStack(spacing: 4) {
             Image(systemName: "sparkles.2")
                 .font(.system(size: 14, weight: .semibold))
-            Text("最佳")
+            Text("Best")
                 .font(.system(size: 16, weight: .semibold))
         }
         .foregroundStyle(Color.primary)

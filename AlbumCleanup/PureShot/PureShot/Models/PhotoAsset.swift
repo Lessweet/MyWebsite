@@ -83,13 +83,13 @@ class PhotoAsset: Identifiable, @unchecked Sendable {
             if fileSize > 0 {
                 return ByteCountFormatter.string(fromByteCount: fileSize, countStyle: .file)
             }
-            return "未知"
+            return "Unknown"
         }
 
         let resources = PHAssetResource.assetResources(for: asset)
         guard let resource = resources.first,
               let size = resource.value(forKey: "fileSize") as? Int64 else {
-            return "未知"
+            return "Unknown"
         }
         return ByteCountFormatter.string(fromByteCount: size, countStyle: .file)
     }

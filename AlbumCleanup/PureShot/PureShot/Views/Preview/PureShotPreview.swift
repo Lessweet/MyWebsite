@@ -100,7 +100,7 @@ struct PureShotPreview: View {
                     Button(action: {
                         triggerImplosion(screenSize: geometry.size, dynamicIslandCenter: dynamicIslandCenter)
                     }) {
-                        Text(isDeleted ? "已净化 ✓" : "保留 2 张，释放空间")
+                        Text(isDeleted ? "Cleaned ✓" : "Keep 2, Free Space")
                             .font(.headline)
                             .foregroundStyle(isDeleted ? .green : .primary)
                             .padding(.horizontal, 24)
