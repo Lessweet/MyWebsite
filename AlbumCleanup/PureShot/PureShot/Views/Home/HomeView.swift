@@ -150,25 +150,16 @@ struct HomeView: View {
     private var animatedTitle: some View {
         VStack(alignment: isShowingResults ? .leading : .center, spacing: 4) {
             Text("PureShot")
-                .font(.system(size: 44, weight: .bold, design: .default))
+                .font(.system(size: 40, weight: .heavy, design: .default))
                 .scaleEffect(x: 0.85, y: 1.0, anchor: isShowingResults ? .leading : .center)
                 .foregroundStyle(textPrimaryColor)
                 .matchedGeometryEffect(id: "title", in: titleAnimation)
 
-            // 副标题 - 结果页时切换显示（始终从左到右）
-            ZStack(alignment: isShowingResults ? .leading : .center) {
-                Text(subtitleTexts[subtitleIndex])
-                    .font(.subheadline)
-                    .foregroundStyle(textSecondaryColor)
-                    .id(subtitleIndex)
-                    .transition(.asymmetric(
-                        insertion: .opacity.combined(with: .offset(x: 30)),
-                        removal: .opacity.combined(with: .offset(x: -30))
-                    ))
-            }
-            .frame(maxWidth: .infinity, alignment: isShowingResults ? .leading : .center)
-            .animation(.easeInOut(duration: 0.5), value: subtitleIndex)
-            .matchedGeometryEffect(id: "subtitle", in: titleAnimation)
+            // 副标题 - 开屏固定显示，结果页切换显示
+            Text("Smart Album Cleanup")
+                .font(.subheadline)
+                .foregroundStyle(textSecondaryColor)
+                .matchedGeometryEffect(id: "subtitle", in: titleAnimation)
         }
         .frame(maxWidth: .infinity, alignment: isShowingResults ? .leading : .center)
         .padding(.horizontal, Constants.Layout.horizontalPadding)
@@ -229,7 +220,7 @@ struct HomeView: View {
                     // 标题区域 - 跟随滚动，使用 matchedGeometryEffect 实现平滑过渡
                     VStack(alignment: .leading, spacing: 4) {
                         Text("PureShot")
-                            .font(.system(size: 44, weight: .bold, design: .default))
+                            .font(.system(size: 40, weight: .heavy, design: .default))
                             .scaleEffect(x: 0.85, y: 1.0, anchor: .leading)
                             .foregroundStyle(textPrimaryColor)
                             .matchedGeometryEffect(id: "title", in: titleAnimation)
