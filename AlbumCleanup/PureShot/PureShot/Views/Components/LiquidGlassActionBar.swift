@@ -3,8 +3,7 @@ import SwiftUI
 // ═══════════════════════════════════════════════════════════════
 //  LiquidGlassActionBar - 底部液态玻璃操作栏
 //  iOS 26 原生 Liquid Glass 样式
-//  左侧：保留按钮
-//  右侧：删除按钮
+//  单个居中删除按钮，尺寸更大
 // ═══════════════════════════════════════════════════════════════
 
 @available(iOS 26.0, *)
@@ -18,49 +17,41 @@ struct LiquidGlassActionBar: View {
     }
 
     var body: some View {
-        HStack(spacing: 12) {
-            // 左侧 - 保留按钮
-            Button {
-                if !isDisabled {
-                    HapticManager.shared.success()
-                    onConfirm()
-                }
-            } label: {
-                Text("保留 \(keepCount)")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(isDisabled ? Color.secondary : Color.primary)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 12)
-            }
-            .glassEffect(
-                isDisabled ? .regular : .regular.interactive(),
-                in: Capsule()
-            )
-            .opacity(isDisabled ? 0.6 : 1.0)
-            .disabled(isDisabled)
-
+        HStack {
             Spacer()
 
-            // 右侧 - 删除按钮（带交互效果）
+            // 居中操作按钮
             Button {
                 if deleteCount > 0 {
                     HapticManager.shared.mediumTap()
                     onConfirm()
                 }
             } label: {
-                Text("删除 \(deleteCount)")
-                    .font(.system(size: 16, weight: .semibold))
+                VStack(spacing: 4) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "trash")
+                            .font(.system(size: 20, weight: .semibold))
+                        Text("删除 \(deleteCount) 张")
+                            .font(.system(size: 18, weight: .semibold))
+                    }
                     .foregroundStyle(deleteCount > 0 ? Color.red : Color.secondary)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 12)
+
+                    Text("保留 \(keepCount) 张")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(Color.secondary)
+                }
+                .padding(.horizontal, 80)
+                .padding(.vertical, 16)
+                .background(.regularMaterial, in: Capsule())
             }
-            .glassEffect(deleteCount > 0 ? .regular.interactive() : .regular, in: Capsule())
             .opacity(deleteCount > 0 ? 1.0 : 0.6)
             .disabled(deleteCount == 0)
+
+            Spacer()
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .padding(.bottom, Constants.Layout.bottomSafeArea)
+        .padding(.bottom, Constants.Layout.bottomSafeArea / 4)
     }
 }
 

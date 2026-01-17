@@ -20,6 +20,9 @@ class LiquidBendParameters {
     /// 滚动速度 (归一化 0-1) - 速度越快弯曲越强，减速时弯曲自然减弱
     var scrollSpeed: Double = 0
 
+    /// 当前滚动偏移量 - 用于延迟滚动效果
+    var scrollOffset: Double = 0
+
     /// 弯曲强度 (0-2) - 控制液态收缩的程度
     var intensity: Double = 0.4
 

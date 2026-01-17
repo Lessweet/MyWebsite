@@ -219,8 +219,9 @@ extension View {
 
     /// 应用液态滚动弯曲效果
     /// 当视图滑动到屏幕边缘时产生向内收缩的弯曲效果
-    func liquidScrollEffect() -> some View {
-        self.modifier(LiquidScrollModifier())
+    /// - Parameter cascadeDelay: 级联延迟时间（秒），用于创建波浪效果
+    func liquidScrollEffect(cascadeDelay: Double = 0) -> some View {
+        self.modifier(LiquidScrollModifier(cascadeDelay: cascadeDelay))
     }
 }
 
@@ -229,9 +230,11 @@ extension View {
 // 卡片在屏幕中间时是正常矩形，滑到边缘时自动变弯，产生果冻般的流动感
 
 struct LiquidScrollModifier: ViewModifier {
+    let cascadeDelay: Double
+
     func body(content: Content) -> some View {
         content
-            .modifier(LiquidCurvatureEffect())
+            .modifier(LiquidCurvatureEffect(cascadeDelay: cascadeDelay))
     }
 }
 
@@ -341,12 +344,22 @@ struct LiquidCurveShape: Shape {
 // - 静止时：所有照片都是完美的高质感圆角卡片，无任何扭曲
 // - 关键改进：弯曲强度跟随滚动速度，减速时自然恢复到直线
 // ═══════════════════════════════════════════════════════════════
-private struct LiquidCurvatureEffect: ViewModifier {
+struct LiquidCurvatureEffect: ViewModifier {
+    // 级联延迟时间（秒）
+    let cascadeDelay: Double
+
     // 观察全局参数，确保 SwiftUI 追踪变化
     private var params = LiquidBendParameters.shared
 
     // 平滑后的速度值，用于弯曲计算
     @State private var smoothedSpeed: CGFloat = 0
+
+    // 延迟后的滚动状态（用于级联效果）
+    @State private var delayedIsScrolling: Bool = false
+
+    init(cascadeDelay: Double) {
+        self.cascadeDelay = cascadeDelay
+    }
 
     func body(content: Content) -> some View {
         // 在 body 中访问参数，让 SwiftUI 追踪这些 @Observable 属性
@@ -361,7 +374,7 @@ private struct LiquidCurvatureEffect: ViewModifier {
         // - 滚动中：保底 0.8 + 速度加成
         // - 停止：使用平滑恢复的 smoothedSpeed
         let effectiveSpeed: CGFloat = {
-            if isScrolling {
+            if delayedIsScrolling {
                 // 滚动中：保底值确保有效果
                 return max(0.8, scrollSpeed)
             } else {
@@ -404,12 +417,32 @@ private struct LiquidCurvatureEffect: ViewModifier {
                         isEnabled: isEffectActive
                     )
             }
-            // 监听滚动停止，使用弹簧动画平滑恢复最后一点弯曲
+            // 监听滚动状态变化，应用级联延迟
             .onChange(of: isScrolling) { _, newValue in
-                if !newValue {
-                    // 完全停止时，非常缓慢柔和地恢复弯曲
-                    withAnimation(.easeInOut(duration: 1.6)) {
-                        smoothedSpeed = 0
+                if newValue {
+                    // 开始滚动：延迟后才触发弯曲效果（级联波浪）
+                    if cascadeDelay > 0 {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + cascadeDelay) {
+                            delayedIsScrolling = true
+                        }
+                    } else {
+                        delayedIsScrolling = true
+                    }
+                } else {
+                    // 停止滚动：延迟后才恢复（级联波浪恢复）
+                    if cascadeDelay > 0 {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + cascadeDelay) {
+                            delayedIsScrolling = false
+                            // 完全停止时，缓慢柔和地恢复弯曲
+                            withAnimation(.easeInOut(duration: 1.6)) {
+                                smoothedSpeed = 0
+                            }
+                        }
+                    } else {
+                        delayedIsScrolling = false
+                        withAnimation(.easeInOut(duration: 1.6)) {
+                            smoothedSpeed = 0
+                        }
                     }
                 }
             }
@@ -448,5 +481,61 @@ extension View {
     ///   - direction: 弯曲方向，负数向上弯，正数向下弯
     func liquidBend(curvature: CGFloat, direction: CGFloat = 0) -> some View {
         self.modifier(LiquidBendModifier(curvature: curvature, direction: direction))
+    }
+
+    /// 应用延迟滚动效果
+    /// - Parameter delay: 延迟时间（秒）
+    func delayedScroll(delay: Double) -> some View {
+        self.modifier(DelayedScrollModifier(delay: delay))
+    }
+}
+
+// MARK: - Delayed Scroll Modifier (延迟滚动效果)
+// 每张照片的滚动位移有延迟，产生波浪般的级联效果
+
+struct DelayedScrollModifier: ViewModifier {
+    let delay: Double
+
+    // 延迟后的滚动偏移量
+    @State private var delayedOffset: CGFloat = 0
+    @State private var isInitialized: Bool = false
+
+    init(delay: Double) {
+        self.delay = delay
+    }
+
+    // 直接绑定全局参数
+    @Bindable private var params = LiquidBendParameters.shared
+
+    func body(content: Content) -> some View {
+        // 读取当前滚动偏移
+        let currentOffset = CGFloat(params.scrollOffset)
+
+        // 计算需要补偿的偏移量（让卡片看起来延迟移动）
+        let compensatingOffset = currentOffset - delayedOffset
+
+        content
+            // 应用补偿偏移量，抵消 ScrollView 的滚动
+            .offset(y: -compensatingOffset)
+            .onChange(of: currentOffset) { oldValue, newValue in
+                // 滚动变化时，延迟更新此卡片的偏移量
+                if delay > 0 && isInitialized {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                        withAnimation(.interpolatingSpring(stiffness: 300, damping: 30)) {
+                            delayedOffset = newValue
+                        }
+                    }
+                } else {
+                    delayedOffset = newValue
+                }
+            }
+            .onAppear {
+                // 初始化时同步偏移量，不要延迟
+                delayedOffset = currentOffset
+                // 延迟一帧后才启用延迟效果
+                DispatchQueue.main.async {
+                    isInitialized = true
+                }
+            }
     }
 }

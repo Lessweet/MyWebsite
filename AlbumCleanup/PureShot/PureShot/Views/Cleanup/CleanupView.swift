@@ -229,8 +229,8 @@ struct CleanupView: View {
                                     }
                                 }
                             )
-                            // 液态滚动形变效果
-                            .liquidScrollEffect()
+                            // 延迟滚动效果 - 每张照片依次延迟上滑（测试用大延迟）
+                            .delayedScroll(delay: Double(index) * 0.3)
                             // 物理内爆效果
                             .scaleEffect(isImploding ? 0 : 1.0)
                             .opacity(isImploding ? 0 : 1.0)
@@ -259,9 +259,10 @@ struct CleanupView: View {
                 scrollOffset = newOffset
                 isScrolling = abs(delta) > 0.5
 
-                // 同步滚动状态和速度到全局参数
-                LiquidBendParameters.shared.isScrolling = isScrolling
+                // 同步滚动偏移量到全局参数（用于延迟滚动效果）
+                LiquidBendParameters.shared.scrollOffset = newOffset
 
+                // 只更新速度，不更新 isScrolling（由 onScrollPhaseChange 控制）
                 // 计算归一化速度 (0-1)，速度越快弯曲越强
                 let absVelocity = abs(delta)
                 let maxVelocity: CGFloat = 15  // 较小的阈值让弯曲更容易触发
@@ -347,12 +348,7 @@ struct PhotoCardView: View {
             // 左上角 - 最佳标签（普通毛玻璃背景，支持液态变形）
             .overlay(alignment: .topLeading) {
                 if photo.isBestInGroup {
-                    Text("最佳")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(Color.primary)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 8)
-                        .background(Capsule().fill(.ultraThinMaterial))
+                    BestTagView()
                         .padding(12)
                 }
             }
@@ -568,9 +564,9 @@ struct GlassNavigationBar: View {
             // 左侧返回按钮 - 圆形玻璃（带交互效果）
             Button(action: onBack) {
                 Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: 20, weight: .semibold))
                     .foregroundStyle(Color.primary)
-                    .frame(width: 36, height: 36)
+                    .frame(width: 44, height: 44)
             }
             .glassEffect(.regular.interactive(), in: Circle())
 
@@ -591,15 +587,62 @@ struct GlassNavigationBar: View {
                 HapticManager.shared.lightTap()
             } label: {
                 Image(systemName: showSettings ? "xmark" : "slider.horizontal.3")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(Color.primary)
-                    .frame(width: 36, height: 36)
+                    .frame(width: 44, height: 44)
             }
             .glassEffect(.regular.interactive(), in: Circle())
         }
         .padding(.horizontal, 16)
         .padding(.top, 4)
         .padding(.bottom, 8)
+    }
+}
+
+// MARK: - Best Tag View (带扫光效果的最佳标签)
+
+@available(iOS 26.0, *)
+struct BestTagView: View {
+    @State private var shimmerOffset: CGFloat = -200
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: "sparkles.2")
+                .font(.system(size: 14, weight: .semibold))
+            Text("最佳")
+                .font(.system(size: 16, weight: .semibold))
+        }
+        .foregroundStyle(Color.primary)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .background(Capsule().fill(.ultraThinMaterial))
+        .overlay(
+            // 扫光效果
+            Rectangle()
+                .fill(
+                    LinearGradient(
+                        stops: [
+                            .init(color: .white.opacity(0), location: 0.0),
+                            .init(color: .white.opacity(0.1), location: 0.3),
+                            .init(color: .white.opacity(0.25), location: 0.5),
+                            .init(color: .white.opacity(0.1), location: 0.7),
+                            .init(color: .white.opacity(0), location: 1.0)
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .frame(width: 80)
+                .offset(x: shimmerOffset)
+                .blur(radius: 1)
+        )
+        .clipShape(Capsule())
+        .onAppear {
+            // 持续扫光动画
+            withAnimation(.linear(duration: 2.5).repeatForever(autoreverses: false)) {
+                shimmerOffset = 200
+            }
+        }
     }
 }
 
