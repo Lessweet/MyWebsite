@@ -34,16 +34,16 @@ struct LiquidGlassActionBar: View {
                         Text("删除 \(deleteCount) 张")
                             .font(.system(size: 18, weight: .semibold))
                     }
-                    .foregroundStyle(deleteCount > 0 ? Color.red : Color.secondary)
+                    .tint(.red)  // 使用 tint 让红色也能适配
 
                     Text("保留 \(keepCount) 张")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(Color.secondary)
+                    // 不设置 foregroundStyle，让系统自动适配
                 }
                 .padding(.horizontal, 80)
                 .padding(.vertical, 16)
-                .background(.regularMaterial, in: Capsule())
             }
+            .glassEffect(.regular.interactive(), in: Capsule())
             .opacity(deleteCount > 0 ? 1.0 : 0.6)
             .disabled(deleteCount == 0)
 
