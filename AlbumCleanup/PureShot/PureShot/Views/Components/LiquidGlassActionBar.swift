@@ -28,17 +28,18 @@ struct LiquidGlassActionBar: View {
                 }
             } label: {
                 VStack(spacing: 4) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "trash")
-                            .font(.system(size: 20, weight: .semibold))
-                        Text("Delete \(deleteCount)")
-                            .font(.system(size: 18, weight: .semibold))
-                    }
-                    .tint(.red)  // 使用 tint 让红色也能适配
-
+                    // 第一行：保留 X 张
                     Text("Keep \(keepCount)")
-                        .font(.system(size: 14, weight: .medium))
-                    // 不设置 foregroundStyle，让系统自动适配
+                        .font(.system(size: 18, weight: .semibold))
+
+                    // 第二行：删除 X 张
+                    HStack(spacing: 6) {
+                        Image(systemName: "trash")
+                            .font(.system(size: 14, weight: .medium))
+                        Text("Delete \(deleteCount)")
+                            .font(.system(size: 14, weight: .medium))
+                    }
+                    .foregroundStyle(.red)
                 }
                 .padding(.horizontal, 80)
                 .padding(.vertical, 16)
@@ -50,8 +51,8 @@ struct LiquidGlassActionBar: View {
             Spacer()
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .padding(.bottom, Constants.Layout.bottomSafeArea / 4)
+        .padding(.top, 12)
+        .padding(.bottom, 4)
     }
 }
 

@@ -165,13 +165,11 @@ final class PhotoGroup: Identifiable, @unchecked Sendable {
         photos[index].isSelected = true
     }
 
-    /// 切换照片选中状态
+    /// 切换照片选中状态（包括最佳照片）
     func toggleSelection(for photo: PhotoAsset) {
         guard let index = photos.firstIndex(of: photo) else { return }
 
-        // 最佳照片不能取消选中
-        if photos[index].isBestInGroup { return }
-
+        // 所有照片都可以切换选中状态
         photos[index].isSelected.toggle()
     }
 

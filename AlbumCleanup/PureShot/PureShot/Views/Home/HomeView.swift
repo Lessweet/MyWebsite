@@ -8,11 +8,13 @@ import SwiftUI
 @available(iOS 26.0, *)
 struct HomeView: View {
     @State private var viewModel = HomeViewModel()
-    @State private var showCleanupView = false
     @State private var hasStartedScan = false
 
     // 标题位移动画命名空间
     @Namespace private var titleAnimation
+
+    // 卡片展开动画命名空间 - 用于 Zoom Transition
+    @Namespace private var cardTransition
 
     // 副标题切换状态
     @State private var subtitleIndex = 0
@@ -60,6 +62,7 @@ struct HomeView: View {
     }
 
     var body: some View {
+        // 使用原生 NavigationStack + Zoom Transition
         NavigationStack {
             ZStack {
                 // 背景 - 扫描时使用深色
@@ -90,27 +93,21 @@ struct HomeView: View {
                 }
             }
             .animation(.spring(response: 1.0, dampingFraction: 0.8), value: isShowingResults)
-            .navigationDestination(isPresented: $showCleanupView) {
-                if let group = viewModel.selectedGroup {
-                    CleanupView(group: group) {
-                        viewModel.completeCleanup(for: group)
-                    }
-                }
-            }
-            .task {
-                // 应用启动时自动开始扫描
-                guard !hasStartedScan else { return }
-                hasStartedScan = true
-                // 短暂延迟让界面先渲染
-                try? await Task.sleep(nanoseconds: 300_000_000)
-                await viewModel.startScan()
-            }
-            .onReceive(subtitleTimer) { _ in
-                // 扫描结果页时切换副标题
-                if isShowingResults && !viewModel.photoGroups.isEmpty {
-                    withAnimation(.easeInOut(duration: 0.5)) {
-                        subtitleIndex = (subtitleIndex + 1) % subtitleTexts.count
-                    }
+            .navigationBarHidden(true)
+        }
+        .task {
+            // 应用启动时自动开始扫描
+            guard !hasStartedScan else { return }
+            hasStartedScan = true
+            // 短暂延迟让界面先渲染
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            await viewModel.startScan()
+        }
+        .onReceive(subtitleTimer) { _ in
+            // 扫描结果页时切换副标题
+            if isShowingResults && !viewModel.photoGroups.isEmpty {
+                withAnimation(.easeInOut(duration: 0.5)) {
+                    subtitleIndex = (subtitleIndex + 1) % subtitleTexts.count
                 }
             }
         }
@@ -219,11 +216,28 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 28) {
                     // 标题区域 - 跟随滚动，使用 matchedGeometryEffect 实现平滑过渡
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("PureShot")
-                            .font(.system(size: 40, weight: .heavy, design: .default))
-                            .scaleEffect(x: 0.85, y: 1.0, anchor: .leading)
-                            .foregroundStyle(textPrimaryColor)
-                            .matchedGeometryEffect(id: "title", in: titleAnimation)
+                        HStack(alignment: .center) {
+                            Text("PureShot")
+                                .font(.system(size: 40, weight: .heavy, design: .default))
+                                .scaleEffect(x: 0.85, y: 1.0, anchor: .leading)
+                                .foregroundStyle(textPrimaryColor)
+                                .matchedGeometryEffect(id: "title", in: titleAnimation)
+
+                            Spacer()
+
+                            // 重新扫描按钮 - 与标题水平对齐
+                            Button {
+                                Task {
+                                    await viewModel.rescan()
+                                }
+                            } label: {
+                                Image(systemName: "arrow.clockwise")
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .foregroundStyle(Color.primary)
+                                    .frame(width: 44, height: 44)
+                            }
+                            .glassEffect(.regular.interactive(), in: Circle())
+                        }
 
                         // 副标题 - 切换显示（始终从左到右）
                         ZStack(alignment: .leading) {
@@ -240,22 +254,34 @@ struct HomeView: View {
                         .animation(.easeInOut(duration: 0.5), value: subtitleIndex)
                         .matchedGeometryEffect(id: "subtitle", in: titleAnimation)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.top, 20)  // 距离顶部间距
 
-                    // 双列卡片 - 间距与标题对齐（外层已有 horizontalPadding）
+                    // 双列卡片 - 使用原生 NavigationLink + Zoom Transition
                     LazyVGrid(columns: columns, spacing: 12) {
                         ForEach(Array(viewModel.photoGroups.enumerated()), id: \.element.id) { index, group in
-                            CompactGroupCard(group: group, index: index) {
-                                viewModel.selectGroup(group)
-                                showCleanupView = true
+                            NavigationLink {
+                                // 目标视图：全屏清理页
+                                CleanupDetailView(
+                                    group: group,
+                                    viewModel: viewModel
+                                )
+                                .navigationTransition(.zoom(sourceID: group.id, in: cardTransition))
+                                .navigationBarHidden(true)
+                            } label: {
+                                CompactGroupCard(
+                                    group: group,
+                                    index: index
+                                )
                             }
+                            .buttonStyle(.plain)
+                            .matchedTransitionSource(id: group.id, in: cardTransition)
                         }
                     }
                 }
                 .padding(.bottom, 100) // 底部留白给按钮
             }
             .scrollIndicators(.hidden)
+            .scrollBounceBehavior(.automatic)
 
             // 顶部渐变蒙层 - 复用 CleanupView 样式
             VStack {
@@ -274,7 +300,7 @@ struct HomeView: View {
             }
             .allowsHitTesting(false)
 
-            // 底部渐变蒙层
+            // 底部渐变蒙层 - 固定在屏幕底部
             VStack {
                 Spacer()
 
@@ -286,35 +312,18 @@ struct HomeView: View {
                     startPoint: .top,
                     endPoint: .bottom
                 )
-                .frame(height: 180)
-                .ignoresSafeArea(edges: .bottom)
+                .frame(height: 160)
             }
+            .ignoresSafeArea(edges: .bottom)
             .allowsHitTesting(false)
 
-            // 底部按钮栏 - 左：重新扫描，右：一键清理
+            // 底部一键清理按钮 - 居中
             VStack {
                 Spacer()
 
-                HStack(spacing: 12) {
-                    // 重新扫描按钮
-                    Button {
-                        Task {
-                            await viewModel.rescan()
-                        }
-                    } label: {
-                        HStack(spacing: 8) {
-                            Image(systemName: "arrow.clockwise")
-                                .font(.system(size: 18, weight: .semibold))
-                            Text("Rescan")
-                                .font(.system(size: 16, weight: .semibold))
-                        }
-                        .foregroundStyle(Color.primary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                    }
-                    .glassEffect(.regular.interactive(), in: Capsule())
+                HStack {
+                    Spacer()
 
-                    // 一键清理按钮
                     Button {
                         // TODO: 一键清理功能
                     } label: {
@@ -325,17 +334,18 @@ struct HomeView: View {
                                 .font(.system(size: 16, weight: .semibold))
                         }
                         .foregroundStyle(Color.primary)
-                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 32)
                         .padding(.vertical, 16)
                     }
                     .glassEffect(.regular.interactive(), in: Capsule())
+
+                    Spacer()
                 }
-                .padding(.horizontal, Constants.Layout.horizontalPadding)
-                .padding(.bottom, 16)
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+                .padding(.bottom, 4)
             }
-            .ignoresSafeArea(edges: .bottom)
         }
-        .ignoresSafeArea(edges: .bottom)
     }
 
     private var noPhotosState: some View {
@@ -402,19 +412,15 @@ struct HomeView: View {
 @available(iOS 26.0, *)
 struct CompactGroupCard: View {
     let group: PhotoGroup
-    let index: Int  // 用于计算动画延迟
-    let onTap: () -> Void
+    let index: Int
 
-    @State private var isPressed = false
     @State private var appeared = false
 
-    // 列号：0=左，1=右
     private var column: Int { index % 2 }
     private var row: Int { index / 2 }
 
-    // 入场延迟：等标题位移完成后（0.5s）再开始，初始可见用行+列延迟
     private var appearDelay: Double {
-        let titleAnimationDuration = 0.5  // 等待标题移动到左上角
+        let titleAnimationDuration = 0.5
         if row < 3 {
             return titleAnimationDuration + Double(row) * 0.1 + Double(column) * 0.08
         } else {
@@ -424,70 +430,480 @@ struct CompactGroupCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            // 预览图 - 正方形
-            if let thumbnail = group.bestPhoto?.thumbnail {
-                Image(uiImage: thumbnail)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(maxWidth: .infinity)
-                    .aspectRatio(1, contentMode: .fit)
-                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-            } else {
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .fill(Color.psTextSecondaryAdaptive.opacity(0.2))
-                    .aspectRatio(1, contentMode: .fit)
-            }
+            // 照片
+            photoImage
 
             // 信息
-            VStack(alignment: .leading, spacing: 2) {
-                Text("\(group.photos.count) Similar")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color.psTextPrimaryAdaptive)
-
-                Text(group.latestDate.formatted(.dateTime.month().day()))
-                    .font(.caption)
-                    .foregroundStyle(Color.psTextSecondaryAdaptive)
-
-                Text("Save \(group.formattedSpaceSaved)")
-                    .font(.caption)
-                    .foregroundStyle(Color.psAccent)
-            }
-            .padding(.horizontal, 4)
+            infoSection
         }
         .padding(.vertical, 10)
-        .scaleEffect(isPressed ? 0.97 : 1.0)
-        // 入场动画：从下方上移 + 渐显
         .offset(y: appeared ? 0 : 30)
         .opacity(appeared ? 1 : 0)
-        .animation(
-            .spring(response: 0.4, dampingFraction: 0.85)
-            .delay(appearDelay),
-            value: appeared
-        )
         .onAppear {
-            appeared = true
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.85).delay(appearDelay)) {
+                appeared = true
+            }
         }
-        // 滚动过渡效果：只在底部边缘（上滑离开时）向下掉落
-        .scrollTransition(.animated(.spring(response: 0.8)), transition: { content, phase in
-            let threshold: Double = 0.15
-            // 只处理底部边缘，顶部边缘不做效果
-            let effectValue = phase.value > threshold ? (phase.value - threshold) : 0
+    }
 
-            // 行号越大偏移越多（下面先掉），右列额外偏移（右边先掉）
-            let rowFactor = 1.0 + min(Double(row), 5.0) * 0.2
-            let columnExtra = column == 1 ? effectValue * 15 : 0
+    @ViewBuilder
+    private var photoImage: some View {
+        if let thumbnail = group.bestPhoto?.thumbnail {
+            Image(uiImage: thumbnail)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(maxWidth: .infinity)
+                .aspectRatio(1, contentMode: .fit)
+                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        } else {
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(Color.psTextSecondaryAdaptive.opacity(0.2))
+                .aspectRatio(1, contentMode: .fit)
+        }
+    }
 
-            return content
-                .offset(y: effectValue * 25 * rowFactor + columnExtra)
-                .opacity(1 - effectValue * 0.4)
-        })
-        .animation(.spring(response: 0.2), value: isPressed)
-        .onTapGesture {
+    private var infoSection: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text("\(group.photos.count) Similar")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color.psTextPrimaryAdaptive)
+
+            Text(group.latestDate.formatted(.dateTime.month().day()))
+                .font(.caption)
+                .foregroundStyle(Color.psTextSecondaryAdaptive)
+
+            Text("Save \(group.formattedSpaceSaved)")
+                .font(.caption)
+                .foregroundStyle(Color.psAccent)
+        }
+        .padding(.horizontal, 4)
+    }
+}
+
+// MARK: - Cleanup Detail View (原生 Zoom Transition 目标视图)
+
+@available(iOS 26.0, *)
+struct CleanupDetailView: View {
+    let group: PhotoGroup
+    let viewModel: HomeViewModel
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var cleanupViewModel = CleanupViewModel()
+
+    // 粒子系统状态
+    @State private var particles: [CleanupParticle] = []
+    @State private var showDynamicIslandGlow = false
+    @State private var photoFrames: [String: CGRect] = [:]
+
+    // 动画状态 - 分阶段控制
+    @State private var contentAppeared = false
+    @State private var checkmarkAppeared = false
+
+    var body: some View {
+        GeometryReader { geometry in
+            let dynamicIslandCenter = CGPoint(x: geometry.size.width / 2, y: 60)
+            let photoWidth = geometry.size.width - 32
+
+            ZStack {
+                // 背景
+                Color(uiColor: .systemBackground)
+                    .ignoresSafeArea()
+
+                // 所有照片在一个 ScrollView 中 - 原生滚动，系统自动处理下拉返回
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: 16) {
+                        // 第一张：AI 最佳照片
+                        if let bestPhoto = group.bestPhoto {
+                            heroPhotoCard(
+                                photo: bestPhoto,
+                                photoWidth: photoWidth
+                            )
+                            .onTapGesture {
+                                cleanupViewModel.toggleSelection(for: bestPhoto)
+                            }
+                        }
+
+                        // 其他照片 - 依次出现
+                        ForEach(Array(cleanupViewModel.photos.dropFirst().enumerated()), id: \.element.id) { index, photo in
+                            let isImploding = cleanupViewModel.dissolvingPhotos.contains(photo.id)
+                            let appearDelay = Double(index) * 0.05
+
+                            if photo.animationState != .dissolved {
+                                DetailPhotoCard(
+                                    photo: photo,
+                                    photoWidth: photoWidth,
+                                    isSelected: photo.isSelected,
+                                    showCheckmark: checkmarkAppeared
+                                ) {
+                                    cleanupViewModel.toggleSelection(for: photo)
+                                }
+                                .background(
+                                    GeometryReader { cardGeo in
+                                        Color.clear.onAppear {
+                                            photoFrames[photo.id] = cardGeo.frame(in: .global)
+                                        }
+                                    }
+                                )
+                                .scaleEffect(isImploding ? 0 : 1.0)
+                                .offset(y: contentAppeared ? 0 : 50)
+                                .opacity(isImploding ? 0 : (contentAppeared ? 1 : 0))
+                                .blur(radius: isImploding ? 20 : 0)
+                                .animation(
+                                    .spring(response: 0.4, dampingFraction: 0.8).delay(appearDelay),
+                                    value: contentAppeared
+                                )
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 60)
+                    .padding(.bottom, 120)
+                }
+
+                // 粒子系统
+                ForEach(particles) { particle in
+                    CleanupParticleView(particle: particle)
+                }
+
+                // 灵动岛光晕
+                CleanupDynamicIslandGlow(isActive: $showDynamicIslandGlow)
+
+                // 顶部渐变蒙层
+                VStack {
+                    LinearGradient(
+                        stops: [
+                            .init(color: Color(uiColor: .systemBackground), location: 0),
+                            .init(color: Color(uiColor: .systemBackground).opacity(0), location: 1)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 100)
+                    .ignoresSafeArea(edges: .top)
+
+                    Spacer()
+                }
+                .allowsHitTesting(false)
+
+                // 关闭按钮
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 18, weight: .bold))
+                                .foregroundStyle(Color.primary)
+                                .frame(width: 44, height: 44)
+                        }
+                        .glassEffect(.regular.interactive(), in: Circle())
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+
+                    Spacer()
+                }
+
+                // 底部渐变蒙层 - 固定在屏幕底部
+                VStack {
+                    Spacer()
+
+                    LinearGradient(
+                        stops: [
+                            .init(color: Color(uiColor: .systemBackground).opacity(0), location: 0),
+                            .init(color: Color(uiColor: .systemBackground), location: 1)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 160)
+                }
+                .ignoresSafeArea(edges: .bottom)
+                .allowsHitTesting(false)
+
+                // 底部操作栏
+                if cleanupViewModel.showActionBar {
+                    VStack {
+                        Spacer()
+                        LiquidGlassActionBar(
+                            keepCount: cleanupViewModel.keepCount,
+                            deleteCount: cleanupViewModel.deleteCount,
+                            onConfirm: {
+                                triggerImplosionDelete(
+                                    screenSize: geometry.size,
+                                    dynamicIslandCenter: dynamicIslandCenter
+                                )
+                            }
+                        )
+                    }
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+
+                // 完成提示
+                if cleanupViewModel.showCompletionToast {
+                    CompletionToast(
+                        deletedCount: cleanupViewModel.deletedCount,
+                        freedSpace: cleanupViewModel.formattedFreedSpace,
+                        onDismiss: {
+                            viewModel.completeCleanup(for: group)
+                            dismiss()
+                        }
+                    )
+                }
+            }
+        }
+        .onAppear {
+            cleanupViewModel.setup(with: group)
+            // 延迟显示其他内容，让 Zoom Transition 先完成
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                withAnimation(.easeOut(duration: 0.3)) {
+                    contentAppeared = true
+                }
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                    checkmarkAppeared = true
+                }
+            }
+        }
+    }
+
+    // MARK: - Hero Photo Card (第一张照片卡片)
+
+    private func heroPhotoCard(photo: PhotoAsset, photoWidth: CGFloat) -> some View {
+        let cornerRadius: CGFloat = 24
+
+        return ZStack {
+            Group {
+                if let image = photo.fullImage ?? photo.thumbnail {
+                    Image(uiImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                } else {
+                    Rectangle()
+                        .fill(Color.psTextSecondaryAdaptive.opacity(0.2))
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .aspectRatio(1, contentMode: .fit)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+
+            // Best 标签
+            if photo.isBestInGroup {
+                VStack {
+                    HStack {
+                        BestTagView()
+                            .padding(12)
+                        Spacer()
+                    }
+                    Spacer()
+                }
+            }
+
+            // 选中标记
+            if photo.isSelected && checkmarkAppeared {
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundStyle(Color.primary)
+                            .frame(width: 56, height: 56)
+                            .background(Circle().fill(.ultraThinMaterial))
+                            .padding(16)
+                    }
+                }
+                .transition(.opacity)
+            }
+        }
+        .contentShape(Rectangle())
+        .onAppear {
+            Task {
+                await loadHighQualityImage(for: photo)
+            }
+        }
+    }
+
+    // MARK: - Delete Animation
+
+    private func triggerImplosionDelete(screenSize: CGSize, dynamicIslandCenter: CGPoint) {
+        HapticManager.shared.mediumTap()
+
+        withAnimation {
+            cleanupViewModel.showActionBar = false
+        }
+
+        guard let group = cleanupViewModel.photoGroup else { return }
+        let photosToDelete = group.photosToDelete
+
+        for (index, photo) in photosToDelete.enumerated() {
+            let delay = Double(index) * 0.15
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {
+                    photo.animationState = .dissolving
+                    cleanupViewModel.dissolvingPhotos.insert(photo.id)
+                }
+                HapticManager.shared.lightTap()
+            }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay + 0.2) {
+                let photoFrame = photoFrames[photo.id]
+                let photoCenter = photoFrame.map {
+                    CGPoint(x: $0.midX, y: $0.midY)
+                } ?? CGPoint(x: screenSize.width / 2, y: 300)
+
+                spawnParticles(from: photoCenter, to: dynamicIslandCenter)
+            }
+        }
+
+        let totalDelay = Double(photosToDelete.count) * 0.15 + 0.5
+        DispatchQueue.main.asyncAfter(deadline: .now() + totalDelay) {
+            withAnimation {
+                showDynamicIslandGlow = true
+            }
+            HapticManager.shared.success()
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + totalDelay + 0.3) {
+            Task {
+                await cleanupViewModel.executeDelete()
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + totalDelay + 1.5) {
+            particles.removeAll()
+            showDynamicIslandGlow = false
+        }
+    }
+
+    private func spawnParticles(from start: CGPoint, to target: CGPoint) {
+        let particleCount = Int.random(in: 10...15)
+
+        for i in 0..<particleCount {
+            let particle = CleanupParticle(
+                id: UUID(),
+                startPosition: start,
+                targetPosition: target,
+                delay: Double(i) * 0.025,
+                size: CGFloat.random(in: 4...10),
+                color: [
+                    Color.white,
+                    Color.white.opacity(0.8),
+                    Color(red: 1.0, green: 0.97, blue: 0.90)
+                ].randomElement()!,
+                controlXOffset: CGFloat.random(in: -50...50)
+            )
+            particles.append(particle)
+        }
+    }
+
+    private func loadHighQualityImage(for photo: PhotoAsset?) async {
+        guard let photo = photo, photo.fullImage == nil else { return }
+
+        let maxDimension: CGFloat = 1200
+        let targetSize = CGSize(
+            width: maxDimension,
+            height: maxDimension / photo.aspectRatio
+        )
+
+        if let image = await photo.asset.fetchHighQualityImage(targetSize: targetSize) {
+            await MainActor.run {
+                photo.fullImage = image
+            }
+        }
+    }
+}
+
+// MARK: - Detail Photo Card (详情页照片卡片)
+
+@available(iOS 26.0, *)
+struct DetailPhotoCard: View {
+    let photo: PhotoAsset
+    let photoWidth: CGFloat
+    let isSelected: Bool
+    var showCheckmark: Bool = true
+    let onTap: () -> Void
+
+    var body: some View {
+        let finalHeight = photoWidth / photo.aspectRatio
+
+        Button {
             onTap()
+        } label: {
+            ZStack {
+                Group {
+                    if let image = photo.fullImage ?? photo.thumbnail {
+                        Image(uiImage: image)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: photoWidth, height: finalHeight)
+                            .clipped()
+                    } else {
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(Color.psTextSecondaryAdaptive.opacity(0.1))
+                            .frame(width: photoWidth, height: finalHeight)
+                            .overlay {
+                                ProgressView()
+                                    .tint(Color.psTextSecondaryAdaptive)
+                            }
+                    }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+
+                if isSelected && showCheckmark {
+                    VStack {
+                        Spacer()
+                        HStack {
+                            Spacer()
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 24, weight: .bold))
+                                .foregroundStyle(Color.primary)
+                                .frame(width: 56, height: 56)
+                                .background(Circle().fill(.ultraThinMaterial))
+                                .padding(16)
+                        }
+                    }
+                    .frame(width: photoWidth, height: finalHeight)
+                    .transition(.opacity)
+                }
+            }
         }
-        .onLongPressGesture(minimumDuration: .infinity, pressing: { pressing in
-            isPressed = pressing
-        }, perform: {})
+        .buttonStyle(PressableButtonStyle())
+        .onAppear {
+            Task {
+                await loadHighQualityImage()
+            }
+        }
+    }
+
+    private func loadHighQualityImage() async {
+        guard photo.fullImage == nil else { return }
+
+        let maxDimension: CGFloat = 1200
+        let targetSize = CGSize(
+            width: maxDimension,
+            height: maxDimension / photo.aspectRatio
+        )
+
+        if let image = await photo.asset.fetchHighQualityImage(targetSize: targetSize) {
+            await MainActor.run {
+                photo.fullImage = image
+            }
+        }
+    }
+}
+
+// MARK: - Pressable Button Style (按压动画样式)
+
+@available(iOS 26.0, *)
+struct PressableButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
+            .animation(.spring(response: 0.2, dampingFraction: 0.6), value: configuration.isPressed)
     }
 }
 

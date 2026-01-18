@@ -86,8 +86,8 @@ final class CleanupViewModel {
         }
 
         // 显示操作栏
-        try? await Task.sleep(nanoseconds: 100_000_000) // 0.1s
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
+        try? await Task.sleep(nanoseconds: 50_000_000) // 0.05s
+        withAnimation(.spring(response: 0.8, dampingFraction: 0.85)) {
             showActionBar = true
         }
         HapticManager.shared.softTap()
