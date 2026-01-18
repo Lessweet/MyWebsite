@@ -673,6 +673,7 @@ struct CleanupDetailView: View {
 
     private func heroPhotoCard(photo: PhotoAsset, photoWidth: CGFloat) -> some View {
         let cornerRadius: CGFloat = 24
+        let finalHeight = photoWidth / photo.aspectRatio
 
         return ZStack {
             Group {
@@ -680,13 +681,14 @@ struct CleanupDetailView: View {
                     Image(uiImage: image)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
+                        .frame(width: photoWidth, height: finalHeight)
+                        .clipped()
                 } else {
                     Rectangle()
                         .fill(Color.psTextSecondaryAdaptive.opacity(0.2))
+                        .frame(width: photoWidth, height: finalHeight)
                 }
             }
-            .frame(maxWidth: .infinity)
-            .aspectRatio(1, contentMode: .fit)
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
 
             // Best 标签
@@ -699,6 +701,7 @@ struct CleanupDetailView: View {
                     }
                     Spacer()
                 }
+                .frame(width: photoWidth, height: finalHeight)
             }
 
             // 选中标记
@@ -715,9 +718,11 @@ struct CleanupDetailView: View {
                             .padding(16)
                     }
                 }
+                .frame(width: photoWidth, height: finalHeight)
                 .transition(.opacity)
             }
         }
+        .frame(width: photoWidth, height: finalHeight)
         .contentShape(Rectangle())
         .onAppear {
             Task {
