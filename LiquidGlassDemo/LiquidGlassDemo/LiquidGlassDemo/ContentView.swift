@@ -10,6 +10,7 @@ struct ContentView: View {
     @State private var expandedCardId: Int? = nil
     @State private var animProgress: CGFloat = 0
     @State private var cardFrames: [Int: CGRect] = [:]
+    @State private var showSmallCard: Bool = true  // 控制小卡片是否显示
 
     let cards: [CardItem] = [
         CardItem(id: 1, title: "照片", icon: "photo.fill", color: .blue),
@@ -27,24 +28,25 @@ struct ContentView: View {
                 ScrollView {
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
                         ForEach(cards) { card in
-                            // 未展开的卡片
-                            if expandedCardId != card.id {
-                                SmallCard(card: card)
-                                    .background(
-                                        GeometryReader { geo in
-                                            Color.clear.onAppear {
-                                                cardFrames[card.id] = geo.frame(in: .global)
-                                            }
-                                            .onChange(of: geo.frame(in: .global)) { _, newFrame in
-                                                cardFrames[card.id] = newFrame
-                                            }
+                            // 小卡片始终存在，通过 opacity 控制显示
+                            SmallCard(card: card)
+                                // 小卡片延迟显示，通过 showSmallCard 控制淡入
+                                .opacity(expandedCardId == card.id ? (showSmallCard ? 1.0 : 0.0) : 1.0)
+                                .background(
+                                    GeometryReader { geo in
+                                        Color.clear.onAppear {
+                                            cardFrames[card.id] = geo.frame(in: .global)
                                         }
-                                    )
-                                    .onTapGesture { expandCard(card.id) }
-                            } else {
-                                // 占位符
-                                Color.clear.frame(height: 140)
-                            }
+                                        .onChange(of: geo.frame(in: .global)) { _, newFrame in
+                                            cardFrames[card.id] = newFrame
+                                        }
+                                    }
+                                )
+                                .onTapGesture {
+                                    if expandedCardId == nil {
+                                        expandCard(card.id)
+                                    }
+                                }
                         }
                     }
                     .padding()
@@ -76,6 +78,7 @@ struct ContentView: View {
 
     private func expandCard(_ id: Int) {
         expandedCardId = id
+        showSmallCard = false  // 展开时立即隐藏小卡片
         animProgress = 0
         withAnimation(.spring(response: 0.55, dampingFraction: 0.8)) {
             animProgress = 1
@@ -86,8 +89,14 @@ struct ContentView: View {
         withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
             animProgress = 0
         }
+        // 小卡片延迟 0.05 秒后开始淡入，用 0.25 秒完成
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            withAnimation(.easeIn(duration: 0.25)) {
+                showSmallCard = true
+            }
+        }
         // 等动画完全结束后再移除
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
             expandedCardId = nil
         }
     }
@@ -142,6 +151,20 @@ struct ExpandedCard: View {
         let currentY = startFrame.midY + (endY - startFrame.midY) * progress
         let currentRadius = 24 + (20 * progress)
 
+        // 计算位置和尺寸与原始小卡片的接近程度
+        let maxPositionDist = sqrt(pow(endX - startFrame.midX, 2) + pow(endY - startFrame.midY, 2))
+        let currentPositionDist = sqrt(pow(currentX - startFrame.midX, 2) + pow(currentY - startFrame.midY, 2))
+        let positionCloseness = maxPositionDist > 0 ? currentPositionDist / maxPositionDist : 0
+
+        let maxSizeDiff = (endWidth - startFrame.width) + (endHeight - startFrame.height)
+        let currentSizeDiff = (currentWidth - startFrame.width) + (currentHeight - startFrame.height)
+        let sizeCloseness = maxSizeDiff > 0 ? currentSizeDiff / maxSizeDiff : 0
+
+        // 当位置和尺寸都接近原始值时才开始淡出（阈值 5%）
+        let fadeThreshold: CGFloat = 0.05
+        let shouldFade = positionCloseness < fadeThreshold && sizeCloseness < fadeThreshold
+        let fadeOpacity = shouldFade ? max(positionCloseness, sizeCloseness) / fadeThreshold : 1.0
+
         VStack(spacing: 12) {
             Spacer()
 
@@ -180,6 +203,8 @@ struct ExpandedCard: View {
                 .fill(card.color.gradient)
         )
         .position(x: currentX, y: currentY)
+        // 收缩末尾淡出，当位置和尺寸都接近原始小卡片时才淡出
+        .opacity(Double(fadeOpacity))
         // 3D 倾斜
         .rotation3DEffect(
             .degrees(Double(1 - progress) * 35.0),
