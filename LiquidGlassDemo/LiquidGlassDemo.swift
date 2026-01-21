@@ -27,18 +27,24 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                    ForEach(cards) { card in
-                        CardView(card: card, namespace: transitionNamespace)
-                            .onTapGesture {
-                                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                                    selectedCard = card
+            GeometryReader { geo in
+                let isLandscape = geo.size.width > geo.size.height
+                let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: isLandscape ? 4 : 2)
+
+                ScrollView {
+                    LazyVGrid(columns: columns, spacing: 16) {
+                        ForEach(cards) { card in
+                            CardView(card: card, namespace: transitionNamespace)
+                                .onTapGesture {
+                                    withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                                        selectedCard = card
+                                    }
                                 }
-                            }
+                        }
                     }
+                    .padding(.horizontal, 12)
+                    .padding(.top, 24)
                 }
-                .padding()
             }
             .navigationTitle("Liquid Glass Demo")
             .fullScreenCover(item: $selectedCard) { card in
@@ -66,27 +72,26 @@ struct CardView: View {
     let namespace: Namespace.ID
 
     var body: some View {
-        VStack(spacing: 12) {
-            Image(systemName: card.icon)
-                .font(.system(size: 40))
-                .foregroundStyle(.white)
+        RoundedRectangle(cornerRadius: 24)
+            .fill(card.color.gradient)
+            .aspectRatio(3.0/4.0, contentMode: .fit)
+            .overlay {
+                VStack(spacing: 12) {
+                    Image(systemName: card.icon)
+                        .font(.system(size: 40))
+                        .foregroundStyle(.white)
 
-            Text(card.title)
-                .font(.headline)
-                .foregroundStyle(.white)
-        }
-        .frame(height: 140)
-        .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 24)
-                .fill(card.color.gradient)
-        )
-        // iOS 26: Liquid Glass 效果
-        #if swift(>=6.0)
-        .glassEffect()
-        #endif
-        // 标记为过渡源
-        .matchedTransitionSource(id: card.id, in: namespace)
+                    Text(card.title)
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                }
+            }
+            // iOS 26: Liquid Glass 效果
+            #if swift(>=6.0)
+            .glassEffect()
+            #endif
+            // 标记为过渡源
+            .matchedTransitionSource(id: card.id, in: namespace)
     }
 }
 
