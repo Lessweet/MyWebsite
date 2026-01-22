@@ -38,7 +38,7 @@ struct ContentView: View {
         ]),
         CardItem(id: 2, title: "Videos", icon: "video.fill", color: .purple, imageURLs: [
             "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=400&h=533&fit=crop",
-            "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&h=533&fit=crop",
+            "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=400&h=533&fit=crop",
             "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=400&h=533&fit=crop",
             "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=400&h=533&fit=crop"
         ]),
@@ -84,7 +84,7 @@ struct ContentView: View {
         GeometryReader { geo in
             let screenSize = geo.size
             let isLandscape = screenSize.width > screenSize.height
-            let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: isLandscape ? 4 : 2)
+            let columns = Array(repeating: GridItem(.flexible(), spacing: 16), count: isLandscape ? 4 : 2)
 
             ZStack {
                 // 纯黑色背景
@@ -92,8 +92,8 @@ struct ContentView: View {
                     .ignoresSafeArea()
 
                 // 卡片网格 - 全屏滚动，内容穿透导航栏
-                ScrollView {
-                    LazyVGrid(columns: columns, spacing: 16) {
+                ScrollView(showsIndicators: false) {
+                    LazyVGrid(columns: columns, spacing: 20) {
                         ForEach(cards) { card in
                             // 小卡片始终存在，通过 opacity 控制显示
                             SmallCard(card: card)
@@ -168,8 +168,9 @@ struct ContentView: View {
                 VStack {
                     HStack {
                         Text("Gallery")
-                            .font(.largeTitle.bold())
+                            .font(.system(size: 44, weight: .bold))
                             .foregroundStyle(.primary)
+                            .scaleEffect(x: 0.8, y: 1.0, anchor: .leading)
 
                         Spacer()
 
@@ -183,7 +184,8 @@ struct ContentView: View {
                         }
                         .glassEffect(.clear.interactive())
                     }
-                    .padding(.horizontal, 16)
+                    .padding(.leading, 20)
+                    .padding(.trailing, 16)
                     .padding(.top, 8)
                     .padding(.bottom, 12)
                     // 根据滚动偏移量计算透明度：上滑淡出，下滑淡入
@@ -415,12 +417,12 @@ struct ExpandedCard: View {
 
         // 横屏时使用 4 列布局，竖屏 1 列
         let columns = isLandscape
-            ? Array(repeating: GridItem(.flexible(), spacing: 12), count: 4)
+            ? Array(repeating: GridItem(.flexible(), spacing: 16), count: 4)
             : [GridItem(.flexible())]
 
         ZStack {
             // 可滚动的内容区域（包含所有卡片）
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 LazyVGrid(columns: columns, spacing: cardSpacing) {
                     // 主卡片（第一张）- 跟随列表滚动，显示标题
                     ExpandedCardItem(

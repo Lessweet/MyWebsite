@@ -52,15 +52,35 @@ ScrollView {
 ## 一、项目概述
 
 这是一个 iOS SwiftUI 卡片展开动效 Demo，实现了：
-- 8 张小卡片网格展示
-- 顶部导航栏（Gallery 标题 + 搜索按钮）
-- 导航栏滚动时淡入淡出
-- 顶部渐变遮罩实现柔和边缘效果
-- 点击小卡片展开为模态页
-- 3D 液态扭曲动画效果
-- 展开后陆续出现 4 张卡片
+- 8 张小卡片网格展示（使用 Unsplash 图片填充）
+- 顶部导航栏（Gallery 标题 44pt + 搜索按钮）
+- Gallery 标题水平压缩 0.8 倍，左间距 20pt
+- 导航栏滚动时淡入淡出（上滑淡出，下滑淡入）
+- 顶部渐变遮罩 100pt，底部渐变遮罩 80pt
+- 隐藏滚动指示器，列间距 16pt，行间距 20pt
+- 点击小卡片展开为模态页（同一张卡片 3D 变形）
+- Metal Shader 液态扭曲动画效果
+- 展开后陆续出现 4 张同主题卡片（仅第一张显示标题）
+- 图片加载采用淡入动画效果
 - 支持横屏/竖屏自适应布局
 - iOS 26 Liquid Glass 风格
+- 全英文界面
+
+### 使用的原生效果
+
+| 效果 | API | 用途 |
+|------|-----|------|
+| Liquid Glass 玻璃效果 | `.glassEffect(.clear.interactive())` | 搜索按钮、关闭按钮 |
+| Liquid Glass 背景模糊 | `.glassEffect(.regular, in: .rect(cornerRadius: 0))` | 展开时的模态背景 |
+| 深色模式 | `.preferredColorScheme(.dark)` | 全局 UI 强制深色 |
+| 3D 旋转效果 | `.rotation3DEffect()` | 卡片展开时的透视扭曲 |
+| 弹簧动画 | `.spring(response:dampingFraction:)` | 展开/收起的弹性动画 |
+| Metal Shader | `distortionEffect()` | 液态曲面扭曲效果 |
+| 异步图片加载 | `AsyncImage(transaction:)` | 图片淡入动画 |
+| 线性渐变 | `LinearGradient` | 顶部/底部边缘遮罩 |
+| 几何读取器 | `GeometryReader` | 获取屏幕尺寸、卡片位置 |
+| 偏好键 | `PreferenceKey` | 追踪滚动偏移量 |
+| 坐标空间 | `.coordinateSpace(name:)` | 滚动视图坐标系 |
 
 ---
 
