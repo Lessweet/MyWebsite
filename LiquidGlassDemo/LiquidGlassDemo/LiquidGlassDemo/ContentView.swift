@@ -6,6 +6,28 @@
 
 import SwiftUI
 
+// MARK: - 液态效果配置
+@Observable
+class LiquidEffectConfig {
+    // 缩放效果
+    var scaleXIntensity: Double = 0.03      // X轴缩放强度 (0-0.1)
+    var scaleYIntensity: Double = 0.02      // Y轴缩放强度 (0-0.1)
+
+    // 3D旋转效果
+    var rotationAngle: Double = 35.0        // 最大旋转角度 (0-60)
+    var rotationAxisX: Double = 1.0         // 旋转轴 X (-1 到 1)
+    var rotationAxisY: Double = -0.3        // 旋转轴 Y (-1 到 1)
+    var perspective: Double = 0.4           // 透视强度 (0.1-1.0)
+
+    // 动画参数
+    var springResponse: Double = 0.55       // 弹簧响应时间 (0.2-1.0)
+    var springDamping: Double = 0.8         // 弹簧阻尼 (0.5-1.0)
+
+    // 效果开关
+    var enableScale: Bool = true
+    var enableRotation: Bool = true
+}
+
 // 共享图片缓存
 @Observable
 class ImageCache {
@@ -23,11 +45,13 @@ class ImageCache {
 struct ContentView: View {
     @State private var expandedCardId: Int? = nil
     @State private var imageCache = ImageCache()
+    @State private var effectConfig = LiquidEffectConfig()
     @State private var animProgress: CGFloat = 0
     @State private var cardFrames: [Int: CGRect] = [:]
     @State private var animationStartFrame: CGRect? = nil // 动画开始时的位置，固定不变
     @State private var showSecondCard: CGFloat = 0
     @State private var showThirdCard: CGFloat = 0
+    @State private var showSettings: Bool = false
     @State private var showFourthCard: CGFloat = 0
     @State private var scrollOffset: CGFloat = 0
 
@@ -198,6 +222,16 @@ struct ContentView: View {
                                 .frame(width: 44, height: 44)
                         }
                         .glassEffect(.clear.interactive())
+
+                        Button {
+                            showSettings.toggle()
+                        } label: {
+                            Image(systemName: "slider.horizontal.3")
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundStyle(.white)
+                                .frame(width: 44, height: 44)
+                        }
+                        .glassEffect(.clear.interactive())
                     }
                     .padding(.leading, 20)
                     .padding(.trailing, 16)
@@ -267,14 +301,21 @@ struct ContentView: View {
                         startFrame: startFrame,
                         screenSize: screenSize,
                         isLandscape: isLandscape,
-                        imageCache: imageCache
+                        imageCache: imageCache,
+                        config: effectConfig
                     )
                     .zIndex(1000)
                 }
+
             }
             .coordinateSpace(name: "mainContainer")
         }
         .preferredColorScheme(.dark)
+        .sheet(isPresented: $showSettings) {
+            EffectSettingsView(config: effectConfig)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+        }
     }
 
     private func expandCard(_ id: Int) {
@@ -286,7 +327,7 @@ struct ContentView: View {
         showThirdCard = 0
         showFourthCard = 0
 
-        withAnimation(.spring(response: 0.55, dampingFraction: 0.8)) {
+        withAnimation(.spring(response: effectConfig.springResponse, dampingFraction: effectConfig.springDamping)) {
             animProgress = 1
         }
 
@@ -340,6 +381,7 @@ struct ExpandingMainCard: View, Animatable {
     let screenSize: CGSize
     let isLandscape: Bool
     let imageCache: ImageCache
+    let config: LiquidEffectConfig
 
     var animatableData: CGFloat {
         get { progress }
@@ -385,18 +427,20 @@ struct ExpandingMainCard: View, Animatable {
         let currentY = startFrame.midY + (expandedCenter.y - startFrame.midY) * progress
 
         // 3D 旋转：抛物线曲线，中间最大
-        let rotationAmount = 4.0 * Double(progress) * Double(1.0 - progress) * 35.0
+        let rotationAmount = config.enableRotation
+            ? 4.0 * Double(progress) * Double(1.0 - progress) * config.rotationAngle
+            : 0.0
 
         CardImageView(card: card, imageCache: imageCache)
             .frame(width: currentWidth, height: currentHeight)
             .clipShape(RoundedRectangle(cornerRadius: 24))
             // 液态扭曲效果
-            .modifier(LiquidDistortion(progress: progress))
+            .modifier(LiquidDistortion(progress: progress, config: config))
             // 3D 旋转
             .rotation3DEffect(
                 .degrees(rotationAmount),
-                axis: (x: 1.0, y: -0.3, z: 0.0),
-                perspective: 0.4
+                axis: (x: config.rotationAxisX, y: config.rotationAxisY, z: 0.0),
+                perspective: config.perspective
             )
             // 绝对定位
             .position(x: currentX, y: currentY)
@@ -589,6 +633,7 @@ struct ExtraCardItem: View {
 // 液态扭曲效果 - 使用 SwiftUI 变换模拟
 struct LiquidDistortion: ViewModifier, Animatable {
     var progress: CGFloat
+    let config: LiquidEffectConfig
 
     var animatableData: CGFloat {
         get { progress }
@@ -596,15 +641,19 @@ struct LiquidDistortion: ViewModifier, Animatable {
     }
 
     func body(content: Content) -> some View {
-        // 抛物线强度：中间最大
-        let intensity = 4.0 * progress * (1.0 - progress)
+        if config.enableScale {
+            // 抛物线强度：中间最大
+            let intensity = 4.0 * progress * (1.0 - progress)
 
-        // 模拟液态膨胀效果
-        let scaleX = 1.0 + intensity * 0.03
-        let scaleY = 1.0 + intensity * 0.02
+            // 模拟液态膨胀效果
+            let scaleX = 1.0 + intensity * config.scaleXIntensity
+            let scaleY = 1.0 + intensity * config.scaleYIntensity
 
-        content
-            .scaleEffect(x: scaleX, y: scaleY)
+            content
+                .scaleEffect(x: scaleX, y: scaleY)
+        } else {
+            content
+        }
     }
 }
 
@@ -613,6 +662,107 @@ struct ScrollOffsetKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = nextValue()
+    }
+}
+
+// MARK: - 效果设置面板
+struct EffectSettingsView: View {
+    @Bindable var config: LiquidEffectConfig
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                // 缩放效果
+                Section {
+                    Toggle("启用缩放效果", isOn: $config.enableScale)
+
+                    VStack(alignment: .leading) {
+                        Text("X轴缩放强度: \(config.scaleXIntensity, specifier: "%.3f")")
+                        Slider(value: $config.scaleXIntensity, in: 0...0.1, step: 0.005)
+                    }
+
+                    VStack(alignment: .leading) {
+                        Text("Y轴缩放强度: \(config.scaleYIntensity, specifier: "%.3f")")
+                        Slider(value: $config.scaleYIntensity, in: 0...0.1, step: 0.005)
+                    }
+                } header: {
+                    Label("缩放效果", systemImage: "arrow.up.left.and.arrow.down.right")
+                }
+
+                // 3D旋转效果
+                Section {
+                    Toggle("启用3D旋转", isOn: $config.enableRotation)
+
+                    VStack(alignment: .leading) {
+                        Text("旋转角度: \(config.rotationAngle, specifier: "%.0f")°")
+                        Slider(value: $config.rotationAngle, in: 0...60, step: 1)
+                    }
+
+                    VStack(alignment: .leading) {
+                        Text("旋转轴 X: \(config.rotationAxisX, specifier: "%.2f")")
+                        Slider(value: $config.rotationAxisX, in: -1...1, step: 0.1)
+                    }
+
+                    VStack(alignment: .leading) {
+                        Text("旋转轴 Y: \(config.rotationAxisY, specifier: "%.2f")")
+                        Slider(value: $config.rotationAxisY, in: -1...1, step: 0.1)
+                    }
+
+                    VStack(alignment: .leading) {
+                        Text("透视强度: \(config.perspective, specifier: "%.2f")")
+                        Slider(value: $config.perspective, in: 0.1...1.0, step: 0.05)
+                    }
+                } header: {
+                    Label("3D旋转效果", systemImage: "rotate.3d")
+                }
+
+                // 动画参数
+                Section {
+                    VStack(alignment: .leading) {
+                        Text("弹簧响应: \(config.springResponse, specifier: "%.2f")s")
+                        Slider(value: $config.springResponse, in: 0.2...1.0, step: 0.05)
+                    }
+
+                    VStack(alignment: .leading) {
+                        Text("弹簧阻尼: \(config.springDamping, specifier: "%.2f")")
+                        Slider(value: $config.springDamping, in: 0.5...1.0, step: 0.05)
+                    }
+                } header: {
+                    Label("动画参数", systemImage: "waveform.path")
+                }
+
+                // 重置按钮
+                Section {
+                    Button("重置为默认值") {
+                        resetToDefaults()
+                    }
+                    .foregroundColor(.red)
+                }
+            }
+            .navigationTitle("效果配置")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("完成") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+
+    private func resetToDefaults() {
+        config.scaleXIntensity = 0.03
+        config.scaleYIntensity = 0.02
+        config.rotationAngle = 35.0
+        config.rotationAxisX = 1.0
+        config.rotationAxisY = -0.3
+        config.perspective = 0.4
+        config.springResponse = 0.55
+        config.springDamping = 0.8
+        config.enableScale = true
+        config.enableRotation = true
     }
 }
 
