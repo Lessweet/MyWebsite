@@ -2,28 +2,41 @@
 //  ContentView.swift
 //  LiquidGlassDemo
 //
-//  同一张卡片：小卡片 ⇄ 大卡片
+//  小卡片自身变形动画 - 无需重新加载图片
 
 import SwiftUI
 
+// 共享图片缓存
+@Observable
+class ImageCache {
+    var images: [String: Image] = [:]
+
+    func setImage(_ image: Image, for url: String) {
+        images[url] = image
+    }
+
+    func getImage(for url: String) -> Image? {
+        return images[url]
+    }
+}
+
 struct ContentView: View {
     @State private var expandedCardId: Int? = nil
+    @State private var imageCache = ImageCache()
     @State private var animProgress: CGFloat = 0
     @State private var cardFrames: [Int: CGRect] = [:]
-    @State private var showSmallCard: Bool = true  // 控制小卡片是否显示
-    @State private var showSecondCard: CGFloat = 0  // 第二张卡片动画进度
-    @State private var showThirdCard: CGFloat = 0   // 第三张卡片动画进度
-    @State private var showFourthCard: CGFloat = 0  // 第四张卡片动画进度
-    @State private var scrollOffset: CGFloat = 0   // 滚动偏移量
+    @State private var animationStartFrame: CGRect? = nil // 动画开始时的位置，固定不变
+    @State private var showSecondCard: CGFloat = 0
+    @State private var showThirdCard: CGFloat = 0
+    @State private var showFourthCard: CGFloat = 0
+    @State private var scrollOffset: CGFloat = 0
 
-    // 导航栏透明度：滚动超过阈值后淡出
     private var navBarOpacity: Double {
-        let fadeDistance: CGFloat = 40  // 完全淡出需要的滚动距离
-        // scrollOffset 初始为 0，上滑时变成负值
+        let fadeDistance: CGFloat = 40
         if scrollOffset >= 0 {
-            return 1.0  // 未滚动或下滑，完全显示
+            return 1.0
         } else if scrollOffset <= -fadeDistance {
-            return 0.0  // 完全淡出
+            return 0.0
         } else {
             return 1.0 + Double(scrollOffset / fadeDistance)
         }
@@ -87,26 +100,29 @@ struct ContentView: View {
             let columns = Array(repeating: GridItem(.flexible(), spacing: 16), count: isLandscape ? 4 : 2)
 
             ZStack {
-                // 纯黑色背景
-                Color.black
-                    .ignoresSafeArea()
+                Color.black.ignoresSafeArea()
 
-                // 卡片网格 - 全屏滚动，内容穿透导航栏
+                // 卡片网格
                 ScrollView(showsIndicators: false) {
                     LazyVGrid(columns: columns, spacing: 20) {
                         ForEach(cards) { card in
-                            // 小卡片始终存在，通过 opacity 控制显示
-                            SmallCard(card: card)
-                                // 小卡片延迟显示，通过 showSmallCard 控制淡入
-                                .opacity(expandedCardId == card.id ? (showSmallCard ? 1.0 : 0.0) : 1.0)
+                            // 始终渲染卡片，展开时用 opacity 隐藏
+                            CardImageView(card: card, imageCache: imageCache)
+                                .aspectRatio(3.0/4.0, contentMode: .fit)
+                                .opacity(expandedCardId == card.id ? 0 : 1)
                                 .background(
                                     GeometryReader { geo in
-                                        Color.clear.onAppear {
-                                            cardFrames[card.id] = geo.frame(in: .global)
-                                        }
-                                        .onChange(of: geo.frame(in: .global)) { _, newFrame in
-                                            cardFrames[card.id] = newFrame
-                                        }
+                                        Color.clear
+                                            .onAppear {
+                                                // 使用相对于主容器的坐标
+                                                cardFrames[card.id] = geo.frame(in: .named("mainContainer"))
+                                            }
+                                            .onChange(of: geo.frame(in: .named("mainContainer"))) { _, newFrame in
+                                                // 只在没有展开任何卡片时更新位置
+                                                if expandedCardId == nil {
+                                                    cardFrames[card.id] = newFrame
+                                                }
+                                            }
                                     }
                                 )
                                 .onTapGesture {
@@ -117,7 +133,7 @@ struct ContentView: View {
                         }
                     }
                     .padding(.horizontal, 20)
-                    .padding(.top, 76)  // 为导航栏留出空间
+                    .padding(.top, 76)
                     .background(
                         GeometryReader { geo in
                             Color.clear
@@ -130,8 +146,9 @@ struct ContentView: View {
                 .onPreferenceChange(ScrollOffsetKey.self) { value in
                     scrollOffset = value
                 }
+                .scrollDisabled(expandedCardId != nil)
 
-                // 顶部渐变遮罩 - 实现柔和的边缘淡出效果
+                // 顶部渐变遮罩
                 VStack {
                     LinearGradient(
                         colors: [
@@ -148,7 +165,6 @@ struct ContentView: View {
 
                     Spacer()
 
-                    // 底部渐变遮罩
                     LinearGradient(
                         colors: [
                             Color.black.opacity(0),
@@ -164,7 +180,7 @@ struct ContentView: View {
                 }
                 .ignoresSafeArea()
 
-                // 顶部标题栏 - 浮动在内容上方，根据滚动淡入淡出
+                // 导航栏
                 VStack {
                     HStack {
                         Text("Gallery")
@@ -175,7 +191,6 @@ struct ContentView: View {
                         Spacer()
 
                         Button {
-                            // 搜索操作
                         } label: {
                             Image(systemName: "magnifyingglass")
                                 .font(.system(size: 18, weight: .medium))
@@ -188,45 +203,84 @@ struct ContentView: View {
                     .padding(.trailing, 16)
                     .padding(.top, 8)
                     .padding(.bottom, 12)
-                    // 根据滚动偏移量计算透明度：上滑淡出，下滑淡入
                     .opacity(navBarOpacity)
 
                     Spacer()
                 }
 
-                // 背景遮罩 - iOS 26 Liquid Glass 模糊效果
+                // 背景遮罩
                 if expandedCardId != nil {
                     Color.clear
                         .glassEffect(.regular, in: .rect(cornerRadius: 0))
                         .opacity(Double(animProgress))
                         .ignoresSafeArea()
                         .onTapGesture { closeCard() }
+                        .zIndex(500)
                 }
 
-                // 展开的卡片 - 在最上层
+                // 展开后的额外卡片（第2、3、4张）
                 if let cardId = expandedCardId,
-                   let card = cards.first(where: { $0.id == cardId }),
-                   let startFrame = cardFrames[cardId] {
-                    ExpandedCard(
+                   let card = cards.first(where: { $0.id == cardId }) {
+                    ExpandedExtraCards(
                         card: card,
-                        startFrame: startFrame,
                         screenSize: screenSize,
                         isLandscape: isLandscape,
-                        progress: animProgress,
                         secondCardProgress: showSecondCard,
                         thirdCardProgress: showThirdCard,
                         fourthCardProgress: showFourthCard,
                         onClose: { closeCard() }
                     )
+                    .opacity(Double(animProgress))
+                    .zIndex(600)
+                }
+
+                // 关闭按钮 - 最高层级
+                if expandedCardId != nil {
+                    VStack {
+                        HStack {
+                            Spacer()
+                            Button {
+                                closeCard()
+                            } label: {
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 16, weight: .bold))
+                                    .foregroundStyle(.white)
+                                    .frame(width: 44, height: 44)
+                            }
+                            .glassEffect(.clear.interactive())
+                            .padding(.trailing, 20)
+                            .padding(.top, 16)
+                        }
+                        Spacer()
+                    }
+                    .opacity(Double(animProgress))
+                    .zIndex(2000)
+                }
+
+                // 展开的主卡片 - 在最上层渲染
+                if let cardId = expandedCardId,
+                   let card = cards.first(where: { $0.id == cardId }),
+                   let startFrame = animationStartFrame {
+                    ExpandingMainCard(
+                        card: card,
+                        progress: animProgress,
+                        startFrame: startFrame,
+                        screenSize: screenSize,
+                        isLandscape: isLandscape,
+                        imageCache: imageCache
+                    )
+                    .zIndex(1000)
                 }
             }
+            .coordinateSpace(name: "mainContainer")
         }
-        .preferredColorScheme(.dark)  // 强制深色模式，UI 自动适配
+        .preferredColorScheme(.dark)
     }
 
     private func expandCard(_ id: Int) {
+        // 保存动画开始时的位置（固定不变）
+        animationStartFrame = cardFrames[id]
         expandedCardId = id
-        showSmallCard = false  // 展开时立即隐藏小卡片
         animProgress = 0
         showSecondCard = 0
         showThirdCard = 0
@@ -236,21 +290,18 @@ struct ContentView: View {
             animProgress = 1
         }
 
-        // 第一张卡片展开过程中，第二张卡片提前从下方滑入
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                 showSecondCard = 1
             }
         }
 
-        // 第三张卡片滑入
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                 showThirdCard = 1
             }
         }
 
-        // 第四张卡片滑入
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                 showFourthCard = 1
@@ -259,24 +310,16 @@ struct ContentView: View {
     }
 
     private func closeCard() {
-        // 所有卡片同时开始收起
-        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+        withAnimation(.spring(response: 0.45, dampingFraction: 0.9)) {
             showFourthCard = 0
             showThirdCard = 0
             showSecondCard = 0
             animProgress = 0
         }
 
-        // 小卡片延迟后开始淡入
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            withAnimation(.easeIn(duration: 0.25)) {
-                showSmallCard = true
-            }
-        }
-
-        // 等动画完全结束后再移除
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
             expandedCardId = nil
+            animationStartFrame = nil
         }
     }
 }
@@ -286,39 +329,121 @@ struct CardItem: Identifiable, Hashable {
     let title: String
     let icon: String
     let color: Color
-    let imageURLs: [String]  // 同主题的多张图片
+    let imageURLs: [String]
 }
 
-// 小卡片
-struct SmallCard: View {
+// 展开的主卡片 - 在 ZStack 最上层渲染
+struct ExpandingMainCard: View, Animatable {
     let card: CardItem
+    var progress: CGFloat
+    let startFrame: CGRect
+    let screenSize: CGSize
+    let isLandscape: Bool
+    let imageCache: ImageCache
+
+    var animatableData: CGFloat {
+        get { progress }
+        set { progress = newValue }
+    }
+
+    // 展开后的目标尺寸
+    private var expandedSize: CGSize {
+        let horizontalPadding: CGFloat = 40
+        if isLandscape {
+            let totalSpacing: CGFloat = 16 * 3
+            let availableWidth = screenSize.width - horizontalPadding - totalSpacing
+            let cardWidth = availableWidth / 4
+            let cardHeight = cardWidth * 4.0 / 3.0
+            return CGSize(width: cardWidth, height: cardHeight)
+        } else {
+            let cardWidth = screenSize.width - horizontalPadding
+            let cardHeight = cardWidth * 4.0 / 3.0
+            return CGSize(width: cardWidth, height: cardHeight)
+        }
+    }
+
+    // 展开后的目标中心位置
+    private var expandedCenter: CGPoint {
+        if isLandscape {
+            let horizontalPadding: CGFloat = 40
+            let totalSpacing: CGFloat = 16 * 3
+            let availableWidth = screenSize.width - horizontalPadding - totalSpacing
+            let cardWidth = availableWidth / 4
+            return CGPoint(x: 20 + cardWidth / 2, y: 76 + expandedSize.height / 2)
+        } else {
+            return CGPoint(x: screenSize.width / 2, y: 76 + expandedSize.height / 2)
+        }
+    }
 
     var body: some View {
-        AsyncImage(url: URL(string: card.imageURLs[0]), transaction: Transaction(animation: .easeIn(duration: 0.3))) { phase in
-            switch phase {
-            case .empty:
-                // 加载中 - 显示灰色占位
-                RoundedRectangle(cornerRadius: 24)
-                    .fill(Color.gray.opacity(0.3))
-            case .success(let image):
-                // 加载成功 - 淡入显示图片
-                image
+        // 当前尺寸
+        let currentWidth = startFrame.width + (expandedSize.width - startFrame.width) * progress
+        let currentHeight = startFrame.height + (expandedSize.height - startFrame.height) * progress
+
+        // 当前中心位置
+        let currentX = startFrame.midX + (expandedCenter.x - startFrame.midX) * progress
+        let currentY = startFrame.midY + (expandedCenter.y - startFrame.midY) * progress
+
+        // 3D 旋转：抛物线曲线，中间最大
+        let rotationAmount = 4.0 * Double(progress) * Double(1.0 - progress) * 35.0
+
+        CardImageView(card: card, imageCache: imageCache)
+            .frame(width: currentWidth, height: currentHeight)
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+            // 液态扭曲效果
+            .modifier(LiquidDistortion(progress: progress))
+            // 3D 旋转
+            .rotation3DEffect(
+                .degrees(rotationAmount),
+                axis: (x: 1.0, y: -0.3, z: 0.0),
+                perspective: 0.4
+            )
+            // 绝对定位
+            .position(x: currentX, y: currentY)
+    }
+}
+
+// 卡片图片视图
+struct CardImageView: View {
+    let card: CardItem
+    let imageCache: ImageCache
+
+    private var imageURL: String {
+        card.imageURLs[0]
+    }
+
+    var body: some View {
+        ZStack {
+            // 从缓存获取图片
+            if let cachedImage = imageCache.getImage(for: imageURL) {
+                cachedImage
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .transition(.opacity)
-            case .failure:
-                // 加载失败 - 显示灰色回退
+            } else {
+                // 背景占位
                 RoundedRectangle(cornerRadius: 24)
                     .fill(Color.gray.opacity(0.3))
-            @unknown default:
-                RoundedRectangle(cornerRadius: 24)
-                    .fill(Color.gray.opacity(0.3))
+
+                // AsyncImage 用于加载图片
+                AsyncImage(url: URL(string: imageURL)) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .onAppear {
+                                imageCache.setImage(image, for: imageURL)
+                            }
+                    default:
+                        Color.clear
+                    }
+                }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .aspectRatio(3.0/4.0, contentMode: .fit)
         .clipShape(RoundedRectangle(cornerRadius: 24))
         .overlay {
-            // 底部渐变遮罩 + 标题
             VStack {
                 Spacer()
                 LinearGradient(
@@ -339,143 +464,65 @@ struct SmallCard: View {
     }
 }
 
-// 展开的卡片 - 从原位置动画到屏幕中央
-struct ExpandedCard: View {
+// 展开后的额外卡片（第2、3、4张）
+struct ExpandedExtraCards: View {
     let card: CardItem
-    let startFrame: CGRect
     let screenSize: CGSize
     let isLandscape: Bool
-    let progress: CGFloat
     let secondCardProgress: CGFloat
     let thirdCardProgress: CGFloat
     let fourthCardProgress: CGFloat
     let onClose: () -> Void
 
-    // 计算保持 3:4 比例的卡片尺寸
-    private var cardSize: CGSize {
-        let horizontalPadding: CGFloat = 24  // 左右各 12pt 边距
-        let maxHeight = screenSize.height * 0.8  // 横屏时允许更大高度
-
+    private var expandedSize: CGSize {
+        let horizontalPadding: CGFloat = 40
         if isLandscape {
-            // 横屏：一行 4 张卡片，3 个间距（每个 12pt）
-            let totalSpacing: CGFloat = 12 * 3
+            let totalSpacing: CGFloat = 16 * 3
             let availableWidth = screenSize.width - horizontalPadding - totalSpacing
-            let singleCardWidth = availableWidth / 4
-            let heightFromWidth = singleCardWidth * 4.0 / 3.0
-
-            if heightFromWidth <= maxHeight {
-                return CGSize(width: singleCardWidth, height: heightFromWidth)
-            } else {
-                let widthFromHeight = maxHeight * 3.0 / 4.0
-                return CGSize(width: widthFromHeight, height: maxHeight)
-            }
+            let cardWidth = availableWidth / 4
+            let cardHeight = cardWidth * 4.0 / 3.0
+            return CGSize(width: cardWidth, height: cardHeight)
         } else {
-            // 竖屏：一行 1 张卡片
-            let maxWidth = screenSize.width - horizontalPadding
-            let heightFromWidth = maxWidth * 4.0 / 3.0
-            let maxHeightPortrait = screenSize.height * 0.5
-
-            if heightFromWidth <= maxHeightPortrait {
-                return CGSize(width: maxWidth, height: heightFromWidth)
-            } else {
-                let widthFromHeight = maxHeightPortrait * 3.0 / 4.0
-                return CGSize(width: widthFromHeight, height: maxHeightPortrait)
-            }
+            let cardWidth = screenSize.width - horizontalPadding
+            let cardHeight = cardWidth * 4.0 / 3.0
+            return CGSize(width: cardWidth, height: cardHeight)
         }
     }
 
     var body: some View {
-        let endWidth = cardSize.width
-        let endHeight = cardSize.height
-        let endX = screenSize.width / 2
-        let cardSpacing: CGFloat = 12
-
-        // 计算位置和尺寸与原始小卡片的接近程度（用于淡出）
-        let endY = 24 + endHeight / 2
-        let maxPositionDist = sqrt(pow(endX - startFrame.midX, 2) + pow(endY - startFrame.midY, 2))
-        let currentX = startFrame.midX + (endX - startFrame.midX) * progress
-        let currentY = startFrame.midY + (endY - startFrame.midY) * progress
-        let currentPositionDist = sqrt(pow(currentX - startFrame.midX, 2) + pow(currentY - startFrame.midY, 2))
-        let positionCloseness = maxPositionDist > 0 ? currentPositionDist / maxPositionDist : 0
-
-        let currentWidth = startFrame.width + (endWidth - startFrame.width) * progress
-        let currentHeight = startFrame.height + (endHeight - startFrame.height) * progress
-        let maxSizeDiff = (endWidth - startFrame.width) + (endHeight - startFrame.height)
-        let currentSizeDiff = (currentWidth - startFrame.width) + (currentHeight - startFrame.height)
-        let sizeCloseness = maxSizeDiff > 0 ? currentSizeDiff / maxSizeDiff : 0
-
-        let fadeThreshold: CGFloat = 0.05
-        let shouldFade = positionCloseness < fadeThreshold && sizeCloseness < fadeThreshold
-        let fadeOpacity = shouldFade ? max(positionCloseness, sizeCloseness) / fadeThreshold : 1.0
-
-        // 主卡片在 ScrollView 中的目标位置（中心点）
-        let targetY = 24 + endHeight / 2
-
-        // 计算从小卡片位置到目标位置的偏移
-        let offsetX = (startFrame.midX - endX) * (1 - progress)
-        let offsetY = (startFrame.midY - targetY) * (1 - progress)
-
-        // 横屏时使用 4 列布局，竖屏 1 列
         let columns = isLandscape
             ? Array(repeating: GridItem(.flexible(), spacing: 16), count: 4)
             : [GridItem(.flexible())]
 
         ZStack {
-            // 可滚动的内容区域（包含所有卡片）
+            // 可滚动内容
             ScrollView(showsIndicators: false) {
-                LazyVGrid(columns: columns, spacing: cardSpacing) {
-                    // 主卡片（第一张）- 跟随列表滚动，显示标题
-                    ExpandedCardItem(
-                        title: card.title,
-                        imageURL: card.imageURLs[0],
-                        showTitle: true
-                    )
-                    .scaleEffect(
-                        x: currentWidth / endWidth,
-                        y: currentHeight / endHeight,
-                        anchor: .center
-                    )
-                    .opacity(Double(fadeOpacity))
-                    .rotation3DEffect(
-                        .degrees(Double(1 - progress) * 35.0),
-                        axis: (x: 1.0, y: -1.0, z: 0.0),
-                        perspective: 0.3
-                    )
-                    .modifier(LiquidEffect(progress: progress))
-                    .offset(x: offsetX, y: offsetY)
+                LazyVGrid(columns: columns, spacing: 20) {
+                    // 占位：主卡片位置
+                    Rectangle()
+                        .fill(.clear)
+                        .aspectRatio(3.0/4.0, contentMode: .fit)
 
-                    // 第二张卡片 - 同主题图片，不显示标题
-                    ExpandedCardItem(
-                        title: "",
-                        imageURL: card.imageURLs[1],
-                        showTitle: false
-                    )
-                    .opacity(Double(secondCardProgress))
-                    .offset(y: (1 - secondCardProgress) * 100)
+                    // 第二张卡片
+                    ExtraCardItem(imageURL: card.imageURLs[1])
+                        .opacity(Double(secondCardProgress))
+                        .offset(y: (1 - secondCardProgress) * 100)
 
-                    // 第三张卡片 - 同主题图片，不显示标题
-                    ExpandedCardItem(
-                        title: "",
-                        imageURL: card.imageURLs[2],
-                        showTitle: false
-                    )
-                    .opacity(Double(thirdCardProgress))
-                    .offset(y: (1 - thirdCardProgress) * 100)
+                    // 第三张卡片
+                    ExtraCardItem(imageURL: card.imageURLs[2])
+                        .opacity(Double(thirdCardProgress))
+                        .offset(y: (1 - thirdCardProgress) * 100)
 
-                    // 第四张卡片 - 同主题图片，不显示标题
-                    ExpandedCardItem(
-                        title: "",
-                        imageURL: card.imageURLs[3],
-                        showTitle: false
-                    )
-                    .opacity(Double(fourthCardProgress))
-                    .offset(y: (1 - fourthCardProgress) * 100)
+                    // 第四张卡片
+                    ExtraCardItem(imageURL: card.imageURLs[3])
+                        .opacity(Double(fourthCardProgress))
+                        .offset(y: (1 - fourthCardProgress) * 100)
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 76)  // 为顶部渐变遮罩留出空间
+                .padding(.top, 76)
             }
 
-            // 顶部和底部渐变遮罩 - 统一样式
+            // 渐变遮罩
             VStack {
                 LinearGradient(
                     colors: [
@@ -492,7 +539,6 @@ struct ExpandedCard: View {
 
                 Spacer()
 
-                // 底部渐变遮罩
                 LinearGradient(
                     colors: [
                         Color.black.opacity(0),
@@ -508,52 +554,26 @@ struct ExpandedCard: View {
             }
             .ignoresSafeArea()
 
-            // 关闭按钮 - 右上角 X icon，使用原生 Liquid Glass 效果
-            if progress > 0.3 {
-                VStack {
-                    HStack {
-                        Spacer()
-                        Button {
-                            onClose()
-                        } label: {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundStyle(.white)
-                                .frame(width: 44, height: 44)
-                        }
-                        .glassEffect(.clear.interactive())
-                        .padding(.trailing, 20)
-                        .padding(.top, 16)
-                    }
-                    Spacer()
-                }
-                .opacity(Double(min(1.0, (progress - 0.3) * 3)))
-            }
         }
     }
 }
 
-// 展开后的统一卡片样式
-struct ExpandedCardItem: View {
-    let title: String
+// 额外卡片
+struct ExtraCardItem: View {
     let imageURL: String
-    var showTitle: Bool = true  // 是否显示标题
 
     var body: some View {
         AsyncImage(url: URL(string: imageURL), transaction: Transaction(animation: .easeIn(duration: 0.3))) { phase in
             switch phase {
             case .empty:
-                // 加载中 - 显示灰色占位
                 RoundedRectangle(cornerRadius: 24)
                     .fill(Color.gray.opacity(0.3))
             case .success(let image):
-                // 加载成功 - 淡入显示图片
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .transition(.opacity)
             case .failure:
-                // 加载失败 - 显示灰色回退
                 RoundedRectangle(cornerRadius: 24)
                     .fill(Color.gray.opacity(0.3))
             @unknown default:
@@ -563,52 +583,32 @@ struct ExpandedCardItem: View {
         }
         .aspectRatio(3.0/4.0, contentMode: .fit)
         .clipShape(RoundedRectangle(cornerRadius: 24))
-        .overlay {
-            if showTitle {
-                VStack {
-                    Spacer()
-                    LinearGradient(
-                        colors: [Color.black.opacity(0), Color.black.opacity(0.6)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .frame(height: 80)
-                }
-                .clipShape(RoundedRectangle(cornerRadius: 24))
-            }
-        }
-        .overlay(alignment: .bottom) {
-            if showTitle {
-                Text(title)
-                    .font(.headline)
-                    .foregroundStyle(.white)
-                    .padding(.bottom, 16)
-            }
-        }
     }
 }
 
-// 液态效果修饰器
-struct LiquidEffect: ViewModifier {
-    let progress: CGFloat
+// 液态扭曲效果 - 使用 SwiftUI 变换模拟
+struct LiquidDistortion: ViewModifier, Animatable {
+    var progress: CGFloat
+
+    var animatableData: CGFloat {
+        get { progress }
+        set { progress = newValue }
+    }
 
     func body(content: Content) -> some View {
-        if progress > 0.05 && progress < 0.95 {
-            content
-                .distortionEffect(
-                    ShaderLibrary.liquidCurvature(
-                        .boundingRect,
-                        .float(progress)
-                    ),
-                    maxSampleOffset: CGSize(width: 100, height: 100)
-                )
-        } else {
-            content
-        }
+        // 抛物线强度：中间最大
+        let intensity = 4.0 * progress * (1.0 - progress)
+
+        // 模拟液态膨胀效果
+        let scaleX = 1.0 + intensity * 0.03
+        let scaleY = 1.0 + intensity * 0.02
+
+        content
+            .scaleEffect(x: scaleX, y: scaleY)
     }
 }
 
-// 滚动偏移量 PreferenceKey
+// 滚动偏移量
 struct ScrollOffsetKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {

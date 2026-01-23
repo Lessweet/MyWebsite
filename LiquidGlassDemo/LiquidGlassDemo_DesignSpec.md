@@ -777,4 +777,207 @@ LiquidGlassDemo/
 
 ---
 
-*文档版本 2.0 - 2025-01-21 更新*
+## 十四、3D 液态展开/收起效果实现 (v2.1)
+
+### 14.1 核心状态变量
+
+```swift
+@State private var expandedCardId: Int? = nil           // 当前展开的卡片 ID
+@State private var animProgress: CGFloat = 0            // 主卡片动画进度 (0-1)
+@State private var animationStartFrame: CGRect? = nil   // 动画开始时的位置（固定不变）
+@State private var cardFrames: [Int: CGRect] = [:]      // 所有卡片的位置
+@State private var imageCache = ImageCache()            // 共享图片缓存
+```
+
+### 14.2 坐标系统 - 命名坐标空间
+
+使用命名坐标空间确保展开/收起位置准确：
+
+```swift
+// 主容器添加坐标空间名称
+ZStack {
+    // ... 内容
+}
+.coordinateSpace(name: "mainContainer")
+
+// 卡片位置使用相对坐标
+.background(
+    GeometryReader { geo in
+        Color.clear
+            .onAppear {
+                cardFrames[card.id] = geo.frame(in: .named("mainContainer"))
+            }
+            .onChange(of: geo.frame(in: .named("mainContainer"))) { _, newFrame in
+                if expandedCardId == nil {
+                    cardFrames[card.id] = newFrame
+                }
+            }
+    }
+)
+```
+
+### 14.3 图片缓存
+
+```swift
+@Observable
+class ImageCache {
+    var images: [String: Image] = [:]
+
+    func setImage(_ image: Image, for url: String) {
+        images[url] = image
+    }
+
+    func getImage(for url: String) -> Image? {
+        return images[url]
+    }
+}
+```
+
+### 14.4 网格卡片渲染 - Opacity 隐藏
+
+使用 opacity 而非条件渲染，防止布局变化：
+
+```swift
+CardImageView(card: card, imageCache: imageCache)
+    .aspectRatio(3.0/4.0, contentMode: .fit)
+    .opacity(expandedCardId == card.id ? 0 : 1)  // 展开时隐藏，不移除
+```
+
+### 14.5 展开动画 - ExpandingMainCard
+
+```swift
+struct ExpandingMainCard: View, Animatable {
+    let card: CardItem
+    var progress: CGFloat
+    let startFrame: CGRect           // 动画开始时的固定位置
+    let screenSize: CGSize
+    let isLandscape: Bool
+    let imageCache: ImageCache
+
+    var animatableData: CGFloat {
+        get { progress }
+        set { progress = newValue }
+    }
+
+    var body: some View {
+        // 当前尺寸插值
+        let currentWidth = startFrame.width + (expandedSize.width - startFrame.width) * progress
+        let currentHeight = startFrame.height + (expandedSize.height - startFrame.height) * progress
+
+        // 当前位置插值
+        let currentX = startFrame.midX + (expandedCenter.x - startFrame.midX) * progress
+        let currentY = startFrame.midY + (expandedCenter.y - startFrame.midY) * progress
+
+        // 3D 旋转：抛物线曲线，动画中间最大
+        let rotationAmount = 4.0 * Double(progress) * Double(1.0 - progress) * 35.0
+
+        CardImageView(card: card, imageCache: imageCache)
+            .frame(width: currentWidth, height: currentHeight)
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+            .modifier(LiquidDistortion(progress: progress))
+            .rotation3DEffect(
+                .degrees(rotationAmount),
+                axis: (x: 1.0, y: -0.3, z: 0.0),
+                perspective: 0.4
+            )
+            .position(x: currentX, y: currentY)
+    }
+}
+```
+
+### 14.6 液态扭曲效果 - SwiftUI 缩放模拟
+
+使用 SwiftUI 缩放变换模拟液态效果（避免 Metal Shader 产生拉伸图层）：
+
+```swift
+struct LiquidDistortion: ViewModifier, Animatable {
+    var progress: CGFloat
+
+    var animatableData: CGFloat {
+        get { progress }
+        set { progress = newValue }
+    }
+
+    func body(content: Content) -> some View {
+        // 抛物线强度：动画中间最大
+        let intensity = 4.0 * progress * (1.0 - progress)
+
+        // 模拟液态膨胀效果
+        let scaleX = 1.0 + intensity * 0.03
+        let scaleY = 1.0 + intensity * 0.02
+
+        content.scaleEffect(x: scaleX, y: scaleY)
+    }
+}
+```
+
+### 14.7 层级管理 (zIndex)
+
+```swift
+// 关闭按钮 - 最高层级
+.zIndex(2000)
+
+// 展开的主卡片
+.zIndex(1000)
+
+// 展开后的额外卡片
+.zIndex(600)
+
+// 背景遮罩
+.zIndex(500)
+```
+
+### 14.8 展开函数
+
+```swift
+private func expandCard(_ id: Int) {
+    // 保存动画开始时的位置（固定不变）
+    animationStartFrame = cardFrames[id]
+    expandedCardId = id
+    animProgress = 0
+
+    withAnimation(.spring(response: 0.55, dampingFraction: 0.8)) {
+        animProgress = 1
+    }
+
+    // 依次显示额外卡片
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+            showSecondCard = 1
+        }
+    }
+    // ... 第三、四张卡片
+}
+```
+
+### 14.9 收起函数
+
+```swift
+private func closeCard() {
+    withAnimation(.spring(response: 0.45, dampingFraction: 0.9)) {
+        showFourthCard = 0
+        showThirdCard = 0
+        showSecondCard = 0
+        animProgress = 0
+    }
+
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
+        expandedCardId = nil
+        animationStartFrame = nil  // 清除动画起始帧
+    }
+}
+```
+
+### 14.10 关键实现要点
+
+| 问题 | 解决方案 |
+|------|----------|
+| 收起时位置跳动 | 使用命名坐标空间 `"mainContainer"` 替代全局坐标 |
+| 展开时图片闪烁 | 使用共享 `ImageCache` 缓存已加载的图片 |
+| 网格布局变化 | 使用 `opacity` 隐藏而非条件渲染 |
+| Metal Shader 拉伸图层 | 改用 SwiftUI `scaleEffect` 模拟液态效果 |
+| 动画位置不固定 | 使用 `animationStartFrame` 保存起始位置 |
+
+---
+
+*文档版本 2.1 - 2025-01-23 更新 - 新增 3D 液态展开/收起效果实现*
