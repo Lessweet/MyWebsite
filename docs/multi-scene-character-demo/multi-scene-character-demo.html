@@ -788,16 +788,16 @@ body {
 <body>
 
 <div class="dev-toolbar">
-  <select id="sceneSelector" aria-label="场景选择">
-    <option value="login">登录</option>
-    <option value="settings">设置</option>
-    <option value="delete-account">注销账户</option>
-    <option value="reset-password">重置密码</option>
-    <option value="2fa">两步验证</option>
-    <option value="locked">账户锁定</option>
-    <option value="success">成功</option>
+  <select id="sceneSelector" aria-label="Scene Selection">
+    <option value="login">Login</option>
+    <option value="settings">Settings</option>
+    <option value="delete-account">Delete Account</option>
+    <option value="reset-password">Reset Password</option>
+    <option value="2fa">Two-Factor Auth</option>
+    <option value="locked">Account Locked</option>
+    <option value="success">Success</option>
   </select>
-  <button id="devPanelToggle">参数</button>
+  <button id="devPanelToggle">Props</button>
 </div>
 
 <div class="dev-panel" id="devPanel">
@@ -1259,7 +1259,7 @@ class Character {
 
 // ========== 应用状态 ==========
 let currentScene = null;
-let currentLang = new URLSearchParams(location.search).get('lang') || 'zh';
+let currentLang = new URLSearchParams(location.search).get('lang') || 'en';
 let currentCharacter = null;
 
 // ========== 路由 ==========
