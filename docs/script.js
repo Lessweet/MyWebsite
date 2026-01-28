@@ -61,18 +61,41 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 });
 
 /**
- * Header background on scroll
+ * Smart Sticky Header
+ * - Shows when scrolling up
+ * - Hides when scrolling down (after scrolling a distance)
  */
 let lastScrollY = 0;
+let scrollDelta = 0;
 const header = document.querySelector('.header');
+const scrollThreshold = 10; // Minimum scroll distance to trigger hide/show
 
 window.addEventListener('scroll', () => {
     const currentScrollY = window.scrollY;
+    const scrollDiff = currentScrollY - lastScrollY;
 
-    if (currentScrollY > 100) {
-        header.style.borderBottomColor = 'rgba(210, 210, 215, 1)';
-    } else {
-        header.style.borderBottomColor = 'rgba(210, 210, 215, 0.5)';
+    // Accumulate scroll delta
+    scrollDelta += scrollDiff;
+
+    // Scrolling down - hide header after threshold
+    if (scrollDiff > 0 && currentScrollY > 100) {
+        if (scrollDelta > scrollThreshold) {
+            header.classList.add('header-hidden');
+            scrollDelta = 0;
+        }
+    }
+    // Scrolling up - show header
+    else if (scrollDiff < 0) {
+        if (scrollDelta < -scrollThreshold) {
+            header.classList.remove('header-hidden');
+            scrollDelta = 0;
+        }
+    }
+
+    // At top of page - always show
+    if (currentScrollY <= 10) {
+        header.classList.remove('header-hidden');
+        scrollDelta = 0;
     }
 
     lastScrollY = currentScrollY;
@@ -120,6 +143,63 @@ if (typeof ResizeObserver !== 'undefined') {
         resizeObserver.observe(card);
     });
 }
+
+/**
+ * 点赞功能
+ */
+function initLikeButtons() {
+    // 从 localStorage 读取点赞状态
+    const likedItems = JSON.parse(localStorage.getItem('likedItems') || '{}');
+
+    const likeButtons = document.querySelectorAll('.card-like');
+    likeButtons.forEach(button => {
+        const id = button.dataset.id;
+        const countEl = button.querySelector('.like-count');
+
+        // 更新显示数字（0时隐藏）
+        const updateCount = (count) => {
+            if (count > 0) {
+                countEl.textContent = count;
+                countEl.style.display = '';
+            } else {
+                countEl.textContent = '';
+                countEl.style.display = 'none';
+            }
+        };
+
+        // 初始化状态
+        if (likedItems[id]) {
+            button.classList.add('liked');
+            updateCount(likedItems[id].count || 1);
+        } else {
+            updateCount(0);
+        }
+
+        // 点击事件
+        button.addEventListener('click', () => {
+            const isLiked = button.classList.contains('liked');
+            let count = parseInt(countEl.textContent) || 0;
+
+            if (isLiked) {
+                // 取消点赞
+                button.classList.remove('liked');
+                count = Math.max(0, count - 1);
+                delete likedItems[id];
+            } else {
+                // 点赞
+                button.classList.add('liked');
+                count += 1;
+                likedItems[id] = { count: count, liked: true };
+            }
+
+            updateCount(count);
+            localStorage.setItem('likedItems', JSON.stringify(likedItems));
+        });
+    });
+}
+
+// 初始化点赞功能
+document.addEventListener('DOMContentLoaded', initLikeButtons);
 
 /**
  * QR Code Modal
