@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
  * Initialize card entrance animations with stagger effect
  */
 function initCardAnimations() {
-    const cards = document.querySelectorAll('.card');
+    const cardWrappers = document.querySelectorAll('.card-wrapper');
 
     // Intersection Observer configuration
     const observerOptions = {
@@ -24,23 +24,23 @@ function initCardAnimations() {
     const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
             if (entry.isIntersecting) {
-                const card = entry.target;
-                const delay = parseInt(card.dataset.delay) || 0;
+                const wrapper = entry.target;
+                const delay = parseInt(wrapper.dataset.delay) || 0;
 
                 // Apply staggered delay
                 setTimeout(() => {
-                    card.classList.add('visible');
+                    wrapper.classList.add('visible');
                 }, delay);
 
                 // Stop observing once animated
-                observer.unobserve(card);
+                observer.unobserve(wrapper);
             }
         });
     }, observerOptions);
 
-    // Observe all cards
-    cards.forEach((card) => {
-        observer.observe(card);
+    // Observe all card wrappers
+    cardWrappers.forEach((wrapper) => {
+        observer.observe(wrapper);
     });
 }
 
@@ -93,6 +93,33 @@ document.querySelectorAll('.card-visual-padded video.card-img').forEach(video =>
         }
     }
 });
+
+/**
+ * 动态缩放卡片内容
+ * 根据卡片高度自适应，内容占据卡片高度的 90%
+ */
+function updateDynamicScale() {
+    const scaledCards = document.querySelectorAll('.card-dynamic-scale');
+    scaledCards.forEach(card => {
+        const cardHeight = card.offsetHeight;
+        const contentHeight = parseInt(card.dataset.contentHeight) || 812;
+        const targetRatio = parseFloat(card.dataset.targetRatio) || 0.9; // 默认占据 90%
+        const scale = (cardHeight * targetRatio) / contentHeight;
+        card.style.setProperty('--content-scale', scale);
+    });
+}
+
+// 初始化和窗口调整时更新
+window.addEventListener('load', updateDynamicScale);
+window.addEventListener('resize', updateDynamicScale);
+
+// 使用 ResizeObserver 监听卡片尺寸变化
+if (typeof ResizeObserver !== 'undefined') {
+    const resizeObserver = new ResizeObserver(updateDynamicScale);
+    document.querySelectorAll('.card-dynamic-scale').forEach(card => {
+        resizeObserver.observe(card);
+    });
+}
 
 /**
  * QR Code Modal

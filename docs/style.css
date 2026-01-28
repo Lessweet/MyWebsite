@@ -49,9 +49,9 @@ a {
    ======================================== */
 .header {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
-    padding: 32px 48px;
+    padding: 32px 32px;
     gap: 24px;
     flex-wrap: wrap;
     position: relative;
@@ -81,7 +81,7 @@ a {
     text-align: center;
 }
 
-@media (min-width: 769px) {
+@media (min-width: 901px) {
     .header {
         flex-wrap: nowrap;
         justify-content: space-between;
@@ -112,6 +112,12 @@ a {
     font-size: 14px;
     color: var(--gray-900);
     transition: color 0.2s ease;
+    display: flex;
+    align-items: center;
+}
+
+.header-link svg {
+    vertical-align: middle;
 }
 
 .header-link:hover {
@@ -245,14 +251,13 @@ a {
    Work Section - Masonry Grid
    ======================================== */
 .work-section {
-    padding: 0 48px 80px;
+    padding: 0 32px 80px;
 }
 
 .masonry-grid {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 16px;
-    grid-auto-rows: 160px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px 16px;
 }
 
 /* ========================================
@@ -260,52 +265,84 @@ a {
    ======================================== */
 .card {
     background: var(--gray-100);
-    border-radius: 20px;
+    border-radius: 28px;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-wrapper {
     opacity: 0;
     transform: translateY(30px);
     transition:
         opacity 0.5s var(--ease),
         transform 0.5s var(--ease);
-    display: flex;
-    flex-direction: column;
 }
 
-.card.visible {
+.card-wrapper.visible {
     opacity: 1;
     transform: translateY(0);
 }
 
-/* Card Sizes */
-.card-tall {
-    grid-row: span 3;
+/* Card Sizes - Unified */
+.card {
+    aspect-ratio: 1 / 1;
 }
 
-.card-medium {
-    grid-row: span 2;
-}
-
+.card-tall,
+.card-medium,
 .card-short {
-    grid-row: span 1;
+    grid-row: auto;
+    aspect-ratio: 1 / 1;
+}
+
+/* ========================================
+   Card Wrapper
+   ======================================== */
+.card-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.card-wrapper .card {
+    aspect-ratio: 1 / 1;
 }
 
 /* ========================================
    Card Header
    ======================================== */
 .card-header {
+    display: none;
+}
+
+.card-info {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 20px;
+    flex-direction: column;
+    gap: 6px;
 }
 
 .card-label {
-    font-size: 13px;
-    font-weight: 500;
+    font-size: 14px;
+    font-weight: 600;
     color: var(--gray-900);
-    background: var(--white);
-    padding: 6px 14px;
-    border-radius: 20px;
+    padding: 0;
+    background: none;
+}
+
+.card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: -4px;
+}
+
+.card-tag {
+    font-size: 12px;
+    color: var(--gray-500);
+    background: #FAFAFA;
+    padding: 4px 10px;
+    border-radius: 12px;
 }
 
 .card-arrow {
@@ -351,8 +388,8 @@ a {
 .card-video {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    border-radius: 0 0 16px 16px;
+    object-fit: contain;
+    border-radius: 28px;
 }
 
 /* Card with full video (no header gap) */
@@ -361,29 +398,25 @@ a {
 }
 
 .card-video-full .card-visual {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 0;
+    position: relative;
+    width: 100%;
+    height: 100%;
 }
 
 .card-video-full .card-video {
-    border-radius: 16px;
-}
-
-.card-video-full .card-header {
-    position: relative;
-    z-index: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0;
 }
 
 /* ========================================
    iPhone Frame
    ======================================== */
 .iphone-frame {
-    width: 180px;
-    height: 380px;
+    width: 55%;
+    max-width: 180px;
+    aspect-ratio: 9 / 19;
     background: var(--gray-900);
     border-radius: 36px;
     padding: 8px;
@@ -438,15 +471,16 @@ a {
 .iphone-video {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
 }
 
 /* ========================================
    Wide Card (for landscape content)
    ======================================== */
 .card-wide {
-    grid-column: span 3;
-    grid-row: span 4;
+    grid-column: span 1;
+    grid-row: auto;
+    aspect-ratio: 1 / 1;
 }
 
 .card-wide .card-visual {
@@ -456,7 +490,7 @@ a {
 .card-wide .card-img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     border-radius: 0 0 16px 16px;
 }
 
@@ -478,22 +512,25 @@ a {
 
 @media (max-width: 1200px) {
     .card-wide {
-        grid-column: span 3;
-        grid-row: span 3;
+        grid-column: span 1;
+        grid-row: auto;
+        aspect-ratio: 1 / 1;
     }
 }
 
 @media (max-width: 900px) {
     .card-wide {
-        grid-column: span 2;
-        grid-row: span 2;
+        grid-column: span 1;
+        grid-row: auto;
+        aspect-ratio: 1 / 1;
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 800px) {
     .card-wide {
-        grid-column: span 2;
-        grid-row: span 2;
+        grid-column: span 1;
+        grid-row: auto;
+        aspect-ratio: 1 / 1;
     }
 }
 
@@ -501,37 +538,95 @@ a {
    Full Demo Card (iframe embed)
    ======================================== */
 .card-full-demo {
-    grid-column: span 2;
-    grid-row: span 6;
+    grid-column: span 1;
+    grid-row: auto;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
 }
 
 .card-iframe-container {
     flex: 1;
     width: 100%;
+    height: 100%;
+    min-height: 0;
     position: relative;
     overflow: hidden;
-    border-radius: 0 0 16px 16px;
+    border-radius: 28px;
 }
 
 .card-iframe {
     width: 100%;
     height: 100%;
     border: none;
-    border-radius: 0 0 16px 16px;
+    border-radius: 28px;
+}
+
+/* 动态缩放卡片 - 内容占据卡片高度的 90%，由 JS 控制 */
+.card-dynamic-scale .card-iframe-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.card-dynamic-scale .card-iframe {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 375px;
+    height: 812px;
+    transform: translate(-50%, -50%) scale(var(--content-scale, 0.5));
+    transform-origin: center center;
+    border-radius: 40px;
+}
+
+/* iPhone 框架动态缩放 */
+.card-dynamic-scale .card-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.card-dynamic-scale .iphone-frame {
+    height: calc(var(--content-scale, 0.5) * 844px);
+    width: auto;
+    max-width: 90%;
+    aspect-ratio: 9 / 19;
+}
+
+/* Scaled up card - video content scaled to 120% */
+.card-scaled-up .card-visual {
+    overflow: hidden;
+}
+
+.card-scaled-up .card-video {
+    transform: scale(1.6);
+    transform-origin: center center;
+}
+
+/* Video scaled to fill card */
+.card-video-scaled-down .card-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0;
 }
 
 @media (max-width: 900px) {
     .card-full-demo {
-        grid-row: span 6;
+        grid-row: auto;
+        aspect-ratio: 1 / 1;
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .header {
         display: flex !important;
         flex-wrap: wrap !important;
         justify-content: flex-start !important;
-        padding: 24px 24px;
+        padding: 24px 32px;
         gap: 16px;
         align-items: center !important;
     }
@@ -544,6 +639,8 @@ a {
     .header-center {
         order: 1 !important;
         text-align: left !important;
+        position: static !important;
+        transform: none !important;
     }
 
     .header-right {
@@ -553,10 +650,11 @@ a {
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 800px) {
     .card-full-demo {
-        grid-column: span 2;
-        grid-row: span 5;
+        grid-column: span 1;
+        grid-row: auto;
+        aspect-ratio: 1 / 1;
     }
 }
 
@@ -768,7 +866,8 @@ a {
 /* Footer Card Style */
 .card-footer {
     background: #F2F2F7;
-    grid-row: span 2;
+    grid-row: auto;
+    aspect-ratio: 1 / 1;
 }
 
 .card-footer .card-visual {
@@ -874,18 +973,18 @@ a {
    ======================================== */
 @media (max-width: 1200px) {
     .masonry-grid {
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
 @media (max-width: 900px) {
     .header {
-        padding: 24px 24px;
+        padding: 24px 32px;
     }
 
     .info-section {
         flex-direction: column;
-        padding: 32px 24px 48px;
+        padding: 32px 32px 48px;
     }
 
     .info-right {
@@ -894,17 +993,17 @@ a {
     }
 
     .work-section {
-        padding: 0 24px 60px;
+        padding: 0 32px 60px;
     }
 
     .masonry-grid {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 800px) {
     .header {
-        padding: 20px 16px;
+        padding: 20px 32px;
         gap: 12px;
     }
 
@@ -922,25 +1021,27 @@ a {
     }
 
     .info-section {
-        padding: 24px 16px 32px;
+        padding: 24px 32px 32px;
     }
 
     .work-section {
-        padding: 0 16px 40px;
+        padding: 0 32px 40px;
     }
 
     .masonry-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
+        grid-template-columns: repeat(1, 1fr);
+        gap: 40px 16px;
     }
 
     .card-tall {
-        grid-row: span 2;
+        grid-row: auto;
+        aspect-ratio: 1 / 1;
     }
 
     .iphone-frame {
-        width: 140px;
-        height: 300px;
+        width: 60%;
+        max-width: 140px;
+        aspect-ratio: 9 / 19;
         border-radius: 28px;
     }
 
