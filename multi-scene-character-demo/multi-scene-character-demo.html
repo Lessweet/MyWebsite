@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>multi-scene-character-demo</title>
+<title>多场景角色演示</title>
 <style>
 /*
 === 设计令牌（Design Tokens）===
@@ -1585,7 +1585,7 @@ function updateDevPanel(props) {
   const content = document.getElementById('devPanelContent');
   content.innerHTML = `
     <div class="dev-prop">
-      <label>faceColor</label>
+      <label>脸部颜色</label>
       <div class="dev-prop-color">
         <input type="color" data-prop="faceColor" data-type="color" value="${props.faceColor}">
         <input type="text" data-prop="faceColor" data-type="text" value="${props.faceColor}">
@@ -1593,7 +1593,7 @@ function updateDevPanel(props) {
       </div>
     </div>
     <div class="dev-prop">
-      <label>eyeBg</label>
+      <label>眼睛背景</label>
       <div class="dev-prop-color">
         <input type="color" data-prop="eyeBg" data-type="color" value="${props.eyeBg}">
         <input type="text" data-prop="eyeBg" data-type="text" value="${props.eyeBg}">
@@ -1601,7 +1601,7 @@ function updateDevPanel(props) {
       </div>
     </div>
     <div class="dev-prop">
-      <label>pupilColor</label>
+      <label>瞳孔颜色</label>
       <div class="dev-prop-color">
         <input type="color" data-prop="pupilColor" data-type="color" value="${props.pupilColor}">
         <input type="text" data-prop="pupilColor" data-type="text" value="${props.pupilColor}">
@@ -1609,70 +1609,70 @@ function updateDevPanel(props) {
       </div>
     </div>
     <div class="dev-prop">
-      <label>headScale</label>
+      <label>头部缩放</label>
       <div class="dev-prop-number">
         <input type="number" step="0.1" data-prop="headScale" value="${props.headScale}">
         <button class="dev-reset-btn" data-reset="headScale" title="恢复默认">↺</button>
       </div>
     </div>
     <div class="dev-prop">
-      <label>headX</label>
+      <label>头部X偏移</label>
       <div class="dev-prop-number">
         <input type="number" data-prop="headX" value="${props.headX}">
         <button class="dev-reset-btn" data-reset="headX" title="恢复默认">↺</button>
       </div>
     </div>
     <div class="dev-prop">
-      <label>headY</label>
+      <label>头部Y偏移</label>
       <div class="dev-prop-number">
         <input type="number" data-prop="headY" value="${props.headY}">
         <button class="dev-reset-btn" data-reset="headY" title="恢复默认">↺</button>
       </div>
     </div>
     <div class="dev-prop">
-      <label>pupilScale</label>
+      <label>瞳孔缩放</label>
       <div class="dev-prop-number">
         <input type="number" step="0.05" data-prop="pupilScale" value="${props.pupilScale}">
         <button class="dev-reset-btn" data-reset="pupilScale" title="恢复默认">↺</button>
       </div>
     </div>
     <div class="dev-prop">
-      <label>blinkMin</label>
+      <label>最小眨眼间隔</label>
       <div class="dev-prop-number">
         <input type="number" data-prop="blinkMin" value="${props.blinkMin}">
         <button class="dev-reset-btn" data-reset="blinkMin" title="恢复默认">↺</button>
       </div>
     </div>
     <div class="dev-prop">
-      <label>blinkMax</label>
+      <label>最大眨眼间隔</label>
       <div class="dev-prop-number">
         <input type="number" data-prop="blinkMax" value="${props.blinkMax}">
         <button class="dev-reset-btn" data-reset="blinkMax" title="恢复默认">↺</button>
       </div>
     </div>
     <div class="dev-prop">
-      <label>lookDamp</label>
+      <label>视线阻尼</label>
       <div class="dev-prop-number">
         <input type="number" step="0.01" data-prop="lookDamp" value="${props.lookDamp}">
         <button class="dev-reset-btn" data-reset="lookDamp" title="恢复默认">↺</button>
       </div>
     </div>
     <div class="dev-prop">
-      <label>lookMax</label>
+      <label>最大视线距离</label>
       <div class="dev-prop-number">
         <input type="number" data-prop="lookMax" value="${props.lookMax}">
         <button class="dev-reset-btn" data-reset="lookMax" title="恢复默认">↺</button>
       </div>
     </div>
     <div class="dev-prop">
-      <label>idleBiasX</label>
+      <label>空闲X偏移</label>
       <div class="dev-prop-number">
         <input type="number" data-prop="idleBiasX" value="${props.idleBiasX}">
         <button class="dev-reset-btn" data-reset="idleBiasX" title="恢复默认">↺</button>
       </div>
     </div>
     <div class="dev-prop">
-      <label>idleBiasY</label>
+      <label>空闲Y偏移</label>
       <div class="dev-prop-number">
         <input type="number" data-prop="idleBiasY" value="${props.idleBiasY}">
         <button class="dev-reset-btn" data-reset="idleBiasY" title="恢复默认">↺</button>
