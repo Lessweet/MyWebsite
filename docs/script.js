@@ -5,7 +5,31 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     initCardAnimations();
+    initCategoryFilter();
 });
+
+/**
+ * Category filter: clicking a button hides cards whose data-category doesn't match.
+ * "all" shows everything.
+ */
+function initCategoryFilter() {
+    const buttons = document.querySelectorAll('.category-btn');
+    const cards = document.querySelectorAll('.masonry-grid > .card-wrapper');
+
+    buttons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const filter = btn.dataset.filter;
+
+            buttons.forEach((b) => b.classList.toggle('active', b === btn));
+
+            cards.forEach((card) => {
+                const cat = card.dataset.category;
+                const match = filter === 'all' || cat === filter;
+                card.style.display = match ? '' : 'none';
+            });
+        });
+    });
+}
 
 /**
  * Initialize card entrance animations with stagger effect

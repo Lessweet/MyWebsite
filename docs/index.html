@@ -5,29 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VibeUX</title>
     <!-- Favicon for all browsers -->
-    <link rel="icon" type="image/png" href="favicon.png?v=7">
-    <link rel="shortcut icon" href="favicon.png?v=7">
-    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=7">
-    <link rel="apple-touch-icon-precomposed" href="apple-touch-icon.png?v=7">
-    <link rel="stylesheet" href="style.css?v=10">
+    <link rel="icon" type="image/png" href="favicon.png?v=12">
+    <link rel="shortcut icon" href="favicon.png?v=12">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=12">
+    <link rel="apple-touch-icon-precomposed" href="apple-touch-icon.png?v=12">
+    <link rel="stylesheet" href="style.css?v=28">
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <div class="header-left">
-            <span class="name"><strong>Prompt to design, build step by step.</strong></span>
-        </div>
-        <div class="header-center">
             <a href="#" class="header-link"><strong>VibeUX</strong></a>
         </div>
         <div class="header-right">
-            <a href="mailto:chentongrong1@gmail.com" class="header-link" title="chentongrong1@gmail.com">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-                    <path d="M22 6L12 13L2 6"></path>
-                </svg>
-                <span style="margin-left: 6px;"><strong>Keep in Touch</strong></span>
-            </a>
+            <nav class="category-nav">
+                <button class="category-btn active" data-filter="all">All</button>
+                <button class="category-btn" data-filter="poster">Poster</button>
+                <button class="category-btn" data-filter="motion">Motion</button>
+                <button class="category-btn" data-filter="3d">3D</button>
+                <button class="category-btn" data-filter="web">Web</button>
+            </nav>
         </div>
     </header>
     <div class="header-placeholder"></div>
@@ -45,8 +42,131 @@
     <section class="work-section">
         <div class="masonry-grid">
 
+            <!-- Project: Dynamic Poster - 立体未来感 -->
+            <div class="card-wrapper" data-delay="50" data-category="poster">
+                <article class="card card-tall card-video-full card-video-contained">
+                    <div class="card-visual">
+                        <video class="card-video" autoplay loop muted playsinline>
+                            <source src="动态海报/立体未来感/1.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                </article>
+                <div class="card-info">
+                    <div class="card-title-row">
+                        <span class="card-label">Dynamic Poster</span>
+                        <button class="card-like" data-id="10">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                            <span class="like-count">0</span>
+                        </button>
+                    </div>
+                    <div class="card-meta">
+                        <span class="card-date">2026-05-05</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project: Dynamic Poster 2 - 立体未来感 -->
+            <div class="card-wrapper" data-delay="50" data-category="poster">
+                <article class="card card-tall card-video-full card-video-contained">
+                    <div class="card-visual">
+                        <video class="card-video" autoplay loop muted playsinline>
+                            <source src="动态海报/立体未来感/2.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                </article>
+                <div class="card-info">
+                    <div class="card-title-row">
+                        <span class="card-label">Dynamic Poster</span>
+                        <button class="card-like" data-id="11">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                            <span class="like-count">0</span>
+                        </button>
+                    </div>
+                    <div class="card-meta">
+                        <span class="card-date">2026-05-05</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project: Dynamic Poster 3 - 立体未来感 -->
+            <div class="card-wrapper" data-delay="50" data-category="poster">
+                <article class="card card-tall card-video-full card-video-contained">
+                    <div class="card-visual">
+                        <video class="card-video" autoplay loop muted playsinline>
+                            <source src="动态海报/立体未来感/3.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                </article>
+                <div class="card-info">
+                    <div class="card-title-row">
+                        <span class="card-label">Dynamic Poster</span>
+                        <button class="card-like" data-id="12">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                            <span class="like-count">0</span>
+                        </button>
+                    </div>
+                    <div class="card-meta">
+                        <span class="card-date">2026-05-05</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project: Dynamic Poster 4 - 立体未来感 -->
+            <div class="card-wrapper" data-delay="50" data-category="poster">
+                <article class="card card-tall card-video-full card-video-contained">
+                    <div class="card-visual">
+                        <video class="card-video" autoplay loop muted playsinline>
+                            <source src="动态海报/立体未来感/4.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                </article>
+                <div class="card-info">
+                    <div class="card-title-row">
+                        <span class="card-label">Dynamic Poster</span>
+                        <button class="card-like" data-id="13">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                            <span class="like-count">0</span>
+                        </button>
+                    </div>
+                    <div class="card-meta">
+                        <span class="card-date">2026-05-06</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project: Mini App AI Assistant Animation -->
+            <div class="card-wrapper" data-delay="50" data-category="motion">
+                <article class="card card-full-demo">
+                    <div class="card-iframe-container">
+                        <iframe src="ai-assistant-motion/index.html" class="card-iframe" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                </article>
+                <div class="card-info">
+                    <div class="card-title-row">
+                        <span class="card-label">AI Assistant Motion</span>
+                        <button class="card-like" data-id="9">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                            <span class="like-count">0</span>
+                        </button>
+                    </div>
+                    <div class="card-meta">
+                        <span class="card-date">2026-03-16</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Project: 3D Rotation -->
-            <div class="card-wrapper" data-delay="50">
+            <div class="card-wrapper" data-delay="50" data-category="3d">
                 <article class="card card-tall card-video-full">
                     <div class="card-visual">
                         <video class="card-video" autoplay loop muted playsinline>
@@ -64,12 +184,6 @@
                             <span class="like-count">0</span>
                         </button>
                     </div>
-                    <div class="card-tags">
-                        <span class="card-tag">Claude Code</span>
-                        <span class="card-tag">Xcode</span>
-                        <span class="card-tag">SwiftUI</span>
-                        <span class="card-tag">Metal</span>
-                    </div>
                     <div class="card-meta">
                         <span class="card-date">2026-01-15</span>
                     </div>
@@ -77,7 +191,7 @@
             </div>
 
             <!-- Project: 3D Card Glass -->
-            <div class="card-wrapper" data-delay="50">
+            <div class="card-wrapper" data-delay="50" data-category="3d">
                 <article class="card card-tall card-video-full">
                     <div class="card-visual">
                         <video class="card-video" autoplay loop muted playsinline>
@@ -95,12 +209,6 @@
                             <span class="like-count">0</span>
                         </button>
                     </div>
-                    <div class="card-tags">
-                        <span class="card-tag">Claude Code</span>
-                        <span class="card-tag">Xcode</span>
-                        <span class="card-tag">SwiftUI</span>
-                        <span class="card-tag">Metal</span>
-                    </div>
                     <div class="card-meta">
                         <span class="card-date">2026-01-10</span>
                     </div>
@@ -108,7 +216,7 @@
             </div>
 
             <!-- Project 0: Interactive Character Demo - Full Width -->
-            <div class="card-wrapper" data-delay="50">
+            <div class="card-wrapper" data-delay="50" data-category="web">
                 <article class="card card-full-demo card-dynamic-scale" data-content-height="812">
                     <div class="card-iframe-container">
                         <iframe src="multi-scene-character-demo/multi-scene-character-demo.html" class="card-iframe" frameborder="0" allowfullscreen></iframe>
@@ -124,12 +232,6 @@
                             <span class="like-count">0</span>
                         </button>
                     </div>
-                    <div class="card-tags">
-                        <span class="card-tag">Claude Code</span>
-                        <span class="card-tag">HTML</span>
-                        <span class="card-tag">CSS</span>
-                        <span class="card-tag">JavaScript</span>
-                    </div>
                     <div class="card-meta">
                         <span class="card-date">2026-01-08</span>
                     </div>
@@ -137,7 +239,7 @@
             </div>
 
             <!-- Project 1: Voice Particles - Tall -->
-            <div class="card-wrapper" data-delay="50">
+            <div class="card-wrapper" data-delay="50" data-category="web">
                 <article class="card card-full-demo card-dynamic-scale" data-content-height="812" data-target-ratio="1">
                     <div class="card-iframe-container">
                         <iframe src="voice-particles/index.html" class="card-iframe" frameborder="0" allowfullscreen></iframe>
@@ -153,12 +255,6 @@
                             <span class="like-count">0</span>
                         </button>
                     </div>
-                    <div class="card-tags">
-                        <span class="card-tag">Gemini 3 Pro</span>
-                        <span class="card-tag">HTML</span>
-                        <span class="card-tag">CSS</span>
-                        <span class="card-tag">JavaScript</span>
-                    </div>
                     <div class="card-meta">
                         <span class="card-date">2026-01-05</span>
                     </div>
@@ -166,7 +262,7 @@
             </div>
 
             <!-- 3D Sphere -->
-            <div class="card-wrapper" data-delay="100">
+            <div class="card-wrapper" data-delay="100" data-category="3d">
                 <article class="card card-tall card-dynamic-scale" data-content-height="844" data-content-type="iphone">
                     <div class="card-visual">
                         <div class="iphone-frame">
@@ -189,11 +285,6 @@
                             <span class="like-count">0</span>
                         </button>
                     </div>
-                    <div class="card-tags">
-                        <span class="card-tag">Claude Code</span>
-                        <span class="card-tag">Xcode</span>
-                        <span class="card-tag">SwiftUI</span>
-                    </div>
                     <div class="card-meta">
                         <span class="card-date">2026-01-03</span>
                     </div>
@@ -201,7 +292,7 @@
             </div>
 
             <!-- Project 2: Glass Balls - Tall -->
-            <div class="card-wrapper" data-delay="100">
+            <div class="card-wrapper" data-delay="100" data-category="3d">
                 <article class="card card-tall card-scaled-up">
                     <div class="card-visual">
                         <video class="card-video" autoplay loop muted playsinline>
@@ -219,11 +310,6 @@
                             <span class="like-count">0</span>
                         </button>
                     </div>
-                    <div class="card-tags">
-                        <span class="card-tag">Claude Code</span>
-                        <span class="card-tag">Xcode</span>
-                        <span class="card-tag">SwiftUI</span>
-                    </div>
                     <div class="card-meta">
                         <span class="card-date">2025-12-28</span>
                     </div>
@@ -231,7 +317,7 @@
             </div>
 
             <!-- Project 3: 3D Sphere - Tall -->
-            <div class="card-wrapper" data-delay="200">
+            <div class="card-wrapper" data-delay="200" data-category="3d">
                 <article class="card card-tall card-video-full card-video-scaled-down">
                     <div class="card-visual">
                         <video class="card-video" autoplay loop muted playsinline>
@@ -249,12 +335,6 @@
                             <span class="like-count">0</span>
                         </button>
                     </div>
-                    <div class="card-tags">
-                        <span class="card-tag">Claude Code</span>
-                        <span class="card-tag">Xcode</span>
-                        <span class="card-tag">SwiftUI</span>
-                        <span class="card-tag">Metal</span>
-                    </div>
                     <div class="card-meta">
                         <span class="card-date">2025-12-20</span>
                     </div>
@@ -262,7 +342,7 @@
             </div>
 
             <!-- Project 2: 3D Card - Tall -->
-            <div class="card-wrapper" data-delay="600">
+            <div class="card-wrapper" data-delay="600" data-category="3d">
                 <article class="card card-tall card-video-full card-video-scaled-down">
                     <div class="card-visual">
                         <video class="card-video" autoplay loop muted playsinline>
@@ -279,12 +359,6 @@
                             </svg>
                             <span class="like-count">0</span>
                         </button>
-                    </div>
-                    <div class="card-tags">
-                        <span class="card-tag">Claude Code</span>
-                        <span class="card-tag">Xcode</span>
-                        <span class="card-tag">SwiftUI</span>
-                        <span class="card-tag">Metal</span>
                     </div>
                     <div class="card-meta">
                         <span class="card-date">2025-12-15</span>
@@ -314,8 +388,20 @@
 
     <!-- Footer -->
     <footer class="footer">
+        <div class="footer-left">
+            <span class="name"><strong>Build step by step.</strong></span>
+        </div>
+        <div class="footer-right">
+            <a href="mailto:chentongrong1@gmail.com" class="header-link" title="chentongrong1@gmail.com">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                    <path d="M22 6L12 13L2 6"></path>
+                </svg>
+                <span style="margin-left: 6px;"><strong>Keep in Touch</strong></span>
+            </a>
+        </div>
     </footer>
 
-    <script src="script.js?v=2"></script>
+    <script src="script.js?v=3"></script>
 </body>
 </html>

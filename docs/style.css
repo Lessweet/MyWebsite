@@ -286,7 +286,9 @@ a {
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    position: relative;
 }
+
 
 .card-wrapper {
     opacity: 0;
@@ -319,7 +321,7 @@ a {
 .card-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 20px;
 }
 
 .card-wrapper .card {
@@ -336,12 +338,12 @@ a {
 .card-info {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 2px;
 }
 
 .card-title-row {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
 }
 
@@ -370,7 +372,7 @@ a {
 
 .card-meta {
     display: flex;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
     margin-top: 0;
 }
@@ -381,7 +383,7 @@ a {
 }
 
 .card-like {
-    display: flex;
+    display: none;
     align-items: center;
     gap: 4px;
     background: none;
@@ -479,6 +481,24 @@ a {
     height: 100%;
     object-fit: cover;
     border-radius: 0;
+}
+
+/* Card with contained video — height fixed at 70% of card, width auto.
+   Placed after .card-video-full rules and uses combined-class selector to win specificity.
+   aspect-ratio is shorter than the source (834x1112 → 834x980) so object-fit: cover with
+   object-position: center bottom crops the top ~12%, hiding the AI watermark. */
+.card-video-contained.card-video-full .card-video,
+.card-video-contained .card-video {
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+    aspect-ratio: 834 / 980;
+    object-fit: cover;
+    object-position: center bottom;
+}
+
+.card-video-contained {
+    background: transparent;
 }
 
 /* ========================================
@@ -1031,11 +1051,67 @@ a {
 }
 
 /* ========================================
+   Category Navigation (header right)
+   ======================================== */
+.category-nav {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.category-btn {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-700);
+    background: transparent;
+    border: 1px solid var(--gray-300);
+    border-radius: 999px;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.category-btn:hover {
+    background: var(--gray-100);
+    border-color: var(--gray-400);
+    color: var(--gray-900);
+}
+
+.category-btn.active {
+    background: var(--gray-900);
+    color: var(--white);
+    border-color: var(--gray-900);
+}
+
+/* ========================================
    Footer
    ======================================== */
 .footer {
-    padding: 48px;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0 32px;
+    gap: 24px;
+    flex-wrap: wrap;
+    border-top: 1px solid var(--gray-200);
+    margin: 0 32px;
+}
+
+.footer-left {
+    display: flex;
+    align-items: center;
+    margin-right: auto;
+    text-align: left;
+}
+
+.footer-right {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    text-align: right;
 }
 
 .footer-text {
@@ -1055,6 +1131,16 @@ a {
 @media (max-width: 900px) {
     .header {
         padding: 24px 32px;
+    }
+
+    .header-left,
+    .header-right {
+        width: 100%;
+    }
+
+    .category-nav {
+        width: 100%;
+        justify-content: space-between;
     }
 
     .info-section {
@@ -1083,12 +1169,7 @@ a {
     }
 
     .header-left {
-        order: 3 !important;
-    }
-
-    .header-center {
         order: 1 !important;
-        text-align: left !important;
     }
 
     .header-right {
@@ -1127,5 +1208,24 @@ a {
     .iphone-small {
         width: 110px;
         height: 230px;
+    }
+}
+
+/* Wide screen breakpoints: more columns on larger viewports */
+@media (min-width: 1440px) {
+    .masonry-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 1800px) {
+    .masonry-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+@media (min-width: 2200px) {
+    .masonry-grid {
+        grid-template-columns: repeat(6, 1fr);
     }
 }
