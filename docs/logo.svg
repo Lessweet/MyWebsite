@@ -5,22 +5,24 @@
     0%, 100% { opacity: 1; }
     50%       { opacity: 0.18; }
   }
-  path:nth-of-type(1)  { animation-delay: 0s;    }
-  path:nth-of-type(2)  { animation-delay: 0.06s; }
-  path:nth-of-type(3)  { animation-delay: 0.12s; }
-  path:nth-of-type(4)  { animation-delay: 0.18s; }
-  path:nth-of-type(5)  { animation-delay: 0.24s; }
-  path:nth-of-type(6)  { animation-delay: 0.30s; }
-  path:nth-of-type(7)  { animation-delay: 0.36s; }
-  path:nth-of-type(8)  { animation-delay: 0.42s; }
-  path:nth-of-type(9)  { animation-delay: 0.48s; }
-  path:nth-of-type(10) { animation-delay: 0.54s; }
-  path:nth-of-type(11) { animation-delay: 0.60s; }
-  path:nth-of-type(12) { animation-delay: 0.66s; }
-  path:nth-of-type(13) { animation-delay: 0.72s; }
-  path:nth-of-type(14) { animation-delay: 0.78s; }
-  path:nth-of-type(15) { animation-delay: 0.84s; }
-  path:nth-of-type(16) { animation-delay: 0.90s; }
+  /* Delays ordered by each wedge's diagonal position (top-left → bottom-right). */
+  path:nth-of-type(13) { animation-delay: 0s;    }
+  path:nth-of-type(16) { animation-delay: 0.05s; }
+  path:nth-of-type(17) { animation-delay: 0.10s; }
+  path:nth-of-type(11) { animation-delay: 0.15s; }
+  path:nth-of-type(9)  { animation-delay: 0.20s; }
+  path:nth-of-type(7)  { animation-delay: 0.25s; }
+  path:nth-of-type(5)  { animation-delay: 0.30s; }
+  path:nth-of-type(3)  { animation-delay: 0.35s; }
+  path:nth-of-type(1)  { animation-delay: 0.40s; }
+  path:nth-of-type(2)  { animation-delay: 0.45s; }
+  path:nth-of-type(4)  { animation-delay: 0.50s; }
+  path:nth-of-type(6)  { animation-delay: 0.55s; }
+  path:nth-of-type(8)  { animation-delay: 0.60s; }
+  path:nth-of-type(10) { animation-delay: 0.65s; }
+  path:nth-of-type(12) { animation-delay: 0.70s; }
+  path:nth-of-type(15) { animation-delay: 0.75s; }
+  path:nth-of-type(14) { animation-delay: 0.80s; }
 </style>
 <path d="M160.272 23.6764C162.917 25.7622 165.998 28.7231 168.535 31.0284C158.214 41.6868 146.113 54.1519 135.309 64.2599C134.419 63.2598 133.529 62.1018 132.686 61.052C109.52 85.5928 84.5561 109.05 61.2678 133.534C58.3851 136.565 54.6778 139.144 51.6902 142.122C45.318 148.473 39.0194 154.901 32.7143 161.319C31.3814 162.771 28.5141 166.45 26.3412 164.819C26.3032 162.109 45.7237 143.793 48.8649 140.46L124.068 62.0658C127.457 58.543 128.591 55.4627 131.775 52.2779C141.299 42.7412 150.88 33.356 160.272 23.6764Z" fill="black"/>
 <path d="M170.978 34.7799C172.916 35.2862 176.425 41.1396 177.542 43.0092C169.112 52.6191 155.107 66.588 145.711 75.6703L143.165 72.4996C121.35 93.1166 100.777 115.653 79.7885 137.112C73.0778 143.973 66.2716 149.793 59.4796 156.431C53.6213 162.157 47.8828 168.298 42.1383 174.166C41.0574 175.393 40.6111 176.061 39.1725 176.868C37.6043 176.938 37.962 177.162 36.9227 176.429C36.8212 174.19 39.3865 172.352 40.8773 170.84C47.3317 164.297 53.7313 157.687 60.1039 151.064C63.1827 147.865 65.6281 143.966 68.7042 140.762C83.8839 124.951 99.0271 109.084 114.453 93.5099L131.316 76.6323C133.006 74.953 138.338 69.9897 139.382 68.299L138.886 67.0532C140.041 65.4531 148.911 56.6799 150.764 54.9112C157.414 48.5614 164.273 40.843 170.978 34.7799Z" fill="black"/>
