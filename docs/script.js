@@ -6,7 +6,34 @@
 document.addEventListener('DOMContentLoaded', () => {
     initCardAnimations();
     initCategoryFilter();
+    initLogoFontShuffle();
 });
+
+/**
+ * Continuously swap the header logo's font through 6 fonts at a relaxed pace.
+ */
+function initLogoFontShuffle() {
+    const el = document.querySelector('.logo-shuffle');
+    if (!el) return;
+
+    const fonts = [
+        "'SF Mono', 'JetBrains Mono', Menlo, monospace",
+        "Georgia, 'Times New Roman', serif",
+        "'Snell Roundhand', 'Brush Script MT', cursive",
+        "Impact, 'Arial Black', sans-serif",
+        "'Helvetica Neue', Helvetica, Arial, sans-serif",
+        "'Courier New', Courier, monospace"
+    ];
+
+    let idx = 0;
+    const tick = () => {
+        el.style.fontFamily = fonts[idx];
+        idx = (idx + 1) % fonts.length;
+        setTimeout(tick, 650);
+    };
+
+    tick();
+}
 
 /**
  * Category filter: clicking a button hides cards whose data-category doesn't match.
@@ -14,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 function initCategoryFilter() {
     const buttons = document.querySelectorAll('.category-btn');
-    const cards = document.querySelectorAll('.masonry-grid > .card-wrapper');
+    const cards = document.querySelectorAll('.card-wrapper');
 
     buttons.forEach((btn) => {
         btn.addEventListener('click', () => {
@@ -27,6 +54,8 @@ function initCategoryFilter() {
                 const match = filter === 'all' || cat === filter;
                 card.style.display = match ? '' : 'none';
             });
+
+            requestAnimationFrame(updateDynamicScale);
         });
     });
 }

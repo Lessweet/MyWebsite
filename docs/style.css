@@ -88,7 +88,13 @@ a {
 
 .header-logo strong {
     font-size: 20px;
-    font-weight: 400;
+    font-weight: 700;
+}
+
+.logo-shuffle {
+    display: inline-block;
+    min-width: 88px;
+    transition: font-family 0.15s ease;
 }
 
 .logo-icon {
@@ -117,28 +123,29 @@ a {
 
 @media (min-width: 801px) {
     .header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
         flex-wrap: nowrap;
-        justify-content: space-between;
+        align-items: center;
+        justify-content: normal;
     }
 
     .header-left {
-        order: 1 !important;
-        flex-shrink: 0;
-        width: auto !important;
-        margin-right: auto;
+        grid-column: 1;
+        justify-self: start;
     }
 
     .header-center {
-        order: 2 !important;
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
+        grid-column: 2;
+        justify-self: center;
+        min-width: 0;
+        text-align: center;
     }
 
     .header-right {
-        order: 3 !important;
-        flex-shrink: 0;
-        margin-left: auto !important;
+        grid-column: 3;
+        justify-self: end;
+        margin-left: 0 !important;
     }
 }
 
@@ -291,7 +298,7 @@ a {
 .masonry-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 40px 16px;
+    gap: 40px 24px;
 }
 
 /* ========================================
@@ -304,6 +311,10 @@ a {
     display: flex;
     flex-direction: column;
     position: relative;
+}
+
+.card-gray-outline {
+    border: 1px solid var(--gray-100);
 }
 
 
@@ -339,9 +350,11 @@ a {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    min-width: 0;
 }
 
 .card-wrapper .card {
+    width: 100%;
     aspect-ratio: 1 / 1;
 }
 
@@ -355,7 +368,7 @@ a {
 .card-info {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
 }
 
 .card-title-row {
@@ -365,7 +378,7 @@ a {
 }
 
 .card-label {
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 400;
     color: var(--gray-900);
     padding: 0;
@@ -389,6 +402,7 @@ a {
 
 .card-meta {
     display: flex;
+    gap: 8px;
     justify-content: center;
     align-items: center;
     margin-top: 0;
@@ -397,6 +411,19 @@ a {
 .card-date {
     font-size: 12px;
     color: var(--gray-600);
+}
+
+.card-meta .card-tag {
+    font-size: 12px;
+    color: var(--gray-600);
+    background: none;
+    padding: 0;
+    border-radius: 0;
+}
+
+.card-meta .card-tag::after {
+    content: "•";
+    margin-left: 8px;
 }
 
 .card-like {
@@ -500,14 +527,14 @@ a {
     border-radius: 0;
 }
 
-/* Card with contained video — height fixed at 70% of card, width auto.
+/* Card with contained video — height fixed at 72% of card, width auto.
    Placed after .card-video-full rules and uses combined-class selector to win specificity.
    aspect-ratio is shorter than the source (834x1112 → 834x980) so object-fit: cover with
    object-position: center bottom crops the top ~12%, hiding the AI watermark. */
 .card-video-contained.card-video-full .card-video,
 .card-video-contained .card-video {
     width: auto;
-    height: 100%;
+    height: 72%;
     max-width: 100%;
     aspect-ratio: 834 / 980;
     object-fit: cover;
@@ -515,7 +542,28 @@ a {
 }
 
 .card-video-contained {
-    background: transparent;
+    background: var(--gray-100);
+}
+
+.card-video-contained::before {
+    content: "";
+    position: absolute;
+    inset: -36%;
+    background-color: var(--gray-100);
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.88)),
+        var(--motion-poster-bg, none);
+    background-position: center;
+    background-size: cover;
+    filter: blur(60px) saturate(1.25);
+    opacity: 0.62;
+    transform: scale(1.18);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.card-video-contained .card-visual {
+    z-index: 1;
 }
 
 /* ========================================
@@ -1073,12 +1121,6 @@ a {
 /* ========================================
    Responsive
    ======================================== */
-@media (max-width: 1200px) {
-    .masonry-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
 @media (max-width: 900px) {
     .info-section {
         flex-direction: column;
@@ -1095,24 +1137,25 @@ a {
     }
 
     .masonry-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
 @media (max-width: 800px) {
     .header {
-        padding: 24px 32px;
+        padding: 24px 12px;
         gap: 12px;
         flex-wrap: wrap;
     }
 
     .header-placeholder {
-        height: 160px;
+        height: 150px;
     }
 
     .header-left {
         order: 1;
         flex-shrink: 0;
+        margin-right: auto;
     }
 
     .header-right {
@@ -1123,25 +1166,29 @@ a {
     .header-center {
         order: 3;
         width: 100%;
-        margin-top: 12px;
+        margin-top: 16px;
+        text-align: left;
     }
 
     .category-nav {
         width: 100%;
-        justify-content: center;
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 2px;
     }
 
     .info-section {
-        padding: 24px 32px 32px;
+        padding: 24px 12px 32px;
     }
 
     .work-section {
-        padding: 0 32px 40px;
+        padding: 0 12px 40px;
     }
 
     .masonry-grid {
-        grid-template-columns: repeat(1, 1fr);
-        gap: 40px 16px;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 32px;
     }
 
     .card-tall {
@@ -1162,21 +1209,20 @@ a {
     }
 }
 
-/* Wide screen breakpoints: more columns on larger viewports */
-@media (min-width: 1440px) {
+@media (min-width: 1200px) {
     .masonry-grid {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 }
 
 @media (min-width: 1800px) {
     .masonry-grid {
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(5, minmax(0, 1fr));
     }
 }
 
 @media (min-width: 2200px) {
     .masonry-grid {
-        grid-template-columns: repeat(6, 1fr);
+        grid-template-columns: repeat(6, minmax(0, 1fr));
     }
 }
