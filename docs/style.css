@@ -77,7 +77,25 @@ a {
 .header-left {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 2px;
+}
+
+/* Matches the `.icon-key` style inside outlined.html: 12px / SF Mono / dim gray / centered */
+.header-tagline {
+    margin: 10px 0 0;
+    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    font-weight: 400;
+    color: #969696;
+    text-align: center;
+    line-height: 1.5;
+    user-select: none;
+}
+
+.header-tagline strong {
+    color: var(--gray-900);
+    font-weight: inherit;
 }
 
 /* VIBEDESIGN pixel banner — replaces the previous logo + wordmark */
