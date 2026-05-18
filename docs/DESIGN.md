@@ -86,15 +86,14 @@ Row 2:           [All] [Poster] [Motion] [3D] [Interactive]
 ### 4.2 Masonry Grid
 
 ```css
-.masonry-grid { display: grid; gap: 40px 16px; }
+.masonry-grid { display: grid; gap: 40px 24px; }
 ```
 
 | 视口宽度 | 列数 |
 |---|---|
-| ≤ 800px | 1 |
-| 801–900px | 2 |
-| 901–1439px | 3 |
-| 1440–1799px | 4 |
+| ≤ 900px | 2 |
+| 901–1199px | 3 |
+| 1200–1799px | 4 |
 | 1800–2199px | 5 |
 | ≥ 2200px | 6 |
 
@@ -189,7 +188,7 @@ JS 行为(`script.js`):
 | Key | Label | 包含项目 |
 |---|---|---|
 | `poster` | Poster | Dynamic Poster ×4(立体未来感系列) |
-| `motion` | Motion | AI Assistant Motion(lottie 动效卡片) |
+| `motion` | Motion | Voicer / AI Assistant Motion(lottie 动效卡片) |
 | `3d` | 3D | 3D Rotation / 3D Card Glass / 3D Sphere / Glass Balls / Gesture Interaction / Gyroscope(SwiftUI / Metal iOS demos) |
 | `interactive` | Interactive | Eye Tracking / Voice Particles(网页交互 demos) |
 
@@ -221,7 +220,7 @@ docs/
 │   ├── 1.mp4 ... 4.mp4
 ├── multi-scene-character-demo/  # Eye Tracking iframe
 ├── voice-particles/        # Voice Particles iframe
-└── *_compressed.mp4        # 各 3D 项目录屏
+└── *_compressed.mp4        # 各视频项目录屏,如 voicer_compressed.mp4 与 3D demos
 ```
 
 ---

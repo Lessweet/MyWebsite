@@ -1,0 +1,2851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gradient Mesh Lab</title>
+<style>
+  :root {
+    --bg: #ededed;
+    --surface: #ffffff;
+    --surface-2: #f7f7f7;
+    --border: #d7d7d7;
+    --border-strong: #1c1c1c;
+    --text: #181818;
+    --text-muted: #666666;
+    --text-dim: #969696;
+    --brand: #000000;
+    --brand-soft: rgba(0, 0, 0, 0.08);
+    --dur-1-5: 1.5s;
+    --dur-1-8: 1.8s;
+    --dur-2-1: 2.1s;
+    --dur-2-2: 2.2s;
+    --dur-2-3: 2.3s;
+    --dur-2-4: 2.4s;
+    --dur-2-5: 2.5s;
+    --dur-2-6: 2.6s;
+    --dur-2-8: 2.8s;
+    --dur-4-0: 4s;
+    --dur-5-0: 5s;
+    --dur-8-0: 8s;
+    --dur-24-0: 24s;
+    --delay-150: 150ms;
+    --delay-300: 300ms;
+    --delay-600: 600ms;
+    --radius: 8px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  main {
+    width: min(1040px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 36px 0 72px;
+  }
+
+  .brand-banner {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 0 24px;
+    padding: 8px 12px;
+    min-height: 220px;
+    background: transparent;
+    cursor: pointer;
+    user-select: none;
+  }
+  .brand-banner-grid {
+    font-family: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 0.65;
+    letter-spacing: 0;
+    white-space: pre;
+  }
+  .brand-banner .px-letter {
+    color: var(--brand);
+    animation: px-pulse 2.6s ease-in-out infinite;
+    animation-delay: var(--d, 0s);
+  }
+  .brand-banner .px-accent,
+  .brand-banner .px-star {
+    color: var(--text-dim);
+    animation: px-twinkle 3.6s ease-in-out infinite;
+    animation-delay: var(--d, 0s);
+  }
+  @keyframes px-twinkle {
+    0%, 100% { opacity: 0.18; }
+    50%      { opacity: 0.65; }
+  }
+  @keyframes px-pulse {
+    0%, 100% { opacity: 0.82; }
+    50%      { opacity: 1; }
+  }
+
+  header {
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    margin: 0 0 6px;
+    font-size: 24px;
+    line-height: 1.2;
+    font-weight: 650;
+  }
+
+  .subtitle {
+    margin: 0;
+    max-width: 620px;
+    color: var(--text-muted);
+  }
+
+  .spec {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: fit-content;
+    max-width: 100%;
+    margin-bottom: 16px;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 12px;
+    white-space: normal;
+  }
+
+  .spec-divider {
+    width: 1px;
+    height: 18px;
+    background: var(--border);
+  }
+
+  .weight-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .weight-control label {
+    color: var(--text-muted);
+  }
+
+  .weight-control input {
+    width: 58px;
+    min-height: 28px;
+    padding: 2px 7px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+  }
+
+  .weight-control input:focus {
+    outline: none;
+    border-color: var(--border-strong);
+  }
+
+  .color-control {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border: 0;
+    padding: 0;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .color-control:focus-within {
+    outline: 2px solid var(--border-strong);
+    outline-offset: 3px;
+  }
+
+  .color-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--brand);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+    pointer-events: none;
+  }
+
+  .toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  .toolbar strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .toolbar .motion-rules {
+    position: relative;
+    flex: 0 0 auto;
+    margin: 0;
+  }
+
+  .spec .motion-rules {
+    position: relative;
+    flex: 0 0 auto;
+    margin: 0 0 0 auto;
+  }
+
+  .toolbar .motion-rules.is-collapsible {
+    overflow: visible;
+  }
+
+  .spec .motion-rules.is-collapsible {
+    overflow: visible;
+  }
+
+  .toolbar .motion-rules-toggle {
+    min-height: 36px;
+    padding: 0 14px;
+    white-space: nowrap;
+  }
+
+  .spec .motion-rules-toggle {
+    min-height: 28px;
+    padding: 0 10px;
+    white-space: nowrap;
+  }
+
+  .toolbar .motion-rules .motion-rule-list,
+  .spec .motion-rules .motion-rule-list {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 20;
+    width: min(760px, calc(100vw - 40px));
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
+  }
+
+  .motion-rules {
+    margin: 0 0 16px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  .motion-rules.is-collapsible {
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .motion-rules h2 {
+    margin: 0 0 10px;
+    font-size: 13px;
+    font-weight: 650;
+  }
+
+  .motion-rules.is-collapsible h2 {
+    margin: 0;
+  }
+
+  .motion-rules-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 650;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .motion-rules-toggle:hover {
+    background: var(--surface-2);
+  }
+
+  .motion-rules-toggle-icon {
+    width: 16px;
+    height: 16px;
+    margin-left: 12px;
+    flex: 0 0 auto;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+    transition: transform 0.18s ease;
+  }
+
+  .motion-rules:not(.is-collapsed) .motion-rules-toggle-icon {
+    transform: rotate(180deg);
+  }
+
+  .motion-rule-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .motion-rules.is-collapsible .motion-rule-list {
+    padding: 0 14px 14px;
+  }
+
+  .toolbar .motion-rules.is-collapsible .motion-rule-list {
+    padding: 14px;
+  }
+
+  .spec .motion-rules.is-collapsible .motion-rule-list {
+    padding: 14px;
+  }
+
+  .motion-rule-list[hidden] {
+    display: none;
+  }
+
+  .motion-rule {
+    min-height: 82px;
+    padding: 10px;
+    border-radius: var(--radius);
+    background: var(--surface-2);
+  }
+
+  .motion-rule strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--text);
+    font-size: 12px;
+    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+  }
+
+  .motion-rule span {
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  .icon-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .section-divider {
+    margin-top: 56px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+  }
+
+  .section-divider h2 {
+    margin: 0 0 6px;
+    font-size: 22px;
+    line-height: 1.2;
+    font-weight: 650;
+  }
+
+  .section-divider p {
+    margin: 0;
+    max-width: 620px;
+    color: var(--text-muted);
+  }
+
+  .pixel-grid .icon-preview svg {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    shape-rendering: crispEdges;
+  }
+
+  .gradient-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+
+  .gradient-color-set {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .gradient-canvas {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 12px;
+    overflow: hidden;
+    isolation: isolate;
+    border: 1px solid var(--border);
+    background: linear-gradient(135deg,
+      var(--g-color-1, #fffee0) 0%,
+      var(--g-color-2, #ebccff) 50%,
+      var(--g-color-3, #c2fffd) 100%);
+  }
+
+  .gradient-blob {
+    position: absolute;
+    width: 110%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    filter: blur(var(--g-blur, 80px));
+    will-change: transform;
+  }
+
+  .gradient-blob-1 {
+    background: radial-gradient(circle, var(--g-color-1, #fffee0) 0%, transparent 70%);
+    top: -30%;
+    left: -30%;
+    animation: gradient-drift-1 calc(14s / var(--g-speed, 1)) ease-in-out infinite alternate;
+  }
+
+  .gradient-blob-2 {
+    background: radial-gradient(circle, var(--g-color-2, #ebccff) 0%, transparent 70%);
+    top: -10%;
+    left: 20%;
+    animation: gradient-drift-2 calc(17s / var(--g-speed, 1)) ease-in-out infinite alternate;
+  }
+
+  .gradient-blob-3 {
+    background: radial-gradient(circle, var(--g-color-3, #c2fffd) 0%, transparent 70%);
+    top: 20%;
+    left: -10%;
+    animation: gradient-drift-3 calc(20s / var(--g-speed, 1)) ease-in-out infinite alternate;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+    width: 110px;
+    height: 12px;
+    padding: 0;
+    border: 0;
+    margin: 0;
+    vertical-align: middle;
+  }
+
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 1px;
+    background: var(--text-dim);
+  }
+
+  input[type="range"]::-moz-range-track {
+    height: 1px;
+    background: var(--text-dim);
+    border: 0;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 11px;
+    height: 11px;
+    margin-top: -5px;
+    background: var(--text);
+    border: 0;
+    border-radius: 0;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 11px;
+    height: 11px;
+    background: var(--text);
+    border: 0;
+    border-radius: 0;
+    cursor: pointer;
+  }
+
+  .weight-value {
+    display: inline-block;
+    min-width: 28px;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    font-size: 12px;
+  }
+
+  .ascii-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .ascii-stage {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 340px;
+    overflow: hidden;
+  }
+
+  .ascii-canvas {
+    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    line-height: 1;
+    letter-spacing: 0;
+    white-space: pre;
+    margin: 0;
+    user-select: none;
+    color: var(--brand);
+    opacity: 0.85;
+  }
+
+  @media (max-width: 720px) {
+    .ascii-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @keyframes gradient-drift-1 {
+    0%   { transform: translate(0, 0) scale(1); }
+    33%  { transform: translate(50%, 30%) scale(1.2); }
+    66%  { transform: translate(20%, 60%) scale(0.9); }
+    100% { transform: translate(70%, 20%) scale(1.1); }
+  }
+
+  @keyframes gradient-drift-2 {
+    0%   { transform: translate(0, 0) scale(1); }
+    33%  { transform: translate(-30%, 40%) scale(1.15); }
+    66%  { transform: translate(40%, -20%) scale(0.95); }
+    100% { transform: translate(-20%, 50%) scale(1.05); }
+  }
+
+  @keyframes gradient-drift-3 {
+    0%   { transform: translate(0, 0) scale(1); }
+    33%  { transform: translate(50%, -30%) scale(1.1); }
+    66%  { transform: translate(-20%, 40%) scale(1.2); }
+    100% { transform: translate(40%, 50%) scale(0.9); }
+  }
+
+  .icon-card {
+    padding: 16px;
+    border-radius: var(--radius);
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .icon-preview {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: var(--radius);
+    background: var(--brand-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon-preview svg {
+    width: 64%;
+    height: 64%;
+    display: block;
+    overflow: visible;
+  }
+
+  .icon-card[data-animation]:not([data-animation=""]) [class*="anim-"],
+  .icon-card[data-animation]:not([data-animation=""]) .favorite-star,
+  .icon-card[data-animation]:not([data-animation=""]) .favorite-rays {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  .icon-card[data-animation]:not([data-animation=""]) .anim-viewbox {
+    transform-box: view-box;
+    transform-origin: center;
+  }
+
+  .icon-card[data-animation="doc"] .anim-doc-line {
+    animation: doc-line-write var(--dur-2-8) ease-in-out infinite;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+  .icon-card[data-animation="doc"] .anim-doc-line-2 { animation-delay: var(--delay-300); }
+  .icon-card[data-animation="doc"] .anim-doc-line-3 { animation-delay: var(--delay-600); }
+  .icon-card[data-animation="user"] .anim-user-head { animation: user-head var(--dur-2-3) ease-out infinite; }
+  .icon-card[data-animation="user"] .anim-user-shoulders { animation: user-shoulders var(--dur-2-3) ease-out infinite; }
+  .icon-card[data-animation="settings"] .anim-gear { animation: gear-turn var(--dur-2-8) cubic-bezier(0.25, 0.8, 0.2, 1) infinite; transform-box: view-box; transform-origin: 12px 12px; }
+  .icon-card[data-animation="search"] .anim-search { animation: search-scan var(--dur-4-0) cubic-bezier(0.16, 0.9, 0.2, 1) infinite; transform-box: view-box; transform-origin: center; }
+  .icon-card[data-animation="cart"] .anim-cart-burst {
+    animation: cart-burst var(--dur-2-5) ease-out infinite;
+    opacity: 0;
+  }
+  .icon-card[data-animation="cart"] .anim-cart-burst-1 { --tx: -5px; --ty: -9px; }
+  .icon-card[data-animation="cart"] .anim-cart-burst-2 { --tx: -1px; --ty: -11px; animation-delay: var(--delay-150); }
+  .icon-card[data-animation="cart"] .anim-cart-burst-3 { --tx: 3px; --ty: -10px; animation-delay: var(--delay-300); }
+  .icon-card[data-animation="cart"] .anim-cart-burst-4 { --tx: 6px; --ty: -8px; animation-delay: var(--delay-300); }
+  .icon-card[data-animation="clap"] .anim-clap-hand { animation: clap-hand var(--dur-1-8) ease-in-out infinite; transform-box: view-box; transform-origin: 9px 14px; }
+  .icon-card[data-animation="clap"] .anim-clap-lines { animation: clap-lines var(--dur-1-8) ease-out infinite; transform-box: view-box; transform-origin: center; }
+  .icon-card[data-animation="music"] .anim-music-note {
+    animation: music-float var(--dur-2-8) ease-in-out infinite;
+    opacity: 0;
+    transform-box: view-box;
+    transform-origin: center;
+  }
+  .icon-card[data-animation="music"] .anim-music-base {
+    animation: music-tilt var(--dur-2-8) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 12px 14px;
+  }
+  .icon-card[data-animation="music"] .anim-music-note-2 { animation-delay: calc(var(--dur-2-8) / 2); }
+  .icon-card[data-animation="lightning"] .icon-preview svg {
+    animation: lightning-pulse var(--dur-1-8) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: center;
+  }
+  .icon-card[data-animation="lightning"] .anim-lightning {
+    animation: lightning-flash var(--dur-2-4) ease-in-out infinite;
+  }
+  .icon-card[data-animation="pencil"] .anim-pencil { animation: pencil-write var(--dur-5-0) ease-in-out infinite; transform-box: view-box; transform-origin: 13px 12px; }
+  .icon-card[data-animation="pencil"] .anim-pencil-trace {
+    animation: pencil-trace var(--dur-5-0) ease-in-out infinite;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+  .icon-card[data-animation="eye"] .anim-eye-shape { animation: eye-blink var(--dur-2-8) ease-in-out infinite; transform-box: view-box; transform-origin: 12px 12px; }
+  .icon-card[data-animation="eye"] .anim-eye-pupil { animation: eye-pupil-blink var(--dur-2-8) ease-in-out infinite; transform-box: view-box; transform-origin: center; }
+  .icon-card[data-animation="bell"] .anim-bell { animation: bell-rattle var(--dur-4-0) cubic-bezier(0.25, 0.75, 0.2, 1) infinite; transform-box: view-box; transform-origin: 12px 4px; }
+  .icon-card[data-animation="bell"] .anim-bell-clapper { animation: bell-clapper var(--dur-4-0) linear infinite; transform-box: view-box; transform-origin: 12px 17px; }
+  .icon-card[data-animation="pin"] .anim-pin-ripple {
+    animation: pin-ripple var(--dur-2-5) ease-out infinite;
+    opacity: 0;
+  }
+  .icon-card[data-animation="pin"] .anim-pin-ripple-2 { animation-delay: calc(var(--dur-2-5) / 3); }
+  .icon-card[data-animation="pin"] .anim-pin-ripple-3 { animation-delay: calc(var(--dur-2-5) * 2 / 3); }
+  .icon-card[data-animation="brain"] .anim-brain {
+    animation: brain-pulse var(--dur-2-2) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 12px 12px;
+  }
+  .icon-card[data-animation="ai-image"] .anim-ai-spark {
+    animation: ai-twinkle var(--dur-2-2) ease-in-out infinite;
+  }
+  .icon-card[data-animation="ai-image"] .anim-ai-spark-small {
+    animation-delay: calc(var(--dur-2-2) / 2);
+  }
+  .icon-card[data-animation="ai-cursor"] .anim-cursor {
+    animation: cursor-nudge var(--dur-2-2) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 10px 12px;
+  }
+  .icon-card[data-animation="ai-cursor"] .anim-cursor-click {
+    animation: cursor-click var(--dur-2-2) ease-out infinite;
+    opacity: 0;
+    transform-box: view-box;
+    transform-origin: 6px 5px;
+  }
+  .icon-card[data-animation="ai-cursor"] .anim-cursor-spark {
+    animation: ai-twinkle var(--dur-2-2) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 18px 6px;
+  }
+  .icon-card[data-animation="hourglass"] .anim-hourglass-top {
+    animation: hourglass-top var(--dur-2-8) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 12px 8px;
+  }
+  .icon-card[data-animation="hourglass"] .anim-hourglass-stream {
+    animation: hourglass-stream var(--dur-2-8) ease-in-out infinite;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+  .icon-card[data-animation="hourglass"] .anim-hourglass-bottom {
+    animation: hourglass-bottom var(--dur-2-8) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 12px 18px;
+  }
+  .icon-card[data-animation="px-brain"] .icon-preview svg {
+    animation: px-pulse var(--dur-1-5) step-end infinite;
+    transform-box: view-box;
+    transform-origin: center;
+  }
+  .icon-card[data-animation="px-heart"] .icon-preview svg {
+    animation: px-beat var(--dur-1-5) step-end infinite;
+    transform-box: view-box;
+    transform-origin: center;
+  }
+  .icon-card[data-animation="px-lightning"] .icon-preview svg {
+    animation: px-flash var(--dur-1-5) step-end infinite;
+    transform-box: view-box;
+    transform-origin: center;
+  }
+  .icon-card[data-animation="px-favorite"] .icon-preview svg {
+    animation: px-twinkle var(--dur-1-5) step-end infinite;
+    transform-box: view-box;
+    transform-origin: center;
+  }
+  .icon-card[data-animation="px-gift"] .icon-preview svg {
+    animation: px-shake var(--dur-1-5) step-end infinite;
+    transform-box: view-box;
+    transform-origin: center;
+  }
+  .icon-card[data-animation="px-home"] .icon-preview svg {
+    animation: px-bounce var(--dur-1-5) step-end infinite;
+    transform-box: view-box;
+    transform-origin: center;
+  }
+  .icon-card[data-animation="px-robot"] .icon-preview svg {
+    animation: px-bounce var(--dur-1-5) step-end infinite;
+    transform-box: view-box;
+    transform-origin: center;
+  }
+  .icon-card[data-animation="px-chip"] .icon-preview svg {
+    animation: px-pulse var(--dur-1-5) step-end infinite;
+    transform-box: view-box;
+    transform-origin: center;
+  }
+  .icon-card[data-animation="px-chat"] .icon-preview svg {
+    animation: px-shake var(--dur-1-5) step-end infinite;
+    transform-box: view-box;
+    transform-origin: center;
+  }
+  .icon-card[data-animation="px-sparkle"] .icon-preview svg {
+    animation: px-twinkle var(--dur-1-5) step-end infinite;
+    transform-box: view-box;
+    transform-origin: center;
+  }
+  .icon-card[data-animation="px-network"] .icon-preview svg {
+    animation: px-pulse var(--dur-1-5) step-end infinite;
+    transform-box: view-box;
+    transform-origin: center;
+  }
+  .icon-card[data-animation="px-ai-image"] .anim-px-spark {
+    animation: px-twinkle var(--dur-1-5) step-end infinite;
+  }
+  .icon-card[data-animation="px-gift"] .anim-px-gift-spark {
+    animation: px-gift-spark var(--dur-1-8) step-end infinite;
+  }
+  .icon-card[data-animation="px-gift"] .anim-px-gift-spark-2 {
+    animation-delay: calc(var(--dur-1-8) / 4);
+  }
+  .icon-card[data-animation="px-gift"] .anim-px-gift-spark-3 {
+    animation-delay: calc(var(--dur-1-8) / 2);
+  }
+  .icon-card[data-animation="px-gift"] .anim-px-gift-spark-4 {
+    animation-delay: calc(var(--dur-1-8) * 3 / 4);
+  }
+  .icon-card[data-animation="home"] .anim-home { animation: home-settle var(--dur-2-4) ease-out infinite; }
+  .icon-card[data-animation="lock"] .anim-lock-shackle { animation: lock-shackle var(--dur-2-6) ease-in-out infinite; transform-box: view-box; transform-origin: 12px 12px; }
+  .icon-card[data-animation="lock"] .anim-lock-dot { animation: lock-dot var(--dur-2-6) ease-out infinite; }
+  .icon-card[data-animation="message"] .anim-message-dot-1 { animation: typing-dot var(--dur-1-5) ease-in-out infinite 0ms; }
+  .icon-card[data-animation="message"] .anim-message-dot-2 { animation: typing-dot var(--dur-1-5) ease-in-out infinite var(--delay-150); }
+  .icon-card[data-animation="message"] .anim-message-dot-3 { animation: typing-dot var(--dur-1-5) ease-in-out infinite var(--delay-300); }
+  .icon-card[data-animation="heart"] .anim-heart { animation: heart-flutter var(--dur-2-8) cubic-bezier(0.2, 0.85, 0.25, 1) infinite; transform-box: view-box; transform-origin: 12px 12px; }
+  .icon-card[data-animation="favorite-pop"] .favorite-star { animation: favorite-pop var(--dur-2-2) cubic-bezier(0.2, 0.85, 0.25, 1) infinite; }
+  .icon-card[data-animation="favorite-pop"] .favorite-rays { animation: favorite-rays var(--dur-2-2) ease-out infinite; transform-box: view-box; transform-origin: center; }
+  .icon-card[data-animation="gift"] .anim-gift-lid { animation: gift-lid var(--dur-2-8) ease-in-out infinite; transform-box: view-box; transform-origin: 12px 8px; }
+  .icon-card[data-animation="gift"] .anim-gift-particle {
+    animation: gift-particle var(--dur-2-8) ease-out infinite;
+    opacity: 0;
+    transform-box: view-box;
+    transform-origin: center;
+  }
+  .icon-card[data-animation="gift"] .anim-gift-particle-1 { --tx: -5px; --ty: -9px; }
+  .icon-card[data-animation="gift"] .anim-gift-particle-2 { --tx: 4px; --ty: -10px; animation-delay: var(--delay-150); }
+  .icon-card[data-animation="gift"] .anim-gift-particle-3 { --tx: -8px; --ty: -6px; animation-delay: var(--delay-300); }
+  .icon-card[data-animation="gift"] .anim-gift-particle-4 { --tx: 7px; --ty: -7px; animation-delay: var(--delay-300); }
+  .icon-card[data-animation="gift"] .anim-gift-particle-5 { --tx: -2px; --ty: -11px; animation-delay: var(--delay-600); }
+  .icon-card[data-animation="gift"] .anim-gift-particle-6 { --tx: 6px; --ty: -5px; animation-delay: var(--delay-600); }
+
+  @keyframes doc-line-write {
+    0%, 12% {
+      opacity: 0;
+      stroke-dashoffset: 1;
+    }
+    42%, 76% {
+      opacity: 1;
+      stroke-dashoffset: 0;
+    }
+    100% {
+      opacity: 0;
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes clock-hand {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes user-head {
+    0%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-2px); }
+  }
+
+  @keyframes user-shoulders {
+    0%, 100% { transform: scaleX(1); }
+    45% { transform: scaleX(1.08); }
+  }
+
+  @keyframes gear-turn {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(90deg); }
+  }
+
+  @keyframes search-sway {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    25% { transform: translateX(-1.4px) rotate(-7deg); }
+    55% { transform: translateX(1.4px) rotate(7deg); }
+    78% { transform: translateX(-0.5px) rotate(-3deg); }
+  }
+
+  @keyframes search-scan {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    10% { transform: translate(-4.2px, 0.4px) rotate(-10deg); }
+    18% { transform: translate(-1.1px, -0.2px) rotate(-2deg); }
+    30% { transform: translate(0.6px, -3.8px) rotate(7deg); }
+    39% { transform: translate(1.6px, -1px) rotate(2deg); }
+    52% { transform: translate(3px, 3.4px) rotate(9deg); }
+    62% { transform: translate(0.8px, 1px) rotate(2deg); }
+    78% { transform: translate(-0.7px, 0.2px) rotate(-1deg); }
+  }
+
+  @keyframes lightning-pulse {
+    0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+    36% { transform: translateY(-1px) rotate(-3deg) scale(1.04); }
+    64% { transform: translateY(0.6px) rotate(2deg) scale(0.98); }
+  }
+
+  @keyframes clap-hand {
+    0%, 100% { transform: translateX(-1.5px) rotate(-7deg); }
+    24%, 50% { transform: translateX(1px) rotate(3deg); }
+    70% { transform: translateX(-0.6px) rotate(-3deg); }
+  }
+
+  @keyframes clap-lines {
+    0%, 14%, 72%, 100% { opacity: 0; transform: scale(0.88); }
+    26%, 48% { opacity: 1; transform: scale(1); }
+    58% { opacity: 0.45; transform: scale(1.08); }
+  }
+
+  @keyframes pencil-write {
+    0%, 100% { transform: translate(-0.8px, -0.8px) rotate(-4deg); }
+    18% { transform: translate(1.4px, -2.4px) rotate(-1deg); }
+    36% { transform: translate(3.8px, -0.5px) rotate(3deg); }
+    56% { transform: translate(6.4px, -2.2px) rotate(1deg); }
+    76% { transform: translate(9px, -0.7px) rotate(4deg); }
+    88% { transform: translate(4.2px, -1.5px) rotate(-1deg); }
+  }
+
+  @keyframes pencil-trace {
+    0%, 14% {
+      opacity: 0;
+      stroke-dashoffset: 1;
+    }
+    46% {
+      opacity: 1;
+      stroke-dashoffset: 0;
+    }
+    72% {
+      opacity: 1;
+      stroke-dashoffset: 0;
+    }
+    100% {
+      opacity: 0;
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes eye-blink {
+    0%, 44%, 58%, 70%, 100% { transform: scaleY(1); }
+    50%, 64% { transform: scaleY(0.08); }
+  }
+
+  @keyframes eye-pupil-blink {
+    0%, 44%, 58%, 70%, 100% { opacity: 1; transform: scaleY(1); }
+    50%, 64% { opacity: 0; transform: scaleY(0.08); }
+  }
+
+  @keyframes bell-rattle {
+    0%, 8%, 72%, 100% { transform: rotate(0deg); }
+    13% { transform: rotate(-16deg); }
+    19% { transform: rotate(15deg); }
+    25% { transform: rotate(-13deg); }
+    31% { transform: rotate(10deg); }
+    39% { transform: rotate(-7deg); }
+    48% { transform: rotate(4deg); }
+  }
+
+  @keyframes bell-clapper {
+    0%, 8%, 72%, 100% { transform: rotate(0deg); }
+    13% { transform: rotate(18deg); }
+    19% { transform: rotate(-18deg); }
+    25% { transform: rotate(15deg); }
+    31% { transform: rotate(-12deg); }
+    39% { transform: rotate(8deg); }
+    48% { transform: rotate(-5deg); }
+  }
+
+  @keyframes pin-drop {
+    0% { transform: translateY(-6px); opacity: 0; }
+    55% { transform: translateY(1px); opacity: 1; }
+    75% { transform: translateY(-1px); }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+
+  @keyframes home-settle {
+    0%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-2px); }
+    70% { transform: translateY(1px); }
+  }
+
+  @keyframes lock-shackle {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    36% { transform: translateY(-2px) rotate(-9deg); }
+    72% { transform: translateY(0) rotate(0deg); }
+  }
+
+  @keyframes lock-dot {
+    0%, 100% { transform: scale(1); }
+    45% { transform: scale(1.35); }
+  }
+
+  @keyframes cart-roll {
+    0%, 100% { transform: translateX(0); }
+    42% { transform: translateX(3px); }
+    75% { transform: translateX(-1px); }
+  }
+
+  @keyframes wheel-pulse {
+    0%, 100% { transform: scale(1); }
+    42% { transform: scale(1.2); }
+  }
+
+  @keyframes calendar-tabs {
+    0%, 100% { transform: translateY(0); }
+    35% { transform: translateY(-1.8px); }
+  }
+
+  @keyframes calendar-page {
+    0%, 100% { transform: translateY(0); }
+    45% { transform: translateY(1.2px); }
+  }
+
+  @keyframes typing-dot {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 1; }
+    38% { transform: translateY(-2px) scale(1.18); opacity: 0.75; }
+  }
+
+  @keyframes heart-flutter {
+    0%, 10%, 68%, 100% { transform: scale(1) rotate(0deg); }
+    16% { transform: scale(0.94) rotate(-1.5deg); }
+    23% { transform: scale(1.18) rotate(1.5deg); }
+    31% { transform: scale(0.98) rotate(0deg); }
+    42% { transform: scale(1.1) rotate(-0.8deg); }
+    54% { transform: scale(1.01) rotate(0.4deg); }
+  }
+
+  @keyframes bookmark-tuck {
+    0%, 100% { transform: translateY(0); }
+    42% { transform: translateY(2px); }
+    72% { transform: translateY(-1px); }
+  }
+
+  @keyframes favorite-pop {
+    0%   { transform: scale(1); }
+    20%  { transform: scale(0.72); }
+    46%  { transform: scale(1.2); }
+    72%  { transform: scale(0.94); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes favorite-rays {
+    0%   { opacity: 0; transform: scale(0.58) rotate(0deg); }
+    18%  { opacity: 0; transform: scale(0.62) rotate(0deg); }
+    34%  { opacity: 1; }
+    76%  { opacity: 0.75; }
+    100% { opacity: 0; transform: scale(1.28) rotate(10deg); }
+  }
+
+  @keyframes music-float {
+    0% { opacity: 0; transform: translate(0, 3px) scale(0.82) rotate(-5deg); }
+    18% { opacity: 1; }
+    68% { opacity: 1; transform: translate(0.8px, -4px) scale(1) rotate(6deg); }
+    100% { opacity: 0; transform: translate(-0.5px, -7px) scale(0.86) rotate(-8deg); }
+  }
+
+  @keyframes music-tilt {
+    0%, 100% { transform: rotate(0deg) translateY(0); }
+    34% { transform: rotate(-5deg) translateY(-0.8px); }
+    68% { transform: rotate(4deg) translateY(0.5px); }
+  }
+
+  @keyframes lightning-flash {
+    0%, 100% { opacity: 0.92; transform: scale(1); }
+    42% { opacity: 1; transform: scale(1.08); }
+    72% { opacity: 0.78; transform: scale(0.98); }
+  }
+
+  @keyframes gift-lid {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    42% { transform: translateY(-3px) rotate(-4deg); }
+    70% { transform: translateY(-1px) rotate(2deg); }
+  }
+
+  @keyframes gift-box {
+    0%, 100% { transform: scaleY(1); }
+    42% { transform: scaleY(0.96); }
+  }
+
+  @keyframes gift-particle {
+    0%, 18% { opacity: 0; transform: translate(0, 3px) scale(0.62) rotate(0deg); }
+    32% { opacity: 1; transform: translate(0, 0) scale(1) rotate(8deg); }
+    72% { opacity: 0.9; transform: translate(var(--tx), var(--ty)) scale(1.05) rotate(18deg); }
+    100% { opacity: 0; transform: translate(calc(var(--tx) * 1.2), calc(var(--ty) * 1.25)) scale(0.78) rotate(28deg); }
+  }
+
+  @keyframes pin-ripple {
+    0% { opacity: 0; transform: scale(0.45); }
+    20% { opacity: 0.9; }
+    100% { opacity: 0; transform: scale(1.8); }
+  }
+
+  @keyframes cart-burst {
+    0%, 14% { opacity: 0; transform: translate(0, 0) scale(0.4) rotate(0deg); }
+    28% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+    72% { opacity: 0.85; transform: translate(var(--tx), var(--ty)) scale(1) rotate(18deg); }
+    100% { opacity: 0; transform: translate(calc(var(--tx) * 1.25), calc(var(--ty) * 1.2)) scale(0.7) rotate(30deg); }
+  }
+
+  @keyframes brain-pulse {
+    0%, 100% { transform: scale(1); }
+    22% { transform: scale(1.06); }
+    44% { transform: scale(0.98); }
+    62% { transform: scale(1.06); }
+    82% { transform: scale(0.98); }
+  }
+
+  @keyframes ai-twinkle {
+    0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+    50% { opacity: 0.35; transform: scale(0.6) rotate(25deg); }
+  }
+
+  @keyframes cursor-nudge {
+    0%, 100% { transform: translate(0, 0); }
+    42% { transform: translate(1px, -1px); }
+    66% { transform: translate(0.35px, -0.35px); }
+  }
+
+  @keyframes cursor-click {
+    0%, 34% { opacity: 0; transform: scale(0.45); }
+    46% { opacity: 0.85; transform: scale(0.78); }
+    74%, 100% { opacity: 0; transform: scale(1.55); }
+  }
+
+  @keyframes hourglass-top {
+    0%, 100% { opacity: 0.95; transform: scaleY(1); }
+    54% { opacity: 0.5; transform: scaleY(0.64); }
+    78% { opacity: 0.9; transform: scaleY(0.86); }
+  }
+
+  @keyframes hourglass-stream {
+    0%, 14% { opacity: 0; stroke-dashoffset: 1; }
+    30% { opacity: 1; }
+    68% { opacity: 1; stroke-dashoffset: 0; }
+    100% { opacity: 0; stroke-dashoffset: -1; }
+  }
+
+  @keyframes hourglass-bottom {
+    0%, 100% { opacity: 0.68; transform: scaleX(0.72); }
+    60% { opacity: 1; transform: scaleX(1.08); }
+  }
+
+  @keyframes px-pulse {
+    0%, 49% { transform: scale(1); }
+    50%, 100% { transform: scale(1.12); }
+  }
+
+  @keyframes px-beat {
+    0%, 24% { transform: scale(1); }
+    25%, 49% { transform: scale(1.15); }
+    50%, 74% { transform: scale(0.95); }
+    75%, 100% { transform: scale(1.1); }
+  }
+
+  @keyframes px-flash {
+    0%, 32% { opacity: 1; transform: translate(0, 0); }
+    33%, 65% { opacity: 0.35; transform: translate(0, -1px); }
+    66%, 100% { opacity: 1; transform: translate(0, 0); }
+  }
+
+  @keyframes px-twinkle {
+    0%, 24% { opacity: 1; transform: scale(1); }
+    25%, 49% { opacity: 0.4; transform: scale(0.5); }
+    50%, 74% { opacity: 1; transform: scale(1); }
+    75%, 100% { opacity: 0.7; transform: scale(1.3); }
+  }
+
+  @keyframes px-shake {
+    0%, 24% { transform: translate(0, 0); }
+    25%, 49% { transform: translate(-2px, 0); }
+    50%, 74% { transform: translate(0, -2px); }
+    75%, 100% { transform: translate(2px, 0); }
+  }
+
+  @keyframes px-bounce {
+    0%, 49% { transform: translate(0, 0); }
+    50%, 100% { transform: translate(0, -2px); }
+  }
+
+  @keyframes px-gift-spark {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+
+  .icon-info {
+    min-width: 0;
+  }
+
+  .icon-name {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 650;
+  }
+
+  .icon-key {
+    margin-top: 3px;
+    color: var(--text-dim);
+    font-size: 12px;
+    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+  }
+
+  .icon-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .icon-actions[data-download="true"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .copy-btn,
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 34px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text-muted);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .copy-btn:hover,
+  .download-btn:hover {
+    color: var(--text);
+    border-color: var(--border-strong);
+    background: var(--surface-2);
+  }
+
+  .action-icon {
+    width: 17px;
+    height: 17px;
+    display: block;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+  }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%) translateY(80px);
+    padding: 10px 18px;
+    border-radius: 99px;
+    background: var(--border-strong);
+    color: white;
+    font-size: 13px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  @media (max-width: 860px) {
+    .icon-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+
+  @media (max-width: 620px) {
+    main {
+      width: min(100% - 28px, 520px);
+      padding-top: 24px;
+    }
+
+    .spec {
+      width: 100%;
+    }
+
+    .toolbar {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .toolbar .motion-rules {
+      width: 100%;
+    }
+
+    .toolbar .motion-rules .motion-rule-list {
+      position: static;
+      width: 100%;
+      margin-top: 8px;
+      box-shadow: none;
+    }
+
+    .spec .motion-rules {
+      width: 100%;
+      margin-left: 0;
+    }
+
+    .spec .motion-rules .motion-rule-list {
+      position: static;
+      width: 100%;
+      margin-top: 8px;
+      box-shadow: none;
+    }
+
+    .motion-rule-list {
+      grid-template-columns: 1fr;
+    }
+
+    .icon-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .brand-banner { display: none !important; }
+  .copy-btn { display: none !important; }
+  .icon-name { display: none !important; }
+  .icon-actions { grid-template-columns: 1fr !important; justify-items: center !important; }
+  .download-btn { width: auto !important; min-width: 0 !important; padding-left: 12px !important; padding-right: 12px !important; }
+  .motion-rules { display: none !important; }
+  body[data-view="pixel"] .studio-section:not([data-section="pixel"]),
+  body[data-view="outlined"] .studio-section:not([data-section="outlined"]),
+  body[data-view="mesh"] .studio-section:not([data-section="mesh"]),
+  body[data-view="ascii"] .studio-section:not([data-section="ascii"]) {
+    display: none !important;
+  }
+  /* iframe-friendly: tighten outer padding when embedded */
+  main { padding: 24px 0 48px; }
+</style>
+</head>
+<body data-view="mesh">
+<main>
+  <div class="brand-banner" aria-label="VIBEUX"><div class="brand-banner-grid" id="brand-banner-grid"></div></div>
+  <script>
+  (() => {
+    const base = [
+      "*   *  ***  ****  ***** *   * *   *",
+      "*   *   *   *   * *     *   * *   *",
+      "*   *   *   *   * *     *   *  * * ",
+      "*   *   *   ****  ****  *   *   *  ",
+      " * *    *   *   * *     *   *  * * ",
+      " * *    *   *   * *     *   * *   *",
+      "  *    ***  ****  *****  ***  *   *",
+    ];
+    const SCALE = 3;
+    const expanded = [];
+    for (const row of base) {
+      const wide = Array.from(row, ch => ch.repeat(SCALE)).join('');
+      for (let v = 0; v < SCALE; v++) expanded.push(wide);
+    }
+    const lh = expanded.length;     // 21
+    const lw = expanded[0].length;  // 105
+    const padCols = 6;
+    const padRows = 3;
+    const cols = lw + padCols * 2;
+    const rows = lh + padRows * 2;
+    const colOff = padCols;
+    const rowOff = padRows;
+
+    const grid = document.getElementById('brand-banner-grid');
+    if (!grid) return;
+
+    const isLetter = (r, c) => {
+      const lr = r - rowOff, lc = c - colOff;
+      return lr >= 0 && lr < lh && lc >= 0 && lc < lw && expanded[lr][lc] === '*';
+    };
+
+    // Chebyshev distance from (r,c) to the nearest letter cell, capped at 5.
+    // Returned value drives the halo density gradient (closer cells = denser).
+    const MAX_HALO = 4;
+    const distToLetter = (r, c) => {
+      for (let d = 1; d <= MAX_HALO; d++) {
+        for (let dr = -d; dr <= d; dr++) {
+          for (let dc = -d; dc <= d; dc++) {
+            if (Math.max(Math.abs(dr), Math.abs(dc)) !== d) continue;
+            if (isLetter(r + dr, c + dc)) return d;
+          }
+        }
+      }
+      return Infinity;
+    };
+
+    // Each STYLE describes how the banner renders one variant.
+    // densityByDist: probability of drawing an accent dot at each Chebyshev
+    // distance from the nearest letter cell — lets a style fade out smoothly.
+    //   ascii / block: flat halo within 2 cells (binary near/far feel)
+    //   dots: halftone gradient (1→2→3→4 cells = 0.72 → 0.45 → 0.22 → 0.08)
+    // Cells beyond MAX_HALO fall back to ambientDensity.
+    const pick = arr => () => arr[Math.floor(Math.random() * arr.length)];
+    const STYLES = [
+      {
+        id: 'ascii',
+        letter: () => '*',
+        accent: () => '\\',
+        ambient: pick(['*', '\\']),
+        densityByDist: { 1: 0.28, 2: 0.28 },
+        ambientDensity: 0.015,
+        lineHeight: '0.65',
+        letterSpacing: '0',
+      },
+      {
+        id: 'block',
+        letter: () => '▄',
+        accent: pick(['▀', '▄']),
+        ambient: pick(['▀', '▄']),
+        densityByDist: { 1: 0.18, 2: 0.18 },
+        ambientDensity: 0.012,
+        lineHeight: '0.65',
+        letterSpacing: '0',
+      },
+      {
+        id: 'dots',
+        letter: () => '•',
+        accent: () => '•',
+        // Weighted pool: ~36% dots + sparkles / squares / triangles
+        // mixed in more aggressively for decorative density.
+        ambient: pick(['•', '•', '•', '•', '✦', '✦', '✦', '▪', '▪', '▴', '▴']),
+        densityByDist: {},
+        ambientDensity: 0.038,
+        lineHeight: '0.65',
+        letterSpacing: '0',
+      },
+    ];
+    const SWITCH_MS = 5000;
+
+    const cell = (cls, text, maxDelay) => {
+      const s = document.createElement('span');
+      s.className = cls;
+      s.style.setProperty('--d', (Math.random() * maxDelay).toFixed(2) + 's');
+      s.textContent = text;
+      return s;
+    };
+
+    function build(style) {
+      const frag = document.createDocumentFragment();
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (isLetter(r, c)) {
+            frag.appendChild(cell('px-letter', style.letter(), 2.6));
+            continue;
+          }
+          const d = distToLetter(r, c);
+          const haloDensity = style.densityByDist[d];
+          if (haloDensity !== undefined) {
+            if (Math.random() < haloDensity) {
+              frag.appendChild(cell('px-accent', style.accent(), 3.6));
+            } else {
+              frag.appendChild(document.createTextNode(' '));
+            }
+          } else if (Math.random() < style.ambientDensity) {
+            frag.appendChild(cell('px-star', style.ambient(), 3.6));
+          } else {
+            frag.appendChild(document.createTextNode(' '));
+          }
+        }
+        if (r < rows - 1) frag.appendChild(document.createTextNode('\n'));
+      }
+      return frag;
+    }
+
+    function applyStyle(style) {
+      grid.style.lineHeight = style.lineHeight;
+      grid.style.letterSpacing = style.letterSpacing;
+      grid.dataset.styleId = style.id;
+      grid.replaceChildren(build(style));
+    }
+
+    let idx = 0;
+    let timer;
+    const advance = () => {
+      idx = (idx + 1) % STYLES.length;
+      applyStyle(STYLES[idx]);
+    };
+    const scheduleAutoSwitch = () => {
+      clearInterval(timer);
+      timer = setInterval(advance, SWITCH_MS);
+    };
+
+    applyStyle(STYLES[idx]);
+    scheduleAutoSwitch();
+
+    // Click VIBEUX to jump to the next style and reset the auto-cycle timer.
+    grid.parentElement.addEventListener('click', () => {
+      advance();
+      scheduleAutoSwitch();
+    });
+  })();
+  </script>
+  <div class="studio-section" data-section="pixel">
+  <header>
+    <div>
+      <h1>Pixel Icon Library</h1>
+      <p class="subtitle">Low-resolution grid style. Default cell is 2px per pixel block; pixel density can be increased while preserving the outer silhouette. Animations use the step-end timing function to achieve a pure frame-by-frame feel.</p>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <span><strong id="px-icon-count">0</strong> pixel icons</span>
+  </div>
+
+  <div class="spec" aria-label="Icon spec">
+    <label class="color-control" title="Adjust icon color">
+      <input type="color" class="color-input" id="color-input" value="#000000" aria-label="Adjust icon color">
+      <span class="swatch" aria-hidden="true"></span>
+    </label>
+    <span><span id="color-value">#000000</span> · 24 viewBox</span>
+    <span class="spec-divider" aria-hidden="true"></span>
+    <span class="weight-control">
+      <label for="stroke-input">stroke</label>
+      <input type="range" id="stroke-input" min="1.2" max="2.4" step="0.1" value="1.2" aria-label="Adjust overall stroke width">
+      <span class="weight-value" id="stroke-input-value">1.2</span>
+    </span>
+    <span class="spec-divider" aria-hidden="true"></span>
+    <span class="weight-control">
+      <label for="px-density-input">pixel density</label>
+      <input type="range" id="px-density-input" min="1" max="4" step="1" value="1" aria-label="Adjust pixel icon density">
+      <span class="weight-value" id="px-density-input-value">1x</span>
+    </span>
+    <span class="spec-divider" aria-hidden="true"></span>
+    <span class="weight-control">
+      <label for="speed-input">speed</label>
+      <input type="range" id="speed-input" min="0.5" max="2" step="0.1" value="2" aria-label="Adjust overall animation speed">
+      <span class="weight-value" id="speed-input-value">2.0</span>
+    </span>
+    <span class="spec-divider" aria-hidden="true"></span>
+    <section class="motion-rules is-collapsible is-collapsed" aria-labelledby="px-motion-title">
+      <h2>
+        <button type="button" class="motion-rules-toggle" id="px-motion-toggle" aria-expanded="false" aria-controls="px-motion-rule-list">
+          <span id="px-motion-title">Pixel Animation Rules</span>
+          <svg class="motion-rules-toggle-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M6 9 L12 15 L18 9"/>
+          </svg>
+        </button>
+      </h2>
+      <ul class="motion-rule-list" id="px-motion-rule-list" hidden></ul>
+    </section>
+  </div>
+
+  <section class="icon-grid pixel-grid" id="px-icon-grid" aria-label="Pixel icon list"></section>
+  </div>
+
+  <div class="studio-section" data-section="outlined">
+  <section class="section-divider" aria-labelledby="outlined-title">
+    <h2 id="outlined-title">Outlined Icon Library</h2>
+    <p>Type 5 · 3b outlined series from the icon-design skill. Unified coral stroke, no fill, round caps, round joins.</p>
+  </section>
+
+  <div class="toolbar">
+    <span><strong id="icon-count">0</strong> outlined icons</span>
+    <section class="motion-rules is-collapsible is-collapsed" aria-labelledby="motion-rules-title">
+      <h2>
+        <button type="button" class="motion-rules-toggle" id="motion-rules-toggle" aria-expanded="false" aria-controls="motion-rule-list">
+          <span id="motion-rules-title">Outlined Animation Rules</span>
+          <svg class="motion-rules-toggle-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M6 9 L12 15 L18 9"/>
+          </svg>
+        </button>
+      </h2>
+      <ul class="motion-rule-list" id="motion-rule-list" hidden></ul>
+    </section>
+  </div>
+
+  <section class="icon-grid" id="icon-grid" aria-label="Outlined icon list"></section>
+  </div>
+
+  <div class="studio-section" data-section="mesh">
+  <section class="section-divider" aria-labelledby="g-title">
+    <h2 id="g-title">Gradient Mesh Lab</h2>
+    <p>Three radial color blobs with blur and multiply blending form a liquid mesh gradient. Drag the blur from sharp to diffuse, drag the speed from still to flowing.</p>
+  </section>
+
+  <div class="gradient-toolbar" aria-label="Gradient mesh controls">
+    <span class="gradient-color-set" aria-label="3-color palette">
+      <label class="color-control" title="Primary color">
+        <input type="color" class="color-input" id="g-color-1" value="#fffee0" aria-label="Gradient primary color">
+        <span class="swatch" id="g-swatch-1" aria-hidden="true"></span>
+      </label>
+      <label class="color-control" title="Secondary color one">
+        <input type="color" class="color-input" id="g-color-2" value="#ebccff" aria-label="Gradient secondary color one">
+        <span class="swatch" id="g-swatch-2" aria-hidden="true"></span>
+      </label>
+      <label class="color-control" title="Secondary color two">
+        <input type="color" class="color-input" id="g-color-3" value="#c2fffd" aria-label="Gradient secondary color two">
+        <span class="swatch" id="g-swatch-3" aria-hidden="true"></span>
+      </label>
+    </span>
+    <span class="spec-divider" aria-hidden="true"></span>
+    <span class="weight-control">
+      <label for="g-blur">blur</label>
+      <input type="range" id="g-blur" min="0" max="200" step="5" value="80" aria-label="Gradient blur amount">
+      <span class="weight-value" id="g-blur-value">80</span>
+    </span>
+    <span class="spec-divider" aria-hidden="true"></span>
+    <span class="weight-control">
+      <label for="g-speed">speed</label>
+      <input type="range" id="g-speed" min="0.2" max="3" step="0.1" value="1" aria-label="Gradient animation speed">
+      <span class="weight-value" id="g-speed-value">1.0</span>
+    </span>
+  </div>
+
+  <div class="gradient-canvas" id="gradient-canvas" aria-hidden="true">
+    <div class="gradient-blob gradient-blob-1"></div>
+    <div class="gradient-blob gradient-blob-2"></div>
+    <div class="gradient-blob gradient-blob-3"></div>
+  </div>
+  </div>
+
+  <div class="studio-section" data-section="ascii">
+  <section class="section-divider" aria-labelledby="ascii-title">
+    <h2 id="ascii-title">ASCII Motion Cards</h2>
+    <p>Each card uses an analytic density(x, y, t) function to compute a 0-1 coverage for every character cell, then maps the value to <code>.,:;+*#%@</code>. Left: three flowers bloom in a staggered cascade; right: a heart beats with a ~66 bpm lub-dub double pulse.</p>
+  </section>
+
+  <div class="ascii-grid">
+    <div class="ascii-stage">
+      <pre class="ascii-canvas" id="ascii-bouquet" aria-hidden="true"></pre>
+    </div>
+    <div class="ascii-stage">
+      <pre class="ascii-canvas" id="ascii-heart" aria-hidden="true"></pre>
+    </div>
+  </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DEFAULT_BRAND = '#000000';
+const DEFAULT_STROKE_WIDTH = '1.2';
+const DEFAULT_ANIMATION_SPEED = '2';
+const DEFAULT_PIXEL_DENSITY = '1';
+const COLOR_STORAGE_KEY = 'outlined_icon_color_v2';
+const STROKE_STORAGE_KEY = 'outlined_icon_stroke_width_v2';
+const SPEED_STORAGE_KEY = 'outlined_icon_animation_speed_v2';
+const PIXEL_DENSITY_STORAGE_KEY = 'pixel_icon_density_v1';
+
+function readPreference(key, fallback) {
+  try {
+    return localStorage.getItem(key) || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writePreference(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {}
+}
+
+let currentColor = readPreference(COLOR_STORAGE_KEY, DEFAULT_BRAND);
+let currentStrokeWidth = readPreference(STROKE_STORAGE_KEY, DEFAULT_STROKE_WIDTH);
+let currentAnimationSpeed = readPreference(SPEED_STORAGE_KEY, DEFAULT_ANIMATION_SPEED);
+let currentPixelDensity = readPreference(PIXEL_DENSITY_STORAGE_KEY, DEFAULT_PIXEL_DENSITY);
+
+const MOTION_RULES = Object.freeze({
+  sway: {
+    title: 'Side-to-side sway',
+    description: 'A general left-right swing rhythm, ideal for icons that need to feel "lively / restless".'
+  },
+  scan: {
+    title: 'Uncertain search',
+    description: 'Suited to the search icon. The magnifier has a clear motion vector but stays unhurried — probing left, sweeping up and down, then returning to center.'
+  },
+  static: {
+    title: 'Intentionally static',
+    description: 'Suited to icons like calendar and bookmark that mostly convey state or marking — avoid motion for motion\'s sake.'
+  },
+  float: {
+    title: 'Floating notes',
+    description: 'Suited to sound-related icons like music. The main note tilts gently while two small notes alternately float up from the top-right and fade out.'
+  },
+  rattle: {
+    title: 'Rhythmic ring',
+    description: 'Suited to reminder semantics like a bell. The body shakes with rhythm but slowed down, never frantic.'
+  },
+  clap: {
+    title: 'Hands clapping',
+    description: 'Suited to celebratory or approving semantics like clapping hands. A single rounded palm taps lightly while accent lines briefly appear.'
+  },
+  burst: {
+    title: 'Particle burst',
+    description: 'Suited to "surprise release" semantics like gift or cart. Geometric / ribbon particles burst out of the container in all upward-diagonal directions and fade.'
+  },
+  energy: {
+    title: 'Soft energy',
+    description: 'Suited to energy semantics like lightning. A light float, subtle scale, and gentle brightness shift evoke an electric feel without the anxiety of high-frequency shaking.'
+  },
+  write: {
+    title: 'Writing trace',
+    description: 'Suited to writing semantics like pencil, sign, edit. The pen tip travels along a wavy path and the trace is drawn after it, fading naturally at the end of the loop.'
+  },
+  spin: {
+    title: 'Center spin',
+    description: 'Suited to mechanical semantics like settings that rotate around a center.'
+  },
+  bounce: {
+    title: 'Bounce feedback',
+    description: 'Suited to light-feedback semantics like home and favorite.'
+  },
+  ripple: {
+    title: 'Ripple spread',
+    description: 'Suited to "anchor / point" semantics like location or radar. Halos under the pin expand outward and fade, as if the pointer is marking this spot.'
+  },
+  think: {
+    title: 'Thinking pulse',
+    description: 'Suited to thinking semantics like brain or intellect. The whole shape pulses gently in a double beat, as if mulling something over.'
+  },
+  twinkle: {
+    title: 'Star twinkle',
+    description: 'Suited to "inspiration" semantics like AI or magic. Two four-point stars alternately scale and rotate slightly, evoking little sparkles.'
+  },
+  flutter: {
+    title: 'Heart flutter',
+    description: 'Suited to emotional semantics like heart or wish. Uneven double beats with brief pauses convey a real flutter rather than a regular pulse.'
+  },
+  blink: {
+    title: 'Eye blink',
+    description: 'Suited to observation semantics like eye. The eye softly closes twice and the pupil disappears and returns in sync, like a natural blink.'
+  },
+  reveal: {
+    title: 'Content reveal',
+    description: 'Suited to content or action semantics like doc, eye, message, cart. Document lines appear line-by-line as if being drawn in.'
+  },
+  pulse: {
+    title: 'Flash pulse',
+    description: 'Suited to energy, acceleration, emphasis semantics; can layer on top of shake or bounce actions.'
+  },
+});
+
+const PIXEL_MOTION_RULES = Object.freeze({
+  pulse: {
+    title: 'Frame-step pulse',
+    description: 'Suited to "thinking" semantics like brain or intellect. step-end hard-cuts between two scale values with no interpolation — a thud, not a tween.'
+  },
+  beat: {
+    title: 'Frame-step heartbeat',
+    description: 'Suited to emotional semantics like wish or heart. 4-frame hard cuts (1 → 1.15 → 0.95 → 1.1), like the heart pulse in an 8-bit game.'
+  },
+  flash: {
+    title: 'Frame-step flash',
+    description: 'Suited to high-energy semantics like lightning or energy. Opacity switches across 3 frames with a 1px micro-jump, as if the current is broken and restored.'
+  },
+  twinkle: {
+    title: 'Frame-step twinkle',
+    description: 'Suited to "inspiration" semantics like AI or favorite. 4 size frames (1 → 0.5 → 1 → 1.3): light up, pull back, then pop bigger.'
+  },
+  shake: {
+    title: 'Frame-step shake',
+    description: 'Suited to "barely contained" semantics like gift or surprise. 2px hard cuts in four directions, no interpolation, all snap.'
+  },
+  bounce: {
+    title: 'Frame-step hop',
+    description: 'Suited to "rooted here" semantics like home or location. Hard cuts between rest and -2px, like a character hopping one cell per second.'
+  },
+});
+
+const BASE_ANIMATION_DURATIONS = {
+  '1-5': 1.5,
+  '1-8': 1.8,
+  '2-1': 2.1,
+  '2-2': 2.2,
+  '2-3': 2.3,
+  '2-4': 2.4,
+  '2-5': 2.5,
+  '2-6': 2.6,
+  '2-8': 2.8,
+  '4-0': 4,
+  '5-0': 5,
+  '8-0': 8,
+  '24-0': 24,
+};
+
+const ICONS = [
+  {
+    name: 'Brain',
+    key: 'brain',
+    animation: 'brain',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g class="anim-brain" stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 5 C10.6 3.2 7.8 3.2 6.8 5 C4.6 5.2 3.2 7.2 4.3 9 C2.7 10.2 2.7 12 4.3 13.2 C3.5 15 4.8 17 7 17.2 C7.4 19 9.6 20 12 19 C14.4 20 16.6 19 17 17.2 C19.2 17 20.5 15 19.7 13.2 C21.3 12 21.3 10.2 19.7 9 C20.8 7.2 19.4 5.2 17.2 5 C16.2 3.2 13.4 3.2 12 5 Z"/>
+    <path d="M12 5 L12 19"/>
+  </g>
+</svg>`
+  },
+  {
+    name: 'AI Image',
+    key: 'ai-image',
+    animation: 'ai-image',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <rect x="3" y="7" width="14" height="14" rx="2"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"/>
+  <circle cx="7.5" cy="11" r="1.3"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"/>
+  <path d="M3.5 17.8 L7 14 L10 17 L13 14 L16.5 17.5"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  <path class="anim-ai-spark anim-ai-spark-main" d="M19 2 L19.85 4.15 L22 5 L19.85 5.85 L19 8 L18.15 5.85 L16 5 L18.15 4.15 Z"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  <path class="anim-ai-spark anim-ai-spark-small" d="M22 8.7 L22.35 9.65 L23.3 10 L22.35 10.35 L22 11.3 L21.65 10.35 L20.7 10 L21.65 9.65 Z"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.4" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`
+  },
+  {
+    name: 'AI Cursor',
+    key: 'ai-cursor',
+    animation: 'ai-cursor',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g class="anim-cursor" stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round">
+    <path d="M5 3 L18.5 13 L13.4 13.8 L16.5 20.3 L13.8 21.5 L10.7 15.1 L7.1 18.8 Z"/>
+  </g>
+  <path class="anim-cursor-spark" d="M18.2 2.5 L18.85 4.35 L20.7 5 L18.85 5.65 L18.2 7.5 L17.55 5.65 L15.7 5 L17.55 4.35 Z"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.3" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  <circle class="anim-cursor-click" cx="6" cy="5" r="2.4"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.4" fill="none"/>
+</svg>`
+  },
+  {
+    name: 'Hourglass',
+    key: 'hourglass',
+    animation: 'hourglass',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round">
+    <path d="M7 3 L17 3"/>
+    <path d="M7 21 L17 21"/>
+    <path d="M8 3 C8 8 10.4 9.8 12 12 C13.6 9.8 16 8 16 3"/>
+    <path d="M8 21 C8 16 10.4 14.2 12 12 C13.6 14.2 16 16 16 21"/>
+  </g>
+  <path class="anim-hourglass-top" d="M9.2 6.4 C10.8 7.4 13.2 7.4 14.8 6.4 L12 10.3 Z"
+    fill="${DEFAULT_BRAND}"/>
+  <path class="anim-hourglass-stream" pathLength="1" d="M12 10.8 L12 15.1"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.4" fill="none"
+    stroke-linecap="round"/>
+  <path class="anim-hourglass-bottom" d="M9.4 18.1 C10.8 16.8 13.2 16.8 14.6 18.1 Z"
+    fill="${DEFAULT_BRAND}"/>
+</svg>`
+  },
+  {
+    name: 'Document',
+    key: 'doc',
+    animation: 'doc',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <path d="M5 3 L15 3 L19 7 L19 21 L5 21 Z M15 3 L15 7 L19 7"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  <path class="anim-doc-line anim-doc-line-1" pathLength="1" d="M8 12 L16 12"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  <path class="anim-doc-line anim-doc-line-2" pathLength="1" d="M8 15 L16 15"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  <path class="anim-doc-line anim-doc-line-3" pathLength="1" d="M8 18 L13 18"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+</svg>`
+  },
+  {
+    name: 'Clock',
+    key: 'clock',
+    animation: '',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="12" cy="12" r="9" stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"/>
+  <path class="anim-clock-hour" d="M12 12 L12 6"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  <g class="anim-clock-minute">
+  <path d="M12 12 L16 15"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>`
+  },
+  {
+    name: 'User',
+    key: 'user',
+    animation: 'user',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <circle class="anim-user-head" cx="12" cy="8.5" r="4" stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"/>
+  <path class="anim-user-shoulders" d="M5 20 C5 16 8 14 12 14 C16 14 19 16 19 20"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`
+  },
+  {
+    name: 'Settings',
+    key: 'settings',
+    animation: 'settings',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g class="anim-gear">
+  <circle cx="12" cy="12" r="3.2" stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"/>
+  <path d="M12 3 L12 6 M12 18 L12 21 M3 12 L6 12 M18 12 L21 12 M5 5 L7.2 7.2 M16.8 16.8 L19 19 M19 5 L16.8 7.2 M7.2 16.8 L5 19"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>`
+  },
+  {
+    name: 'Search',
+    key: 'search',
+    animation: 'search',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g class="anim-search">
+  <circle cx="10" cy="10" r="6" stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"/>
+  <path d="M14.4 14.4 L20 20"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>`
+  },
+  {
+    name: 'Clap',
+    key: 'clap',
+    animation: 'clap',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g class="anim-clap-lines" stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none" stroke-linecap="round">
+    <path d="M10.5 2.2 L10.5 4.4"/>
+    <path d="M5.6 3.8 L7.1 5.3"/>
+    <path d="M15.4 3.8 L13.9 5.3"/>
+  </g>
+  <g class="anim-clap-hand" stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M5 17 C5 18.5 6 19.5 7 19.5 L12 19.5 C13 19.5 14 18.5 14 17 L14 14 C15 14.3 15.8 13.7 15.8 12.7 C15.8 11.7 15 11 14 11 C14 6.5 11.5 6.5 11.5 11 C11.5 5.5 9.5 5.5 9.5 11 C9.5 6.5 7.5 6.5 7.5 11 C7.5 7.5 5 7.5 5 11 Z"/>
+  </g>
+</svg>`
+  },
+  {
+    name: 'Pencil',
+    key: 'pencil',
+    animation: 'pencil',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <path class="anim-pencil-trace" pathLength="1" d="M4.6 19 C6.1 17.6 7.5 20.4 9.2 19 C10.9 17.6 12.2 20.4 13.9 19 C15 18.1 16.2 18.4 17.4 19.1"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  <g class="anim-pencil">
+  <path d="M5.6 17.1 L7.1 13.8 L15.2 5.7 L18.5 9 L10.4 17.1 Z M14 6.9 L17.3 10.2"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>`
+  },
+  {
+    name: 'Eye',
+    key: 'eye',
+    animation: 'eye',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <path class="anim-eye-shape" d="M3.5 12 C5.7 7.8 8.6 6 12 6 C15.4 6 18.3 7.8 20.5 12 C18.3 16.2 15.4 18 12 18 C8.6 18 5.7 16.2 3.5 12 Z"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  <circle class="anim-eye-pupil" cx="12" cy="12" r="2.2"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"/>
+</svg>`
+  },
+  {
+    name: 'Bell',
+    key: 'bell',
+    animation: 'bell',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g class="anim-bell">
+  <path d="M12 3.8 C8 3.8 6.2 6.5 6.2 10.5 C6.2 13 5.5 15 4.4 16.3 C3.9 16.9 4.2 17.5 5 17.5 L19 17.5 C19.8 17.5 20.1 16.9 19.6 16.3 C18.5 15 17.8 13 17.8 10.5 C17.8 6.5 16 3.8 12 3.8 Z"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  <path class="anim-bell-clapper" d="M10 19.2 C10 20.4 10.8 21.2 12 21.2 C13.2 21.2 14 20.4 14 19.2"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>`
+  },
+  {
+    name: 'Pin',
+    key: 'pin',
+    animation: 'pin',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none">
+    <ellipse class="anim-pin-ripple anim-pin-ripple-1" cx="12" cy="20.2" rx="2.6" ry="0.9"/>
+    <ellipse class="anim-pin-ripple anim-pin-ripple-2" cx="12" cy="20.2" rx="2.6" ry="0.9"/>
+    <ellipse class="anim-pin-ripple anim-pin-ripple-3" cx="12" cy="20.2" rx="2.6" ry="0.9"/>
+  </g>
+  <g class="anim-pin">
+    <path d="M12 2.5 C8.5 2.5 6 5 6 8.4 C6 12.4 12 17 12 17 C12 17 18 12.4 18 8.4 C18 5 15.5 2.5 12 2.5 Z"
+      stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+      stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="12" cy="8.4" r="2" stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"/>
+  </g>
+</svg>`
+  },
+  {
+    name: 'Home',
+    key: 'home',
+    animation: 'home',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <path class="anim-home" d="M4 12 C4 11.5 4.2 11 4.5 10.7 L11.2 4.6 Q12 4 12.8 4.6 L19.5 10.7 C19.8 11 20 11.5 20 12 L20 19 C20 19.6 19.6 20 19 20 L15 20 L15 16 C15 14.5 13.5 14 12 14 C10.5 14 9 14.5 9 16 L9 20 L5 20 C4.4 20 4 19.6 4 19 Z"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`
+  },
+  {
+    name: 'Lock',
+    key: 'lock',
+    animation: 'lock',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <rect x="5" y="12" width="14" height="10" rx="1.6"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"/>
+  <path class="anim-lock-shackle" d="M8 12 L8 8 C8 5 10 3 12 3 C14 3 16 5 16 8 L16 12"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  <circle class="anim-lock-dot" cx="12" cy="16" r="1.1" fill="${DEFAULT_BRAND}"/>
+</svg>`
+  },
+  {
+    name: 'Cart',
+    key: 'cart',
+    animation: 'cart',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g stroke="${DEFAULT_BRAND}" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <circle class="anim-cart-burst anim-cart-burst-1" cx="12" cy="11" r="0.9" fill="${DEFAULT_BRAND}" stroke="none"/>
+    <rect class="anim-cart-burst anim-cart-burst-2" x="13.5" y="10.2" width="1.6" height="1.6"/>
+    <path class="anim-cart-burst anim-cart-burst-3" d="M15.5 12 L16.4 13.4 L14.6 13.4 Z"/>
+    <path class="anim-cart-burst anim-cart-burst-4" d="M11.5 13 L12.5 14 L11.5 15 L10.5 14 Z"/>
+  </g>
+  <path class="anim-cart-body" d="M3 4 L6 4 L9 16 L18 16 L21 8 L8 8"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  <circle class="anim-cart-wheel" cx="10" cy="20" r="1.6" stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"/>
+  <circle class="anim-cart-wheel" cx="17" cy="20" r="1.6" stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"/>
+</svg>`
+  },
+  {
+    name: 'Calendar',
+    key: 'calendar',
+    animation: '',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <rect class="anim-calendar-page" x="3" y="5" width="18" height="16" rx="1.8"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"/>
+  <path class="anim-calendar-top" d="M8 3 L8 7 M16 3 L16 7 M3 10 L21 10"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+</svg>`
+  },
+  {
+    name: 'Message',
+    key: 'message',
+    animation: 'message',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <path class="anim-message-bubble" d="M4 6 L20 6 L20 16 L10 16 L6 20 L6 16 L4 16 Z"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  <circle class="anim-message-dot-1" cx="8.4" cy="11" r="1" fill="${DEFAULT_BRAND}"/>
+  <circle class="anim-message-dot-2" cx="12" cy="11" r="1" fill="${DEFAULT_BRAND}"/>
+  <circle class="anim-message-dot-3" cx="15.6" cy="11" r="1" fill="${DEFAULT_BRAND}"/>
+</svg>`
+  },
+  {
+    name: 'Heart',
+    key: 'heart',
+    animation: 'heart',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g class="anim-heart">
+    <path d="M12 21.5 C12 21.5 3.5 15.5 3.5 10 C3.5 7.5 5.7 5.5 8 5.5 C10 5.5 11.4 6.5 12 7.5 C12.6 6.5 14 5.5 16 5.5 C18.3 5.5 20.5 7.5 20.5 10 C20.5 15.5 12 21.5 12 21.5 Z"
+      stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+      stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>`
+  },
+  {
+    name: 'Bookmark',
+    key: 'bookmark',
+    animation: '',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <path class="anim-bookmark" d="M7 4 L17 4 L17 21 L12 17 L7 21 Z"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`
+  },
+  {
+    name: 'Favorite',
+    key: 'icon-favorite',
+    animation: 'favorite-pop',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g class="favorite-rays" opacity="0"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 1.5 L12 3.5"/>
+    <path d="M20 4 L18.4 5.6"/>
+    <path d="M22.5 12 L20.5 12"/>
+    <path d="M20 20 L18.4 18.4"/>
+    <path d="M12 22.5 L12 20.5"/>
+    <path d="M4 20 L5.6 18.4"/>
+    <path d="M1.5 12 L3.5 12"/>
+    <path d="M4 4 L5.6 5.6"/>
+  </g>
+  <path class="favorite-star" d="M12 5 L13.6 9.8 L18.7 9.8 L14.5 12.8 L16.1 17.7 L12 14.7 L7.9 17.7 L9.5 12.8 L5.3 9.8 L10.4 9.8 Z"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`
+  },
+  {
+    name: 'Music',
+    key: 'music',
+    animation: 'music',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g class="anim-music-base">
+  <ellipse cx="6.5" cy="18" rx="2.8" ry="2.2" stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"/>
+  <ellipse cx="15.5" cy="18" rx="2.8" ry="2.2" stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"/>
+  <path d="M9.3 18 L9.3 7 L18.3 5.6 L18.3 18 M9.3 9.5 L18.3 8.1"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g class="anim-music-note anim-music-note-1">
+  <path d="M18.1 9.4 L18.1 5.4 L20.4 4.8"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.4" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="17.7" cy="9.6" r="0.9" stroke="${DEFAULT_BRAND}" stroke-width="1.4" fill="none"/>
+  </g>
+  <g class="anim-music-note anim-music-note-2">
+  <path d="M21 7.8 L21 3.8 L22.6 3.4"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.4" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="20.6" cy="8" r="0.9" stroke="${DEFAULT_BRAND}" stroke-width="1.4" fill="none"/>
+  </g>
+</svg>`
+  },
+  {
+    name: 'Lightning',
+    key: 'lightning',
+    animation: 'lightning',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <path class="anim-lightning" d="M14 3 L5 13 L10 13 L9 21 L19 10 L14 10 L15 3 Z"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`
+  },
+  {
+    name: 'Gift',
+    key: 'gift',
+    animation: 'gift',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <g class="anim-gift-particles" stroke="${DEFAULT_BRAND}" stroke-width="1.4" fill="none"
+    stroke-linecap="round" stroke-linejoin="round">
+    <circle class="anim-gift-particle anim-gift-particle-1" cx="8.5" cy="13.2" r="0.8" fill="${DEFAULT_BRAND}" stroke="none"/>
+    <path class="anim-gift-particle anim-gift-particle-2" d="M13.4 13.4 L15.2 12.4"/>
+    <circle class="anim-gift-particle anim-gift-particle-3" cx="10.6" cy="15.4" r="0.65" fill="${DEFAULT_BRAND}" stroke="none"/>
+    <path class="anim-gift-particle anim-gift-particle-4" d="M14.5 15.1 L16.5 15.6"/>
+    <path class="anim-gift-particle anim-gift-particle-5" d="M11.4 14.2 L12.8 12.8"/>
+    <circle class="anim-gift-particle anim-gift-particle-6" cx="13.7" cy="14.6" r="0.7" fill="${DEFAULT_BRAND}" stroke="none"/>
+  </g>
+  <rect class="anim-gift-box" x="4" y="10" width="16" height="11" rx="1.4"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"/>
+  <rect class="anim-gift-lid" x="3" y="6.5" width="18" height="4" rx="1.2"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"/>
+  <path class="anim-gift-lid" d="M12 6.5 L12 10.5"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  <path class="anim-gift-box" d="M12 10 L12 21"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.6" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  <path class="anim-gift-lid" d="M9 6.5 C5.5 6.5 4.5 1.5 7.5 1.5 C10.5 1.5 12 5 12 6.5 M15 6.5 C18.5 6.5 19.5 1.5 16.5 1.5 C13.5 1.5 12 5 12 6.5"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.5" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  <rect class="anim-gift-lid" x="10.7" y="4.7" width="2.6" height="3" rx="0.6"
+    stroke="${DEFAULT_BRAND}" stroke-width="1.4" fill="${DEFAULT_BRAND}"/>
+</svg>`
+  }
+];
+
+const PIXEL_ICONS = [
+  {
+    name: 'Brain',
+    key: 'px-brain',
+    animation: 'px-brain',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+  <g fill="${DEFAULT_BRAND}">
+    <rect x="6" y="2" width="4" height="2"/>
+    <rect x="14" y="2" width="4" height="2"/>
+    <rect x="4" y="4" width="6" height="2"/>
+    <rect x="14" y="4" width="6" height="2"/>
+    <rect x="2" y="6" width="8" height="2"/>
+    <rect x="14" y="6" width="8" height="2"/>
+    <rect x="2" y="8" width="20" height="2"/>
+    <rect x="2" y="10" width="8" height="6"/>
+    <rect x="14" y="10" width="8" height="6"/>
+    <rect x="4" y="16" width="6" height="2"/>
+    <rect x="14" y="16" width="6" height="2"/>
+    <rect x="6" y="18" width="4" height="2"/>
+    <rect x="14" y="18" width="4" height="2"/>
+  </g>
+</svg>`
+  },
+  {
+    name: 'AI Image',
+    key: 'px-ai-image',
+    animation: 'px-ai-image',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+  <g fill="${DEFAULT_BRAND}">
+    <rect x="2" y="10" width="16" height="2"/>
+    <rect x="2" y="18" width="16" height="2"/>
+    <rect x="2" y="12" width="2" height="6"/>
+    <rect x="16" y="12" width="2" height="6"/>
+    <rect x="6" y="14" width="2" height="2"/>
+    <rect x="10" y="12" width="2" height="2"/>
+    <rect x="12" y="14" width="2" height="2"/>
+    <g class="anim-px-spark">
+      <rect x="20" y="2" width="2" height="6"/>
+      <rect x="18" y="4" width="6" height="2"/>
+    </g>
+  </g>
+</svg>`
+  },
+  {
+    name: 'Robot',
+    key: 'px-robot',
+    animation: 'px-robot',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+  <g fill="${DEFAULT_BRAND}">
+    <rect x="10" y="0" width="4" height="2"/>
+    <rect x="11" y="2" width="2" height="2"/>
+    <rect x="6" y="4" width="12" height="2"/>
+    <rect x="6" y="6" width="2" height="2"/>
+    <rect x="10" y="6" width="4" height="2"/>
+    <rect x="16" y="6" width="2" height="2"/>
+    <rect x="6" y="8" width="12" height="2"/>
+    <rect x="6" y="10" width="12" height="2"/>
+    <rect x="4" y="12" width="16" height="6"/>
+    <rect x="4" y="18" width="4" height="4"/>
+    <rect x="16" y="18" width="4" height="4"/>
+  </g>
+</svg>`
+  },
+  {
+    name: 'Chip',
+    key: 'px-chip',
+    animation: 'px-chip',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+  <g fill="${DEFAULT_BRAND}">
+    <rect x="6" y="2" width="2" height="4"/>
+    <rect x="16" y="2" width="2" height="4"/>
+    <rect x="6" y="18" width="2" height="4"/>
+    <rect x="16" y="18" width="2" height="4"/>
+    <rect x="0" y="6" width="4" height="2"/>
+    <rect x="0" y="16" width="4" height="2"/>
+    <rect x="20" y="6" width="4" height="2"/>
+    <rect x="20" y="16" width="4" height="2"/>
+    <rect x="4" y="6" width="16" height="2"/>
+    <rect x="4" y="16" width="16" height="2"/>
+    <rect x="4" y="8" width="2" height="8"/>
+    <rect x="18" y="8" width="2" height="8"/>
+    <rect x="8" y="10" width="8" height="4"/>
+  </g>
+</svg>`
+  },
+  {
+    name: 'Chat',
+    key: 'px-chat',
+    animation: 'px-chat',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+  <g fill="${DEFAULT_BRAND}">
+    <rect x="2" y="2" width="20" height="2"/>
+    <rect x="2" y="4" width="2" height="8"/>
+    <rect x="20" y="4" width="2" height="8"/>
+    <rect x="2" y="12" width="20" height="2"/>
+    <rect x="4" y="14" width="4" height="2"/>
+    <rect x="4" y="16" width="2" height="2"/>
+    <rect x="6" y="6" width="2" height="2"/>
+    <rect x="11" y="6" width="2" height="2"/>
+    <rect x="16" y="6" width="2" height="2"/>
+  </g>
+</svg>`
+  },
+  {
+    name: 'Sparkle',
+    key: 'px-sparkle',
+    animation: 'px-sparkle',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+  <g fill="${DEFAULT_BRAND}">
+    <rect x="10" y="2" width="4" height="2"/>
+    <rect x="10" y="4" width="4" height="2"/>
+    <rect x="10" y="6" width="4" height="2"/>
+    <rect x="8" y="8" width="8" height="2"/>
+    <rect x="2" y="10" width="20" height="4"/>
+    <rect x="8" y="14" width="8" height="2"/>
+    <rect x="10" y="16" width="4" height="2"/>
+    <rect x="10" y="18" width="4" height="2"/>
+    <rect x="10" y="20" width="4" height="2"/>
+  </g>
+</svg>`
+  },
+  {
+    name: 'Network',
+    key: 'px-network',
+    animation: 'px-network',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+  <g fill="${DEFAULT_BRAND}">
+    <rect x="2" y="2" width="4" height="4"/>
+    <rect x="18" y="2" width="4" height="4"/>
+    <rect x="10" y="10" width="4" height="4"/>
+    <rect x="2" y="18" width="4" height="4"/>
+    <rect x="18" y="18" width="4" height="4"/>
+    <rect x="6" y="6" width="2" height="2"/>
+    <rect x="8" y="8" width="2" height="2"/>
+    <rect x="14" y="8" width="2" height="2"/>
+    <rect x="16" y="6" width="2" height="2"/>
+    <rect x="6" y="16" width="2" height="2"/>
+    <rect x="8" y="14" width="2" height="2"/>
+    <rect x="14" y="14" width="2" height="2"/>
+    <rect x="16" y="16" width="2" height="2"/>
+  </g>
+</svg>`
+  },
+  {
+    name: 'Heart',
+    key: 'px-heart',
+    animation: 'px-heart',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+  <g fill="${DEFAULT_BRAND}">
+    <rect x="4" y="2" width="2" height="2"/>
+    <rect x="18" y="2" width="2" height="2"/>
+    <rect x="2" y="4" width="6" height="2"/>
+    <rect x="16" y="4" width="6" height="2"/>
+    <rect x="10" y="4" width="4" height="2"/>
+    <rect x="10" y="6" width="4" height="2"/>
+    <rect x="6" y="8" width="4" height="2"/>
+    <rect x="14" y="8" width="4" height="2"/>
+    <rect x="4" y="10" width="16" height="6"/>
+    <rect x="6" y="16" width="12" height="2"/>
+    <rect x="8" y="18" width="8" height="2"/>
+    <rect x="10" y="20" width="4" height="2"/>
+  </g>
+</svg>`
+  },
+  {
+    name: 'Lightning',
+    key: 'px-lightning',
+    animation: 'px-lightning',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+  <g fill="${DEFAULT_BRAND}">
+    <rect x="10" y="4" width="8" height="2"/>
+    <rect x="8" y="6" width="8" height="2"/>
+    <rect x="6" y="8" width="8" height="2"/>
+    <rect x="4" y="10" width="16" height="2"/>
+    <rect x="10" y="12" width="8" height="2"/>
+    <rect x="8" y="14" width="8" height="2"/>
+    <rect x="6" y="16" width="8" height="2"/>
+    <rect x="4" y="18" width="6" height="2"/>
+  </g>
+</svg>`
+  },
+  {
+    name: 'Favorite',
+    key: 'px-favorite',
+    animation: 'px-favorite',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+  <g fill="${DEFAULT_BRAND}">
+    <rect x="10" y="2" width="4" height="2"/>
+    <rect x="10" y="4" width="4" height="2"/>
+    <rect x="8" y="6" width="8" height="2"/>
+    <rect x="0" y="8" width="24" height="2"/>
+    <rect x="2" y="10" width="20" height="2"/>
+    <rect x="4" y="12" width="16" height="2"/>
+    <rect x="6" y="14" width="12" height="2"/>
+    <rect x="4" y="16" width="6" height="2"/>
+    <rect x="14" y="16" width="6" height="2"/>
+    <rect x="2" y="18" width="6" height="2"/>
+    <rect x="16" y="18" width="6" height="2"/>
+    <rect x="0" y="20" width="4" height="2"/>
+    <rect x="20" y="20" width="4" height="2"/>
+  </g>
+</svg>`
+  },
+  {
+    name: 'Gift',
+    key: 'px-gift',
+    animation: 'px-gift',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+  <g fill="${DEFAULT_BRAND}">
+    <rect x="6" y="0" width="2" height="2"/>
+    <rect x="16" y="0" width="2" height="2"/>
+    <rect x="4" y="2" width="6" height="2"/>
+    <rect x="14" y="2" width="6" height="2"/>
+    <rect x="10" y="2" width="4" height="2"/>
+    <rect x="4" y="6" width="16" height="4"/>
+    <rect x="6" y="10" width="4" height="8"/>
+    <rect x="14" y="10" width="4" height="8"/>
+    <rect x="6" y="18" width="12" height="2"/>
+    <g class="anim-px-gift-spark anim-px-gift-spark-1">
+      <rect x="2" y="0" width="2" height="6"/>
+      <rect x="0" y="2" width="6" height="2"/>
+    </g>
+    <g class="anim-px-gift-spark anim-px-gift-spark-2">
+      <rect x="20" y="0" width="2" height="6"/>
+      <rect x="18" y="2" width="6" height="2"/>
+    </g>
+    <g class="anim-px-gift-spark anim-px-gift-spark-3">
+      <rect x="2" y="18" width="2" height="6"/>
+      <rect x="0" y="20" width="6" height="2"/>
+    </g>
+    <g class="anim-px-gift-spark anim-px-gift-spark-4">
+      <rect x="20" y="18" width="2" height="6"/>
+      <rect x="18" y="20" width="6" height="2"/>
+    </g>
+  </g>
+</svg>`
+  },
+  {
+    name: 'Home',
+    key: 'px-home',
+    animation: 'px-home',
+    svg: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+  <g fill="${DEFAULT_BRAND}">
+    <rect x="10" y="4" width="4" height="2"/>
+    <rect x="8" y="6" width="8" height="2"/>
+    <rect x="6" y="8" width="12" height="2"/>
+    <rect x="4" y="10" width="16" height="2"/>
+    <rect x="4" y="12" width="6" height="10"/>
+    <rect x="14" y="12" width="6" height="10"/>
+  </g>
+</svg>`
+  }
+];
+
+const grid = document.getElementById('icon-grid');
+const count = document.getElementById('icon-count');
+const pxGrid = document.getElementById('px-icon-grid');
+const pxCount = document.getElementById('px-icon-count');
+const pxMotionRuleList = document.getElementById('px-motion-rule-list');
+const toast = document.getElementById('toast');
+const motionRuleList = document.getElementById('motion-rule-list');
+const colorInput = document.getElementById('color-input');
+const colorValue = document.getElementById('color-value');
+const strokeInput = document.getElementById('stroke-input');
+const speedInput = document.getElementById('speed-input');
+const pxDensityInput = document.getElementById('px-density-input');
+const strokeInputValue = document.getElementById('stroke-input-value');
+const speedInputValue = document.getElementById('speed-input-value');
+const pxDensityInputValue = document.getElementById('px-density-input-value');
+let toastTimer;
+
+function showToast(message) {
+  toast.textContent = message;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+}
+
+async function copyText(text, message) {
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast(message);
+  } catch {
+    showToast('Copy failed');
+  }
+}
+
+function normalizeColor(color) {
+  return color.toUpperCase();
+}
+
+function hexToRgb(hex) {
+  const clean = hex.replace('#', '');
+  const full = clean.length === 3
+    ? clean.split('').map(char => char + char).join('')
+    : clean;
+
+  return {
+    r: parseInt(full.slice(0, 2), 16),
+    g: parseInt(full.slice(2, 4), 16),
+    b: parseInt(full.slice(4, 6), 16),
+  };
+}
+
+function downloadText(filename, text, mimeType) {
+  const blob = new Blob([text], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+function getSvgFilename(icon) {
+  const safeKey = icon.key.replace(/[^a-z0-9_-]+/gi, '-').replace(/^-+|-+$/g, '') || 'icon';
+  return `${safeKey}.svg`;
+}
+
+function downloadIconSvg(icon) {
+  downloadText(getSvgFilename(icon), getIconSvg(icon), 'image/svg+xml;charset=utf-8');
+  showToast(`${icon.name} SVG downloaded`);
+}
+
+function getClampedPixelDensity(value = currentPixelDensity) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return Number(DEFAULT_PIXEL_DENSITY);
+  return Math.min(4, Math.max(1, Math.round(parsed)));
+}
+
+function getNumberAttribute(el, name) {
+  const value = Number(el.getAttribute(name));
+  return Number.isFinite(value) ? value : null;
+}
+
+function densifyPixelSvg(svgText) {
+  const density = getClampedPixelDensity();
+  if (density === 1) return svgText;
+
+  const doc = new DOMParser().parseFromString(svgText, 'image/svg+xml');
+  const svg = doc.documentElement;
+  if (!svg || svg.nodeName.toLowerCase() !== 'svg') return svgText;
+
+  const cellSize = 2 / density;
+  svg.setAttribute('data-pixel-density', `${density}x`);
+
+  Array.from(svg.querySelectorAll('rect')).forEach(rect => {
+    const x = getNumberAttribute(rect, 'x');
+    const y = getNumberAttribute(rect, 'y');
+    const width = getNumberAttribute(rect, 'width');
+    const height = getNumberAttribute(rect, 'height');
+    if ([x, y, width, height].some(value => value === null) || width <= 0 || height <= 0) return;
+
+    const columns = Math.max(1, Math.round(width / cellSize));
+    const rows = Math.max(1, Math.round(height / cellSize));
+    if (columns === 1 && rows === 1) return;
+
+    const group = doc.createElementNS('http://www.w3.org/2000/svg', 'g');
+    Array.from(rect.attributes).forEach(attr => {
+      if (!['x', 'y', 'width', 'height', 'rx', 'ry'].includes(attr.name)) {
+        group.setAttribute(attr.name, attr.value);
+      }
+    });
+
+    const gap = Math.min(0.16, cellSize * 0.22);
+    const halfGap = gap / 2;
+
+    for (let row = 0; row < rows; row += 1) {
+      for (let column = 0; column < columns; column += 1) {
+        const leftInset = column === 0 ? 0 : halfGap;
+        const rightInset = column === columns - 1 ? 0 : halfGap;
+        const topInset = row === 0 ? 0 : halfGap;
+        const bottomInset = row === rows - 1 ? 0 : halfGap;
+        const tile = doc.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        tile.setAttribute('x', trimNumber(x + column * cellSize + leftInset));
+        tile.setAttribute('y', trimNumber(y + row * cellSize + topInset));
+        tile.setAttribute('width', trimNumber(cellSize - leftInset - rightInset));
+        tile.setAttribute('height', trimNumber(cellSize - topInset - bottomInset));
+        group.appendChild(tile);
+      }
+    }
+
+    rect.replaceWith(group);
+  });
+
+  return new XMLSerializer().serializeToString(svg);
+}
+
+function trimNumber(value) {
+  return String(Math.round(value * 1000) / 1000);
+}
+
+function getIconSvg(icon) {
+  const svg = icon.svg
+    .replaceAll(DEFAULT_BRAND, currentColor)
+    .replace(/stroke-width="[\d.]+"/g, `stroke-width="${currentStrokeWidth}"`);
+
+  return icon.key.startsWith('px-') ? densifyPixelSvg(svg) : svg;
+}
+
+const COPY_ACTION_ICON = `<svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+  <rect x="8" y="8" width="11" height="11" rx="2"/>
+  <path d="M5 15 L5 6 C5 5.45 5.45 5 6 5 L15 5"/>
+</svg>`;
+
+const DOWNLOAD_ACTION_ICON = `<svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+  <path d="M12 4 L12 15"/>
+  <path d="M7.5 10.5 L12 15 L16.5 10.5"/>
+  <path d="M5 20 L19 20"/>
+</svg>`;
+
+function renderCurrentStyle() {
+  const { r, g, b } = hexToRgb(currentColor);
+  const durationScale = 1 / Number(currentAnimationSpeed);
+  document.documentElement.style.setProperty('--brand', currentColor);
+  document.documentElement.style.setProperty('--brand-soft', `rgba(${r}, ${g}, ${b}, 0.08)`);
+  Object.entries(BASE_ANIMATION_DURATIONS).forEach(([key, seconds]) => {
+    document.documentElement.style.setProperty(`--dur-${key}`, `${seconds * durationScale}s`);
+  });
+  document.documentElement.style.setProperty('--delay-150', `${150 * durationScale}ms`);
+  document.documentElement.style.setProperty('--delay-300', `${300 * durationScale}ms`);
+  document.documentElement.style.setProperty('--delay-600', `${600 * durationScale}ms`);
+  colorInput.value = currentColor.toLowerCase();
+  colorValue.textContent = currentColor;
+  strokeInput.value = currentStrokeWidth;
+  speedInput.value = currentAnimationSpeed;
+  pxDensityInput.value = String(getClampedPixelDensity());
+  if (strokeInputValue) strokeInputValue.textContent = Number(currentStrokeWidth).toFixed(1);
+  if (speedInputValue) speedInputValue.textContent = Number(currentAnimationSpeed).toFixed(1);
+  if (pxDensityInputValue) pxDensityInputValue.textContent = `${getClampedPixelDensity()}x`;
+  renderIcons();
+}
+
+function applyColor(color) {
+  currentColor = normalizeColor(color);
+  writePreference(COLOR_STORAGE_KEY, currentColor);
+  renderCurrentStyle();
+}
+
+function applyStrokeWidth(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return;
+  const clamped = Math.min(2.4, Math.max(1.2, parsed));
+  currentStrokeWidth = String(Math.round(clamped * 10) / 10);
+  writePreference(STROKE_STORAGE_KEY, currentStrokeWidth);
+  renderCurrentStyle();
+}
+
+function applyAnimationSpeed(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return;
+  const clamped = Math.min(2, Math.max(0.5, parsed));
+  currentAnimationSpeed = String(Math.round(clamped * 10) / 10);
+  writePreference(SPEED_STORAGE_KEY, currentAnimationSpeed);
+  renderCurrentStyle();
+}
+
+function applyPixelDensity(value) {
+  currentPixelDensity = String(getClampedPixelDensity(value));
+  writePreference(PIXEL_DENSITY_STORAGE_KEY, currentPixelDensity);
+  renderCurrentStyle();
+}
+
+function renderGrid(gridEl, countEl, icons, options = {}) {
+  const canDownload = Boolean(options.download);
+  if (countEl) countEl.textContent = icons.length;
+  gridEl.innerHTML = icons.map((icon, index) => `
+    <article class="icon-card" data-key="${icon.key}" data-animation="${icon.animation || ''}">
+      <div class="icon-preview" aria-hidden="true">${getIconSvg(icon)}</div>
+      <div class="icon-info">
+        <h2 class="icon-name">${icon.name}</h2>
+        <div class="icon-key">${icon.key}</div>
+      </div>
+      <div class="icon-actions" data-download="${canDownload ? 'true' : 'false'}">
+        <button type="button" class="copy-btn" data-index="${index}" aria-label="Copy ${icon.name} SVG" title="Copy SVG">${COPY_ACTION_ICON}</button>
+        ${canDownload ? `<button type="button" class="download-btn" data-index="${index}" aria-label="Download ${icon.name} SVG" title="Download SVG">${DOWNLOAD_ACTION_ICON}</button>` : ''}
+      </div>
+    </article>
+  `).join('');
+}
+
+function renderIcons() {
+  renderGrid(grid, count, ICONS, { download: true });
+  renderGrid(pxGrid, pxCount, PIXEL_ICONS, { download: true });
+}
+
+function renderMotionRuleList(listEl, rules) {
+  listEl.innerHTML = Object.entries(rules).map(([name, rule]) => `
+    <li class="motion-rule">
+      <strong>${rule.title} · ${name}</strong>
+      <span>${rule.description}</span>
+    </li>
+  `).join('');
+}
+
+function renderMotionRules() {
+  renderMotionRuleList(motionRuleList, MOTION_RULES);
+  renderMotionRuleList(pxMotionRuleList, PIXEL_MOTION_RULES);
+}
+
+function setupMotionRuleToggle(buttonId, listId) {
+  const button = document.getElementById(buttonId);
+  const list = document.getElementById(listId);
+  if (!button || !list) return;
+
+  const section = button.closest('.motion-rules');
+  const setExpanded = expanded => {
+    button.setAttribute('aria-expanded', String(expanded));
+    list.hidden = !expanded;
+    if (section) section.classList.toggle('is-collapsed', !expanded);
+  };
+
+  setExpanded(button.getAttribute('aria-expanded') === 'true');
+  button.addEventListener('click', () => {
+    setExpanded(button.getAttribute('aria-expanded') !== 'true');
+  });
+}
+
+function setupGridActions(gridEl, icons) {
+  gridEl.addEventListener('click', event => {
+    const copyButton = event.target.closest('.copy-btn');
+    if (copyButton) {
+      const icon = icons[Number(copyButton.dataset.index)];
+      copyText(getIconSvg(icon), `${icon.name} SVG copied`);
+      return;
+    }
+
+    const downloadButton = event.target.closest('.download-btn');
+    if (downloadButton) {
+      const icon = icons[Number(downloadButton.dataset.index)];
+      downloadIconSvg(icon);
+    }
+  });
+}
+
+setupGridActions(grid, ICONS);
+setupGridActions(pxGrid, PIXEL_ICONS);
+
+colorInput.addEventListener('input', event => applyColor(event.target.value));
+strokeInput.addEventListener('input', event => applyStrokeWidth(event.target.value));
+speedInput.addEventListener('input', event => applyAnimationSpeed(event.target.value));
+pxDensityInput.addEventListener('input', event => applyPixelDensity(event.target.value));
+renderMotionRules();
+setupMotionRuleToggle('px-motion-toggle', 'px-motion-rule-list');
+setupMotionRuleToggle('motion-rules-toggle', 'motion-rule-list');
+renderCurrentStyle();
+
+const gradientCanvas = document.getElementById('gradient-canvas');
+const gColor1 = document.getElementById('g-color-1');
+const gColor2 = document.getElementById('g-color-2');
+const gColor3 = document.getElementById('g-color-3');
+const gBlur = document.getElementById('g-blur');
+const gSpeed = document.getElementById('g-speed');
+const gSwatch1 = document.getElementById('g-swatch-1');
+const gSwatch2 = document.getElementById('g-swatch-2');
+const gSwatch3 = document.getElementById('g-swatch-3');
+const gBlurValue = document.getElementById('g-blur-value');
+const gSpeedValue = document.getElementById('g-speed-value');
+
+function applyGradientStyles() {
+  if (!gradientCanvas) return;
+  gradientCanvas.style.setProperty('--g-color-1', gColor1.value);
+  gradientCanvas.style.setProperty('--g-color-2', gColor2.value);
+  gradientCanvas.style.setProperty('--g-color-3', gColor3.value);
+  gradientCanvas.style.setProperty('--g-blur', `${gBlur.value}px`);
+  gradientCanvas.style.setProperty('--g-speed', gSpeed.value);
+  if (gSwatch1) gSwatch1.style.background = gColor1.value;
+  if (gSwatch2) gSwatch2.style.background = gColor2.value;
+  if (gSwatch3) gSwatch3.style.background = gColor3.value;
+  if (gBlurValue) gBlurValue.textContent = gBlur.value;
+  if (gSpeedValue) gSpeedValue.textContent = Number(gSpeed.value).toFixed(1);
+}
+
+[gColor1, gColor2, gColor3, gBlur, gSpeed].forEach(el => {
+  if (el) el.addEventListener('input', applyGradientStyles);
+});
+applyGradientStyles();
+
+const RAMP = ' .,:;+*#%@';
+
+function distToLineAsp(px, py, x1, y1, x2, y2) {
+  const dx12 = x2 - x1, dy12 = (y2 - y1) * 2;
+  const dx1p = px - x1, dy1p = (py - y1) * 2;
+  const len2 = dx12 * dx12 + dy12 * dy12;
+  if (len2 === 0) return Math.sqrt(dx1p * dx1p + dy1p * dy1p);
+  const tt = Math.max(0, Math.min(1, (dx1p * dx12 + dy1p * dy12) / len2));
+  const fx = x1 + tt * (x2 - x1);
+  const fy = y1 + tt * (y2 - y1);
+  const dx = px - fx, dy = (py - fy) * 2;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+const asciiBouquet = document.getElementById('ascii-bouquet');
+const BOUQUET_COLS = 48;
+const BOUQUET_ROWS = 28;
+const FLOWERS = [
+  { cx: 24, cy: 7,  s: 1.0,  off: 0.00 },
+  { cx: 16, cy: 11, s: 0.72, off: 0.20 },
+  { cx: 32, cy: 11, s: 0.72, off: 0.35 },
+];
+const STEM_BASE = { x: 24, y: 26 };
+
+function flowerProgress(t, off) {
+  const end = 0.9;
+  if (t < off) return 0;
+  if (t > end) return 1;
+  return (t - off) / (end - off);
+}
+
+function bouquetDensity(x, y, t, sway) {
+  let maxD = 0;
+
+  for (const f of FLOWERS) {
+    const ft = flowerProgress(t, f.off);
+    if (ft <= 0) continue;
+    const lineD = distToLineAsp(x, y, f.cx, f.cy, STEM_BASE.x, STEM_BASE.y);
+    if (lineD < 0.8) maxD = Math.max(maxD, 0.32);
+  }
+
+  for (const f of FLOWERS) {
+    const ft = flowerProgress(t, f.off);
+    if (ft <= 0) continue;
+    const dx = x - f.cx;
+    const dy = (y - f.cy) * 2;
+
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const budR = (1.0 + ft * 0.7) * f.s;
+    if (dist < budR) {
+      maxD = Math.max(maxD, 1 - dist / budR);
+    }
+
+    const N = 5;
+    const petalL = (1 + ft * 4.5) * f.s;
+    const petalW = (0.6 + ft * 1.8) * f.s;
+    const petalDist = (1.2 + ft * 3.2) * f.s;
+
+    for (let i = 0; i < N; i++) {
+      const ang = (i / N) * Math.PI * 2 - Math.PI / 2 + sway;
+      const cosA = Math.cos(ang);
+      const sinA = Math.sin(ang);
+      const ldx = dx - cosA * petalDist;
+      const ldy = dy - sinA * petalDist;
+      const localX = ldx * cosA + ldy * sinA;
+      const localY = -ldx * sinA + ldy * cosA;
+      const r2 = (localX / petalL) ** 2 + (localY / petalW) ** 2;
+      if (r2 < 1) maxD = Math.max(maxD, 1 - r2);
+    }
+  }
+
+  return Math.min(1, maxD);
+}
+
+const asciiHeart = document.getElementById('ascii-heart');
+const HEART_COLS = 48;
+const HEART_ROWS = 28;
+
+function heartScale(now) {
+  const cycle = (now * 1.1) % 1.0;
+  const beat1 = Math.exp(-((cycle - 0.0) ** 2) * 400);
+  const beat2 = Math.exp(-((cycle - 0.18) ** 2) * 400) * 0.6;
+  return 1 + (beat1 + beat2) * 0.15;
+}
+
+function heartDensity(x, y, scale) {
+  const cx = HEART_COLS / 2;
+  const cy = HEART_ROWS / 2;
+  const sX = 11 * scale;
+  const sY = 5.5 * scale;
+  const dx = (x - cx) / sX;
+  const dy = -(y - cy) / sY;
+
+  const r2 = dx * dx + dy * dy;
+  const lhs = (r2 - 1) ** 3;
+  const rhs = dx * dx * dy * dy * dy;
+
+  if (lhs < rhs) {
+    return 0.7 + Math.max(0, 1 - r2) * 0.3;
+  }
+  return 0;
+}
+
+function asciiRender() {
+  const now = performance.now() / 1000;
+
+  if (asciiBouquet) {
+    const t = 0.5 - 0.5 * Math.cos(now * 0.21);
+    const sway = Math.sin(now * 0.3) * 0.1;
+    let out = '';
+    for (let r = 0; r < BOUQUET_ROWS; r++) {
+      for (let c = 0; c < BOUQUET_COLS; c++) {
+        const d = bouquetDensity(c, r, t, sway);
+        const idx = Math.min(RAMP.length - 1, Math.floor(d * RAMP.length));
+        out += RAMP[idx];
+      }
+      if (r < BOUQUET_ROWS - 1) out += '\n';
+    }
+    asciiBouquet.textContent = out;
+  }
+
+  if (asciiHeart) {
+    const scale = heartScale(now);
+    let out = '';
+    for (let r = 0; r < HEART_ROWS; r++) {
+      for (let c = 0; c < HEART_COLS; c++) {
+        const d = heartDensity(c, r, scale);
+        const idx = Math.min(RAMP.length - 1, Math.floor(d * RAMP.length));
+        out += RAMP[idx];
+      }
+      if (r < HEART_ROWS - 1) out += '\n';
+    }
+    asciiHeart.textContent = out;
+  }
+
+  if (asciiBouquet || asciiHeart) requestAnimationFrame(asciiRender);
+}
+
+if (asciiBouquet || asciiHeart) asciiRender();
+</script>
+</body>
+</html>

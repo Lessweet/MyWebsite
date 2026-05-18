@@ -6,57 +6,304 @@
 document.addEventListener('DOMContentLoaded', () => {
     initCardAnimations();
     initCategoryFilter();
-    initLogoFontShuffle();
+    initBrandBanner();
+    initIconShowcaseFrames();
+    initSectionHeadingRise();
 });
 
 /**
- * Continuously swap the header logo's font through 6 fonts at a relaxed pace.
+ * Per-character rise animation for section headings.
+ * Spec follows pixel-point/animate-text "per-character-rise":
+ *   - Each letter starts translateY(110%) + opacity 0
+ *   - On enter-view, letters rise to translateY(0) + opacity 1
+ *   - Stagger ~35ms per char, ease cubic-bezier(0.22, 1, 0.36, 1), 700ms
+ *   - Parent mask uses overflow:hidden so letters appear from below the baseline
  */
-function initLogoFontShuffle() {
-    const el = document.querySelector('.logo-shuffle');
-    if (!el) return;
+function initSectionHeadingRise() {
+    const headings = document.querySelectorAll('.section-divider h2');
+    if (!headings.length) return;
 
-    const fonts = [
-        "'SF Mono', 'JetBrains Mono', Menlo, monospace",
-        "Georgia, 'Times New Roman', serif",
-        "'Snell Roundhand', 'Brush Script MT', cursive",
-        "Impact, 'Arial Black', sans-serif",
-        "'Helvetica Neue', Helvetica, Arial, sans-serif",
-        "'Courier New', Courier, monospace"
-    ];
+    headings.forEach((h2) => {
+        // Only split text nodes that haven't been processed yet.
+        if (h2.dataset.riseInit) return;
+        const text = h2.textContent.trim();
+        if (!text) return;
 
-    let idx = 0;
-    const tick = () => {
-        el.style.fontFamily = fonts[idx];
-        idx = (idx + 1) % fonts.length;
-        setTimeout(tick, 650);
+        h2.dataset.riseInit = '1';
+        h2.setAttribute('aria-label', text);
+        h2.classList.add('heading-rise');
+        h2.textContent = '';
+
+        const mask = document.createElement('span');
+        mask.className = 'heading-rise-mask';
+        mask.setAttribute('aria-hidden', 'true');
+
+        Array.from(text).forEach((char, i) => {
+            const span = document.createElement('span');
+            span.className = 'heading-rise-char';
+            span.textContent = char === ' ' ? ' ' : char;
+            span.style.setProperty('--d', `${i * 35}ms`);
+            mask.appendChild(span);
+        });
+        h2.appendChild(mask);
+    });
+
+    if (!('IntersectionObserver' in window)) {
+        // Fallback: just reveal everything.
+        headings.forEach((h2) => h2.classList.add('heading-rise-in'));
+        return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('heading-rise-in');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.25, rootMargin: '0px 0px -10% 0px' });
+
+    headings.forEach((h2) => observer.observe(h2));
+}
+
+function initIconShowcaseFrames() {
+    const frames = Array.from(document.querySelectorAll('.icon-showcase-frame'));
+    if (!frames.length) return;
+
+    const setFrameHeight = (frame, height) => {
+        const value = Number(height);
+        if (!Number.isFinite(value) || value <= 0) return;
+        frame.style.height = `${Math.ceil(value)}px`;
     };
 
-    tick();
+    const resizeFrame = (frame) => {
+        try {
+            const doc = frame.contentDocument || frame.contentWindow?.document;
+            if (!doc) return;
+            const content = doc.querySelector('main') || doc.body || doc.documentElement;
+            const rect = content.getBoundingClientRect ? content.getBoundingClientRect() : { height: 0 };
+
+            const height = Math.max(
+                content.scrollHeight || 0,
+                content.offsetHeight || 0,
+                rect.height || 0
+            );
+
+            setFrameHeight(frame, height);
+        } catch {
+            // Keep the CSS fallback height when the browser blocks file access.
+        }
+    };
+
+    const requestFrameResize = (frame) => {
+        resizeFrame(frame);
+        try {
+            frame.contentWindow?.postMessage({ type: 'icon-showcase:request-height' }, '*');
+        } catch {}
+    };
+
+    const resizeAll = () => frames.forEach(requestFrameResize);
+
+    window.addEventListener('message', (event) => {
+        const data = event.data;
+        if (!data || data.type !== 'icon-showcase:height') return;
+
+        const frame = frames.find(item => item.contentWindow === event.source);
+        if (!frame) return;
+        setFrameHeight(frame, data.height);
+    });
+
+    frames.forEach((frame) => {
+        frame.addEventListener('load', () => {
+            requestFrameResize(frame);
+            requestAnimationFrame(() => requestFrameResize(frame));
+            setTimeout(() => requestFrameResize(frame), 250);
+
+            try {
+                const doc = frame.contentDocument || frame.contentWindow?.document;
+                if (doc?.body && typeof ResizeObserver !== 'undefined') {
+                    const observer = new ResizeObserver(() => requestFrameResize(frame));
+                    observer.observe(doc.body);
+                    frame._iconShowcaseObserver = observer;
+                }
+            } catch {}
+        });
+    });
+
+    window.addEventListener('load', resizeAll);
+    window.addEventListener('resize', () => requestAnimationFrame(resizeAll));
 }
 
 /**
- * Category filter: clicking a button hides cards whose data-category doesn't match.
- * "all" shows everything.
+ * Single-level category filter — each .category-btn[data-filter] toggles
+ * the corresponding .category-section[data-category]; "all" shows everything.
  */
 function initCategoryFilter() {
-    const buttons = document.querySelectorAll('.category-btn');
-    const cards = document.querySelectorAll('.card-wrapper');
+    const buttons = document.querySelectorAll('.category-btn[data-filter]');
+    const sections = document.querySelectorAll('.category-section');
+
+    let activeFilter = 'all';
+
+    const applyFilter = () => {
+        sections.forEach((section) => {
+            const sCat = section.dataset.category;
+            const visible = activeFilter === 'all' || sCat === activeFilter;
+            section.style.display = visible ? '' : 'none';
+        });
+        requestAnimationFrame(updateDynamicScale);
+    };
 
     buttons.forEach((btn) => {
         btn.addEventListener('click', () => {
-            const filter = btn.dataset.filter;
-
+            activeFilter = btn.dataset.filter || 'all';
             buttons.forEach((b) => b.classList.toggle('active', b === btn));
-
-            cards.forEach((card) => {
-                const cat = card.dataset.category;
-                const match = filter === 'all' || cat === filter;
-                card.style.display = match ? '' : 'none';
-            });
-
-            requestAnimationFrame(updateDynamicScale);
+            applyFilter();
         });
+    });
+}
+
+/**
+ * Pixel VIBEDESIGN banner — renders the header logo grid and cycles through
+ * three character styles (ascii / block / dots). Click to advance manually.
+ */
+function initBrandBanner() {
+    const grid = document.getElementById('brand-banner-grid');
+    if (!grid) return;
+
+    function mulberry32(seed) {
+        let s = seed >>> 0;
+        return function () {
+            s = (s + 0x6D2B79F5) >>> 0;
+            let t = s;
+            t = Math.imul(t ^ (t >>> 15), t | 1);
+            t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+            return ((t ^ (t >>> 16)) >>> 0) / 4294967296;
+        };
+    }
+    function hashStr(str) {
+        let h = 2166136261 >>> 0;
+        for (let i = 0; i < str.length; i++) {
+            h ^= str.charCodeAt(i);
+            h = Math.imul(h, 16777619);
+        }
+        return h >>> 0;
+    }
+    let rand = Math.random;
+
+    const base = [
+        "*   *  ***  ****  ***** ****  *****  ****  ***   ***  *   *",
+        "*   *   *   *   * *     *   * *     *       *   *   * **  *",
+        "*   *   *   *   * *     *   * *     *       *   *     * * *",
+        "*   *   *   ****  ****  *   * ****   ***    *   * *** * * *",
+        " * *    *   *   * *     *   * *         *   *   *   * * * *",
+        " * *    *   *   * *     *   * *         *   *   *   * *  **",
+        "  *    ***  ****  ***** ****  ***** ****   ***   ***  *   *",
+    ];
+    const SCALE = 2;
+    const expanded = [];
+    for (const row of base) {
+        const wide = Array.from(row, ch => ch.repeat(SCALE)).join('');
+        for (let v = 0; v < SCALE; v++) expanded.push(wide);
+    }
+    const lh = expanded.length;
+    const lw = expanded[0].length;
+    const padCols = 3;
+    const padRows = 1;
+    const cols = lw + padCols * 2;
+    const rows = lh + padRows * 2;
+    const colOff = padCols;
+    const rowOff = padRows;
+
+    const isLetter = (r, c) => {
+        const lr = r - rowOff, lc = c - colOff;
+        return lr >= 0 && lr < lh && lc >= 0 && lc < lw && expanded[lr][lc] === '*';
+    };
+
+    const MAX_HALO = 3;
+    const distToLetter = (r, c) => {
+        for (let d = 1; d <= MAX_HALO; d++) {
+            for (let dr = -d; dr <= d; dr++) {
+                for (let dc = -d; dc <= d; dc++) {
+                    if (Math.max(Math.abs(dr), Math.abs(dc)) !== d) continue;
+                    if (isLetter(r + dr, c + dc)) return d;
+                }
+            }
+        }
+        return Infinity;
+    };
+
+    const pick = arr => () => arr[Math.floor(rand() * arr.length)];
+    const STYLES = [
+        { id: 'ascii', letter: () => '*', accent: () => '\\', ambient: pick(['*', '\\']),
+          densityByDist: { 1: 0.28, 2: 0.22 }, ambientDensity: 0.015 },
+        { id: 'block', letter: () => '▄', accent: pick(['▀', '▄']), ambient: pick(['▀', '▄']),
+          densityByDist: { 1: 0.18, 2: 0.14 }, ambientDensity: 0.012 },
+        { id: 'dots',  letter: () => '•', accent: () => '•',
+          ambient: pick(['•', '•', '•', '✦', '✦', '▪', '▴']),
+          densityByDist: {}, ambientDensity: 0.038 },
+    ];
+    const SWITCH_MS = 2200;
+
+    const cell = (cls, text, maxDelay) => {
+        const s = document.createElement('span');
+        s.className = cls;
+        s.style.setProperty('--d', (rand() * maxDelay).toFixed(2) + 's');
+        s.textContent = text;
+        return s;
+    };
+
+    function build(style) {
+        rand = mulberry32(hashStr(style.id));
+        const frag = document.createDocumentFragment();
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                if (isLetter(r, c)) {
+                    frag.appendChild(cell('px-letter', style.letter(), 2.6));
+                    continue;
+                }
+                const d = distToLetter(r, c);
+                const haloDensity = style.densityByDist[d];
+                if (haloDensity !== undefined) {
+                    if (rand() < haloDensity) {
+                        frag.appendChild(cell('px-accent', style.accent(), 3.6));
+                    } else {
+                        frag.appendChild(document.createTextNode(' '));
+                    }
+                } else if (rand() < style.ambientDensity) {
+                    frag.appendChild(cell('px-star', style.ambient(), 3.6));
+                } else {
+                    frag.appendChild(document.createTextNode(' '));
+                }
+            }
+            if (r < rows - 1) frag.appendChild(document.createTextNode('\n'));
+        }
+        return frag;
+    }
+
+    function applyStyle(style) {
+        grid.dataset.styleId = style.id;
+        grid.replaceChildren(build(style));
+    }
+
+    let idx = 0;
+    let timer;
+    const advance = () => {
+        idx = (idx + 1) % STYLES.length;
+        applyStyle(STYLES[idx]);
+    };
+    const scheduleAutoSwitch = () => {
+        clearInterval(timer);
+        timer = setInterval(advance, SWITCH_MS);
+    };
+
+    applyStyle(STYLES[idx]);
+    scheduleAutoSwitch();
+
+    const trigger = grid.closest('.header-banner-link') || grid.parentElement;
+    trigger.addEventListener('click', (e) => {
+        e.preventDefault();
+        advance();
+        scheduleAutoSwitch();
     });
 }
 
@@ -115,44 +362,51 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 
 /**
  * Smart Sticky Header
- * - Shows when scrolling up
- * - Hides when scrolling down (after scrolling a distance)
+ * - Always visible on load (no flash of hidden state)
+ * - Hides when scrolling down past 100px
+ * - Shows again when scrolling up
+ * - At very top: forced visible
  */
-let lastScrollY = 0;
-let scrollDelta = 0;
-const header = document.querySelector('.header');
-const scrollThreshold = 10; // Minimum scroll distance to trigger hide/show
+(() => {
+    const header = document.querySelector('.header');
+    if (!header) return;
 
-window.addEventListener('scroll', () => {
-    const currentScrollY = window.scrollY;
-    const scrollDiff = currentScrollY - lastScrollY;
+    // Start visible — fixes the "banner disappears on refresh" issue.
+    header.classList.remove('header-hidden');
 
-    // Accumulate scroll delta
-    scrollDelta += scrollDiff;
+    let lastScrollY = window.scrollY;
+    let scrollDelta = 0;
+    const scrollThreshold = 10;
 
-    // Scrolling down - hide header after threshold
-    if (scrollDiff > 0 && currentScrollY > 100) {
-        if (scrollDelta > scrollThreshold) {
-            header.classList.add('header-hidden');
-            scrollDelta = 0;
+    window.addEventListener('scroll', () => {
+        const currentScrollY = window.scrollY;
+        const scrollDiff = currentScrollY - lastScrollY;
+        scrollDelta += scrollDiff;
+
+        // Scrolling down past 100px — hide after threshold of consecutive down-scroll
+        if (scrollDiff > 0 && currentScrollY > 100) {
+            if (scrollDelta > scrollThreshold) {
+                header.classList.add('header-hidden');
+                scrollDelta = 0;
+            }
         }
-    }
-    // Scrolling up - show header
-    else if (scrollDiff < 0) {
-        if (scrollDelta < -scrollThreshold) {
+        // Scrolling up — reveal once threshold of consecutive up-scroll is met
+        else if (scrollDiff < 0) {
+            if (scrollDelta < -scrollThreshold) {
+                header.classList.remove('header-hidden');
+                scrollDelta = 0;
+            }
+        }
+
+        // At the very top: always show
+        if (currentScrollY <= 10) {
             header.classList.remove('header-hidden');
             scrollDelta = 0;
         }
-    }
 
-    // At top of page - always show
-    if (currentScrollY <= 10) {
-        header.classList.remove('header-hidden');
-        scrollDelta = 0;
-    }
-
-    lastScrollY = currentScrollY;
-}, { passive: true });
+        lastScrollY = currentScrollY;
+    }, { passive: true });
+})();
 
 /**
  * Video Skeleton - hide when video is loaded
