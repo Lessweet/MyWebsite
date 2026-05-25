@@ -6,13 +6,16 @@
 <title>Pixel Icon Library</title>
 <script>
   (() => {
-    const isEmbedded = new URLSearchParams(window.location.search).get('embed') === '1' || window.self !== window.top;
+    const params = new URLSearchParams(window.location.search);
+    const isModal = params.get('modal') === '1';
+    const isEmbedded = !isModal && (params.get('embed') === '1' || window.self !== window.top);
+    if (isModal) document.documentElement.classList.add('is-modal');
     if (isEmbedded) document.documentElement.classList.add('is-embedded');
   })();
 </script>
 <style>
   :root {
-    --bg: #ededed;
+    --bg: #FDFBF6;
     --surface: #ffffff;
     --surface-2: #f7f7f7;
     --border: #d7d7d7;
@@ -1354,6 +1357,12 @@
   .back-to-design:hover { border-color: var(--text); background: var(--surface-2); }
   .back-to-design svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
   :root.is-embedded .back-to-design { display: none; }
+  :root.is-modal .back-to-design { display: none; }
+  /* 模态里隐藏竖向滚动条(仍可滚动) */
+  :root.is-modal,
+  :root.is-modal body { scrollbar-width: none; -ms-overflow-style: none; }
+  :root.is-modal::-webkit-scrollbar,
+  :root.is-modal body::-webkit-scrollbar { width: 0; height: 0; display: none; }
 </style>
 </head>
 <body data-view="pixel">

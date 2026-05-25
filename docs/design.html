@@ -7,41 +7,29 @@
     <link rel="icon" type="image/png" href="favicon.png?v=12">
     <link rel="shortcut icon" href="favicon.png?v=12">
     <link rel="apple-touch-icon" href="apple-touch-icon.png?v=12">
-    <link rel="stylesheet" href="style.css?v=108">
-    <link rel="stylesheet" href="writing/writing.css?v=20">
+    <link rel="stylesheet" href="style.css?v=111">
+    <link rel="stylesheet" href="writing/writing.css?v=36">
 </head>
 <body class="home-v2 design-page">
-    <header class="header home-nav">
-        <div class="header-left">
-            <a href="index-v2.html" class="site-title"><img src="logo.svg?v=1" class="site-logo" alt="">VibeUX</a>
-        </div>
-        <div class="header-right">
-            <nav class="nav-cats" aria-label="分类">
-                <a href="index-v2.html#writing" class="nav-cat">Writing</a>
-                <a href="design.html" class="nav-cat active" aria-current="page">Design</a>
-            </nav>
-        </div>
-    </header>
-    <div class="header-placeholder"></div>
-
+    <header class="header home-nav" id="site-nav" data-active="design"></header>
     <main class="design-layout">
         <aside class="design-menu" aria-label="Design 分类">
-            <a href="#ai-native-design" class="nav-cat"><span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L13.8 9.2 L20 11 L13.8 12.8 L12 19 L10.2 12.8 L4 11 L10.2 9.2 Z"/></svg></span>AI-Native Design</a>
+            <a href="#ai-native-design" class="nav-cat"><span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L13.8 9.2 L20 11 L13.8 12.8 L12 19 L10.2 12.8 L4 11 L10.2 9.2 Z" fill="currentColor" stroke="none"/></svg></span>AI-Native Design</a>
             <a href="#cat-aigc" class="nav-cat"><span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 L13 11"/><path d="M16 3 L16.9 5.1 L19 6 L16.9 6.9 L16 9 L15.1 6.9 L13 6 L15.1 5.1 Z"/><path d="M20 11 L20.5 12.3 L21.8 12.8 L20.5 13.3 L20 14.6 L19.5 13.3 L18.2 12.8 L19.5 12.3 Z"/></svg></span>AIGC</a>
-            <a href="#cat-motion" class="nav-cat"><span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.4 L16 12 L10 15.6 Z"/></svg></span>Visual Motion</a>
+            <a href="#cat-motion" class="nav-cat"><span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 2.5 L5 13 H11 L9 21.5 L19 9.8 H13 Z" fill="currentColor" stroke="none"/></svg></span>Visual Motion</a>
             <a href="#cat-ux" class="nav-cat"><span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L20 7.5 L20 16.5 L12 21 L4 16.5 L4 7.5 Z"/><path d="M4 7.5 L12 12 L20 7.5"/><path d="M12 12 L12 21"/></svg></span>Visual UX</a>
         </aside>
         <div class="design-content">
-            <iframe src="design-banner.html?v=2" class="design-banner-frame" title="VIBEDESIGN" scrolling="no"></iframe>
+            <iframe src="design-banner.html?v=3" class="design-banner-frame" title="VIBEDESIGN" scrolling="no"></iframe>
 <section class="category-section home-section" id="ai-native-design">
                     <div class="section-divider">
-                        <h2 data-rise-init="1"><span class="heading-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L13.8 9.2 L20 11 L13.8 12.8 L12 19 L10.2 12.8 L4 11 L10.2 9.2 Z"/></svg></span>AI-Native Design</h2>
+                        <h2 data-rise-init="1"><span class="heading-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L13.8 9.2 L20 11 L13.8 12.8 L12 19 L10.2 12.8 L4 11 L10.2 9.2 Z" fill="currentColor" stroke="none"/></svg></span>AI-Native Design</h2>
                     </div>
                     <div class="category-grid">
 
                         <!-- Outlined Icon — 封面卡(内页前 9 个图标动效预览),点击看全部 -->
                         <div class="card-wrapper" data-delay="100">
-                            <a href="icon-studio/outlined.html" class="card foundation-card icon-cover">
+                            <a href="icon-studio/outlined.html" data-modal-src="icon-studio/outlined.html?modal=1&v=2" class="card foundation-card icon-cover">
                                 <iframe src="icon-studio/preview-outlined.html?v=2" class="icon-preview-frame" title="Outlined Icon 预览" scrolling="no" tabindex="-1"></iframe>
                             </a>
                             <div class="card-info">
@@ -52,7 +40,7 @@
 
                         <!-- Pixel Icon — 封面卡(内页前 9 个图标动效预览),点击看全部 -->
                         <div class="card-wrapper" data-delay="150">
-                            <a href="icon-studio/pixel.html" class="card foundation-card icon-cover">
+                            <a href="icon-studio/pixel.html" data-modal-src="icon-studio/pixel.html?modal=1&v=2" class="card foundation-card icon-cover">
                                 <iframe src="icon-studio/preview-pixel.html?v=2" class="icon-preview-frame" title="Pixel Icon 预览" scrolling="no" tabindex="-1"></iframe>
                             </a>
                             <div class="card-info">
@@ -62,6 +50,7 @@
                         </div>
 
                     </div>
+                </section>
 
             <!-- ================================
                  AI 生成作品(从 Visual Motion 拎出的动态海报)
@@ -184,7 +173,7 @@
                  ================================ -->
             <section class="category-section" id="cat-motion" data-group="co-creation" data-category="motion-posters">
                 <div class="section-divider">
-                    <h2 data-rise-init="1"><span class="heading-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.4 L16 12 L10 15.6 Z"/></svg></span>Visual Motion</h2>
+                    <h2 data-rise-init="1"><span class="heading-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 2.5 L5 13 H11 L9 21.5 L19 9.8 H13 Z" fill="currentColor" stroke="none"/></svg></span>Visual Motion</h2>
                 </div>
                 <div class="category-grid">
 
@@ -192,7 +181,7 @@
                     <div class="card-wrapper" data-delay="250" data-group="co-creation" data-category="motion-posters">
                         <article class="card card-full-demo">
                             <div class="card-iframe-container">
-                                <iframe src="ai-assistant-motion/index.html" class="card-iframe" frameborder="0" allowfullscreen></iframe>
+                                <iframe src="ai-assistant-motion/index.html?v=2" class="card-iframe" frameborder="0" allowfullscreen></iframe>
                             </div>
                         </article>
                         <div class="card-info">
@@ -540,12 +529,57 @@
 
                 </div>
             </section>
-
-                </section>
         </div>
     </main>
 
+    <!-- Icon Library 模态层:点击 AI-Native Design 封面在当前页打开,不跳转二级页 -->
+    <div class="icon-modal" id="iconModal" aria-hidden="true">
+        <div class="icon-modal-backdrop" data-modal-close></div>
+        <div class="icon-modal-dialog" role="dialog" aria-modal="true" aria-label="Icon Library">
+            <button class="icon-modal-close" type="button" aria-label="关闭" data-modal-close>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6 L18 18 M18 6 L6 18"/></svg>
+            </button>
+            <iframe class="icon-modal-frame" id="iconModalFrame" title="Icon Library" src="about:blank"></iframe>
+        </div>
+    </div>
+
     <script src="script.js?v=21"></script>
-    <script src="writing/writing.js?v=11"></script>
+    <script src="writing/writing.js?v=24"></script>
+    <script>
+    (function () {
+        const modal = document.getElementById('iconModal');
+        const frame = document.getElementById('iconModalFrame');
+        if (!modal || !frame) return;
+
+        const open = (src) => {
+            frame.src = src;
+            modal.classList.add('show');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
+        };
+        const close = () => {
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('modal-open');
+            frame.src = 'about:blank';   // 卸载内容,停止动画
+        };
+
+        document.querySelectorAll('.icon-cover[data-modal-src]').forEach((el) => {
+            el.addEventListener('click', (e) => {
+                const src = el.getAttribute('data-modal-src');
+                if (!src) return;
+                e.preventDefault();
+                open(src);
+            });
+        });
+
+        modal.querySelectorAll('[data-modal-close]').forEach((el) => {
+            el.addEventListener('click', close);
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('show')) close();
+        });
+    })();
+    </script>
 </body>
 </html>

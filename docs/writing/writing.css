@@ -555,6 +555,30 @@
     justify-self: auto !important;
     align-items: flex-start;
     margin: 0 !important;
+    flex: 1 1 0;          /* 左右等宽,把中间的分类挤到正中 */
+}
+.home-nav .nav-cats { flex: 0 0 auto; }     /* 中间分类:居中、不拉伸 */
+.home-nav .header-right { justify-content: flex-end; }
+
+.header-email {
+    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-size: 13px;
+    color: var(--gray-500);
+    transition: color 0.2s ease;
+    white-space: nowrap;
+}
+.header-email:hover { color: var(--gray-900); }
+
+/* 移动端:logo 与邮箱占第一行,分类居中换到第二行 */
+@media (max-width: 800px) {
+    .home-nav { flex-wrap: wrap; row-gap: 10px; }
+    .home-nav .header-left,
+    .home-nav .header-right { flex: 1 1 auto; }
+    .home-nav .nav-cats {
+        order: 3;
+        flex: 1 0 100%;
+        justify-content: center;
+    }
 }
 
 .site-title {
@@ -582,15 +606,21 @@
 
 .nav-cats { display: flex; align-items: center; gap: 22px; }
 .nav-cat {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     font-size: 15px;
     font-weight: 500;
     color: var(--gray-400);
     transition: color 0.2s ease;
 }
+.nav-cats .nav-cat .menu-icon svg { width: 16px; height: 16px; }
+/* 顶部导航两个分类暂时隐藏 Icon(JS 仍生成,保留以备日后启用):删掉下面这行即可恢复 */
+.nav-cats .nav-cat .menu-icon { display: none; }
 .nav-cat:hover { color: var(--gray-900); }
 .nav-cat.active { color: var(--gray-900); font-weight: 600; }
 
-body.home-v2 .header-placeholder { height: 110px; }
+body.home-v2 .header-placeholder { height: 68px; }
 @media (max-width: 800px) { body.home-v2 .header-placeholder { height: 132px; } }
 
 /* 模块锚点偏移(避开 fixed header) */
@@ -611,7 +641,7 @@ body.home-v2 .header-placeholder { height: 110px; }
 }
 .writing-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-.writing-info { align-items: center; text-align: center; gap: 6px; }
+.writing-info { align-items: flex-start; text-align: left; gap: 6px; }
 .writing-info .w-title {
     font-size: 16px;
     font-weight: 600;
@@ -661,7 +691,7 @@ body.home-v2 .header-placeholder { height: 110px; }
 .foundation-card.icon-cover {
     display: block;
     overflow: hidden;
-    background: var(--gray-100);
+    background: #FDFBF6;
 }
 .icon-preview-frame {
     width: 100%;
@@ -674,6 +704,78 @@ body.home-v2 .header-placeholder { height: 110px; }
 }
 .card-wrapper:hover .foundation-card.icon-cover {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+
+/* Icon Library 模态层 — 点击封面在当前页打开完整图标库,不跳转 */
+.icon-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 3vh 3vw;
+}
+.icon-modal.show { display: flex; }
+.icon-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+}
+.icon-modal-dialog {
+    position: relative;
+    width: min(1120px, 94vw);
+    height: 94vh;
+    background: #FDFBF6;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+    animation: icon-modal-in 0.22s ease;
+}
+@keyframes icon-modal-in {
+    from { opacity: 0; transform: translateY(12px) scale(0.985); }
+    to   { opacity: 1; transform: none; }
+}
+.icon-modal-frame {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+    background: #FDFBF6;
+}
+.icon-modal-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 2;
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    color: #181818;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+.icon-modal-close:hover { background: #ffffff; transform: scale(1.06); }
+.icon-modal-close svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+body.modal-open { overflow: hidden; }
+@media (prefers-reduced-motion: reduce) {
+    .icon-modal-dialog { animation: none; }
 }
 
 /* ========================================
@@ -733,6 +835,14 @@ body.writing-page .brand-banner-grid {
     gap: 56px;
     align-items: start;
 }
+.design-page .design-layout {
+    padding-top: calc(var(--design-menu-top, 72px) + 8px);
+}
+@media (min-width: 901px) {
+    .design-page .design-layout {
+        padding-top: calc(var(--design-menu-top, 72px) + 32px);
+    }
+}
 
 /* VIBEDESIGN banner(来自 icon-studio,独立 iframe 隔离);置于右侧网格容器内 */
 .design-banner-frame {
@@ -747,8 +857,14 @@ body.writing-page .brand-banner-grid {
 .home-v2 .header.home-nav {
     padding-left: max(24px, calc((100% - 1280px) / 2));
     padding-right: max(24px, calc((100% - 1280px) / 2));
-    border-bottom: 1px solid #f0f0f0;   /* 浅色分割线 */
+    border-bottom: 1px solid var(--hairline);   /* 全站统一细分割线 */
 }
+/* 顶栏高度收缩(中屏以上;移动端重排布局保持原样) */
+@media (min-width: 801px) {
+    .home-v2 .header.home-nav { padding-top: 16px; padding-bottom: 16px; }
+}
+/* Design 页:顶栏始终固定可见,任何宽度都不随滚动隐藏(二级胶囊条也常驻) */
+.design-page .header.home-nav.header-hidden { transform: none; }
 /* 首页内容宽度与 Design 页内容(design-layout)一致,左右间距统一 */
 .home-v2 .page-main {
     width: min(1280px, calc(100% - 48px));
@@ -756,7 +872,7 @@ body.writing-page .brand-banner-grid {
 
 .design-menu {
     position: sticky;
-    top: 110px;
+    top: calc(var(--design-menu-top, 64px) + 8px);
     display: flex;
     flex-direction: column;
     gap: 2px;
@@ -791,14 +907,26 @@ body.writing-page .brand-banner-grid {
 
 /* 右侧内容:沿用 category-section / category-grid */
 .design-content { min-width: 0; }
-.design-content .category-section { scroll-margin-top: 110px; }
-.design-content .design-banner-wrap { scroll-margin-top: 110px; }
+.design-content .category-section { scroll-margin-top: calc(var(--design-menu-top, 64px) + 16px); }
+.design-content .design-banner-wrap { scroll-margin-top: calc(var(--design-menu-top, 64px) + 16px); }
 
-/* 四个模块标题统一上下间距(覆盖 :first-of-type 等导致的不一致) */
+/* 四个模块标题统一上下间距(覆盖 :first-of-type 等导致的不一致)
+   每个模块顶部用全站统一的细分割线(同顶部导航底部那条) */
 .design-page .design-content .category-section .section-divider {
-    margin-top: 68px;
+    margin-top: 56px;
+    padding-top: 32px;
+    margin-bottom: 44px;
+    border-top: 1px solid var(--hairline);
+}
+
+/* 每个 pillar 页的第一个模块(Design 页紧跟 banner / Writing 页页面顶部)不要分割线。
+   用 ID 精确指定 + 直接子选择器:其余模块都保留细分割线,
+   避免嵌套结构下 :first-of-type 把后面的模块也误判为「第一个」而去掉线。 */
+#ai-native-design > .section-divider,
+#cat-ui > .section-divider {
+    margin-top: 64px;
     padding-top: 0;
-    margin-bottom: 52px;
+    border-top: none;
 }
 
 /* Design 页模块小标题:字号缩小 + 粗体 */
@@ -812,12 +940,24 @@ body.writing-page .brand-banner-grid {
 }
 
 @media (max-width: 900px) {
-    .design-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+    .design-layout { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+
+    /* 锚点偏移:避开顶栏 + 胶囊分类条 */
+    .design-content .category-section,
+    .design-content .design-banner-wrap { scroll-margin-top: 132px; }
+
+    /* 胶囊式二级分类:粘性贴在顶栏下方,随页面下滑始终可见 */
     .design-menu {
-        position: static;
+        position: sticky;
+        top: var(--design-menu-top, 64px);
+        z-index: 40;
         flex-direction: row;
         flex-wrap: wrap;
         gap: 8px;
+        margin-left: calc(50% - 50vw);
+        margin-right: calc(50% - 50vw);
+        padding: 11px max(24px, calc((100vw - 1280px) / 2));
+        background: #fff;
     }
     .design-menu .nav-cat {
         padding: 5px 13px;
@@ -830,6 +970,7 @@ body.writing-page .brand-banner-grid {
         color: var(--white);
         border-color: var(--gray-900);
     }
+    .design-menu .nav-cat.active .menu-icon svg { stroke: var(--white); }
 }
 
 /* AIGC 封面圆角:与基础卡 / Visual Motion / Visual UX 统一为 12px(默认 28px 太圆) */

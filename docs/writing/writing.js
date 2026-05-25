@@ -3,11 +3,46 @@
  * 复用 ../script.js 的 brand banner / sticky header,这里只补文章特有逻辑。
  */
 document.addEventListener('DOMContentLoaded', () => {
+    initSiteNav();
+    initStickyMenu();
     initReveal();
     initTagFilter();
     initTOC();
     initNavSpy();
 });
+
+/* 移动端:把胶囊分类条的 sticky top 设为顶栏实际高度,使其紧贴顶栏下方 */
+function initStickyMenu() {
+    const menu = document.querySelector('.design-menu');
+    const header = document.querySelector('.header');
+    if (!menu || !header) return;
+    const set = () => document.documentElement.style.setProperty('--design-menu-top', header.offsetHeight + 'px');
+    set();
+    window.addEventListener('resize', set);
+    window.addEventListener('load', set);
+}
+
+/* 顶部导航(一处定义,两页复用)。页面用 <header id="site-nav" data-active="writing|design"> 占位 */
+function initSiteNav() {
+    const nav = document.getElementById('site-nav');
+    if (!nav) return;
+    const active = nav.dataset.active || '';
+    const I = (p) => '<span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' + p + '</svg></span>';
+    const pencil = '<path d="M16.5 4.5 L19.5 7.5 L8 19 L4 20 L5 16 Z"/><path d="M14.5 6.5 L17.5 9.5"/>';
+    const design = '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 10 H20"/><path d="M10 10 V20"/>';
+    const a = (cls) => 'nav-cat' + (active === cls ? ' active' : '');
+    nav.innerHTML =
+        '<div class="header-left">' +
+            '<a href="index-v2.html" class="site-title"><img src="logo.svg?v=1" class="site-logo" alt="">VibeUX</a>' +
+        '</div>' +
+        '<nav class="nav-cats" aria-label="分类">' +
+            '<a href="index-v2.html#writing" class="' + a('writing') + '">' + I(pencil) + 'Writing</a>' +
+            '<a href="design.html" class="' + a('design') + '">' + I(design) + 'Design</a>' +
+        '</nav>' +
+        '<div class="header-right">' +
+            '<a href="mailto:chentongrong1@gmail.com" class="header-email">chentongrong1@gmail.com</a>' +
+        '</div>';
+}
 
 /* 首页 v2:右侧导航(.nav-cat)随滚动高亮当前模块 */
 function initNavSpy() {

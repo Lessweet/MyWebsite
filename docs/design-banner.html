@@ -15,7 +15,7 @@
     --text-dim: #969696;
     --brand: #000000;
     --brand-soft: rgba(0, 0, 0, 0.08);
-    --brand-banner-bg: #f4f1ea;
+    --brand-banner-bg: #FDFBF6;
     --dur-1-5: 1.5s;
     --dur-1-8: 1.8s;
     --dur-2-1: 2.1s;
@@ -1373,7 +1373,7 @@
   }
 </style>
 <style>
-  html, body { background: #f4f1ea !important; margin: 0; padding: 0; overflow: hidden; }
+  html, body { background: #FDFBF6 !important; margin: 0; padding: 0; overflow: hidden; }
   main { width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
   .brand-banner-shell { width: 100% !important; margin: 0 !important; }
   .brand-banner { min-height: 300px !important; }
@@ -1463,7 +1463,7 @@
         ambient: pick(['*', '\\']),
         densityByDist: { 1: 0.28, 2: 0.28 },
         ambientDensity: 0.015,
-        backgroundColor: '#f4f1ea',
+        backgroundColor: '#FDFBF6',
         lineHeight: '0.65',
         letterSpacing: '0',
         letterColor: (r, c) => ASCII_PALETTE[Math.floor((c - r + 120) / 8) % ASCII_PALETTE.length],
@@ -1962,7 +1962,7 @@
       }
       grid.dataset.styleId = style.id;
       if (bannerShell) {
-        bannerShell.style.setProperty('--brand-banner-bg', style.backgroundColor || '#f4f1ea');
+        bannerShell.style.setProperty('--brand-banner-bg', style.backgroundColor || '#FDFBF6');
       }
       grid.replaceChildren(build(style));
       originsDirty = true;
