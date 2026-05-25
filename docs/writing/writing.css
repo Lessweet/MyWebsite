@@ -1,0 +1,844 @@
+/* ========================================
+   Writing — 文章支柱
+   复用 ../style.css 的 token 与 header,只新增列表页/阅读页样式
+   ======================================== */
+
+/* 阅读支柱:header placeholder 比作品页矮一些(无 tagline 占位需求时仍兼容) */
+.writing-page .header-placeholder { height: 200px; }
+@media (max-width: 800px) { .writing-page .header-placeholder { height: 220px; } }
+
+/* ---------- 顶层支柱切换(header-center 内) ---------- */
+.pillar-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.pillar-link {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--gray-400);
+    transition: color 0.2s ease;
+}
+
+.pillar-link:hover { color: var(--gray-900); }
+
+.pillar-link.active {
+    color: var(--gray-900);
+    font-weight: 600;
+}
+
+.pillar-sep {
+    color: var(--gray-300);
+    font-weight: 300;
+}
+
+/* ---------- 通用容器 ---------- */
+.writing-main {
+    width: min(760px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 8px 0 96px;
+}
+
+/* ---------- 列表页:简介 ---------- */
+.writing-intro {
+    padding: 8px 0 28px;
+    border-bottom: 1px solid var(--gray-200);
+    margin-bottom: 28px;
+}
+
+.writing-intro h1 {
+    font-size: 30px;
+    font-weight: 680;
+    color: var(--gray-900);
+    line-height: 1.2;
+    margin: 0 0 8px;
+}
+
+.writing-intro p {
+    font-size: 14px;
+    color: var(--gray-600);
+    line-height: 1.6;
+    max-width: 560px;
+    margin: 0;
+}
+
+/* ---------- 标签筛选条 ---------- */
+.tag-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 32px;
+}
+
+.tag-btn {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-700);
+    background: transparent;
+    border: 1px solid var(--gray-300);
+    border-radius: 999px;
+    padding: 5px 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.tag-btn:hover {
+    background: var(--gray-100);
+    border-color: var(--gray-400);
+    color: var(--gray-900);
+}
+
+.tag-btn.active {
+    background: var(--gray-900);
+    color: var(--white);
+    border-color: var(--gray-900);
+}
+
+/* ---------- 置顶合集卡 ---------- */
+.collection-feature {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 20px 24px;
+    margin-bottom: 8px;
+    border: 1px solid var(--gray-200);
+    border-radius: 16px;
+    background: var(--gray-50);
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.collection-feature:hover {
+    border-color: var(--gray-400);
+    transform: translateY(-1px);
+}
+
+.collection-feature .cf-eyebrow {
+    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    margin-bottom: 6px;
+}
+
+.collection-feature .cf-title {
+    font-size: 17px;
+    font-weight: 650;
+    color: var(--gray-900);
+    margin-bottom: 4px;
+}
+
+.collection-feature .cf-desc {
+    font-size: 13px;
+    color: var(--gray-600);
+    line-height: 1.5;
+}
+
+.collection-feature .cf-arrow {
+    flex: 0 0 auto;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--gray-300);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray-900);
+    transition: all 0.2s ease;
+}
+
+.collection-feature:hover .cf-arrow {
+    background: var(--gray-900);
+    border-color: var(--gray-900);
+    color: var(--white);
+}
+
+/* ---------- 文章清单 ---------- */
+.article-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.article-item {
+    display: flex;
+    gap: 22px;
+    padding: 28px 0;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.article-item[hidden] { display: none; }
+
+.article-thumb {
+    flex: 0 0 132px;
+    width: 132px;
+    height: 92px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--gray-100);
+}
+
+.article-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.article-main { flex: 1; min-width: 0; }
+
+.article-item .a-title {
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--gray-900);
+    line-height: 1.35;
+    transition: color 0.2s ease;
+}
+
+.article-item:hover .a-title { color: var(--gray-600); }
+
+.article-item .a-excerpt {
+    margin-top: 7px;
+    font-size: 14px;
+    color: var(--gray-600);
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.article-item .a-meta {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.article-item .a-date {
+    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    color: #969696;
+}
+
+.article-item .a-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.a-tag {
+    font-size: 12px;
+    color: var(--gray-600);
+    background: var(--gray-100);
+    padding: 3px 9px;
+    border-radius: 10px;
+}
+
+/* ---------- reveal 动效 ---------- */
+.reveal-up {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
+}
+.reveal-up.visible { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+    .reveal-up { opacity: 1; transform: none; transition: none; }
+}
+
+/* ========================================
+   阅读页
+   ======================================== */
+.reading-layout {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 8px 24px 80px;
+    display: grid;
+    grid-template-columns: 200px minmax(0, 700px);
+    gap: 48px;
+    justify-content: center;
+}
+
+/* 浮动目录 */
+.article-toc {
+    position: sticky;
+    top: 130px;
+    align-self: start;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+}
+
+.article-toc-title {
+    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gray-400);
+    margin-bottom: 12px;
+}
+
+.article-toc a {
+    display: block;
+    padding: 6px 0 6px 14px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--gray-500);
+    border-left: 2px solid var(--gray-200);
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.article-toc a:hover { color: var(--gray-900); }
+
+.article-toc a.active {
+    color: var(--gray-900);
+    border-left-color: var(--gray-900);
+    font-weight: 500;
+}
+
+.article-toc a.sub { padding-left: 26px; font-size: 12px; }
+
+/* 正文区 */
+.article-reading { min-width: 0; }
+
+.article-eyebrow {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+.article-h1 {
+    font-size: 34px;
+    font-weight: 680;
+    line-height: 1.25;
+    color: var(--gray-900);
+    margin: 0 0 14px;
+    letter-spacing: -0.01em;
+}
+
+.article-byline {
+    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-size: 13px;
+    color: #969696;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.article-cover {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 14px;
+    background: var(--gray-100);
+    overflow: hidden;
+    margin: 28px 0 8px;
+}
+
+.article-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* 正文排版:窄列、大字、松行距 */
+.article-body {
+    font-size: 18px;
+    line-height: 1.8;
+    color: #2b2b2e;
+}
+
+.article-body > *:first-child { margin-top: 28px; }
+
+.article-body p { margin: 0 0 1.45em; }
+
+.article-body strong { font-weight: 650; color: var(--gray-900); }
+
+.article-body h2 {
+    font-size: 24px;
+    font-weight: 660;
+    line-height: 1.3;
+    color: var(--gray-900);
+    margin: 1.9em 0 0.7em;
+    scroll-margin-top: 120px;
+}
+
+.article-body h3 {
+    font-size: 19px;
+    font-weight: 650;
+    color: var(--gray-900);
+    margin: 1.5em 0 0.5em;
+    scroll-margin-top: 120px;
+}
+
+.article-body ul, .article-body ol { margin: 0 0 1.45em; padding-left: 1.3em; }
+.article-body li { margin: 0.4em 0; }
+
+.article-body blockquote {
+    margin: 1.6em 0;
+    padding: 4px 0 4px 20px;
+    border-left: 3px solid var(--gray-300);
+    color: var(--gray-600);
+    font-style: normal;
+}
+
+.article-body a {
+    color: var(--gray-900);
+    border-bottom: 1px solid var(--gray-300);
+}
+.article-body a:hover { border-color: var(--gray-900); }
+
+.article-body code {
+    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-size: 0.88em;
+    background: var(--gray-100);
+    padding: 2px 6px;
+    border-radius: 5px;
+}
+
+/* 正文图片 + 占位 */
+.article-body img {
+    width: 100%;
+    border-radius: 12px;
+    display: block;
+    margin: 26px 0;
+}
+
+.img-ph {
+    background: var(--gray-50);
+    border: 1px dashed var(--gray-300);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    margin: 26px 0;
+    padding: 24px;
+    text-align: center;
+    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    color: var(--gray-400);
+    line-height: 1.6;
+}
+
+/* ---------- 阅读页底部 ---------- */
+.article-footer {
+    max-width: 700px;
+    margin: 56px auto 0;
+    padding: 0 24px;
+}
+
+.article-prevnext {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding-top: 32px;
+    border-top: 1px solid var(--gray-200);
+}
+
+.pn-link {
+    display: block;
+    padding: 16px 18px;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    transition: border-color 0.2s ease;
+}
+.pn-link:hover { border-color: var(--gray-400); }
+.pn-link.next { text-align: right; }
+.pn-label {
+    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    color: var(--gray-400);
+    margin-bottom: 6px;
+}
+.pn-title { font-size: 14px; font-weight: 550; color: var(--gray-900); line-height: 1.4; }
+
+.same-collection {
+    margin-top: 36px;
+}
+.same-collection .sc-title {
+    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gray-400);
+    margin-bottom: 14px;
+}
+.same-collection a {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: 14px;
+    color: var(--gray-700);
+    transition: color 0.2s ease;
+}
+.same-collection a:hover { color: var(--gray-900); }
+.same-collection .sc-num {
+    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    color: var(--gray-400);
+}
+
+/* 关注公众号卡 */
+.follow-card {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    margin-top: 44px;
+    padding: 24px;
+    border: 1px solid var(--gray-200);
+    border-radius: 16px;
+    background: var(--gray-50);
+}
+.follow-card .follow-qr {
+    flex: 0 0 auto;
+    width: 96px;
+    height: 96px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+.follow-card .follow-text .ft-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 6px;
+}
+.follow-card .follow-text .ft-desc {
+    font-size: 13px;
+    color: var(--gray-600);
+    line-height: 1.6;
+}
+
+/* 返回链接(阅读页 header-center 左侧) */
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-500);
+    transition: color 0.2s ease;
+}
+.back-link:hover { color: var(--gray-900); }
+.back-link svg { width: 16px; height: 16px; }
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 1023px) {
+    .reading-layout { grid-template-columns: minmax(0, 700px); }
+    .article-toc { display: none; }
+}
+
+@media (max-width: 620px) {
+    .article-item { gap: 16px; }
+    .article-thumb { flex-basis: 96px; width: 96px; height: 68px; }
+    .article-h1 { font-size: 27px; }
+    .article-body { font-size: 17px; }
+    .article-prevnext { grid-template-columns: 1fr; }
+    .follow-card { flex-direction: column; text-align: center; }
+}
+
+/* ========================================
+   首页 v2 — 简单导航 + 双模块(Writing / Web Design)
+   ======================================== */
+
+/* 顶部简单导航:左标题,右两个分类 */
+.home-nav {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    border-bottom: 1px solid var(--gray-200);
+}
+.home-nav .header-left,
+.home-nav .header-right {
+    grid-column: auto !important;
+    grid-row: auto !important;
+    justify-self: auto !important;
+    align-items: flex-start;
+    margin: 0 !important;
+}
+
+.site-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 19px;
+    font-weight: 680;
+    color: var(--gray-900);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+}
+.site-logo {
+    width: 26px;
+    height: 26px;
+    display: block;
+    flex: 0 0 auto;
+}
+.site-subtitle {
+    margin-top: 5px;
+    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    color: #969696;
+}
+
+.nav-cats { display: flex; align-items: center; gap: 22px; }
+.nav-cat {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--gray-400);
+    transition: color 0.2s ease;
+}
+.nav-cat:hover { color: var(--gray-900); }
+.nav-cat.active { color: var(--gray-900); font-weight: 600; }
+
+body.home-v2 .header-placeholder { height: 110px; }
+@media (max-width: 800px) { body.home-v2 .header-placeholder { height: 132px; } }
+
+/* 模块锚点偏移(避开 fixed header) */
+.home-section { scroll-margin-top: 120px; }
+
+/* Web Design 模块:banner 作为该模块的身份标识 */
+.web-design-head .header-banner-link { padding: 0; margin-bottom: 10px; }
+.web-design-head .brand-banner-grid { font-size: 8px; }
+
+/* Writing 卡片(16:9 封面 → 标题 → 简介),排版同 Visual Motion */
+.writing-card {
+    display: block;
+    background: var(--gray-100);
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    position: relative;
+}
+.writing-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.writing-info { align-items: center; text-align: center; gap: 6px; }
+.writing-info .w-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-900);
+    line-height: 1.4;
+    transition: color 0.2s ease;
+}
+.card-wrapper:hover .writing-info .w-title { color: var(--gray-600); }
+.writing-info .w-excerpt {
+    font-size: 13px;
+    color: var(--gray-600);
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.writing-info .w-date {
+    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    color: #969696;
+}
+
+/* 填充式占位图(用于封面框内) */
+.img-ph.fill { min-height: 0; height: 100%; margin: 0; border: none; border-radius: 0; }
+
+/* AI-Native Design 基础三卡:Pixel Banner 作品 + 两个 icon 封面 */
+#ai-native-design .foundation-card { border-radius: 12px !important; }
+.foundation-card .img-ph.fill { flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; }
+
+/* Pixel Banner 卡:像素 banner 居中(banner 偏宽,缩小字号自适应) */
+.foundation-card.banner-card {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    background: var(--gray-100);
+    overflow: hidden;
+}
+.foundation-card.banner-card .header-banner-link {
+    cursor: pointer;
+    padding: 0;
+    max-width: 100%;
+}
+.foundation-card.banner-card .brand-banner-grid { font-size: 4px; }
+
+/* 两个 icon 封面卡:内页前 9 个图标动效预览,点击进二级页面 */
+.foundation-card.icon-cover {
+    display: block;
+    overflow: hidden;
+    background: var(--gray-100);
+}
+.icon-preview-frame {
+    width: 100%;
+    height: 100%;
+    flex: 1;
+    border: 0;
+    display: block;
+    background: transparent;
+    pointer-events: none;   /* 点击穿透到外层链接 */
+}
+.card-wrapper:hover .foundation-card.icon-cover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+
+/* ========================================
+   主题:白色背景 + Helvetica 字体
+   ======================================== */
+body.home-v2,
+body.writing-page { background: #ffffff; }
+
+.home-v2 .header,
+.writing-page .header { background: #ffffff; }
+
+/* 所有文字 → Helvetica(像素 banner 保持等宽,否则字形会错位) */
+body.home-v2, body.home-v2 *,
+body.writing-page, body.writing-page * {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+body.home-v2 .brand-banner-grid,
+body.writing-page .brand-banner-grid {
+    font-family: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace !important;
+}
+
+/* ========================================
+   标题小图标(Writing / AI-Native Design)
+   ======================================== */
+.home-v2 .section-divider h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.heading-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+}
+.heading-icon svg {
+    width: 28px;
+    height: 28px;
+    stroke: currentColor;
+    fill: none;
+}
+
+/* ========================================
+   所有模块网格:加大三列方向(列)间距
+   ======================================== */
+.home-v2 .category-grid { column-gap: 48px; }
+
+/* ========================================
+   Design 二级页:左分类 menu + 右作品网格
+   ======================================== */
+.design-layout {
+    width: min(1280px, calc(100% - 48px));
+    margin: 0 auto;
+    padding: 8px 0 96px;
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    gap: 56px;
+    align-items: start;
+}
+
+/* VIBEDESIGN banner(来自 icon-studio,独立 iframe 隔离);置于右侧网格容器内 */
+.design-banner-frame {
+    display: block;
+    width: 100%;
+    height: 300px;
+    border: 0;
+    border-radius: 12px;
+}
+
+/* 顶栏左右边缘与下方内容对齐;首页与 Design 页共用同一套(切换不跳动) */
+.home-v2 .header.home-nav {
+    padding-left: max(24px, calc((100% - 1280px) / 2));
+    padding-right: max(24px, calc((100% - 1280px) / 2));
+    border-bottom: 1px solid #f0f0f0;   /* 浅色分割线 */
+}
+/* 首页内容宽度与 Design 页内容(design-layout)一致,左右间距统一 */
+.home-v2 .page-main {
+    width: min(1280px, calc(100% - 48px));
+}
+
+.design-menu {
+    position: sticky;
+    top: 110px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.design-menu .nav-cat {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 0;
+    color: var(--gray-500);
+    line-height: 1.3;
+}
+.design-menu .nav-cat:hover { color: var(--gray-900); }
+.design-menu .nav-cat.active {
+    color: var(--gray-900);
+    font-weight: 600;
+}
+.menu-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+}
+.menu-icon svg { width: 18px; height: 18px; stroke: currentColor; fill: none; }
+
+/* 两级目录:Writing / Design 为大分类,Design 下 4 个小分类缩进 */
+.design-menu .menu-top { font-weight: 600; color: var(--gray-900); }
+.design-menu .menu-group { display: flex; flex-direction: column; gap: 2px; margin-top: 2px; }
+.design-menu .menu-sub { padding-left: 20px; color: var(--gray-500); }
+.design-menu .menu-sub.active { color: var(--gray-900); }
+.design-menu .menu-sub .menu-icon svg { width: 16px; height: 16px; }
+
+/* 右侧内容:沿用 category-section / category-grid */
+.design-content { min-width: 0; }
+.design-content .category-section { scroll-margin-top: 110px; }
+.design-content .design-banner-wrap { scroll-margin-top: 110px; }
+
+/* 四个模块标题统一上下间距(覆盖 :first-of-type 等导致的不一致) */
+.design-page .design-content .category-section .section-divider {
+    margin-top: 68px;
+    padding-top: 0;
+    margin-bottom: 52px;
+}
+
+/* Design 页模块小标题:字号缩小 + 粗体 */
+.design-page .design-content .section-divider h2 {
+    font-size: 21px;
+    font-weight: 650;
+}
+.design-page .design-content .section-divider h2 .heading-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+@media (max-width: 900px) {
+    .design-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+    .design-menu {
+        position: static;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .design-menu .nav-cat {
+        padding: 5px 13px;
+        border: 1px solid var(--gray-300);
+        border-radius: 999px;
+        font-size: 13px;
+    }
+    .design-menu .nav-cat.active {
+        background: var(--gray-900);
+        color: var(--white);
+        border-color: var(--gray-900);
+    }
+}
+
+/* AIGC 封面圆角:与基础卡 / Visual Motion / Visual UX 统一为 12px(默认 28px 太圆) */
+.home-v2 .category-section[data-category="ai-generated"] .card { border-radius: 12px !important; }
+
+/* AIGC 封面背景:用从海报吸取的主色填充纯色底(关掉铺图),视频居中叠在上面 */
+.home-v2 .category-section[data-category="ai-generated"] .card-video-contained {
+    background: var(--poster-color, var(--gray-100));
+}
+.home-v2 .category-section[data-category="ai-generated"] .card-video-contained::before {
+    display: none;
+}
