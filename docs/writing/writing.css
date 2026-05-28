@@ -117,7 +117,7 @@
 }
 
 .collection-feature .cf-eyebrow {
-    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -220,7 +220,7 @@
 }
 
 .article-item .a-date {
-    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     color: #969696;
 }
@@ -250,6 +250,46 @@
     .reveal-up { opacity: 1; transform: none; transition: none; }
 }
 
+/* ---------- 支柱页加载入场:菜单 / banner 与卡片一致,从上到下依次淡入 ----------
+   (.card-wrapper 的初始隐藏在 style.css 已定义,这里补菜单与 banner) */
+.design-page .design-menu,
+.design-page .design-banner-frame {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.9s var(--ease-soft), transform 0.9s var(--ease-soft);
+}
+.design-page .design-menu.visible,
+.design-page .design-banner-frame.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+    .design-page .design-menu,
+    .design-page .design-banner-frame { opacity: 1; transform: none; transition: none; }
+}
+
+/* ---------- 卡片封面媒体:就绪后透明度淡入(JS 加 .cover-in 触发) ----------
+   注意:transition 必须同时声明 transform,否则会把 style.css 里 hover 放大用的
+   transform 过渡覆盖掉,导致 hover 缩放是「瞬切」而非自然过渡。 */
+.home-v2 .card-video,
+.home-v2 .icon-preview-frame,
+.home-v2 .card-iframe {
+    opacity: 0;
+    transition:
+        opacity 1s var(--ease-soft),
+        transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.home-v2 .card-video.cover-in,
+.home-v2 .icon-preview-frame.cover-in,
+.home-v2 .card-iframe.cover-in {
+    opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+    .home-v2 .card-video,
+    .home-v2 .icon-preview-frame,
+    .home-v2 .card-iframe { opacity: 1; transition: none; }
+}
+
 /* ========================================
    阅读页
    ======================================== */
@@ -273,7 +313,7 @@
 }
 
 .article-toc-title {
-    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -321,7 +361,7 @@
 }
 
 .article-byline {
-    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 13px;
     color: #969696;
     display: flex;
@@ -388,7 +428,7 @@
 .article-body a:hover { border-color: var(--gray-900); }
 
 .article-body code {
-    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 0.88em;
     background: var(--gray-100);
     padding: 2px 6px;
@@ -414,7 +454,7 @@
     margin: 26px 0;
     padding: 24px;
     text-align: center;
-    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     color: var(--gray-400);
     line-height: 1.6;
@@ -445,7 +485,7 @@
 .pn-link:hover { border-color: var(--gray-400); }
 .pn-link.next { text-align: right; }
 .pn-label {
-    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     color: var(--gray-400);
     margin-bottom: 6px;
@@ -456,7 +496,7 @@
     margin-top: 36px;
 }
 .same-collection .sc-title {
-    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -474,7 +514,7 @@
 }
 .same-collection a:hover { color: var(--gray-900); }
 .same-collection .sc-num {
-    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-family: var(--font-mono);
     color: var(--gray-400);
 }
 
@@ -557,26 +597,40 @@
     margin: 0 !important;
     flex: 1 1 0;          /* 左右等宽,把中间的分类挤到正中 */
 }
-.home-nav .nav-cats { flex: 0 0 auto; }     /* 中间分类:居中、不拉伸 */
+.home-nav .nav-cats {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    flex: 0 0 auto;
+    justify-content: center;
+    z-index: 1;
+}
 .home-nav .header-right { justify-content: flex-end; }
 
-.header-email {
-    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
-    font-size: 13px;
-    color: var(--gray-500);
-    transition: color 0.2s ease;
+.header-connect {
+    display: inline-flex;
+    align-items: center;
+    padding: 0;
+    border: none;
+    background: none;
+    color: #000;
     white-space: nowrap;
+    transition: color 0.2s var(--ease);
 }
-.header-email:hover { color: var(--gray-900); }
+.header-connect .connect-icon { width: 20px; height: 20px; flex: 0 0 auto; }
+.header-connect:hover {
+    color: var(--gray-600);
+}
 
-/* 移动端:logo 与邮箱占第一行,分类居中换到第二行 */
+/* 窄屏:分类仍固定在顶栏中心,不换到第二行 */
 @media (max-width: 800px) {
-    .home-nav { flex-wrap: wrap; row-gap: 10px; }
+    .home-nav { flex-wrap: nowrap; row-gap: 0; }
     .home-nav .header-left,
     .home-nav .header-right { flex: 1 1 auto; }
     .home-nav .nav-cats {
-        order: 3;
-        flex: 1 0 100%;
+        order: 0;
+        flex: 0 0 auto;
         justify-content: center;
     }
 }
@@ -597,9 +651,47 @@
     display: block;
     flex: 0 0 auto;
 }
+
+/* Design 页:左上角站点标题改为大写 VIBEUX,2 倍字号 + scaleY 纵向拉伸为竖长字形 */
+.design-page .site-title {
+    font-size: 38px;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    font-weight: 800;
+    transform: scaleY(1.6);
+    transform-origin: left center;
+    /* 视觉拉高后留出余量,避免顶到 header 边缘 */
+    margin: 12px 0;
+}
+.design-page .site-title .site-logo { display: none; }
+
+/* Design 页:把分类 (Writing/Design) 和右侧邮箱合并到右侧,左侧只留 VIBEUX */
+.design-page .home-nav .header-left { flex: 0 0 auto; }
+.design-page .home-nav .header-right { flex: 0 0 auto; }
+.design-page .home-nav .nav-cats {
+    position: static;
+    transform: none;
+    left: auto;
+    top: auto;
+    margin-left: auto;   /* 把分类和后续邮箱整体推到右侧 */
+}
+
+/* Design 页:右上角三项 (Writing / Design / Contact) 字号统一放大 */
+.design-page .home-nav .nav-cat,
+.design-page .home-nav .header-connect { font-size: 19px; }
+
+/* Design 页:邮箱图标换成 "Contact" 文字 */
+.design-page .home-nav .header-connect .connect-icon { display: none; }
+.design-page .home-nav .header-connect::before {
+    content: 'Contact';
+    font-weight: 500;
+    color: var(--gray-400);
+    transition: color 0.2s ease;
+}
+.design-page .home-nav .header-connect:hover::before { color: var(--gray-900); }
 .site-subtitle {
     margin-top: 5px;
-    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     color: #969696;
 }
@@ -638,8 +730,17 @@ body.home-v2 .header-placeholder { height: 68px; }
     overflow: hidden;
     aspect-ratio: 16 / 9;
     position: relative;
+    --hover-scale: 1;
 }
 .writing-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.writing-card img,
+.writing-card .img-ph.fill {
+    transform: scale(var(--hover-scale, 1));   /* hover 时封面内元素放大到 110% */
+    transform-origin: center center;
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+}
+.writing-card:hover { --hover-scale: 1.1; }
 
 .writing-info { align-items: flex-start; text-align: left; gap: 6px; }
 .writing-info .w-title {
@@ -647,9 +748,8 @@ body.home-v2 .header-placeholder { height: 68px; }
     font-weight: 600;
     color: var(--gray-900);
     line-height: 1.4;
-    transition: color 0.2s ease;
+    transition: color 0.3s ease;
 }
-.card-wrapper:hover .writing-info .w-title { color: var(--gray-600); }
 .writing-info .w-excerpt {
     font-size: 13px;
     color: var(--gray-600);
@@ -658,12 +758,19 @@ body.home-v2 .header-placeholder { height: 68px; }
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    transition: color 0.3s ease;
 }
 .writing-info .w-date {
-    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     color: #969696;
+    transition: color 0.3s ease;
 }
+
+/* hover 时封面下面的文字整体变灰 */
+.card-wrapper:hover .writing-info .w-title { color: var(--gray-500); }
+.card-wrapper:hover .writing-info .w-excerpt,
+.card-wrapper:hover .writing-info .w-date { color: var(--gray-300); }
 
 /* 填充式占位图(用于封面框内) */
 .img-ph.fill { min-height: 0; height: 100%; margin: 0; border: none; border-radius: 0; }
@@ -701,9 +808,9 @@ body.home-v2 .header-placeholder { height: 68px; }
     display: block;
     background: transparent;
     pointer-events: none;   /* 点击穿透到外层链接 */
-}
-.card-wrapper:hover .foundation-card.icon-cover {
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    transform: scale(var(--hover-scale, 1));   /* hover 时随封面卡放大到 150% */
+    transform-origin: center center;
+    transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Icon Library 模态层 — 点击封面在当前页打开完整图标库,不跳转 */
@@ -794,7 +901,7 @@ body.writing-page, body.writing-page * {
 }
 body.home-v2 .brand-banner-grid,
 body.writing-page .brand-banner-grid {
-    font-family: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace !important;
+    font-family: var(--font-mono) !important;
 }
 
 /* ========================================
@@ -821,7 +928,7 @@ body.writing-page .brand-banner-grid {
 /* ========================================
    所有模块网格:加大三列方向(列)间距
    ======================================== */
-.home-v2 .category-grid { column-gap: 48px; }
+.home-v2 .category-grid { column-gap: 16px; }
 
 /* ========================================
    Design 二级页:左分类 menu + 右作品网格
@@ -849,6 +956,7 @@ body.writing-page .brand-banner-grid {
     display: block;
     width: 100%;
     height: 300px;
+    margin-bottom: 32px;
     border: 0;
     border-radius: 12px;
 }
@@ -863,27 +971,53 @@ body.writing-page .brand-banner-grid {
 @media (min-width: 801px) {
     .home-v2 .header.home-nav { padding-top: 16px; padding-bottom: 16px; }
 }
-/* Design 页:顶栏始终固定可见,任何宽度都不随滚动隐藏(二级胶囊条也常驻) */
-.design-page .header.home-nav.header-hidden { transform: none; }
 /* 首页内容宽度与 Design 页内容(design-layout)一致,左右间距统一 */
 .home-v2 .page-main {
     width: min(1280px, calc(100% - 48px));
 }
 
 .design-menu {
-    position: sticky;
-    top: calc(var(--design-menu-top, 64px) + 8px);
+    /* 二级门类常驻固定:始终钉在左侧,不随内容上下滚动,
+       也没有 sticky 滚到底部时的「跟随上移 + 回弹」。
+       fixed 后脱离网格流,左侧 180px 轨道仍由 grid-template-columns 保留,
+       内容强制落到第 2 列(见下方 min-width:901px 规则)。 */
+    position: fixed;
+    top: calc(var(--design-menu-top, 72px) + 32px);
+    left: max(24px, calc((100vw - 1280px) / 2));
+    width: 180px;
     display: flex;
     flex-direction: column;
     gap: 2px;
+    /* 与顶栏完全同步:同样用 transform,同样的时长 + 缓动曲线 */
+    transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* 顶栏隐藏时,二级菜单按顶栏高度同步上移(顶栏自身 translateY(-100%) = -headerHeight) */
+.design-page:has(.header.home-nav.header-hidden) .design-menu {
+    transform: translateY(calc(-1 * var(--design-menu-top, 72px)));
 }
 .design-menu .nav-cat {
     display: flex;
     align-items: center;
     gap: 9px;
     padding: 9px 0;
+    font-size: 16px;
     color: var(--gray-500);
     line-height: 1.3;
+}
+/* Writing 左栏门类用 <button> 作筛选:只抹掉按钮自带外观,
+   字号/边框/圆角等一律沿用 .nav-cat —— 这样小屏胶囊标签与 Design 页完全一致。
+   桌面竖排专属布局(满宽、无边框)收进 @media,避免覆盖小屏胶囊样式。 */
+.design-menu button.nav-cat {
+    font-family: inherit;
+    background: none;
+    cursor: pointer;
+}
+@media (min-width: 901px) {
+    .design-menu button.nav-cat {
+        width: 100%;
+        text-align: left;
+        border: none;
+    }
 }
 .design-menu .nav-cat:hover { color: var(--gray-900); }
 .design-menu .nav-cat.active {
@@ -907,6 +1041,10 @@ body.writing-page .brand-banner-grid {
 
 /* 右侧内容:沿用 category-section / category-grid */
 .design-content { min-width: 0; }
+/* 菜单 fixed 脱流后,内容需显式落在第 2 列(否则会自动回到第 1 列与菜单重叠) */
+@media (min-width: 901px) {
+    .design-page .design-content { grid-column: 2; }
+}
 .design-content .category-section { scroll-margin-top: calc(var(--design-menu-top, 64px) + 16px); }
 .design-content .design-banner-wrap { scroll-margin-top: calc(var(--design-menu-top, 64px) + 16px); }
 
@@ -940,27 +1078,33 @@ body.writing-page .brand-banner-grid {
 }
 
 @media (max-width: 900px) {
-    .design-layout { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+    .design-page .design-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+        padding-top: var(--design-menu-top, 72px);
+    }
 
     /* 锚点偏移:避开顶栏 + 胶囊分类条 */
     .design-content .category-section,
     .design-content .design-banner-wrap { scroll-margin-top: 132px; }
 
-    /* 胶囊式二级分类:粘性贴在顶栏下方,随页面下滑始终可见 */
+    /* 胶囊式二级分类:略微压住顶栏底边,避免滚动时露出后方内容 */
     .design-menu {
         position: sticky;
-        top: var(--design-menu-top, 64px);
+        top: calc(var(--design-menu-top, 72px) - 2px);
+        left: auto;            /* 复位桌面端 fixed 的横向定位 */
+        width: auto;           /* 复位桌面端 180px,小屏胶囊条恢复满幅 */
         z-index: 40;
         flex-direction: row;
         flex-wrap: wrap;
         gap: 8px;
         margin-left: calc(50% - 50vw);
         margin-right: calc(50% - 50vw);
-        padding: 11px max(24px, calc((100vw - 1280px) / 2));
+        padding: 22px max(24px, calc((100vw - 1280px) / 2));
         background: #fff;
     }
     .design-menu .nav-cat {
-        padding: 5px 13px;
+        padding: 9px 16px;
         border: 1px solid var(--gray-300);
         border-radius: 999px;
         font-size: 13px;

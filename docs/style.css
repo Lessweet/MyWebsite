@@ -3,6 +3,9 @@
    Pure white, black/gray hierarchy
    ======================================== */
 
+/* 全站日期 / 英文标签的等宽字体:Geist Mono(GT Standard Mono 的开源近似) */
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400&display=swap');
+
 *, *::before, *::after {
     margin: 0;
     padding: 0;
@@ -26,7 +29,11 @@
     --hairline: #f0f0f0;
 
     --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+    /* 等宽字体(日期、英文标签、tagline):Geist Mono 优先,SF Mono 兜底 */
+    --font-mono: "Geist Mono", "SF Mono", Menlo, Monaco, Consolas, monospace;
     --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    /* 入场/淡入专用:更柔和、自然的缓动(平滑减速到停) */
+    --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 html {
@@ -87,7 +94,7 @@ a {
 /* Matches the `.icon-key` style inside outlined.html: 12px / SF Mono / dim gray / centered */
 .header-tagline {
     margin: 10px 0 0;
-    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     font-weight: 400;
     color: #969696;
@@ -112,7 +119,7 @@ a {
 }
 
 .brand-banner-grid {
-    font-family: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 8px;
     font-weight: 700;
     line-height: 0.65;
@@ -395,6 +402,15 @@ a {
     color: var(--gray-900);
 }
 
+/* design-page:在升起系统接管(h2 加 .heading-rise)前先隐藏 h2,避免原始静态标题
+   文字在 JS 拆字前被画出来一下、随后又被隐藏(表现为「先出现再消失」)。
+   加了 .heading-rise 后改回可见,文字仍由内部字符的 opacity 控制升起。 */
+.design-page .section-divider h2 { opacity: 0; }
+.design-page .section-divider h2.heading-rise { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+    .design-page .section-divider h2 { opacity: 1; }
+}
+
 /* per-character rise animation for section headings (pixel-point/animate-text) */
 .heading-rise .heading-rise-mask {
     display: inline-flex;
@@ -410,13 +426,22 @@ a {
     opacity: 0;
     white-space: pre;        /* keep spaces */
     transition:
-        transform 0.7s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0s),
-        opacity 0.5s ease-out var(--d, 0s);
+        transform 0.9s var(--ease-soft) var(--d, 0s),
+        opacity 0.75s ease-out var(--d, 0s);
     will-change: transform, opacity;
 }
 
 .heading-rise.heading-rise-in .heading-rise-char {
     transform: translateY(0);
+    opacity: 1;
+}
+
+/* 标题图标随逐字升起一起淡入,不要在文字出现前单独显示(否则页面只剩一个孤零零的图标) */
+.heading-rise .heading-icon {
+    opacity: 0;
+    transition: opacity 0.75s var(--ease-soft);
+}
+.heading-rise.heading-rise-in .heading-icon {
     opacity: 1;
 }
 
@@ -426,6 +451,7 @@ a {
         opacity: 1;
         transition: none;
     }
+    .heading-rise .heading-icon { opacity: 1; transition: none; }
 }
 
 .section-divider p {
@@ -533,8 +559,8 @@ a {
 .category-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    /* 行距固定,列距随视口宽度连续收缩(屏幕越窄横向间距越小) */
-    gap: 40px clamp(12px, 2.5vw, 24px);
+    /* 行距固定,列距随视口宽度连续收缩(屏幕越窄横向间距越小);横向间距已减小 1/3 */
+    gap: 40px clamp(8px, 1.67vw, 16px);
 }
 
 .category-grid.icon-showcase-grid {
@@ -591,15 +617,20 @@ a {
 
 .card-wrapper {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(22px);
     transition:
-        opacity 0.5s var(--ease),
-        transform 0.5s var(--ease);
+        opacity 0.9s var(--ease-soft),
+        transform 0.9s var(--ease-soft);
 }
 
 .card-wrapper.visible {
     opacity: 1;
     transform: translateY(0);
+}
+
+/* 筛选隐藏:需盖过 .card-wrapper 的 display:flex */
+.card-wrapper[hidden] {
+    display: none !important;
 }
 
 /* Card Sizes - Unified */
@@ -682,7 +713,7 @@ a {
 .card-date {
     font-size: 12px;
     color: #969696;
-    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-family: var(--font-mono);
 }
 
 .card-meta .card-tag {
@@ -691,7 +722,7 @@ a {
     background: none;
     padding: 0;
     border-radius: 0;
-    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-family: var(--font-mono);
 }
 
 .card-meta .card-tag::after {
@@ -1009,7 +1040,7 @@ a {
     left: 50%;
     width: 375px;
     height: 812px;
-    transform: translate(-50%, -50%) scale(var(--content-scale, 0.5));
+    transform: translate(-50%, -50%) scale(calc(var(--content-scale, 0.5) * var(--hover-scale, 1)));
     transform-origin: center center;
     border-radius: 40px;
 }
@@ -1036,7 +1067,7 @@ a {
 }
 
 .card-scaled-up .card-video {
-    transform: scale(1.6);
+    transform: scale(calc(1.6 * var(--hover-scale, 1)));
     transform-origin: center center;
 }
 
@@ -1061,6 +1092,45 @@ a {
         grid-row: auto;
         aspect-ratio: 1 / 1;
     }
+}
+
+/* ========================================
+   卡片封面 hover:封面展示区域里面的元素放大到 150%,离开恢复
+   通过 --hover-scale 变量驱动,避免与已有 transform(缩放/动态缩放)冲突
+   ======================================== */
+.card {
+    --hover-scale: 1;
+}
+
+.card:hover {
+    --hover-scale: 1.1;
+}
+
+/* hover 时封面下面的文字整体变灰 */
+.card-label,
+.card-date,
+.card-meta .card-tag {
+    transition: color 0.3s ease;
+}
+
+.card-wrapper:hover .card-label {
+    color: var(--gray-500);
+}
+
+.card-wrapper:hover .card-date,
+.card-wrapper:hover .card-meta .card-tag {
+    color: var(--gray-300);
+}
+
+/* 封面内的媒体元素:默认 1 倍,hover 时随变量放大,离开平滑恢复 */
+.card-video,
+.card-iframe,
+.card-img,
+.iphone-frame {
+    transform: scale(var(--hover-scale, 1));
+    transform-origin: center center;
+    transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
 }
 
 /* ========================================

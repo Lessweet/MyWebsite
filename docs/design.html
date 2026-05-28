@@ -7,11 +7,14 @@
     <link rel="icon" type="image/png" href="favicon.png?v=12">
     <link rel="shortcut icon" href="favicon.png?v=12">
     <link rel="apple-touch-icon" href="apple-touch-icon.png?v=12">
-    <link rel="stylesheet" href="style.css?v=111">
-    <link rel="stylesheet" href="writing/writing.css?v=36">
+    <link rel="stylesheet" href="style.css?v=121">
+    <link rel="stylesheet" href="writing/writing.css?v=54">
+    <!-- 提前加载,使顶部导航能在首次绘制前同步注入,避免空 header 闪烁 -->
+    <script src="writing/writing.js?v=28"></script>
 </head>
 <body class="home-v2 design-page">
     <header class="header home-nav" id="site-nav" data-active="design"></header>
+    <script>initSiteNav();</script>
     <main class="design-layout">
         <aside class="design-menu" aria-label="Design 分类">
             <a href="#ai-native-design" class="nav-cat"><span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L13.8 9.2 L20 11 L13.8 12.8 L12 19 L10.2 12.8 L4 11 L10.2 9.2 Z" fill="currentColor" stroke="none"/></svg></span>AI-Native Design</a>
@@ -543,8 +546,7 @@
         </div>
     </div>
 
-    <script src="script.js?v=21"></script>
-    <script src="writing/writing.js?v=24"></script>
+    <script src="script.js?v=26"></script>
     <script>
     (function () {
         const modal = document.getElementById('iconModal');

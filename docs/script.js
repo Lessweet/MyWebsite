@@ -5,11 +5,30 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     initCardAnimations();
+    initCoverFade();
     initCategoryFilter();
     initBrandBanner();
     initIconShowcaseFrames();
     initSectionHeadingRise();
 });
+
+/* 卡片封面媒体:加载就绪后透明度淡入(视频首帧 loadeddata / iframe load),
+   避免封面内容突然弹出。带兜底定时器,确保即使 load 不触发也会显示。 */
+function initCoverFade() {
+    const covers = document.querySelectorAll(
+        '.home-v2 .card-video, .home-v2 .icon-preview-frame, .home-v2 .card-iframe'
+    );
+    covers.forEach((el) => {
+        const show = () => el.classList.add('cover-in');
+        if (el.tagName === 'VIDEO') {
+            if (el.readyState >= 2) show();                       // 已有首帧
+            else el.addEventListener('loadeddata', show, { once: true });
+        } else {
+            el.addEventListener('load', show, { once: true });    // iframe
+        }
+        setTimeout(show, 2000);   // 兜底:最迟 2s 一定淡入,避免永久隐藏
+    });
+}
 
 /**
  * Per-character rise animation for section headings.
@@ -24,15 +43,18 @@ function initSectionHeadingRise() {
     if (!headings.length) return;
 
     headings.forEach((h2) => {
-        // Only split text nodes that haven't been processed yet.
-        if (h2.dataset.riseInit) return;
+        // 已处理过的跳过(用 class 判断,避免被 HTML 里预置的 data-rise-init 挡住)
+        if (h2.classList.contains('heading-rise')) return;
+
+        // 保留标题前的图标,只把文字拆成逐字上升的字符
+        const icon = h2.querySelector('.heading-icon');
         const text = h2.textContent.trim();
         if (!text) return;
 
-        h2.dataset.riseInit = '1';
         h2.setAttribute('aria-label', text);
         h2.classList.add('heading-rise');
         h2.textContent = '';
+        if (icon) h2.appendChild(icon);
 
         const mask = document.createElement('span');
         mask.className = 'heading-rise-mask';
@@ -47,6 +69,10 @@ function initSectionHeadingRise() {
         });
         h2.appendChild(mask);
     });
+
+    // design-page:标题的「升起」交给 initPillarEntrance 的级联统一调度
+    // (这样能排在 banner 之后),此处只做拆字准备,不自行触发显现
+    if (document.body.classList.contains('design-page')) return;
 
     if (!('IntersectionObserver' in window)) {
         // Fallback: just reveal everything.
@@ -311,37 +337,96 @@ function initBrandBanner() {
  * Initialize card entrance animations with stagger effect
  */
 function initCardAnimations() {
+    // Writing / Design 支柱页:整页从上到下一片接一片淡入;其余页保持原有逐卡入场
+    if (document.body.classList.contains('design-page')) {
+        initPillarEntrance();
+        return;
+    }
+    initCardStagger();
+}
+
+/* 旧版作品页:卡片滚动进入视口时按各自 data-delay 错开淡入 */
+function initCardStagger() {
     const cardWrappers = document.querySelectorAll('.card-wrapper');
+    if (!cardWrappers.length) return;
 
-    // Intersection Observer configuration
-    const observerOptions = {
-        root: null, // viewport
-        rootMargin: '0px 0px -50px 0px', // trigger slightly before fully visible
-        threshold: 0.1 // 10% visible
-    };
+    if (!('IntersectionObserver' in window)) {
+        cardWrappers.forEach((el) => el.classList.add('visible'));
+        return;
+    }
 
-    // Create observer
     const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-                const wrapper = entry.target;
-                const delay = parseInt(wrapper.dataset.delay) || 0;
-
-                // Apply staggered delay
-                setTimeout(() => {
-                    wrapper.classList.add('visible');
-                }, delay);
-
-                // Stop observing once animated
-                observer.unobserve(wrapper);
-            }
+            if (!entry.isIntersecting) return;
+            const wrapper = entry.target;
+            const delay = parseInt(wrapper.dataset.delay) || 0;
+            setTimeout(() => wrapper.classList.add('visible'), delay);
+            observer.unobserve(wrapper);
         });
-    }, observerOptions);
+    }, { root: null, rootMargin: '0px 0px -50px 0px', threshold: 0.1 });
 
-    // Observe all card wrappers
-    cardWrappers.forEach((wrapper) => {
-        observer.observe(wrapper);
-    });
+    cardWrappers.forEach((wrapper) => observer.observe(wrapper));
+}
+
+/* 支柱页加载入场:菜单 / banner / 卡片从上到下「一片接一片」淡入。
+   按元素垂直位置分行成「片」,同一行一起淡入,行与行依次错开;
+   首屏元素加载即排好波次,屏外元素滚动到时继续同样的节奏。 */
+function initPillarEntrance() {
+    // 把小标题一并纳入级联:这样它会按垂直位置排在 banner 之后才升起
+    const targets = Array.from(document.querySelectorAll(
+        '.design-menu, .design-banner-frame, .section-divider h2, .card-wrapper'
+    ));
+    if (!targets.length) return;
+
+    // 标题用「逐字升起」(heading-rise-in),其余元素用淡入(visible)
+    const reveal = (el) => el.classList.add(
+        el.classList.contains('heading-rise') ? 'heading-rise-in' : 'visible'
+    );
+
+    if (!('IntersectionObserver' in window)) {
+        targets.forEach(reveal);
+        return;
+    }
+
+    const STAGGER = 110;   // 相邻「片」(行)之间的间隔(ms)
+    const ROW_TOL = 28;    // 顶部相差小于此值视为同一片,一起淡入
+
+    const revealByRow = (els) => {
+        const sorted = els.slice().sort(
+            (a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top
+        );
+        let lastTop = null;
+        let step = 0;
+        sorted.forEach((el) => {
+            const top = Math.round(el.getBoundingClientRect().top);
+            if (lastTop !== null && top - lastTop > ROW_TOL) step += 1;
+            lastTop = top;
+            setTimeout(() => reveal(el), step * STAGGER);
+            el.dataset.entered = '1';
+        });
+    };
+
+    // 关键:先让初始 opacity:0 真正绘制至少一帧,再开始逐行显现。
+    // 双 requestAnimationFrame 确保跨过一次绘制——否则首屏第一波可能在首次绘制前
+    // 就被加上 .visible,浏览器直接以最终态绘制、跳过过渡(表现为「没有淡入」)。
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+        // 首屏:一次性从上到下排好波次
+        const vh = window.innerHeight || document.documentElement.clientHeight;
+        const inView = targets.filter((el) => {
+            const r = el.getBoundingClientRect();
+            return r.top < vh - 40 && r.bottom > 0;
+        });
+        revealByRow(inView);
+
+        // 屏外:滚动进入视口时继续按行淡入
+        const observer = new IntersectionObserver((entries) => {
+            const hits = entries.filter((e) => e.isIntersecting).map((e) => e.target);
+            hits.forEach((el) => observer.unobserve(el));
+            if (hits.length) revealByRow(hits);
+        }, { root: null, rootMargin: '0px 0px -50px 0px', threshold: 0.1 });
+
+        targets.forEach((el) => { if (!el.dataset.entered) observer.observe(el); });
+    }));
 }
 
 /**

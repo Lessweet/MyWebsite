@@ -7,87 +7,36 @@
     <link rel="icon" type="image/png" href="favicon.png?v=12">
     <link rel="shortcut icon" href="favicon.png?v=12">
     <link rel="apple-touch-icon" href="apple-touch-icon.png?v=12">
-    <link rel="stylesheet" href="style.css?v=111">
-    <link rel="stylesheet" href="writing/writing.css?v=36">
+    <link rel="stylesheet" href="style.css?v=121">
+    <link rel="stylesheet" href="writing/writing.css?v=54">
+    <!-- 提前加载,使顶部导航能在首次绘制前同步注入,避免空 header 闪烁 -->
+    <script src="writing/writing.js?v=28"></script>
 </head>
 <!-- 复用 design-page 的 pillar 布局(左侧二级导航 + 右侧分模块),Writing 与 Design 页对称 -->
 <body class="home-v2 design-page">
     <header class="header home-nav" id="site-nav" data-active="writing"></header>
+    <script>initSiteNav();</script>
     <span id="top"></span>
 
     <main class="design-layout">
         <aside class="design-menu" aria-label="Writing 分类">
-            <a href="#cat-ui" class="nav-cat"><span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12 C5.5 6.5 18.5 6.5 21.5 12 C18.5 17.5 5.5 17.5 2.5 12 Z"/><circle cx="12" cy="12" r="3"/></svg></span>UI 视觉</a>
-            <a href="#cat-product" class="nav-cat"><span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3 L10.07 19.97 L12.58 12.58 L19.97 10.07 Z"/></svg></span>产品体验</a>
+            <button type="button" class="nav-cat active" data-filter="all"><span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg></span>全部</button>
+            <button type="button" class="nav-cat" data-filter="ui"><span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12 C5.5 6.5 18.5 6.5 21.5 12 C18.5 17.5 5.5 17.5 2.5 12 Z"/><circle cx="12" cy="12" r="3"/></svg></span>UI 视觉</button>
+            <button type="button" class="nav-cat" data-filter="product"><span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3 L10.07 19.97 L12.58 12.58 L19.97 10.07 Z"/></svg></span>产品体验</button>
         </aside>
         <div class="design-content">
 
-            <!-- ================================
-                 UI 视觉
-                 ================================ -->
-            <section class="category-section" id="cat-ui">
-                <div class="section-divider">
-                    <h2 data-rise-init="1"><span class="heading-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12 C5.5 6.5 18.5 6.5 21.5 12 C18.5 17.5 5.5 17.5 2.5 12 Z"/><circle cx="12" cy="12" r="3"/></svg></span>UI 视觉</h2>
-                </div>
-                <div class="category-grid">
-
-                    <div class="card-wrapper" data-delay="50">
-                        <a href="writing/article.html" class="writing-card">
-                            <div class="img-ph fill">封面 16:9</div>
-                        </a>
-                        <div class="card-info writing-info">
-                            <div class="w-title">AI 图标为什么都爱上了那颗星芒</div>
-                            <div class="w-excerpt">从 Gemini 到一众 AI 入口，四角星芒几乎成了「智能」的默认符号。它凭什么赢，又为什么偏偏是它？</div>
-                            <div class="w-date">2026-05-22</div>
-                        </div>
-                    </div>
-
-                    <div class="card-wrapper" data-delay="100">
-                        <a href="writing/article.html" class="writing-card">
-                            <div class="img-ph fill">封面 16:9</div>
-                        </a>
-                        <div class="card-info writing-info">
-                            <div class="w-title">那团彩色光晕，正在成为 AI 的视觉口头禅</div>
-                            <div class="w-excerpt">渐变光晕几乎贴在每个 AI 功能上。它到底在传递「智能感」，还是大家互相抄出来的安全牌？</div>
-                            <div class="w-date">2026-05-18</div>
-                        </div>
-                    </div>
-
-                    <div class="card-wrapper" data-delay="150">
-                        <a href="writing/article.html" class="writing-card">
-                            <div class="img-ph fill">封面 16:9</div>
-                        </a>
-                        <div class="card-info writing-info">
-                            <div class="w-title">SearchBox 还是 ChatBox：AI 在产品里的两种露法</div>
-                            <div class="w-excerpt">把 AI 塞进搜索框，和围绕对话重做一遍，是两条完全不同的路。界面怎么摆，藏着产品对 AI 的判断。</div>
-                            <div class="w-date">2026-05-14</div>
-                        </div>
-                    </div>
-
-                    <div class="card-wrapper" data-delay="200">
-                        <a href="writing/article.html" class="writing-card">
-                            <div class="img-ph fill">封面 16:9</div>
-                        </a>
-                        <div class="card-info writing-info">
-                            <div class="w-title">图标设计在 AI 时代，还值不值得手画</div>
-                            <div class="w-excerpt">当模型一句话生成整套图标，设计师的价值不在画，而在定规则、保一致、把控气质。</div>
-                            <div class="w-date">2026-05-10</div>
-                        </div>
-                    </div>
-
-                </div>
-            </section>
+            <!-- WebGL Shader 弥散渐变 banner(与 Design 页 banner 同一套尺寸/适配规则,iframe 隔离) -->
+            <iframe src="writing-banner.html?v=1" class="design-banner-frame" title="Writing Banner" scrolling="no"></iframe>
 
             <!-- ================================
-                 产品体验
+                 Writing 列表:单一网格,左栏门类作筛选;「全部」按发布时间从新到旧
+                 data-cat: ui | product   data-date: 用于「全部」排序
                  ================================ -->
-            <section class="category-section" id="cat-product">
-                <div class="section-divider">
-                    <h2 data-rise-init="1"><span class="heading-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3 L10.07 19.97 L12.58 12.58 L19.97 10.07 Z"/></svg></span>产品体验</h2>
-                </div>
+            <section class="category-section" id="writing-all">
                 <div class="category-grid">
 
-                    <div class="card-wrapper" data-delay="50">
+                    <div class="card-wrapper" data-delay="50" data-cat="product" data-date="2026-05-24">
                         <a href="writing/article.html" class="writing-card">
                             <div class="img-ph fill">封面 16:9</div>
                         </a>
@@ -98,7 +47,51 @@
                         </div>
                     </div>
 
-                    <div class="card-wrapper" data-delay="100">
+                    <div class="card-wrapper" data-delay="100" data-cat="ui" data-date="2026-05-22">
+                        <a href="writing/article.html" class="writing-card">
+                            <div class="img-ph fill">封面 16:9</div>
+                        </a>
+                        <div class="card-info writing-info">
+                            <div class="w-title">AI 图标为什么都爱上了那颗星芒</div>
+                            <div class="w-excerpt">从 Gemini 到一众 AI 入口，四角星芒几乎成了「智能」的默认符号。它凭什么赢，又为什么偏偏是它？</div>
+                            <div class="w-date">2026-05-22</div>
+                        </div>
+                    </div>
+
+                    <div class="card-wrapper" data-delay="150" data-cat="ui" data-date="2026-05-18">
+                        <a href="writing/article.html" class="writing-card">
+                            <div class="img-ph fill">封面 16:9</div>
+                        </a>
+                        <div class="card-info writing-info">
+                            <div class="w-title">那团彩色光晕，正在成为 AI 的视觉口头禅</div>
+                            <div class="w-excerpt">渐变光晕几乎贴在每个 AI 功能上。它到底在传递「智能感」，还是大家互相抄出来的安全牌？</div>
+                            <div class="w-date">2026-05-18</div>
+                        </div>
+                    </div>
+
+                    <div class="card-wrapper" data-delay="200" data-cat="ui" data-date="2026-05-14">
+                        <a href="writing/article.html" class="writing-card">
+                            <div class="img-ph fill">封面 16:9</div>
+                        </a>
+                        <div class="card-info writing-info">
+                            <div class="w-title">SearchBox 还是 ChatBox：AI 在产品里的两种露法</div>
+                            <div class="w-excerpt">把 AI 塞进搜索框，和围绕对话重做一遍，是两条完全不同的路。界面怎么摆，藏着产品对 AI 的判断。</div>
+                            <div class="w-date">2026-05-14</div>
+                        </div>
+                    </div>
+
+                    <div class="card-wrapper" data-delay="250" data-cat="ui" data-date="2026-05-10">
+                        <a href="writing/article.html" class="writing-card">
+                            <div class="img-ph fill">封面 16:9</div>
+                        </a>
+                        <div class="card-info writing-info">
+                            <div class="w-title">图标设计在 AI 时代，还值不值得手画</div>
+                            <div class="w-excerpt">当模型一句话生成整套图标，设计师的价值不在画，而在定规则、保一致、把控气质。</div>
+                            <div class="w-date">2026-05-10</div>
+                        </div>
+                    </div>
+
+                    <div class="card-wrapper" data-delay="300" data-cat="product" data-date="2026-04-28">
                         <a href="writing/article.html" class="writing-card">
                             <div class="img-ph fill">封面 16:9</div>
                         </a>
@@ -109,7 +102,7 @@
                         </div>
                     </div>
 
-                    <div class="card-wrapper" data-delay="150">
+                    <div class="card-wrapper" data-delay="350" data-cat="product" data-date="2026-04-12">
                         <a href="writing/article.html" class="writing-card">
                             <div class="img-ph fill">封面 16:9</div>
                         </a>
@@ -120,7 +113,7 @@
                         </div>
                     </div>
 
-                    <div class="card-wrapper" data-delay="200">
+                    <div class="card-wrapper" data-delay="400" data-cat="product" data-date="2026-03-30">
                         <a href="writing/article.html" class="writing-card">
                             <div class="img-ph fill">封面 16:9</div>
                         </a>
@@ -131,7 +124,7 @@
                         </div>
                     </div>
 
-                    <div class="card-wrapper" data-delay="250">
+                    <div class="card-wrapper" data-delay="450" data-cat="product" data-date="2026-03-18">
                         <a href="writing/article.html" class="writing-card">
                             <div class="img-ph fill">封面 16:9</div>
                         </a>
@@ -148,7 +141,6 @@
         </div>
     </main>
 
-    <script src="script.js?v=21"></script>
-    <script src="writing/writing.js?v=24"></script>
+    <script src="script.js?v=26"></script>
 </body>
 </html>

@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initStickyMenu();
     initReveal();
     initTagFilter();
+    initWritingFilter();
     initTOC();
     initNavSpy();
 });
@@ -25,7 +26,8 @@ function initStickyMenu() {
 /* 顶部导航(一处定义,两页复用)。页面用 <header id="site-nav" data-active="writing|design"> 占位 */
 function initSiteNav() {
     const nav = document.getElementById('site-nav');
-    if (!nav) return;
+    if (!nav || nav.dataset.built) return;   // 幂等:解析时已内联注入过则跳过,避免重复构建/闪烁
+    nav.dataset.built = '1';
     const active = nav.dataset.active || '';
     const I = (p) => '<span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' + p + '</svg></span>';
     const pencil = '<path d="M16.5 4.5 L19.5 7.5 L8 19 L4 20 L5 16 Z"/><path d="M14.5 6.5 L17.5 9.5"/>';
@@ -40,7 +42,9 @@ function initSiteNav() {
             '<a href="design.html" class="' + a('design') + '">' + I(design) + 'Design</a>' +
         '</nav>' +
         '<div class="header-right">' +
-            '<a href="mailto:chentongrong1@gmail.com" class="header-email">chentongrong1@gmail.com</a>' +
+            '<a href="mailto:chentongrong1@gmail.com" class="header-connect" title="chentongrong1@gmail.com" aria-label="Connect me">' +
+                '<svg class="connect-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M22 6 L12 13 L2 6"></path></svg>' +
+            '</a>' +
         '</div>';
 }
 
@@ -92,6 +96,36 @@ function initReveal() {
     }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 
     items.forEach((el) => observer.observe(el));
+}
+
+/* Writing 列表:左栏门类作筛选。「全部」按发布时间从新到旧合并展示,
+   点具体门类只看该类(相对顺序仍是新→旧)。 */
+function initWritingFilter() {
+    const buttons = Array.from(document.querySelectorAll('.design-menu .nav-cat[data-filter]'));
+    const grid = document.querySelector('#writing-all .category-grid');
+    if (!buttons.length || !grid) return;
+
+    // 先把所有卡片按发布日期从新到旧排好(一次即可,分类视图也沿用该相对顺序)
+    const cards = Array.from(grid.querySelectorAll('.card-wrapper'));
+    cards
+        .sort((a, b) => (b.dataset.date || '').localeCompare(a.dataset.date || ''))
+        .forEach((c) => grid.appendChild(c));
+
+    const apply = (filter) => {
+        cards.forEach((c) => {
+            c.hidden = !(filter === 'all' || c.dataset.cat === filter);
+        });
+    };
+
+    buttons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            buttons.forEach((b) => b.classList.toggle('active', b === btn));
+            apply(btn.dataset.filter || 'all');
+        });
+    });
+
+    const initial = buttons.find((b) => b.classList.contains('active')) || buttons[0];
+    apply(initial.dataset.filter || 'all');
 }
 
 /* 标签筛选:按 data-tags(逗号分隔)显隐文章 */
