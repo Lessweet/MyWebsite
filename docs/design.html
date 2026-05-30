@@ -8,13 +8,20 @@
     <link rel="shortcut icon" href="favicon.png?v=12">
     <link rel="apple-touch-icon" href="apple-touch-icon.png?v=12">
     <link rel="stylesheet" href="style.css?v=121">
-    <link rel="stylesheet" href="writing/writing.css?v=54">
+    <link rel="stylesheet" href="writing/writing.css?v=76">
     <!-- 提前加载,使顶部导航能在首次绘制前同步注入,避免空 header 闪烁 -->
-    <script src="writing/writing.js?v=28"></script>
+    <script src="writing/writing.js?v=31"></script>
 </head>
 <body class="home-v2 design-page">
     <header class="header home-nav" id="site-nav" data-active="design"></header>
-    <script>initSiteNav();</script>
+    <script>
+        initSiteNav();
+        /* 首屏同步设定 --design-menu-top = 顶栏实际高度,避免刷新时内容「上跳」 */
+        (function () {
+            var h = document.getElementById('site-nav');
+            if (h) document.documentElement.style.setProperty('--design-menu-top', h.offsetHeight + 'px');
+        })();
+    </script>
     <main class="design-layout">
         <aside class="design-menu" aria-label="Design 分类">
             <a href="#ai-native-design" class="nav-cat"><span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L13.8 9.2 L20 11 L13.8 12.8 L12 19 L10.2 12.8 L4 11 L10.2 9.2 Z" fill="currentColor" stroke="none"/></svg></span>AI-Native Design</a>
@@ -23,7 +30,7 @@
             <a href="#cat-ux" class="nav-cat"><span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L20 7.5 L20 16.5 L12 21 L4 16.5 L4 7.5 Z"/><path d="M4 7.5 L12 12 L20 7.5"/><path d="M12 12 L12 21"/></svg></span>Visual UX</a>
         </aside>
         <div class="design-content">
-            <iframe src="design-banner.html?v=3" class="design-banner-frame" title="VIBEDESIGN" scrolling="no"></iframe>
+            <iframe src="design-banner.html?v=4" class="design-banner-frame" title="VIBEDESIGN" scrolling="no"></iframe>
 <section class="category-section home-section" id="ai-native-design">
                     <div class="section-divider">
                         <h2 data-rise-init="1"><span class="heading-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L13.8 9.2 L20 11 L13.8 12.8 L12 19 L10.2 12.8 L4 11 L10.2 9.2 Z" fill="currentColor" stroke="none"/></svg></span>AI-Native Design</h2>
@@ -546,7 +553,7 @@
         </div>
     </div>
 
-    <script src="script.js?v=26"></script>
+    <script src="script.js?v=27"></script>
     <script>
     (function () {
         const modal = document.getElementById('iconModal');

@@ -7,34 +7,35 @@
     <link rel="icon" type="image/png" href="../favicon.png?v=12">
     <link rel="shortcut icon" href="../favicon.png?v=12">
     <link rel="apple-touch-icon" href="../apple-touch-icon.png?v=12">
-    <link rel="stylesheet" href="../style.css?v=108">
-    <link rel="stylesheet" href="writing.css?v=2">
+    <link rel="stylesheet" href="../style.css?v=121">
+    <link rel="stylesheet" href="writing.css?v=75">
+    <!-- 提前加载,使顶部导航能在首次绘制前同步注入,避免空 header 闪烁(与首页一致) -->
+    <script src="writing.js?v=31"></script>
 </head>
-<body class="writing-page">
-    <!-- Header -->
-    <header class="header">
-        <div class="header-left">
-            <a href="../index.html" class="header-link header-banner-link" aria-label="VIBEDESIGN">
-                <div class="brand-banner-grid" id="brand-banner-grid"></div>
-            </a>
-            <p class="header-tagline">From <strong>AI-Assisted</strong> Design to <strong>AI-Native</strong> Design.</p>
-        </div>
-        <div class="header-center">
-            <a href="index.html" class="back-link">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-                Writing
-            </a>
-        </div>
-        <div class="header-right">
-            <a href="mailto:chentongrong1@gmail.com" class="header-link" title="chentongrong1@gmail.com" aria-label="Keep in Touch">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-                    <path d="M22 6L12 13L2 6"></path>
-                </svg>
-            </a>
-        </div>
-    </header>
+<!-- 复用首页 index-v2 的胶囊顶栏:home-v2 控制顶栏内边距,design-page 提供胶囊样式 -->
+<body class="writing-page home-v2 design-page">
+    <!-- 顶部导航:与首页同一个组件(initSiteNav);data-base="../" 把站内链接/资源指回 docs 根目录。
+         返回入口 = 左侧 VIBEUX 与高亮的 Writing 胶囊,均回到 index-v2.html#writing -->
+    <header class="header home-nav" id="site-nav" data-active="writing" data-base="../"></header>
+    <script>initSiteNav();</script>
     <div class="header-placeholder"></div>
+    <script>
+        // 顶栏 fixed 脱流,占位块高度跟随顶栏实际高度(big VIBEUX 标题在不同断点高度不同)
+        // 同时把左侧固定目录的 top 对齐到正文顶部 = 顶栏高度 + 正文上间距(56px,见 .reading-layout)
+        (function () {
+            const READING_TOP = 104;
+            const h = document.querySelector('.header');
+            const ph = document.querySelector('.header-placeholder');
+            const set = () => {
+                if (!h) return;
+                if (ph) ph.style.height = h.offsetHeight + 'px';
+                document.documentElement.style.setProperty('--toc-top', (h.offsetHeight + READING_TOP) + 'px');
+            };
+            set();
+            window.addEventListener('resize', set);
+            window.addEventListener('load', set);
+        })();
+    </script>
 
     <div class="reading-layout">
         <!-- 浮动目录(JS 自动生成) -->
@@ -128,7 +129,6 @@
         </article>
     </div>
 
-    <script src="../script.js?v=21"></script>
-    <script src="writing.js?v=2"></script>
+    <script src="../script.js?v=27"></script>
 </body>
 </html>

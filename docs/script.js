@@ -446,51 +446,14 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 });
 
 /**
- * Smart Sticky Header
- * - Always visible on load (no flash of hidden state)
- * - Hides when scrolling down past 100px
- * - Shows again when scrolling up
- * - At very top: forced visible
+ * Sticky Header — 常驻顶栏
+ * 已取消「下滑隐藏 / 上滑显示」交互:顶栏始终固定可见,
+ * 二级分类筛选列表(.design-menu)也不再跟随顶栏上滑(其跟随依赖 .header-hidden,此处不再添加)。
  */
 (() => {
     const header = document.querySelector('.header');
     if (!header) return;
-
-    // Start visible — fixes the "banner disappears on refresh" issue.
     header.classList.remove('header-hidden');
-
-    let lastScrollY = window.scrollY;
-    let scrollDelta = 0;
-    const scrollThreshold = 10;
-
-    window.addEventListener('scroll', () => {
-        const currentScrollY = window.scrollY;
-        const scrollDiff = currentScrollY - lastScrollY;
-        scrollDelta += scrollDiff;
-
-        // Scrolling down past 100px — hide after threshold of consecutive down-scroll
-        if (scrollDiff > 0 && currentScrollY > 100) {
-            if (scrollDelta > scrollThreshold) {
-                header.classList.add('header-hidden');
-                scrollDelta = 0;
-            }
-        }
-        // Scrolling up — reveal once threshold of consecutive up-scroll is met
-        else if (scrollDiff < 0) {
-            if (scrollDelta < -scrollThreshold) {
-                header.classList.remove('header-hidden');
-                scrollDelta = 0;
-            }
-        }
-
-        // At the very top: always show
-        if (currentScrollY <= 10) {
-            header.classList.remove('header-hidden');
-            scrollDelta = 0;
-        }
-
-        lastScrollY = currentScrollY;
-    }, { passive: true });
 })();
 
 /**

@@ -29,17 +29,19 @@ function initSiteNav() {
     if (!nav || nav.dataset.built) return;   // 幂等:解析时已内联注入过则跳过,避免重复构建/闪烁
     nav.dataset.built = '1';
     const active = nav.dataset.active || '';
+    // data-base:子目录页面(如 writing/article.html)用 "../" 把站内链接/资源指回 docs 根目录
+    const base = nav.dataset.base || '';
     const I = (p) => '<span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' + p + '</svg></span>';
     const pencil = '<path d="M16.5 4.5 L19.5 7.5 L8 19 L4 20 L5 16 Z"/><path d="M14.5 6.5 L17.5 9.5"/>';
     const design = '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 10 H20"/><path d="M10 10 V20"/>';
     const a = (cls) => 'nav-cat' + (active === cls ? ' active' : '');
     nav.innerHTML =
         '<div class="header-left">' +
-            '<a href="index-v2.html" class="site-title"><img src="logo.svg?v=1" class="site-logo" alt="">VibeUX</a>' +
+            '<a href="' + base + 'index-v2.html" class="site-title" aria-label="VIBEUX"><img src="' + base + 'logo-wordmark.png?v=1" class="site-wordmark" alt="VIBEUX"></a>' +
         '</div>' +
         '<nav class="nav-cats" aria-label="分类">' +
-            '<a href="index-v2.html#writing" class="' + a('writing') + '">' + I(pencil) + 'Writing</a>' +
-            '<a href="design.html" class="' + a('design') + '">' + I(design) + 'Design</a>' +
+            '<a href="' + base + 'index-v2.html#writing" class="' + a('writing') + '">' + I(pencil) + 'Writing</a>' +
+            '<a href="' + base + 'design.html" class="' + a('design') + '">' + I(design) + 'Design</a>' +
         '</nav>' +
         '<div class="header-right">' +
             '<a href="mailto:chentongrong1@gmail.com" class="header-connect" title="chentongrong1@gmail.com" aria-label="Connect me">' +
