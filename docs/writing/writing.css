@@ -670,7 +670,7 @@
     width: 38px;
     height: 38px;
 }
-.design-page .site-wordmark { height: 36px; }
+.design-page .site-wordmark { height: 42px; }
 
 /* Design 页:把分类 (Writing/Design) 和右侧邮箱合并到右侧,左侧只留 VIBEUX */
 .design-page .home-nav .header-left { flex: 0 0 auto; }

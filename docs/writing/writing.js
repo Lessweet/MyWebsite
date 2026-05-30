@@ -37,7 +37,7 @@ function initSiteNav() {
     const a = (cls) => 'nav-cat' + (active === cls ? ' active' : '');
     nav.innerHTML =
         '<div class="header-left">' +
-            '<a href="' + base + 'index-v2.html" class="site-title" aria-label="VIBEUX"><img src="' + base + 'logo-wordmark.png?v=1" class="site-wordmark" alt="VIBEUX"></a>' +
+            '<a href="' + base + 'index-v2.html" class="site-title" aria-label="VIBEUX"><img src="' + base + 'logo-wordmark.png?v=2" class="site-wordmark" alt="VIBEUX"></a>' +
         '</div>' +
         '<nav class="nav-cats" aria-label="分类">' +
             '<a href="' + base + 'index-v2.html#writing" class="' + a('writing') + '">' + I(pencil) + 'Writing</a>' +
