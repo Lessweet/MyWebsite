@@ -619,8 +619,8 @@ a {
     opacity: 0;
     transform: translateY(22px);
     transition:
-        opacity 0.9s var(--ease-soft),
-        transform 0.9s var(--ease-soft);
+        opacity 2s var(--ease-soft),
+        transform 2s var(--ease-soft);
 }
 
 .card-wrapper.visible {

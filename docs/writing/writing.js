@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initPageTint();
     initSiteNav();
     initStickyMenu();
+    initArticleReveal();
     initReveal();
     initTagFilter();
     initWritingFilter();
@@ -90,7 +91,16 @@ function initSiteNav() {
     const pencil = '<path d="M16.5 4.5 L19.5 7.5 L8 19 L4 20 L5 16 Z"/><path d="M14.5 6.5 L17.5 9.5"/>';
     const design = '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 10 H20"/><path d="M10 10 V20"/>';
     const a = (cls) => 'nav-cat' + (active === cls ? ' active' : '');
+    // 顶栏背景层:复用流沙渐变 banner(bare 模式,无文字)。默认透明,滚动到 banner 滚出后(.nav-solid)淡入替代白底。
+    // 仅分类页(index-v2 / design = design-page 且非 writing-page / reading-page)注入,与 CSS 作用域一致;
+    // 阅读页(article)与 writing/index 顶栏维持现状,不注入。
+    const bd = document.body.classList;
+    const wantNavBg = bd.contains('design-page') && !bd.contains('writing-page') && !bd.contains('reading-page');
+    const navBg = wantNavBg
+        ? '<iframe class="nav-bg" src="' + base + 'writing-banner.html?v=10&bare=1" title="" aria-hidden="true" tabindex="-1" scrolling="no"></iframe>'
+        : '';
     nav.innerHTML =
+        navBg +
         '<div class="header-left">' +
             '<a href="' + base + 'index-v2.html" class="site-title" aria-label="VIBEUX"><img src="' + base + 'logo-wordmark.png?v=2" class="site-wordmark" alt="VIBEUX"></a>' +
         '</div>' +
@@ -135,6 +145,61 @@ function initNavSpy() {
 }
 
 /* 进入视口逐个淡入 */
+/* 阅读页:顶栏以下的正文内容(导言/标题/署名/封面/正文各块/页脚)逐块入场,
+   动画与首页网格卡片(.card-wrapper)完全一致:上移 22px + 0.9s 淡入,从上到下一片接一片错开。
+   关键的双 requestAnimationFrame:先让 opacity:0 的初始态真正绘制一帧,再开始显现,
+   否则首屏第一波会在首次绘制前就加上 .visible、直接以最终态绘制(看起来「没有动画」)。 */
+function initArticleReveal() {
+    if (!document.body.classList.contains('reading-page')) return;
+    const root = document.querySelector('.article-reading');
+    if (!root) return;
+
+    const blocks = [];
+    Array.from(root.children).forEach((child) => {
+        // 正文容器拆到段落/小标题/图片粒度,使级联更细腻;其余块整体入场
+        if (child.classList.contains('article-body')) {
+            Array.from(child.children).forEach((c) => blocks.push(c));
+        } else {
+            blocks.push(child);
+        }
+    });
+    if (!blocks.length) return;
+    blocks.forEach((el) => el.classList.add('article-enter'));
+
+    const play = (el, delayMs) => {
+        el.style.animationDelay = (delayMs || 0) + 'ms';
+        el.classList.add('play');
+        el.dataset.entered = '1';
+    };
+    if (!('IntersectionObserver' in window)) { blocks.forEach((el) => play(el, 0)); return; }
+
+    const STAGGER = 120;   // 相邻块之间的错峰间隔(ms)
+    const ROW_TOL = 28;    // 顶部相差小于此值视为同一片,一起入场
+    // 首屏:按视觉顺序(getBoundingClientRect.top,已含封面 order:-1 置顶)从上到下逐块错开
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    const inView = blocks
+        .filter((el) => { const r = el.getBoundingClientRect(); return r.top < vh - 40 && r.bottom > 0; })
+        .sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
+    let lastTop = null;
+    let step = 0;
+    inView.forEach((el) => {
+        const top = Math.round(el.getBoundingClientRect().top);
+        if (lastTop !== null && top - lastTop > ROW_TOL) step += 1;
+        lastTop = top;
+        play(el, step * STAGGER);
+    });
+
+    // 屏外:滚动进入视口时各自即时播放(不再叠加错峰延迟,避免滚动后还要等)
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+            if (!e.isIntersecting) return;
+            observer.unobserve(e.target);
+            play(e.target, 0);
+        });
+    }, { root: null, rootMargin: '0px 0px -50px 0px', threshold: 0.1 });
+    blocks.forEach((el) => { if (!el.dataset.entered) observer.observe(el); });
+}
+
 function initReveal() {
     const items = document.querySelectorAll('.reveal-up');
     if (!items.length) return;

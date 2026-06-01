@@ -49,7 +49,18 @@
   .banner-words .bw { font-weight: 400; color: rgba(255, 255, 255, 0.5); }
   .banner-words .bw b { font-weight: 400; color: #fff; }
   .banner-words .dot { color: #fff; }
+  /* bare 模式(?bare=1):只要流沙渐变,不要 VIBEUX 释义文字 —— 用作顶栏背景层 */
+  html.bare .banner-words { display: none; }
+  /* bare 模式把渐变放大 9 倍:stage 渲染成 900% 尺寸、居中,iframe 只露中间 1/9 → 视觉放大 9× */
+  html.bare .gradient-stage {
+    position: absolute;
+    top: -400%;
+    left: -400%;
+    width: 900%;
+    height: 900%;
+  }
 </style>
+<script>if (/[?&]bare/.test(location.search)) document.documentElement.classList.add('bare');</script>
 </head>
 <body>
 <div class="gradient-stage" id="gradient-stage">
@@ -90,7 +101,10 @@
   const COUNT = 5;
   const DISTORTION = 0.45;
   const SWIRL = 0.35;
-  const GRAIN = 0.25;
+  // bare 模式(顶栏背景层)放大 9× 后,0.25 的胶片颗粒会被撑成明显黑点;完全去掉又太干。
+  // 留一丝极淡颗粒(0.06),既不抢眼又有质感。
+  const BARE = /[?&]bare/.test(location.search);
+  const GRAIN = BARE ? 0.06 : 0.25;
   const SPEED = 1.0;
 
   const VERT = `#version 300 es

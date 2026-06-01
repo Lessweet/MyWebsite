@@ -257,6 +257,19 @@
     .reveal-up { opacity: 1; transform: none; transition: none; }
 }
 
+/* 阅读页正文逐块入场:与首页网格卡片同款 —— 从下往上位移(22px→0)+ 透明度 0→1,逐块错开。
+   用 keyframes 而非 transition+class:动画一旦挂上必定从头播放,不受「首帧已绘制最终态」影响,
+   避免首屏元素直接定格、看不到位移的问题。各块的 animation-delay 由 JS 按视觉顺序错开。 */
+@keyframes article-rise {
+    from { opacity: 0; transform: translateY(22px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.reading-page .article-enter { opacity: 0; }
+.reading-page .article-enter.play { animation: article-rise 2s var(--ease-soft) forwards; }
+@media (prefers-reduced-motion: reduce) {
+    .reading-page .article-enter { opacity: 1; animation: none; }
+}
+
 /* ---------- 支柱页加载入场:菜单 / banner 与卡片一致,从上到下依次淡入 ----------
    (.card-wrapper 的初始隐藏在 style.css 已定义,这里补菜单与 banner) */
 .design-page .design-menu,
@@ -270,6 +283,9 @@
     opacity: 1;
     transform: translateY(0);
 }
+/* 顶部 banner 入场只做缓慢淡入,去掉向上位移 */
+.design-page .design-banner-frame { transform: none; transition: opacity 2s var(--ease-soft); }
+.design-page .design-banner-frame.visible { transform: none; }
 @media (prefers-reduced-motion: reduce) {
     .design-page .design-menu,
     .design-page .design-banner-frame { opacity: 1; transform: none; transition: none; }
@@ -459,6 +475,16 @@ body.reading-page .article-body > *:first-child { margin-top: 0; }
     gap: 20px;   /* 日期 / 阅读时长 横向间距 ×2 */
     /* 标题组下方间距 = 上方(封面 72px),与首段清零的上边距配合,精确对齐 */
     margin-bottom: 72px;
+}
+
+/* 标题组(标签 / 标题 / 署名)收窄到与正文段落同宽并居中,左右与下方正文对齐
+   (封面仍保持满宽 hero) */
+.article-eyebrow,
+.article-h1,
+.article-byline {
+    max-width: 760px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /* 手机端:标题组上下间距同步缩小并保持一致(封面下 = byline 下 = 40px) */
@@ -1245,7 +1271,28 @@ body.design-page:not(.writing-page) .header.home-nav {
     background: transparent;
     transition: background 0.25s ease;
 }
-body.design-page:not(.writing-page) .header.home-nav.nav-solid { background: #ffffff; }
+
+/* 顶栏背景层:bare 模式的流沙渐变 iframe,铺满顶栏、压在内容下方。
+   默认透明(透出页顶 banner);滚动到 banner 滚出后(.nav-solid)淡入,替代原来的白底。 */
+body.design-page:not(.writing-page) .header.home-nav .nav-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+}
+body.design-page:not(.writing-page) .header.home-nav.nav-solid .nav-bg { opacity: 1; }
+/* 顶栏内容(logo / 分类 / 邮箱)压在背景层之上 */
+body.design-page:not(.writing-page) .header.home-nav .header-left,
+body.design-page:not(.writing-page) .header.home-nav .nav-cats,
+body.design-page:not(.writing-page) .header.home-nav .header-right {
+    position: relative;
+    z-index: 1;
+}
 /* 顶栏底部滚动进度条:宽度 = 页面滚动进度(JS 设 --scroll-progress 0~1),纯黑。
    只在文章阅读页(body.reading-page)展示,列表页不显示。 */
 body.reading-page .header.home-nav::after {
