@@ -1,145 +1,136 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Writing · VibeUX</title>
-    <link rel="icon" type="image/png" href="../favicon.png?v=12">
-    <link rel="shortcut icon" href="../favicon.png?v=12">
-    <link rel="apple-touch-icon" href="../apple-touch-icon.png?v=12">
-    <link rel="stylesheet" href="../style.css?v=108">
-    <link rel="stylesheet" href="writing.css?v=2">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Writing · VibeUX</title>
+<link href="../favicon.png?v=12" rel="icon" type="image/png"/>
+<link href="../favicon.png?v=12" rel="shortcut icon"/>
+<link href="../apple-touch-icon.png?v=12" rel="apple-touch-icon"/>
+<link href="../style.css?v=108" rel="stylesheet"/>
+<link href="writing.css?v=113" rel="stylesheet"/>
 </head>
 <body class="writing-page">
-    <!-- Header -->
-    <header class="header">
-        <div class="header-left">
-            <a href="../index.html" class="header-link header-banner-link" aria-label="VIBEDESIGN">
-                <div class="brand-banner-grid" id="brand-banner-grid"></div>
-            </a>
-            <p class="header-tagline">From <strong>AI-Assisted</strong> Design to <strong>AI-Native</strong> Design.</p>
-        </div>
-        <div class="header-center">
-            <nav class="pillar-nav" aria-label="Primary">
-                <a href="../index.html" class="pillar-link">Work</a>
-                <span class="pillar-sep">·</span>
-                <a href="index.html" class="pillar-link active" aria-current="page">Writing</a>
-            </nav>
-        </div>
-        <div class="header-right">
-            <a href="mailto:chentongrong1@gmail.com" class="header-link" title="chentongrong1@gmail.com" aria-label="Keep in Touch">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-                    <path d="M22 6L12 13L2 6"></path>
-                </svg>
-            </a>
-        </div>
-    </header>
-    <div class="header-placeholder"></div>
-
-    <main class="writing-main">
-        <!-- 简介 -->
-        <div class="writing-intro">
-            <h1>Writing</h1>
-            <p>AI 设计研究笔记。拆产品、聊交互、谈视觉与趋势,定期更新。</p>
-        </div>
-
-        <!-- 标签筛选 -->
-        <nav class="tag-filter" aria-label="标签筛选">
-            <button class="tag-btn active" data-tag="all">全部</button>
-            <button class="tag-btn" data-tag="交互">交互</button>
-            <button class="tag-btn" data-tag="产品">产品</button>
-            <button class="tag-btn" data-tag="视觉">视觉</button>
-            <button class="tag-btn" data-tag="趋势">趋势</button>
-        </nav>
-
-        <!-- 置顶合集(可选,有才显示) -->
-        <a href="article.html" class="collection-feature reveal-up">
-            <div>
-                <div class="cf-eyebrow">合集 · 5 篇</div>
-                <div class="cf-title">AI-Native 设计模式</div>
-                <div class="cf-desc">把这一年拆过的 AI 产品,归纳成一套可复用的设计范式。</div>
-            </div>
-            <span class="cf-arrow">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path d="M1 13L13 1M13 1H3M13 1V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </span>
-        </a>
-
-        <!-- 文章清单 -->
-        <div class="article-list">
-
-            <a href="article.html" class="article-item reveal-up" data-tags="交互,产品">
-                <div class="article-thumb">
-                    <div class="img-ph" style="min-height:0;height:100%;margin:0;border:none;border-radius:0;">封面</div>
-                </div>
-                <div class="article-main">
-                    <div class="a-title">AI 产品的首屏,正在被重新定义</div>
-                    <div class="a-excerpt">过去首屏比的是「第一眼好不好看」,现在比的是「第一句话懂不懂你」。对话式入口正在悄悄取代功能堆叠。</div>
-                    <div class="a-meta">
-                        <span class="a-date">2026-05-24</span>
-                        <div class="a-tags">
-                            <span class="a-tag">交互</span>
-                            <span class="a-tag">产品</span>
-                        </div>
-                    </div>
-                </div>
-            </a>
-
-            <a href="article.html" class="article-item reveal-up" data-tags="视觉">
-                <div class="article-thumb">
-                    <div class="img-ph" style="min-height:0;height:100%;margin:0;border:none;border-radius:0;">封面</div>
-                </div>
-                <div class="article-main">
-                    <div class="a-title">图标设计在 AI 时代,还值不值得手画</div>
-                    <div class="a-excerpt">当模型能一句话生成一整套图标,设计师真正的价值不在「画」,而在定义规则、保证一致、把控气质。</div>
-                    <div class="a-meta">
-                        <span class="a-date">2026-05-10</span>
-                        <div class="a-tags">
-                            <span class="a-tag">视觉</span>
-                        </div>
-                    </div>
-                </div>
-            </a>
-
-            <a href="article.html" class="article-item reveal-up" data-tags="交互,产品">
-                <div class="article-thumb">
-                    <div class="img-ph" style="min-height:0;height:100%;margin:0;border:none;border-radius:0;">封面</div>
-                </div>
-                <div class="article-main">
-                    <div class="a-title">对话式界面的引导,比按钮难十倍</div>
-                    <div class="a-excerpt">按钮告诉你「能点什么」,对话框却什么都不说。怎么让用户知道可以问什么、问到哪,是 AI 产品最隐蔽的设计难题。</div>
-                    <div class="a-meta">
-                        <span class="a-date">2026-04-28</span>
-                        <div class="a-tags">
-                            <span class="a-tag">交互</span>
-                            <span class="a-tag">产品</span>
-                        </div>
-                    </div>
-                </div>
-            </a>
-
-            <a href="article.html" class="article-item reveal-up" data-tags="趋势">
-                <div class="article-thumb">
-                    <div class="img-ph" style="min-height:0;height:100%;margin:0;border:none;border-radius:0;">封面</div>
-                </div>
-                <div class="article-main">
-                    <div class="a-title">设计工具的下半场,拼的是「懂上下文」</div>
-                    <div class="a-excerpt">从画布到对话,设计工具正在从「我画给它看」转向「它懂我要什么」。上下文,正成为新的护城河。</div>
-                    <div class="a-meta">
-                        <span class="a-date">2026-04-12</span>
-                        <div class="a-tags">
-                            <span class="a-tag">趋势</span>
-                        </div>
-                    </div>
-                </div>
-            </a>
-
-        </div>
-    </main>
-
-    <script src="../script.js?v=27"></script>
-    <script src="writing.js?v=2"></script>
+<!-- Header -->
+<header class="header">
+<div class="header-left">
+<a aria-label="VIBEDESIGN" class="header-link header-banner-link" href="../index.html">
+<div class="brand-banner-grid" id="brand-banner-grid"></div>
+</a>
+<p class="header-tagline">From <strong>AI-Assisted</strong> Design to <strong>AI-Native</strong> Design.</p>
+</div>
+<div class="header-center">
+<nav aria-label="Primary" class="pillar-nav">
+<a class="pillar-link" href="../index.html">Work</a>
+<span class="pillar-sep">·</span>
+<a aria-current="page" class="pillar-link active" href="index.html">Writing</a>
+</nav>
+</div>
+<div class="header-right">
+<a aria-label="Keep in Touch" class="header-link" href="mailto:chentongrong1@gmail.com" title="chentongrong1@gmail.com">
+<svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewbox="0 0 24 24" width="20">
+<rect height="16" rx="2" width="20" x="2" y="4"></rect>
+<path d="M22 6L12 13L2 6"></path>
+</svg>
+</a>
+</div>
+</header>
+<div class="header-placeholder"></div>
+<main class="writing-main">
+<!-- 简介 -->
+<div class="writing-intro">
+<h1>Writing</h1>
+<p>AI 设计研究笔记。拆产品、聊交互、谈视觉与趋势,定期更新。</p>
+</div>
+<!-- 标签筛选 -->
+<nav aria-label="标签筛选" class="tag-filter">
+<button class="tag-btn active" data-tag="all">全部</button>
+<button class="tag-btn" data-tag="交互">交互</button>
+<button class="tag-btn" data-tag="产品">产品</button>
+<button class="tag-btn" data-tag="视觉">视觉</button>
+<button class="tag-btn" data-tag="趋势">趋势</button>
+</nav>
+<!-- 置顶合集(可选,有才显示) -->
+<a class="collection-feature reveal-up" href="article.html">
+<div>
+<div class="cf-eyebrow">合集 · 5 篇</div>
+<div class="cf-title">AI-Native 设计模式</div>
+<div class="cf-desc">把这一年拆过的 AI 产品,归纳成一套可复用的设计范式。</div>
+</div>
+<span class="cf-arrow">
+<svg fill="none" height="14" viewbox="0 0 14 14" width="14">
+<path d="M1 13L13 1M13 1H3M13 1V11" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+</svg>
+</span>
+</a>
+<!-- 文章清单 -->
+<div class="article-list">
+<a class="article-item reveal-up" data-tags="交互,产品" href="article.html">
+<div class="article-thumb">
+<div class="img-ph" style="min-height:0;height:100%;margin:0;border:none;border-radius:0;">封面</div>
+</div>
+<div class="article-main">
+<div class="a-title">AI 产品的首屏,正在被重新定义</div>
+<div class="a-excerpt">过去首屏比的是「第一眼好不好看」,现在比的是「第一句话懂不懂你」。对话式入口正在悄悄取代功能堆叠。</div>
+<div class="a-meta">
+<span class="a-date">2026-05-24</span>
+<div class="a-tags">
+<span class="a-tag">交互</span>
+<span class="a-tag">产品</span>
+</div>
+</div>
+</div>
+</a>
+<a class="article-item reveal-up" data-tags="视觉" href="article.html">
+<div class="article-thumb">
+<div class="img-ph" style="min-height:0;height:100%;margin:0;border:none;border-radius:0;">封面</div>
+</div>
+<div class="article-main">
+<div class="a-title">图标设计在 AI 时代,还值不值得手画</div>
+<div class="a-excerpt">当模型能一句话生成一整套图标,设计师真正的价值不在「画」,而在定义规则、保证一致、把控气质。</div>
+<div class="a-meta">
+<span class="a-date">2026-05-10</span>
+<div class="a-tags">
+<span class="a-tag">视觉</span>
+</div>
+</div>
+</div>
+</a>
+<a class="article-item reveal-up" data-tags="交互,产品" href="article.html">
+<div class="article-thumb">
+<div class="img-ph" style="min-height:0;height:100%;margin:0;border:none;border-radius:0;">封面</div>
+</div>
+<div class="article-main">
+<div class="a-title">对话式界面的引导,比按钮难十倍</div>
+<div class="a-excerpt">按钮告诉你「能点什么」,对话框却什么都不说。怎么让用户知道可以问什么、问到哪,是 AI 产品最隐蔽的设计难题。</div>
+<div class="a-meta">
+<span class="a-date">2026-04-28</span>
+<div class="a-tags">
+<span class="a-tag">交互</span>
+<span class="a-tag">产品</span>
+</div>
+</div>
+</div>
+</a>
+<a class="article-item reveal-up" data-tags="趋势" href="article.html">
+<div class="article-thumb">
+<div class="img-ph" style="min-height:0;height:100%;margin:0;border:none;border-radius:0;">封面</div>
+</div>
+<div class="article-main">
+<div class="a-title">设计工具的下半场,拼的是「懂上下文」</div>
+<div class="a-excerpt">从画布到对话,设计工具正在从「我画给它看」转向「它懂我要什么」。上下文,正成为新的护城河。</div>
+<div class="a-meta">
+<span class="a-date">2026-04-12</span>
+<div class="a-tags">
+<span class="a-tag">趋势</span>
+</div>
+</div>
+</div>
+</a>
+</div>
+</main>
+<script src="../script.js?v=27"></script>
+<script src="writing.js?v=34"></script>
 </body>
 </html>

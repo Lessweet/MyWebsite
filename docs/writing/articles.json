@@ -1,0 +1,34 @@
+{
+  "articles": [
+    {
+      "slug": "figma-agent",
+      "title": "Figma 把 Agent 装进画布，让设计师同时开多个方向",
+      "date": "2026-05-31",
+      "read_time": "8 分钟",
+      "tags": [
+        "设计",
+        "AI",
+        "工具"
+      ],
+      "cat": "ui",
+      "collection": "",
+      "excerpt": "Figma 把 Agent 装进了画布，让设计师可以同时跑多个方向，而不是排队等 AI 给一版。这背后是对「速度还是精准」这个假选择的回答。",
+      "cover": "assets/figma-agent/cover.png"
+    },
+    {
+      "slug": "genie",
+      "title": "Genie 给 AI 装了一具身体：光、物理和触感",
+      "date": "2026-05-30",
+      "read_time": "8 分钟",
+      "tags": [
+        "设计",
+        "AI",
+        "交互"
+      ],
+      "cat": "ui",
+      "collection": "AI 设计语言",
+      "excerpt": "大多数 AI 产品还停留在「聊天框」阶段。设计师 Nelson Noa 给 Genie 造了一套界面语言「Grammar of AI」——用光、物理、触感让 AI 有存在感、有重量、能被「捏」。",
+      "cover": "assets/genie/cover.png"
+    }
+  ]
+}

@@ -15,7 +15,7 @@
     --text-dim: #969696;
     --brand: #000000;
     --brand-soft: rgba(0, 0, 0, 0.08);
-    --brand-banner-bg: #FDFBF6;
+    --brand-banner-bg: #E9F7F1;
     --dur-1-5: 1.5s;
     --dur-1-8: 1.8s;
     --dur-2-1: 2.1s;
@@ -125,9 +125,9 @@
 
   .brand-banner-grid {
     font-family: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
-    /* 像素字宽 = 110 列 × 字宽,窄屏会溢出;按视口宽度等比缩小字号让 VIBEDESIGN 完整显示,
-       桌面封顶 11px(宽屏仍是原尺寸) */
-    font-size: min(11px, calc((100vw - 72px) / 72));
+    /* 像素字宽 = 110 列 × 字宽,窄屏会溢出;按视口宽度等比缩小字号让 VIBEDESIGN 完整显示。
+       封顶 22px(原 11px ×2,配合 banner 高度加倍);窄屏仍按 /72 自动缩小不溢出 */
+    font-size: min(22px, calc((100vw - 72px) / 72));
     font-weight: 700;
     line-height: 0.65;
     letter-spacing: 0;
@@ -1375,10 +1375,10 @@
   }
 </style>
 <style>
-  html, body { background: #FDFBF6 !important; margin: 0; padding: 0; overflow: hidden; }
+  html, body { background: #E9F7F1 !important; margin: 0; padding: 0; overflow: hidden; }
   main { width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
   .brand-banner-shell { width: 100% !important; margin: 0 !important; }
-  .brand-banner { min-height: 300px !important; }
+  .brand-banner { min-height: 100vh !important; }   /* 填满 iframe 高度(100vh=iframe 高),像素字 flex 居中,背景随之撑满 */
   .banner-download-btn { right: max(20px, calc((100vw - 1280px) / 2 + 24px)) !important; }
 </style>
 </head>
@@ -1465,7 +1465,7 @@
         ambient: pick(['*', '\\']),
         densityByDist: { 1: 0.28, 2: 0.28 },
         ambientDensity: 0.015,
-        backgroundColor: '#FDFBF6',
+        backgroundColor: '#E9F7F1',
         lineHeight: '0.65',
         letterSpacing: '0',
         letterColor: (r, c) => ASCII_PALETTE[Math.floor((c - r + 120) / 8) % ASCII_PALETTE.length],
@@ -1964,7 +1964,7 @@
       }
       grid.dataset.styleId = style.id;
       if (bannerShell) {
-        bannerShell.style.setProperty('--brand-banner-bg', style.backgroundColor || '#FDFBF6');
+        bannerShell.style.setProperty('--brand-banner-bg', style.backgroundColor || '#E9F7F1');
       }
       grid.replaceChildren(build(style));
       originsDirty = true;

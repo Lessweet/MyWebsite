@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Writing Banner</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: #FDFBF6;
+    overflow: hidden;
+  }
+  .gradient-stage {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #111;
+  }
+  .gradient-stage canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  /* 渐变上叠加一行 VIBEUX 释义,首字母(eXperiment 取 X)拼出 VIBEUX */
+  .banner-words {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    align-content: center;   /* 换行成多行时,行与行之间只留 gap 的行距(不被撑开) */
+    justify-content: center;
+    gap: 8px 16px;
+    padding: 0 28px;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: clamp(13px, 1.9vw, 22px);
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    color: rgba(255, 255, 255, 0.92);
+    pointer-events: none;
+    user-select: none;
+  }
+  /* 非首字母降透明度;首字母(VIBEUX)与分隔点为纯白 */
+  .banner-words .bw { font-weight: 400; color: rgba(255, 255, 255, 0.5); }
+  .banner-words .bw b { font-weight: 400; color: #fff; }
+  .banner-words .dot { color: #fff; }
+</style>
+</head>
+<body>
+<div class="gradient-stage" id="gradient-stage">
+  <canvas id="mesh-canvas" aria-hidden="true"></canvas>
+  <div class="banner-words" aria-label="VIBEUX:View Insight Build Experience Upgrade eXperiment">
+    <span class="bw"><b>V</b>iew</span>
+    <span class="dot">·</span>
+    <span class="bw"><b>I</b>nsight</span>
+    <span class="dot">·</span>
+    <span class="bw"><b>B</b>uild</span>
+    <span class="dot">·</span>
+    <span class="bw"><b>E</b>xperience</span>
+    <span class="dot">·</span>
+    <span class="bw"><b>U</b>pgrade</span>
+    <span class="dot">·</span>
+    <span class="bw">e<b>X</b>periment</span>
+  </div>
+</div>
+<script>
+(function initMeshBanner() {
+  const canvas = document.getElementById('mesh-canvas');
+  if (!canvas) return;
+  const gl = canvas.getContext('webgl2', { antialias: false, premultipliedAlpha: false });
+  if (!gl) {
+    const stage = document.getElementById('gradient-stage');
+    stage.style.display = 'flex';
+    stage.style.alignItems = 'center';
+    stage.style.justifyContent = 'center';
+    stage.style.color = '#fff';
+    stage.style.fontSize = '13px';
+    stage.textContent = '当前浏览器不支持 WebGL2。';
+    return;
+  }
+
+  const MAX_COLORS = 5;
+
+  const COLORS_HEX = ['#fff2c2', '#ffc1d8', '#c8b6ff', '#b8e0ff', '#c2fff0'];
+  const COUNT = 5;
+  const DISTORTION = 0.45;
+  const SWIRL = 0.35;
+  const GRAIN = 0.25;
+  const SPEED = 1.0;
+
+  const VERT = `#version 300 es
+in vec2 a_pos;
+out vec2 v_uv;
+void main() {
+  v_uv = a_pos * 0.5 + 0.5;
+  gl_Position = vec4(a_pos, 0.0, 1.0);
+}`;
+
+  // 算法来源:paper-design/shaders mesh-gradient.ts
+  // Lissajous 轨迹 + 液化扭曲 + 漩涡旋转 + Shepard inverse-distance 混色 + 胶片颗粒。
+  const FRAG = `#version 300 es
+precision highp float;
+in vec2 v_uv;
+out vec4 fragColor;
+
+uniform float u_time;
+uniform float u_aspect;
+uniform vec4  u_colors[${MAX_COLORS}];
+uniform float u_colorsCount;
+uniform float u_distortion;
+uniform float u_swirl;
+uniform float u_grain;
+
+float hash21(vec2 p) {
+  p = fract(p * vec2(0.3183099, 0.3678794)) + 0.1;
+  p += dot(p, p + 19.19);
+  return fract(p.x * p.y);
+}
+
+float valueNoise(vec2 st) {
+  vec2 i = floor(st);
+  vec2 f = fract(st);
+  float a = hash21(i);
+  float b = hash21(i + vec2(1.0, 0.0));
+  float c = hash21(i + vec2(0.0, 1.0));
+  float d = hash21(i + vec2(1.0, 1.0));
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+
+vec2 rotate(vec2 p, float th) {
+  return mat2(cos(th), sin(th), -sin(th), cos(th)) * p;
+}
+
+vec2 getPosition(int i, float t) {
+  float a = float(i) * 0.37;
+  float b = 0.6 + fract(float(i) / 3.0) * 0.9;
+  float c = 0.8 + fract(float(i + 1) / 4.0);
+  return 0.5 + 0.5 * vec2(sin(t * b + a), cos(t * c + a * 1.5));
+}
+
+void main() {
+  vec2 uv = v_uv;
+  vec2 uvSq = (uv - 0.5) * vec2(u_aspect, 1.0) + 0.5;
+
+  vec2 grainUV = uv * vec2(u_aspect, 1.0) * 1000.0;
+  float mixerGrain = 0.4 * u_grain * (valueNoise(grainUV) - 0.5);
+
+  float t = 0.5 * (u_time + 41.5);
+
+  float radius = smoothstep(0.0, 1.0, length(uvSq - 0.5));
+  float center = 1.0 - radius;
+
+  for (float i = 1.0; i <= 2.0; i++) {
+    uvSq.x += u_distortion * center / i
+            * sin(t + i * 0.4 * smoothstep(0.0, 1.0, uvSq.y))
+            * cos(0.2 * t + i * 2.4 * smoothstep(0.0, 1.0, uvSq.y));
+    uvSq.y += u_distortion * center / i
+            * cos(t + i * 2.0 * smoothstep(0.0, 1.0, uvSq.x));
+  }
+
+  vec2 uvR = uvSq - 0.5;
+  float angle = 3.0 * u_swirl * radius;
+  uvR = rotate(uvR, -angle);
+  uvR += 0.5;
+
+  vec3 color = vec3(0.0);
+  float opacity = 0.0;
+  float totalWeight = 0.0;
+  for (int i = 0; i < ${MAX_COLORS}; i++) {
+    if (i >= int(u_colorsCount)) break;
+    vec2 pos = getPosition(i, t) + mixerGrain;
+    float d = length(uvR - pos);
+    d = pow(d, 3.5);
+    float w = 1.0 / (d + 1e-3);
+    color  += u_colors[i].rgb * u_colors[i].a * w;
+    opacity += u_colors[i].a * w;
+    totalWeight += w;
+  }
+  color /= max(1e-4, totalWeight);
+  opacity /= max(1e-4, totalWeight);
+
+  float go = valueNoise(rotate(grainUV, 1.0) + vec2(3.0));
+  go = mix(go, valueNoise(rotate(grainUV, 2.0) + vec2(-1.0)), 0.5);
+  go = pow(go, 1.3);
+  float goV = go * 2.0 - 1.0;
+  float goStrength = pow(u_grain * abs(goV), 0.8);
+  color = mix(color, vec3(step(0.0, goV)), 0.35 * goStrength);
+
+  fragColor = vec4(color, 1.0);
+}`;
+
+  function compile(type, src) {
+    const sh = gl.createShader(type);
+    gl.shaderSource(sh, src);
+    gl.compileShader(sh);
+    if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+      console.error('Banner shader compile error:', gl.getShaderInfoLog(sh));
+      gl.deleteShader(sh);
+      return null;
+    }
+    return sh;
+  }
+
+  const vs = compile(gl.VERTEX_SHADER, VERT);
+  const fs = compile(gl.FRAGMENT_SHADER, FRAG);
+  if (!vs || !fs) return;
+  const prog = gl.createProgram();
+  gl.attachShader(prog, vs);
+  gl.attachShader(prog, fs);
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+    console.error('Banner link error:', gl.getProgramInfoLog(prog));
+    return;
+  }
+  gl.useProgram(prog);
+
+  const quad = new Float32Array([-1,-1,  1,-1, -1, 1,  -1, 1,  1,-1,  1, 1]);
+  const vbo = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+  gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW);
+  const aPos = gl.getAttribLocation(prog, 'a_pos');
+  gl.enableVertexAttribArray(aPos);
+  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+  const uTime = gl.getUniformLocation(prog, 'u_time');
+  const uAspect = gl.getUniformLocation(prog, 'u_aspect');
+  const uColors = gl.getUniformLocation(prog, 'u_colors[0]');
+  const uColorsCount = gl.getUniformLocation(prog, 'u_colorsCount');
+  const uDistortion = gl.getUniformLocation(prog, 'u_distortion');
+  const uSwirl = gl.getUniformLocation(prog, 'u_swirl');
+  const uGrain = gl.getUniformLocation(prog, 'u_grain');
+
+  function hexToRgb(hex) {
+    const h = hex.replace('#', '');
+    const v = h.length === 3
+      ? h.split('').map(c => parseInt(c + c, 16))
+      : [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16));
+    return [v[0] / 255, v[1] / 255, v[2] / 255];
+  }
+
+  const colorArr = new Float32Array(MAX_COLORS * 4);
+  for (let i = 0; i < MAX_COLORS; i++) {
+    const [r, g, b] = hexToRgb(COLORS_HEX[i]);
+    colorArr[i * 4 + 0] = r;
+    colorArr[i * 4 + 1] = g;
+    colorArr[i * 4 + 2] = b;
+    colorArr[i * 4 + 3] = 1.0;
+  }
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    const w = Math.max(1, Math.round(rect.width * dpr));
+    const h = Math.max(1, Math.round(rect.height * dpr));
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w;
+      canvas.height = h;
+      gl.viewport(0, 0, w, h);
+    }
+    return rect.width > 0 && rect.height > 0 ? rect.width / rect.height : 1;
+  }
+
+  const ro = new ResizeObserver(resize);
+  ro.observe(canvas);
+
+  let shaderTime = 0;
+  let lastFrame = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - lastFrame) / 1000);
+    lastFrame = now;
+    shaderTime += dt * SPEED;
+
+    const aspect = resize();
+    gl.useProgram(prog);
+    gl.uniform1f(uTime, shaderTime);
+    gl.uniform1f(uAspect, aspect);
+    gl.uniform4fv(uColors, colorArr);
+    gl.uniform1f(uColorsCount, COUNT);
+    gl.uniform1f(uDistortion, DISTORTION);
+    gl.uniform1f(uSwirl, SWIRL);
+    gl.uniform1f(uGrain, GRAIN);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

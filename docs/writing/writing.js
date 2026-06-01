@@ -3,6 +3,7 @@
  * 复用 ../script.js 的 brand banner / sticky header,这里只补文章特有逻辑。
  */
 document.addEventListener('DOMContentLoaded', () => {
+    initPageTint();
     initSiteNav();
     initStickyMenu();
     initReveal();
@@ -10,7 +11,61 @@ document.addEventListener('DOMContentLoaded', () => {
     initWritingFilter();
     initTOC();
     initNavSpy();
+    initScrollProgress();
+    initNavSolidOnScroll();
 });
+
+/* 分类页:顶栏初始透明叠在通栏 banner 上;banner 向上滚出顶栏后给顶栏加 .nav-solid → 变白底。
+   判据:banner 底边滚到顶栏下沿(navH)之上时,顶栏不再压着 banner。 */
+function initNavSolidOnScroll() {
+    const nav = document.querySelector('.header.home-nav');
+    const banner = document.querySelector('.design-banner-frame');
+    if (!nav || !banner) return;   // 文章页无 banner,跳过
+    const update = () => {
+        const solid = banner.getBoundingClientRect().bottom <= nav.offsetHeight;
+        nav.classList.toggle('nav-solid', solid);
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+}
+
+/* 顶栏底部滚动进度条:进度 = 已滚动距离 / 可滚动总距离(0~1),写到顶栏的 --scroll-progress,
+   CSS 用它 scaleX 拉伸进度条。页面不可滚动时进度为 0(条宽 0,不显示)。 */
+function initScrollProgress() {
+    const header = document.querySelector('.header');
+    if (!header) return;
+    const doc = document.documentElement;
+    let ticking = false;
+    const update = () => {
+        ticking = false;
+        const max = doc.scrollHeight - doc.clientHeight;
+        const p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+        header.style.setProperty('--scroll-progress', p);
+    };
+    const onScroll = () => {
+        if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    };
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+}
+
+/* 阅读页底层规则:每篇文章都必须有底色。
+   手动在 <body data-tint="..."> 写了就用手动的;没写就按文章 slug 稳定哈希,
+   从纯色盘里自动分配一个 —— 同一篇永远同一色,不同篇尽量不同。
+   (渐变档不参与自动分配,是 opt-in 的手动选择) */
+function initPageTint() {
+    const body = document.body;
+    if (!body || !body.classList.contains('reading-page')) return;
+    if (body.dataset.tint) return;   // 手动指定优先
+    const SOLIDS = ['violet', 'blue', 'mint', 'peach', 'rose', 'sand'];
+    const slug = body.dataset.slug
+        || (location.pathname.split('/').pop() || 'article').replace(/\.html?$/, '');
+    let hash = 0;
+    for (let i = 0; i < slug.length; i++) hash = (hash * 31 + slug.charCodeAt(i)) >>> 0;
+    body.dataset.tint = SOLIDS[hash % SOLIDS.length];
+}
 
 /* 移动端:把胶囊分类条的 sticky top 设为顶栏实际高度,使其紧贴顶栏下方 */
 function initStickyMenu() {
@@ -44,8 +99,9 @@ function initSiteNav() {
             '<a href="' + base + 'design.html" class="' + a('design') + '">' + I(design) + 'Design</a>' +
         '</nav>' +
         '<div class="header-right">' +
-            '<a href="mailto:chentongrong1@gmail.com" class="header-connect" title="chentongrong1@gmail.com" aria-label="Connect me">' +
-                '<svg class="connect-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M22 6 L12 13 L2 6"></path></svg>' +
+            '<a href="mailto:chentongrong1@gmail.com" class="header-connect" title="chentongrong1@gmail.com" aria-label="Contact">' +
+                '<svg class="mail-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M3.75,6.5 3.75,6.75 3.25,6.75 3.25,7.0 3.0,7.0 3.0,7.25 3.5,7.25 3.5,7.5 3.75,7.5 3.75,7.75 4.0,7.75 4.0,8.0 4.5,8.0 4.5,8.25 4.75,8.25 4.75,8.5 5.0,8.5 5.0,8.75 5.5,8.75 5.5,9.0 5.75,9.0 5.75,9.25 6.0,9.25 6.0,9.5 6.5,9.5 6.5,9.75 6.75,9.75 6.75,10.0 7.0,10.0 7.0,10.25 7.5,10.25 7.5,10.5 7.75,10.5 7.75,10.75 8.0,10.75 8.0,11.0 8.5,11.0 8.5,11.25 8.75,11.25 8.75,11.5 9.0,11.5 9.0,11.75 9.25,11.75 9.25,12.0 9.75,12.0 9.75,12.25 10.0,12.25 10.0,12.5 10.25,12.5 10.25,12.75 10.75,12.75 10.75,13.0 11.0,13.0 11.0,13.25 11.25,13.25 11.25,13.5 11.5,13.5 11.5,13.75 12.5,13.75 12.5,13.5 12.75,13.5 12.75,13.25 13.25,13.25 13.25,13.0 13.5,13.0 13.5,12.75 13.75,12.75 13.75,12.5 14.25,12.5 14.25,12.25 14.5,12.25 14.5,12.0 14.75,12.0 14.75,11.75 15.0,11.75 15.0,11.5 15.5,11.5 15.5,11.25 15.75,11.25 15.75,11.0 16.0,11.0 16.0,10.75 16.5,10.75 16.5,10.5 16.75,10.5 16.75,10.25 17.0,10.25 17.0,10.0 17.5,10.0 17.5,9.75 17.75,9.75 17.75,9.5 18.0,9.5 18.0,9.25 18.25,9.25 18.25,9.0 18.75,9.0 18.75,8.75 19.0,8.75 19.0,8.5 19.25,8.5 19.25,8.25 19.75,8.25 19.75,8.0 20.0,8.0 20.0,7.75 20.25,7.75 20.25,7.5 20.75,7.5 20.75,7.25 21.0,7.25 21.0,7.0 20.75,7.0 20.75,6.75 20.25,6.75 20.25,6.5ZM2.0,8.5 2.0,16.75 2.25,16.75 2.25,17.0 2.5,17.0 2.5,17.25 2.75,17.25 2.75,17.5 8.0,17.5 8.0,17.25 7.5,17.25 7.5,17.0 7.25,17.0 7.25,16.75 7.0,16.75 7.0,12.25 6.75,12.25 6.75,11.75 6.5,11.75 6.5,11.5 6.25,11.5 6.25,11.25 6.0,11.25 6.0,11.0 5.5,11.0 5.5,10.75 5.25,10.75 5.25,10.5 4.75,10.5 4.75,10.25 4.5,10.25 4.5,10.0 4.25,10.0 4.25,9.75 3.75,9.75 3.75,9.5 3.5,9.5 3.5,9.25 3.0,9.25 3.0,9.0 2.75,9.0 2.75,8.75 2.5,8.75 2.5,8.5ZM21.75,8.75 21.5,8.75 21.5,9.0 21.0,9.0 21.0,9.25 20.5,9.25 20.5,9.5 20.25,9.5 20.25,9.75 20.0,9.75 20.0,10.0 19.5,10.0 19.5,10.25 19.25,10.25 19.25,10.5 19.0,10.5 19.0,10.75 18.5,10.75 18.5,11.0 18.25,11.0 18.25,11.25 17.75,11.25 17.75,11.5 17.5,11.5 17.5,11.75 17.25,11.75 17.25,12.25 17.0,12.25 17.0,16.75 16.75,16.75 16.75,17.0 16.5,17.0 16.5,17.25 16.0,17.25 16.0,17.5 21.25,17.5 21.25,17.25 21.75,17.25 21.75,16.75 22.0,16.75 22.0,9.0 21.75,9.0Z"/></svg>' +
+                '<span class="connect-label">Contact</span>' +
             '</a>' +
         '</div>';
 }
