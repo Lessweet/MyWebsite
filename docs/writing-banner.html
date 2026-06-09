@@ -31,36 +31,35 @@
     inset: 0;
     z-index: 2;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: clamp(13px, 1.9vw, 22px);
+    font-size: 15px;
     font-weight: 400;
     letter-spacing: 0.01em;
     color: rgba(0, 0, 0, 0.92);
     pointer-events: none;
     user-select: none;
   }
+  /* 桌面:两组堆成上下两行,水平居中 —— bw-left(VIBE)在上,bw-right(UX)在下 */
   .banner-words .bw-group {
     position: absolute;
-    bottom: clamp(20px, 4vw, 40px);
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    justify-content: center;
     gap: 8px 16px;
   }
-  /* 左右内边距与顶栏导航(home-nav)对齐:max(24px, (100% - 1280px)/2)(iframe 宽 = 100vw) */
-  .banner-words .bw-left  { left: max(24px, calc((100% - 1280px) / 2)); }
-  .banner-words .bw-right { right: max(24px, calc((100% - 1280px) / 2)); justify-content: flex-end; }
+  .banner-words .bw-left  { bottom: calc(clamp(20px, 4vw, 40px) + 1.9em); }
+  .banner-words .bw-right { bottom: clamp(20px, 4vw, 40px); }
   /* 非首字母降透明度;首字母(VIBEUX)与分隔点为纯白 */
   .banner-words .bw { font-weight: 400; color: rgba(0, 0, 0, 0.5); }
   .banner-words .bw b { font-weight: 400; color: #000; }
   .banner-words .dot { color: #000; }
-  /* 手机端:左组(VIBE)上移一行,叠在右组上方 → 左下角两行,VIBE 在上、UX 在下 */
+  /* 手机端:两行靠左对齐(取消居中),贴左下角 → VIBE 在上、UX 在下 */
   @media (max-width: 640px) {
-    .banner-words .bw-left {
-      bottom: calc(clamp(20px, 4vw, 40px) + 1.9em);
-    }
-    .banner-words .bw-right {
-      right: auto;
+    .banner-words .bw-group {
       left: max(24px, calc((100% - 1280px) / 2));
+      transform: none;
       justify-content: flex-start;
     }
   }
