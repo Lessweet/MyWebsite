@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initTagFilter();
     initWritingFilter();
     initTOC();
+    initReader();
     initNavSpy();
     initScrollProgress();
     initNavSolidOnScroll();
@@ -102,7 +103,7 @@ function initSiteNav() {
     nav.innerHTML =
         navBg +
         '<div class="header-left">' +
-            '<a href="' + base + 'index-v2.html" class="site-title" aria-label="VIBEUX"><img src="' + base + 'logo-wordmark.png?v=2" class="site-wordmark" alt="VIBEUX"></a>' +
+            '<a href="' + base + 'index-v2.html" class="site-title" aria-label="VIBEUX"><img src="' + base + 'favicon.png?v=14" class="site-logo" alt=""><img src="' + base + 'logo-wordmark.png?v=2" class="site-wordmark" alt="VIBEUX"></a>' +
         '</div>' +
         '<nav class="nav-cats" aria-label="分类">' +
             '<a href="' + base + 'index-v2.html#writing" class="' + a('writing') + '">' + I(pencil) + 'Blog</a>' +
@@ -279,10 +280,14 @@ function initTOC() {
     const body = document.querySelector('.article-body');
     if (!toc || !body) return;
 
+    // 可重复调用:切换文章后先清空旧目录并复位容器显隐
+    toc.innerHTML = '';
+    const tocAside = toc.closest('.article-toc');
+    if (tocAside) tocAside.style.display = '';
+
     const heads = Array.from(body.querySelectorAll('h2, h3'));
     if (!heads.length) {
-        const aside = toc.closest('.article-toc');
-        if (aside) aside.style.display = 'none';
+        if (tocAside) tocAside.style.display = 'none';
         return;
     }
 
@@ -316,4 +321,161 @@ function initTOC() {
     }, { rootMargin: '-120px 0px -70% 0px', threshold: [0, 1] });
 
     heads.forEach((h) => spy.observe(h));
+}
+
+/* ========================================
+   阅读页 master–detail 阅读器
+   左栏 = 文章清单(单一数据源,下面 READER_ARTICLES),右栏 = 正文。
+   点列表项 / 上一篇下一篇 / 合集链接 → fetch 目标页、只换正文,不整页刷新。
+   fetch 不可用时(如 file:// 本地直开)自动兜底为普通跳转,体验降级但不坏。
+   ======================================== */
+const READER_ARTICLES = [
+    { file: 'article-figma-agent.html', cat: 'ui',      title: 'Figma 把 Agent 装进画布，让设计师同时开多个方向', date: '2026-05-31', cover: 'assets/figma-agent/cover.png' },
+    { file: 'article-genie.html',       cat: 'ui',      title: 'Genie 给 AI 装了一具身体：光、物理和触感',          date: '2026-05-30', cover: 'assets/genie/cover.png' },
+    { file: 'article.html',             cat: 'product', title: 'AI 产品的首屏，正在被重新定义',                     date: '2026-05-24', cover: '' },
+];
+const READER_CATS = [
+    { key: 'all', label: '全部' },
+    { key: 'ui', label: 'UI 视觉' },
+    { key: 'product', label: '产品体验' },
+];
+
+/* 当前文章文件名(URL 末段,去掉 # 锚点) */
+function currentArticleFile() {
+    return (location.pathname.split('/').pop() || 'article.html').split('#')[0];
+}
+function isArticleFile(file) {
+    return READER_ARTICLES.some((it) => it.file === file);
+}
+
+function initReader() {
+    if (!document.body.classList.contains('reading-page')) return;
+    const layout = document.querySelector('.reading-layout');
+    const list = document.querySelector('.reader-list');
+    if (!layout || !list) return;
+
+    // 把目录/列表 sticky 顶部对齐到顶栏下方(顶栏 fixed,高度随断点变)
+    const header = document.querySelector('.header');
+    if (header) {
+        const setTop = () => document.documentElement.style.setProperty('--reader-toc-top', (header.offsetHeight + 24) + 'px');
+        setTop();
+        window.addEventListener('resize', setTop);
+        window.addEventListener('load', setTop);
+    }
+
+    renderReaderList(list, currentArticleFile());
+
+    // ≤1440 单栏时:列表收成顶部「文章 ▾」下拉菜单的开关(仅该断点 CSS 显示)
+    const setOpen = (open) => {
+        layout.classList.toggle('reader-list-open', open);
+        const t = layout.querySelector('.reader-list-toggle');
+        if (t) t.setAttribute('aria-expanded', open ? 'true' : 'false');
+    };
+    if (!layout.querySelector('.reader-list-toggle')) {
+        const btn = document.createElement('button');
+        btn.className = 'reader-list-toggle';
+        btn.type = 'button';
+        btn.setAttribute('aria-haspopup', 'true');
+        btn.setAttribute('aria-expanded', 'false');
+        btn.innerHTML =
+            '<span>文章</span>' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+            '<path d="M6 9l6 6 6-6"/></svg>';
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            setOpen(!layout.classList.contains('reader-list-open'));
+        });
+        layout.appendChild(btn);
+        // 点击下拉面板外部 / 按 Esc 关闭
+        document.addEventListener('click', (e) => {
+            if (!layout.classList.contains('reader-list-open')) return;
+            if (e.target.closest('.reader-list') || e.target.closest('.reader-list-toggle')) return;
+            setOpen(false);
+        });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
+    }
+
+    // 站内文章链接(列表项 / 上一篇下一篇 / 合集)统一拦截 → 原地切换
+    layout.addEventListener('click', (e) => {
+        const a = e.target.closest('a[href]');
+        if (!a || !layout.contains(a)) return;
+        const file = (a.getAttribute('href') || '').split('/').pop().split('#')[0];
+        if (!isArticleFile(file)) return;   // 非文章链接(如外链)放行
+        e.preventDefault();
+        setOpen(false);
+        if (file === currentArticleFile()) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+        switchArticle(file, true);
+    });
+
+    window.addEventListener('popstate', () => {
+        const file = currentArticleFile();
+        if (isArticleFile(file)) switchArticle(file, false);
+    });
+}
+
+/* 渲染左栏:分类筛选 tab + 文章清单。currentFile 决定高亮项。 */
+function renderReaderList(list, currentFile) {
+    const activeCat = list.dataset.cat || 'all';
+    const tabs = READER_CATS.map((c) =>
+        '<button class="reader-cat' + (c.key === activeCat ? ' active' : '') + '" data-cat="' + c.key + '" type="button">' + c.label + '</button>'
+    ).join('');
+    const items = READER_ARTICLES.map((it) => {
+        const thumb = it.cover
+            ? '<img src="' + it.cover + '" alt="" loading="lazy">'
+            : '<span class="reader-thumb-ph">封面</span>';
+        return '<a class="reader-item' + (it.file === currentFile ? ' active' : '') + '" href="' + it.file + '"' +
+            ' data-file="' + it.file + '" data-cat="' + it.cat + '">' +
+            '<span class="reader-thumb">' + thumb + '</span>' +
+            '<span class="reader-text">' +
+                '<span class="reader-title">' + it.title + '</span>' +
+                '<span class="reader-date">' + it.date + '</span>' +
+            '</span></a>';
+    }).join('');
+    list.innerHTML =
+        '<div class="reader-cats" role="tablist">' + tabs + '</div>' +
+        '<div class="reader-items">' + items + '</div>';
+
+    // 分类筛选:按 data-cat 显隐
+    list.querySelectorAll('.reader-cat').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const cat = btn.dataset.cat || 'all';
+            list.dataset.cat = cat;
+            list.querySelectorAll('.reader-cat').forEach((b) => b.classList.toggle('active', b === btn));
+            list.querySelectorAll('.reader-item').forEach((item) => {
+                item.hidden = !(cat === 'all' || item.dataset.cat === cat);
+            });
+        });
+    });
+}
+
+/* 切换文章:fetch 目标页 → 只替换 .article-reading,更新标题/底色/目录/入场动画 */
+function switchArticle(file, push) {
+    const layout = document.querySelector('.reading-layout');
+    const live = document.querySelector('.article-reading');
+    if (!layout || !live) { location.href = file; return; }
+    layout.classList.add('reader-loading');
+
+    fetch(file)
+        .then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+        .then((html) => {
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            const next = doc.querySelector('.article-reading');
+            if (!next) throw new Error('目标页缺少 .article-reading');
+
+            live.innerHTML = next.innerHTML;
+            if (doc.title) document.title = doc.title;
+            const tint = doc.body.getAttribute('data-tint');
+            if (tint) document.body.setAttribute('data-tint', tint);
+
+            document.querySelectorAll('.reader-item').forEach((item) =>
+                item.classList.toggle('active', item.dataset.file === file));
+
+            if (push) history.pushState({ file: file }, '', file);
+
+            window.scrollTo(0, 0);
+            initTOC();            // 用新正文重建目录
+            initArticleReveal();  // 重放逐块入场
+            layout.classList.remove('reader-loading');
+        })
+        .catch(() => { location.href = file; });   // 兜底:fetch 不可用 → 普通跳转
 }

@@ -7,10 +7,10 @@
     <link rel="icon" type="image/png" href="../favicon.png?v=12">
     <link rel="shortcut icon" href="../favicon.png?v=12">
     <link rel="apple-touch-icon" href="../apple-touch-icon.png?v=12">
-    <link rel="stylesheet" href="../style.css?v=122">
-    <link rel="stylesheet" href="writing.css?v=163">
+    <link rel="stylesheet" href="../style.css?v=123">
+    <link rel="stylesheet" href="writing.css?v=216">
     <!-- 提前加载,使顶部导航能在首次绘制前同步注入,避免空 header 闪烁(与首页一致) -->
-    <script src="writing.js?v=52"></script>
+    <script src="writing.js?v=55"></script>
 </head>
 <!-- 复用首页 index-v2 的胶囊顶栏:home-v2 控制顶栏内边距,design-page 提供胶囊样式 -->
 <body class="writing-page home-v2 design-page reading-page" data-tint="mint">
@@ -38,7 +38,9 @@
     </script>
 
     <div class="reading-layout">
-        <!-- 浮动目录(JS 自动生成) -->
+        <!-- ① 文章列表(JS 渲染,master–detail 左栏) -->
+        <aside class="reader-list" aria-label="文章列表"></aside>
+        <!-- ③ 浮动目录(JS 自动生成) -->
         <aside class="article-toc" aria-label="目录">
             <div class="article-toc-title">目录</div>
             <nav id="toc"></nav>
@@ -47,8 +49,8 @@
         <!-- 正文 -->
         <article class="article-reading">
             <div class="article-eyebrow">
-                <span class="a-tag">交互</span>
-                <span class="a-tag">产品</span>
+                <span class="a-tag">主导权转移</span>
+                <span class="a-tag">意图设计</span>
             </div>
             <h1 class="article-h1">AI 产品的首屏,正在被重新定义</h1>
             <div class="article-byline">
@@ -99,36 +101,11 @@
 
             <!-- 底部 -->
             <footer class="article-footer">
-                <div class="article-prevnext">
-                    <a href="article.html" class="pn-link prev">
-                        <div class="pn-thumb"><div class="img-ph" style="min-height:0;height:100%;margin:0;border:none;border-radius:0;">封面</div></div>
-                        <div class="pn-body">
-                            <div class="pn-label">← 上一篇</div>
-                            <div class="pn-title">设计工具的下半场,拼的是「懂上下文」</div>
-                        </div>
-                    </a>
-                    <a href="article.html" class="pn-link next">
-                        <div class="pn-thumb"><div class="img-ph" style="min-height:0;height:100%;margin:0;border:none;border-radius:0;">封面</div></div>
-                        <div class="pn-body">
-                            <div class="pn-label">下一篇 →</div>
-                            <div class="pn-title">对话式界面的引导,比按钮难十倍</div>
-                        </div>
-                    </a>
-                </div>
-
                 <div class="same-collection">
                     <div class="sc-title">合集 · AI-Native 设计模式</div>
                     <a href="article.html"><span class="sc-num">01</span><span>AI 产品的首屏,正在被重新定义</span></a>
                     <a href="article.html"><span class="sc-num">02</span><span>对话式界面的引导,比按钮难十倍</span></a>
                     <a href="article.html"><span class="sc-num">03</span><span>当 AI 会犯错,界面怎么帮用户兜底</span></a>
-                </div>
-
-                <div class="follow-card">
-                    <img src="../qrcode_for_gzh.jpg" alt="公众号二维码" class="follow-qr">
-                    <div class="follow-text">
-                        <div class="ft-title">关注 VibeUX</div>
-                        <div class="ft-desc">AI 设计研究持续更新,公众号同步发布。扫码不错过下一篇。</div>
-                    </div>
                 </div>
             </footer>
         </article>
