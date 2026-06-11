@@ -402,6 +402,10 @@ body.reading-page .article-body blockquote { border-left-color: #1a1a1a; }
     margin: 0 auto;
     padding: 80px 0 80px;   /* 正文顶部与顶栏间距 80px */
 }
+/* 桌面端:正文整体距顶栏的间距 ×2(80 → 160) */
+@media (min-width: 769px) {
+    .reading-layout { padding-top: 160px; }
+}
 /* 文章列表(左)/ 目录(右)/「文章 ▾」开关一律不展示。
    用 .reading-layout 后代选择器提高特异度,稳定盖过下方 .reader-list{display:flex} 等原三栏样式 */
 .reading-layout .reader-list,
@@ -572,8 +576,8 @@ body.reading-page .article-eyebrow .a-tag {
 .article-h1 {
     /* 字号随视口流动(窄屏自动缩小,减少折行);text-wrap: balance 让多行更均衡,避免末行只剩一个字 */
     font-size: clamp(32px, 7vw, 72px);   /* 手机~32px → 平板流动 → 桌面封顶 72px,全程随屏宽适配 */
-    font-weight: 400;
-    line-height: 1.2;
+    font-weight: 500;
+    line-height: 1.32;
     color: var(--gray-900);
     margin: 0 0 22px;   /* 标题下方间距 ×1.6 */
     letter-spacing: -0.01em;
@@ -603,6 +607,11 @@ body.reading-page .article-eyebrow .a-tag {
     margin-left: auto;
     margin-right: auto;
 }
+/* 桌面端:所有文章详情页标题字重 400 */
+@media (min-width: 769px) {
+    .article-h1 { font-weight: 400; }
+}
+
 /* 标题组内部一律左对齐,覆盖 genie/figma 文章 inline <style> 的居中 */
 body.reading-page .article-h1 { text-align: left; }
 body.reading-page .article-byline { text-align: left; justify-content: flex-start; }
@@ -1011,6 +1020,13 @@ body.reading-page .article-byline { text-align: left; justify-content: flex-star
     justify-content: flex-end;     /* Contact 贴最右 */
 }
 
+/* 折叠容器:桌面用 display:contents —— 不生成盒子,nav-cats / header-right 仍是 .home-nav
+   的直接 flex 子项,上面 order / flex-grow 布局完全不受影响。汉堡按钮桌面隐藏。 */
+.home-nav .nav-collapse { display: contents; }
+.home-nav .nav-toggle { display: none; }
+/* 全屏菜单底部标语:仅手机端模态内出现;桌面(nav-collapse:contents)下会成为顶栏 flex 项,隐藏 */
+.home-nav .nav-modal-footer { display: none; }
+
 /* Design 页:右上角三项 (Writing / Design / Contact) 字号与二级分类 tab 一致 */
 .design-page .home-nav .nav-cat,
 .design-page .home-nav .header-connect { font-size: var(--cat-tab-size); }
@@ -1112,6 +1128,13 @@ body .home-nav .nav-cats .nav-cat.active {
     border: 0;
 }
 
+/* 所有页面顶栏导航文字(Blog / Skills / Contact)统一字重 400 —— 含选中态、所有断点。
+   用 !important 压过各页/各状态遗留的 500 / 600 / 700;仅作用于顶栏,不影响二级筛选 tab。 */
+.header.home-nav .nav-cats .nav-cat,
+.header.home-nav .header-connect {
+    font-weight: 400 !important;
+}
+
 /* 手机:顶栏整体缩小,保证右侧 Writing / Design / 邮箱 三个胶囊完整可见
    (取消大写 VIBEUX 的纵向拉伸与超大字号) */
 @media (max-width: 768px) {
@@ -1176,8 +1199,171 @@ body .home-nav .nav-cats .nav-cat.active {
         margin-top: 0;
         margin-bottom: 8px;
     }
-    /* 手机端不再切换布局:沿用上方均分布局(logo 居左、三项右半三等分)。
-       原「靠右挤一排 + Skills↔Contact 小竖线」整段已删除。 */
+    /* 手机端顶栏:Blog / Skills / Contact 收进右上角汉堡菜单 ---------------- */
+    /* 清掉顶栏的 transform(原本用于上滑隐藏,已停用):transform 会让内部 position:fixed
+       的模态以顶栏为包含块而非视口,导致模态高度被顶栏撑不开、只露第一项。清掉后模态铺满整屏。 */
+    .home-v2 .header.home-nav { transform: none; }
+
+    /* 汉堡按钮:三条黑色横线 */
+    .home-v2 .header.home-nav .nav-toggle {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-end;      /* 三条线靠按钮右侧,整体更贴右 */
+        gap: 4px;
+        width: 40px;
+        height: 40px;
+        margin-left: auto;          /* 顶到最右,紧邻屏幕右边 */
+        padding: 9px 0 9px 8px;     /* 取消右内边距,横线再往右移到按钮右沿 */
+        border: none;
+        background: none;
+        cursor: pointer;
+        order: 9;
+    }
+    .home-v2 .header.home-nav .nav-toggle span {
+        display: block;
+        width: 22px;
+        height: 2px;
+        background: #000;
+        border-radius: 2px;
+        transition: transform 0.25s var(--ease), opacity 0.2s var(--ease);
+    }
+    /* 展开态:三线变叉 */
+    .home-v2 .header.home-nav.nav-open .nav-toggle span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .home-v2 .header.home-nav.nav-open .nav-toggle span:nth-child(2) { opacity: 0; }
+    .home-v2 .header.home-nav.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+    /* 折叠容器:始终参与布局,用 opacity/visibility/transform 做开合动画(不用 display 切换,
+       否则无法过渡)。展开时铺满全屏的浅米色模态,三项从上往下、左对齐。 */
+    .home-v2 .header.home-nav .nav-collapse {
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;                  /* 兜底 */
+        height: 100dvh;                 /* 移动端按可视高度铺满 */
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 36px;                      /* 三项统一行距(见下方 display:contents) */
+        padding: 200px 24px 40px;       /* 顶部留出顶栏 + 更大留白,菜单整体下移 */
+        background: #F9F7F1;
+        z-index: 0;                     /* 低于 logo(1)与汉堡 X(2),其余区域铺满全屏 */
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        /* 收起态:淡出 + 轻微上移、不可点击;visibility 延到淡出结束再隐藏 */
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        pointer-events: none;
+        transition: opacity 0.32s var(--ease), transform 0.32s var(--ease), visibility 0s linear 0.32s;
+    }
+    .home-v2 .header.home-nav.nav-open .nav-collapse {
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        pointer-events: auto;
+        transition: opacity 0.32s var(--ease), transform 0.32s var(--ease), visibility 0s;
+    }
+
+    /* logo 与汉堡(X)浮在模态之上,保持可见、可点击关闭。
+       header-left 必须在此显式给 z-index —— 顶栏内容的 z-index 原本只由
+       body.design-page:not(.writing-page) 赋予,文章详情页(writing-page)不命中,
+       不设则 logo 会被模态(z-index:0)盖住而消失。 */
+    .home-v2 .header.home-nav .header-left,
+    .home-v2 .header.home-nav .nav-toggle { position: relative; z-index: 2; }
+
+    /* 关键:把 nav-cats 与 header-right 收成 display:contents,让 Blog / Skills / Contact
+       成为模态的同级直接 flex 子项,共用同一个 gap → 三项纵向行距严格一致(修复行距不一)。 */
+    .home-v2 .header.home-nav .nav-collapse .nav-cats,
+    .home-v2 .header.home-nav .nav-collapse .header-right {
+        display: contents;
+    }
+
+    /* 三项:字号 56px、细字重、实色深灰、左对齐;入场逐项上移淡入。
+       font-weight 用 !important 压过 index-v2 的全局 body.design-page * { font-weight:400!important } */
+    .home-v2 .header.home-nav .nav-collapse .nav-cat,
+    .home-v2 .header.home-nav .nav-collapse .header-connect {
+        width: auto;
+        justify-content: flex-start;
+        text-align: left;
+        font-size: 72px;
+        line-height: 1;
+        font-weight: 300 !important;
+        color: #1a1a1a;
+        -webkit-tap-highlight-color: transparent;  /* 去掉点击瞬间的蓝色高亮 */
+        -webkit-user-select: none;                  /* iOS Safari 需带前缀 */
+        user-select: none;                          /* 去掉点击/长按出现的蓝色选区 */
+        opacity: 0;
+        transform: translateY(12px);
+        transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
+    }
+    .home-v2 .header.home-nav.nav-open .nav-collapse .nav-cat,
+    .home-v2 .header.home-nav.nav-open .nav-collapse .header-connect {
+        opacity: 1;
+        transform: none;
+    }
+    /* Contact 的文字在内层 .connect-label span 里;首页(非 reading-page)的全局
+       body.design-page:not(.reading-page) * { font-weight:400!important } 会直接命中该 span,
+       使其比 Blog/Skills 粗。这里显式把 span 也压到 300,三项字重一致。 */
+    .home-v2 .header.home-nav .nav-collapse .header-connect .connect-label {
+        font-weight: 300 !important;
+    }
+    /* 展开时三项逐个错开入场 */
+    .home-v2 .header.home-nav.nav-open .nav-collapse .nav-cats .nav-cat:nth-child(1) { transition-delay: 0.08s; }
+    .home-v2 .header.home-nav.nav-open .nav-collapse .nav-cats .nav-cat:nth-child(2) { transition-delay: 0.14s; }
+    .home-v2 .header.home-nav.nav-open .nav-collapse .header-connect { transition-delay: 0.20s; }
+
+    /* 模态底部:细分割线 + 一行(描述贴左、版权贴右),margin-top:auto 推到底部以平衡上方的大字导航 */
+    .home-v2 .header.home-nav .nav-collapse .nav-modal-footer {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;   /* 描述左、版权右 */
+        gap: 16px;
+        width: 100%;
+        margin-top: auto;
+        padding-top: 22px;
+        border-top: 1px solid rgba(0, 0, 0, 0.18);
+        opacity: 0;
+        transform: translateY(12px);
+        transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
+    }
+    .home-v2 .header.home-nav.nav-open .nav-collapse .nav-modal-footer {
+        opacity: 1;
+        transform: none;
+        transition-delay: 0.26s;       /* 在三项之后出现 */
+    }
+    /* 同一行:描述(强,深色,贴左)+ 版权(弱,浅色,贴右)。仅用颜色区分,均不加粗。 */
+    .home-v2 .header.home-nav .nav-collapse .nav-modal-desc,
+    .home-v2 .header.home-nav .nav-collapse .nav-modal-copy {
+        line-height: 1.4;
+        white-space: nowrap;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    .home-v2 .header.home-nav .nav-collapse .nav-modal-desc {
+        font-size: 16px;
+        color: rgba(0, 0, 0, 0.92);     /* 描述:强 */
+    }
+    .home-v2 .header.home-nav .nav-collapse .nav-modal-copy {
+        font-size: 13px;
+        color: rgba(0, 0, 0, 0.38);     /* 版权:弱 */
+    }
+
+    /* 手机端顶栏背景保持透明(让通栏 banner 透出),不出现白底。
+       排除文章详情页(reading-page):其顶栏沿用桌面端的不透明 page-tint 背景,
+       上滑时遮住正文、不透出后面内容。 */
+    body.home-v2:not(.reading-page) .header.home-nav { background: transparent !important; }
+}
+
+/* 模态展开时锁定页面滚动(任意断点生效) */
+body.nav-locked { overflow: hidden; }
+
+/* 降低动效偏好:模态开合改为瞬时(仍保持最终的可见/隐藏态) */
+@media (prefers-reduced-motion: reduce) {
+    .home-v2 .header.home-nav .nav-collapse,
+    .home-v2 .header.home-nav .nav-collapse .nav-cat,
+    .home-v2 .header.home-nav .nav-collapse .header-connect { transition-duration: 0.01ms !important; }
 }
 
 body.home-v2 .header-placeholder { height: 68px; }
@@ -1262,6 +1448,18 @@ body.home-v2 .header-placeholder { height: 68px; }
 .home-v2 .w-date {
     font-family: inherit;
     font-size: 12px;
+}
+
+/* 手机端:封面下方标题 / 简介 / 时间字号各调大一点 */
+@media (max-width: 600px) {
+    /* Writing 卡片(index-v2) */
+    .home-v2 .writing-info .w-title { font-size: 22px; }    /* 20 → 22 */
+    .home-v2 .writing-info .w-excerpt { font-size: 14px; }  /* 13 → 14 */
+    .home-v2 .w-date { font-size: 13px; }                   /* 12 → 13 */
+    /* Skill 卡片(design.html):标题 + 时间 / 门类标签同步调大 */
+    .home-v2 .card-label { font-size: 18px; }               /* 16 → 18 */
+    .home-v2 .card-date,
+    .home-v2 .card-meta .card-tag { font-size: 13px; }      /* 12 → 13 */
 }
 
 /* hover 时封面下面的文字整体变灰 */
@@ -1488,7 +1686,7 @@ body.writing-page .brand-banner-grid {
 }
 /* 手机:banner 单独适配,降低高度;banner 与下方二级筛选条之间不留间距(桌面端保留间距) */
 @media (max-width: 600px) {
-    .design-banner-frame { height: 400px; margin-bottom: 0; }
+    .design-banner-frame { height: 600px; margin-bottom: 0; }
 }
 
 /* 顶栏在所有断点固定同一套内边距(高度恒定),避免页面切换 / 跨断点时跳动 */

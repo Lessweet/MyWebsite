@@ -25,32 +25,38 @@
     width: 100%;
     height: 100%;
   }
+  /* 顶部 hero(非 bare):流沙渐变整体 50% 透明,叠在页面底色上更轻盈;
+     bare 模式(顶栏背景层)不受影响,仍为满不透明 */
+  html:not(.bare) .gradient-stage { background: #FDFBF6; }
+  html:not(.bare) #mesh-canvas { opacity: 0.5; }
   /* 渐变上叠加 VIBEUX 释义:拆成两组 —— 左组(VIB)贴左下角,右组(EUX)贴右下角 */
   .banner-words {
     position: absolute;
     inset: 0;
     z-index: 2;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 15px;
+    font-size: 18px;
     font-weight: 400;
     letter-spacing: 0.01em;
     color: rgba(0, 0, 0, 0.92);
     pointer-events: none;
     user-select: none;
   }
-  /* 底部署名:单行,贴左下角,左对齐(桌面 / 手机一致,左边缘与页面内容/顶栏 logo 对齐) */
+  /* 署名:贴右下角,右对齐(右边缘与页面内容右侧对齐),与左下角主标题左右平衡 */
   .banner-words .bw-group {
     position: absolute;
-    left: max(24px, calc((100% - 1280px) / 2));
+    right: max(24px, calc((100% - 1280px) / 2));
     bottom: clamp(20px, 4vw, 40px);
     display: flex;
     align-items: center;
+    justify-content: flex-end;
+    text-align: right;
     gap: 8px 16px;
   }
   /* 前缀降透明度,名字为纯黑 */
-  .banner-words .bw { font-weight: 400; color: rgba(0, 0, 0, 0.5); }
-  .banner-words .bw b { font-weight: 400; color: #000; }
-  .banner-words .bw-role { font-size: 0.88em; color: rgba(0, 0, 0, 0.5); }
+  .banner-words .bw { font-weight: 300; color: rgba(0, 0, 0, 0.5); }
+  .banner-words .bw b { font-weight: 300; color: #000; }
+  .banner-words .bw-role { font-size: 0.88em; font-weight: 300; color: rgba(0, 0, 0, 0.5); }
   /* 头像:圆形,展示在文字左边,尺寸随字号(em)缩放 */
   .banner-words .bw-byline { gap: 0.72em; align-items: center; }
   .banner-words .bw-avatar {
@@ -65,8 +71,28 @@
   .banner-words .bw-meta {
     display: flex;
     flex-direction: column;
+    align-items: flex-start;   /* 两行自身左对齐(整块仍贴右下角,右侧参差) */
+    text-align: left;
     gap: 0.32em;
     line-height: 1.15;
+  }
+  /* 主标题:贴左下角;与右下角署名共用同一条底边 —— 左标题、右署名左右平衡。
+     两行;首行为旧范式(降透明度),次行强调「AI-Native Design」(纯黑),呼应「辅助→原生」的转变 */
+  .banner-words .bw-headline {
+    position: absolute;
+    left: max(24px, calc((100% - 1280px) / 2));
+    bottom: clamp(20px, 4vw, 40px);
+    margin: 0;
+    font-size: clamp(36px, 7.6vw, 104px);
+    font-weight: 300;
+    line-height: 1.16;
+    letter-spacing: -0.015em;
+    color: rgba(0, 0, 0, 0.45);
+  }
+  .banner-words .bw-headline .accent { color: #000; }
+  /* 手机端:署名沿用右下角定位;slogan 抬高避让,并进一步放大字号 */
+  @media (max-width: 600px) {
+    .banner-words .bw-headline { bottom: 88px; font-size: clamp(42px, 13vw, 60px); }
   }
   /* bare 模式(?bare=1):只要流沙渐变,不要 VIBEUX 释义文字 —— 用作顶栏背景层 */
   html.bare .banner-words { display: none; }
@@ -84,7 +110,8 @@
 <body>
 <div class="gradient-stage" id="gradient-stage">
   <canvas id="mesh-canvas" aria-hidden="true"></canvas>
-  <div class="banner-words" aria-label="By Tongrong, UI Designer">
+  <div class="banner-words" aria-label="From AI-Assisted to AI-Native Design. By Tongrong, UI Designer">
+    <h2 class="bw-headline">From AI-Assisted<br>to <span class="accent">AI-Native Design.</span></h2>
     <div class="bw-group bw-byline">
       <span class="bw-avatar" role="img" aria-label="Tongrong 头像">
         <img alt="" src="writing/assets/tongrong-avatar.svg?v=2">
