@@ -564,10 +564,10 @@ body.reading-page .article-eyebrow {
 }
 body.reading-page .article-eyebrow .a-tag {
     background: none;
-    border: 1px solid #1a1a1a;
+    border: 0.6px solid #1a1a1a;
     border-radius: 6px;          /* 圆角矩形 */
     padding: 4px 11px;
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 400;
     color: #1a1a1a;
     line-height: 1.2;
@@ -575,9 +575,9 @@ body.reading-page .article-eyebrow .a-tag {
 
 .article-h1 {
     /* 字号随视口流动(窄屏自动缩小,减少折行);text-wrap: balance 让多行更均衡,避免末行只剩一个字 */
-    font-size: clamp(32px, 7vw, 72px);   /* 手机~32px → 平板流动 → 桌面封顶 72px,全程随屏宽适配 */
+    font-size: 48px;   /* 文章标题固定 48px(桌面/手机统一) */
     font-weight: 500;
-    line-height: 1.32;
+    line-height: 1.2;
     color: var(--gray-900);
     margin: 0 0 22px;   /* 标题下方间距 ×1.6 */
     letter-spacing: -0.01em;
@@ -607,10 +607,8 @@ body.reading-page .article-eyebrow .a-tag {
     margin-left: auto;
     margin-right: auto;
 }
-/* 桌面端:所有文章详情页标题字重 400 */
-@media (min-width: 769px) {
-    .article-h1 { font-weight: 400; }
-}
+/* H1 在 .article-h1 基准已固定 56px / 字重 500 / 行高 1.4,桌面与手机统一,无需断点覆盖。
+   tag、byline 维持基准值(手机端有单独的尺寸/内边距微调,见下方 ≤600 段)。 */
 
 /* 标题组内部一律左对齐,覆盖 genie/figma 文章 inline <style> 的居中 */
 body.reading-page .article-h1 { text-align: left; }
@@ -622,7 +620,7 @@ body.reading-page .article-byline { text-align: left; justify-content: flex-star
     body.reading-page .article-byline { margin-bottom: 40px; }
     /* 标签组:手机端字号/内边距/间距同步收小,与缩小后的标题比例协调 */
     body.reading-page .article-eyebrow { gap: 6px; margin-bottom: 14px; }
-    body.reading-page .article-eyebrow .a-tag { font-size: 12px; padding: 3px 9px; border-radius: 5px; }
+    body.reading-page .article-eyebrow .a-tag { padding: 3px 9px; border-radius: 5px; }   /* 字号不覆盖,与桌面统一 15px */
 }
 
 .article-cover {
