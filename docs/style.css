@@ -34,6 +34,23 @@
     --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
     /* 入场/淡入专用:更柔和、自然的缓动(平滑减速到停) */
     --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+
+    /* ============================================================
+       全站字号 scale —— 5 级,按 HTML 元素/角色命名,桌面/手机统一(只维护这一处)
+       --fs-h1      52px  <h1> 大标题(文章/页面 hero)
+       --fs-h2      32px  <h2> 小标题(章节)
+       --fs-h3      22px  卡片标题(标题类,h3 级)
+       --fs-p       18px  <p> 正文 / 二级 tab
+       --fs-caption 14px  小字:简介 / 日期 / tag / 图注 / byline / meta(无单一标签)
+       说明:--fs = font-size。文章正文是 inline 样式(还要兼容公众号,不能用 var),
+             其字号按本表字面值(18 / 32 / 14)手动对齐。
+       顶栏导航(Blog/Cases/Contact)目前不在本 scale —— 单独的响应式 clamp(13→28px)。
+       ============================================================ */
+    --fs-h1: 52px;
+    --fs-h2: 32px;
+    --fs-h3: 22px;
+    --fs-p: 18px;
+    --fs-caption: 14px;
 }
 
 html {
@@ -61,7 +78,7 @@ a {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 32px max(20px, calc((100% - 1040px) / 2));
+    padding: 24px max(20px, calc((100% - 1040px) / 2));
     gap: 64px 24px;
     flex-wrap: wrap;
     position: fixed;
@@ -396,7 +413,7 @@ a {
 
 .section-divider h2 {
     margin: 0 0 8px;
-    font-size: 32px;
+    font-size: var(--fs-h2);   /* 32px */
     line-height: 1.2;
     font-weight: 650;
     color: var(--gray-900);
@@ -1534,7 +1551,7 @@ a {
 
 @media (max-width: 800px) {
     .header {
-        padding: 24px 20px;
+        padding: 16px 20px;
         gap: 12px;
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;

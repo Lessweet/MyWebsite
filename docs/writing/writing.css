@@ -212,7 +212,7 @@ body.design-page:not(.reading-page) * { font-weight: 400 !important; }
 .article-main { flex: 1; min-width: 0; }
 
 .article-item .a-title {
-    font-size: 19px;
+    font-size: var(--fs-h3);   /* 列表标题 22px */
     font-weight: 600;
     color: var(--gray-900);
     line-height: 1.35;
@@ -223,7 +223,7 @@ body.design-page:not(.reading-page) * { font-weight: 400 !important; }
 
 .article-item .a-excerpt {
     margin-top: 7px;
-    font-size: 14px;
+    font-size: var(--fs-caption);   /* 14px */
     color: var(--gray-600);
     line-height: 1.6;
     display: -webkit-box;
@@ -242,7 +242,7 @@ body.design-page:not(.reading-page) * { font-weight: 400 !important; }
 
 .article-item .a-date {
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: var(--fs-caption);   /* 14px */
     color: #969696;
 }
 
@@ -253,7 +253,7 @@ body.design-page:not(.reading-page) * { font-weight: 400 !important; }
 }
 
 .a-tag {
-    font-size: 12px;
+    font-size: var(--fs-caption);   /* 14px */
     color: var(--gray-600);
     background: var(--gray-100);
     padding: 3px 9px;
@@ -567,7 +567,7 @@ body.reading-page .article-eyebrow .a-tag {
     border: 0.6px solid #1a1a1a;
     border-radius: 6px;          /* 圆角矩形 */
     padding: 4px 11px;
-    font-size: 15px;
+    font-size: var(--fs-caption);   /* 14px */
     font-weight: 400;
     color: #1a1a1a;
     line-height: 1.2;
@@ -575,8 +575,8 @@ body.reading-page .article-eyebrow .a-tag {
 
 .article-h1 {
     /* 字号随视口流动(窄屏自动缩小,减少折行);text-wrap: balance 让多行更均衡,避免末行只剩一个字 */
-    font-size: 48px;   /* 文章标题固定 48px(桌面/手机统一) */
-    font-weight: 500;
+    font-size: var(--fs-h1);   /* 大标题 52px */
+    font-weight: 400;
     line-height: 1.2;
     color: var(--gray-900);
     margin: 0 0 22px;   /* 标题下方间距 ×1.6 */
@@ -586,7 +586,7 @@ body.reading-page .article-eyebrow .a-tag {
 
 .article-byline {
     font-family: var(--font-mono);
-    font-size: 13px;
+    font-size: var(--fs-caption);   /* 14px */
     color: #969696;
     display: flex;
     align-items: center;
@@ -607,8 +607,11 @@ body.reading-page .article-eyebrow .a-tag {
     margin-left: auto;
     margin-right: auto;
 }
-/* H1 在 .article-h1 基准已固定 56px / 字重 500 / 行高 1.4,桌面与手机统一,无需断点覆盖。
-   tag、byline 维持基准值(手机端有单独的尺寸/内边距微调,见下方 ≤600 段)。 */
+/* H1 基准 = --fs-h1(52px,手机端);桌面端单独放大到 68px */
+@media (min-width: 769px) {
+    .article-h1 { font-size: 68px; }
+}
+/* tag、byline 维持基准值(手机端有单独的尺寸/内边距微调,见下方 ≤600 段)。 */
 
 /* 标题组内部一律左对齐,覆盖 genie/figma 文章 inline <style> 的居中 */
 body.reading-page .article-h1 { text-align: left; }
@@ -634,9 +637,9 @@ body.reading-page .article-byline { text-align: left; justify-content: flex-star
 
 .article-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-/* 正文排版:窄列、大字、松行距 */
+/* 正文排版:窄列、大字、松行距(兜底;文章 inline 样式会覆盖具体值,但字号对齐 token) */
 .article-body {
-    font-size: 18px;
+    font-size: var(--fs-p);   /* 18px */
     line-height: 1.8;
     color: #2b2b2e;
 }
@@ -648,7 +651,7 @@ body.reading-page .article-byline { text-align: left; justify-content: flex-star
 .article-body strong { font-weight: 650; color: var(--gray-900); }
 
 .article-body h2 {
-    font-size: 24px;
+    font-size: var(--fs-h2);   /* 32px */
     font-weight: 400;
     line-height: 1.3;
     color: var(--gray-900);
@@ -657,7 +660,7 @@ body.reading-page .article-byline { text-align: left; justify-content: flex-star
 }
 
 .article-body h3 {
-    font-size: 19px;
+    font-size: var(--fs-h3);   /* 22px */
     font-weight: 400;
     color: var(--gray-900);
     margin: 1.5em 0 0.5em;
@@ -759,7 +762,7 @@ body.reading-page .article-byline { text-align: left; justify-content: flex-star
     margin-bottom: 6px;
 }
 .pn-title {
-    font-size: 15px;
+    font-size: var(--fs-p);   /* 18px */
     font-weight: 600;
     color: var(--gray-900);
     line-height: 1.4;
@@ -782,7 +785,7 @@ body.reading-page .article-byline { text-align: left; justify-content: flex-star
     gap: 12px;
     padding: 10px 0;
     border-bottom: 1px solid var(--gray-100);
-    font-size: 14px;
+    font-size: var(--fs-caption);   /* 14px */
     color: var(--gray-700);
     transition: color 0.2s ease;
 }
@@ -811,13 +814,13 @@ body.reading-page .article-byline { text-align: left; justify-content: flex-star
     object-fit: cover;
 }
 .follow-card .follow-text .ft-title {
-    font-size: 16px;
+    font-size: var(--fs-p);   /* 18px */
     font-weight: 600;
     color: var(--gray-900);
     margin-bottom: 6px;
 }
 .follow-card .follow-text .ft-desc {
-    font-size: 13px;
+    font-size: var(--fs-caption);   /* 14px */
     color: var(--gray-600);
     line-height: 1.6;
 }
@@ -827,7 +830,7 @@ body.reading-page .article-byline { text-align: left; justify-content: flex-star
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 14px;
+    font-size: var(--fs-caption);   /* 14px */
     font-weight: 500;
     color: var(--gray-500);
     transition: color 0.2s ease;
@@ -840,7 +843,6 @@ body.reading-page .article-byline { text-align: left; justify-content: flex-star
 @media (max-width: 620px) {
     .article-item { gap: 16px; }
     .article-thumb { flex-basis: 96px; width: 96px; height: 68px; }
-    .article-body { font-size: 17px; }
     .article-prevnext { grid-template-columns: 1fr; }
     .follow-card { flex-direction: column; text-align: center; }
 }
@@ -849,7 +851,7 @@ body.reading-page .article-byline { text-align: left; justify-content: flex-star
    原因 = style.css 800px 断点把 header padding 从 32px 改成 24px + 切 grid 两行布局。
    这里强制 writing-page 的 home-nav 在所有断点保持一致：固定 padding + flex 单行 + 不参与 grid。 */
 .writing-page .header.home-nav {
-    padding: 24px max(24px, calc((100% - 1280px) / 2)) !important;   /* 与列表页同高:上下 24px */
+    padding: 16px max(24px, calc((100% - 1280px) / 2)) !important;   /* 顶栏高度减少:上下 16px */
     flex-wrap: nowrap !important;
     grid-template-columns: none !important;
     grid-template-rows: none !important;
@@ -871,6 +873,8 @@ body.reading-page .article-byline { text-align: left; justify-content: flex-star
     align-items: center;        /* logo 与右侧 Blog/Skills/Contact 同处水平中线(垂直居中对齐) */
     justify-content: space-between;
     gap: 16px;
+    /* 固定高度 → 桌面 / 移动严格等高(box-sizing:border-box,height 含 padding,内容垂直居中) */
+    height: 64px;
 }
 .home-nav .header-left,
 .home-nav .header-right {
@@ -947,7 +951,7 @@ body.reading-page .article-byline { text-align: left; justify-content: flex-star
 /* logo 高度与右侧 Blog/Skills/Contact 三项同走 3.4vw、桌面同样封顶 36px;
    但兜底抬到 20px(原 12px):字标是品牌,手机端不跟着文字缩到那么小,保持可读。
    仅影响 ≤~588px(3.4vw < 20)的手机端,桌面/平板与三项文字仍逐像素同步。 */
-.design-page .site-wordmark { height: clamp(28px, 4.5vw, 48px); }
+.design-page .site-wordmark { height: clamp(22px, 3.6vw, 38px); }
 
 /* 顶栏三段式:左 = 分类(Writing/Design),中 = VIBEUX 字标,右 = Contact。
    左右两组 flex:1 等宽,把中间字标挤到正中。 */
@@ -1098,6 +1102,15 @@ body .home-nav .header-connect {
     color: rgba(0, 0, 0, 0.3);
     padding: 0;                  /* 文字本身不加左右内边距 */
     letter-spacing: 0;           /* 不加字间距 */
+}
+/* 桌面端(≥801,与顶栏布局断点一致):顶栏 3 个 tab 固定为 h3(22px);移动端仍用上面的响应式 clamp */
+@media (min-width: 801px) {
+    body.design-page .home-nav .nav-cat,
+    body.design-page .home-nav .header-connect,
+    body .home-nav .nav-cat,
+    body .home-nav .header-connect {
+        font-size: var(--fs-h3);
+    }
 }
 /* 选中(当前页)= 100% 不透明,且不加粗。
    特异性 (0,4,1) 压过后面 .design-page .home-nav .nav-cats .nav-cat.active(0,4,0)的 font-weight:700 / color */
@@ -1320,6 +1333,7 @@ body .home-nav .nav-cats .nav-cat.active {
         gap: 16px;
         width: 100%;
         margin-top: auto;
+        margin-bottom: 120px;             /* 从底部整体上移 120px */
         padding-top: 22px;
         border-top: 1px solid rgba(0, 0, 0, 0.18);
         opacity: 0;
@@ -1340,7 +1354,7 @@ body .home-nav .nav-cats .nav-cat.active {
         user-select: none;
     }
     .home-v2 .header.home-nav .nav-collapse .nav-modal-desc {
-        font-size: 16px;
+        font-size: var(--fs-p);          /* 正文 18px */
         color: rgba(0, 0, 0, 0.92);     /* 描述:强 */
     }
     .home-v2 .header.home-nav .nav-collapse .nav-modal-copy {
@@ -1409,7 +1423,7 @@ body.home-v2 .header-placeholder { height: 68px; }
 /* Blog 卡片:封面下方文字块宽度 = 封面宽度的 90%,与封面左对齐(右侧留 10%) */
 .home-v2 .writing-info { width: 90%; margin-left: 0; margin-right: auto; }
 .writing-info .w-title {
-    font-size: 20px;          /* Blog 文章标题字号 */
+    font-size: var(--fs-h3);   /* 卡片标题 22px */
     font-weight: 600;
     color: var(--gray-900);
     line-height: 1.4;
@@ -1417,12 +1431,12 @@ body.home-v2 .header-placeholder { height: 68px; }
 }
 /* Design 页网格卡片小标题与 Writing 页(.w-title)字号/字重一致(桌面 + 手机统一) */
 .home-v2 .card-label {
-    font-size: 16px;
+    font-size: var(--fs-h3);   /* 卡片标题 22px */
     font-weight: 600;
     line-height: 1.4;
 }
 .writing-info .w-excerpt {
-    font-size: 13px;
+    font-size: var(--fs-caption);   /* 简介 14px */
     color: var(--gray-600);
     line-height: 1.6;
     display: -webkit-box;
@@ -1433,32 +1447,22 @@ body.home-v2 .header-placeholder { height: 68px; }
 }
 .writing-info .w-date {
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: var(--fs-caption);   /* 14px */
     color: #969696;
     transition: color 0.3s ease;
 }
 /* Design 页作品卡片日期保持等宽(否则会被 body.home-v2 * 的 Helvetica 覆盖) */
 .home-v2 .card-date {
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: var(--fs-caption);   /* 14px */
 }
 /* 首页文章卡片日期改用默认字体(非等宽) */
 .home-v2 .w-date {
     font-family: inherit;
-    font-size: 12px;
+    font-size: var(--fs-caption);   /* 14px */
 }
 
-/* 手机端:封面下方标题 / 简介 / 时间字号各调大一点 */
-@media (max-width: 600px) {
-    /* Writing 卡片(index-v2) */
-    .home-v2 .writing-info .w-title { font-size: 22px; }    /* 20 → 22 */
-    .home-v2 .writing-info .w-excerpt { font-size: 14px; }  /* 13 → 14 */
-    .home-v2 .w-date { font-size: 13px; }                   /* 12 → 13 */
-    /* Skill 卡片(design.html):标题 + 时间 / 门类标签同步调大 */
-    .home-v2 .card-label { font-size: 18px; }               /* 16 → 18 */
-    .home-v2 .card-date,
-    .home-v2 .card-meta .card-tag { font-size: 13px; }      /* 12 → 13 */
-}
+/* 卡片字号(标题/简介/时间)已统一走 :root 字号 token,桌面/手机一致,无需断点覆盖 */
 
 /* hover 时封面下面的文字整体变灰 */
 .card-wrapper:hover .writing-info .w-title { color: var(--gray-500); }
@@ -1784,12 +1788,7 @@ body.reading-page .header.home-nav::after {
    覆盖两页两种标签(design.html 用 a、index-v2 用 button);顶栏 Blog/Skills 是 .nav-cats 内的
    .nav-cat,不受影响,也不改共用的 --cat-tab-size token。 */
 .design-menu a.nav-cat,
-.design-menu button.nav-cat { font-size: 24px; }
-/* 手机端缩小,避免 24px 过大 */
-@media (max-width: 600px) {
-    .design-menu a.nav-cat,
-    .design-menu button.nav-cat { font-size: 16px; }
-}
+.design-menu button.nav-cat { font-size: var(--fs-p); }   /* 二级 tab 18px(桌面/手机统一) */
 
 .design-menu .nav-cat:hover { color: var(--gray-900); }
 .design-menu .nav-cat.active {
@@ -1838,9 +1837,9 @@ body.reading-page .header.home-nav::after {
     border-top: none;
 }
 
-/* Design 页模块小标题:字号放大 + 粗体 */
+/* Design 页模块小标题:走统一 --fs-h2(桌面/手机一致),粗体 */
 .design-page .design-content .section-divider h2 {
-    font-size: 27px;
+    font-size: var(--fs-h2);   /* 32px */
     font-weight: 650;
 }
 .design-page .design-content .section-divider h2 .heading-icon svg {
@@ -1857,7 +1856,6 @@ body.reading-page .header.home-nav::after {
         gap: 7px;
     }
     .design-menu .nav-cat .menu-icon svg { width: 24px; height: 24px; }
-    .design-page .design-content .section-divider h2 { font-size: 20px; }
     .design-page .design-content .section-divider h2 .heading-icon svg {
         width: 29px;
         height: 29px;

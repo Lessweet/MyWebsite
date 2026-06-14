@@ -114,7 +114,7 @@ function initSiteNav() {
         '<div class="nav-collapse" id="nav-collapse">' +
             '<nav class="nav-cats" aria-label="分类">' +
                 '<a href="' + base + 'index-v2.html#writing" class="' + a('writing') + '">' + I(pencil) + 'Blog</a>' +
-                '<a href="' + base + 'design.html" class="' + a('design') + '">' + I(design) + 'Skills</a>' +
+                '<a href="' + base + 'design.html" class="' + a('design') + '">' + I(design) + 'Cases</a>' +
             '</nav>' +
             '<div class="header-right">' +
                 '<a href="mailto:chentongrong1@gmail.com" class="header-connect" title="chentongrong1@gmail.com" aria-label="Contact">' +
