@@ -874,7 +874,7 @@ body.reading-page .article-byline { text-align: left; justify-content: flex-star
     justify-content: space-between;
     gap: 16px;
     /* 固定高度 → 桌面 / 移动严格等高(box-sizing:border-box,height 含 padding,内容垂直居中) */
-    height: 64px;
+    height: 72px;
 }
 .home-nav .header-left,
 .home-nav .header-right {
@@ -1335,7 +1335,7 @@ body .home-nav .nav-cats .nav-cat.active {
         margin-top: auto;
         margin-bottom: 120px;             /* 从底部整体上移 120px */
         padding-top: 22px;
-        border-top: 1px solid rgba(0, 0, 0, 0.18);
+        border-top: 1px solid #000;
         opacity: 0;
         transform: translateY(12px);
         transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
@@ -1372,8 +1372,8 @@ body.nav-locked { overflow: hidden; }
     .home-v2 .header.home-nav .nav-collapse .header-connect { transition-duration: 0.01ms !important; }
 }
 
-body.home-v2 .header-placeholder { height: 68px; }
-@media (max-width: 800px) { body.home-v2 .header-placeholder { height: 132px; } }
+body.home-v2 .header-placeholder { height: 76px; }
+@media (max-width: 800px) { body.home-v2 .header-placeholder { height: 140px; } }
 
 /* 模块锚点偏移(避开 fixed header) */
 .home-section { scroll-margin-top: 120px; }
@@ -1415,7 +1415,7 @@ body.home-v2 .header-placeholder { height: 68px; }
 
 .writing-info { align-items: flex-start; text-align: left; gap: 12px; }
 /* Blog 卡片:封面下方文字块宽度 = 封面宽度的 90%,与封面左对齐(右侧留 10%) */
-.home-v2 .writing-info { width: 90%; margin-left: 0; margin-right: auto; }
+.home-v2 .writing-info { width: 100%; margin-left: 0; margin-right: auto; }
 .writing-info .w-title {
     font-size: var(--fs-h3);   /* 卡片标题 22px */
     font-weight: 600;
@@ -1642,14 +1642,17 @@ body.writing-page .brand-banner-grid {
    ======================================== */
 .home-v2 .category-grid { column-gap: 16px; }
 
-/* Writing 列表网格:固定 3 列铺满内容区(与上方 banner 同宽对齐),整体随页面缩放,
-   不在中间断点改列数(避免列数跳变导致卡片忽大忽小);仅手机单列。
+/* Writing 列表网格:>900px 3 列 → ≤900px 2 列 → ≤560px 1 列。
    用 id 选择器提权,覆盖上面 .category-grid 的 860/620 断点规则;仅作用于 Writing 列表,不影响 Design 页。 */
 #writing-all .category-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     column-gap: 24px;   /* 首页横向间距在 16px 基础上 +8px;不影响 Design 页 */
 }
-/* 中途不改列数(3 列随页面等比缩小,避免列数跳变导致忽大忽小);仅手机单列。单列时纵向间距 ×2 */
+/* ≤900px:两列(放在 560 规则之前,确保 ≤560 时下面的单列生效) */
+@media (max-width: 900px) {
+    #writing-all .category-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+/* ≤560px:单列,纵向间距 ×2 */
 @media (max-width: 560px) {
     #writing-all .category-grid { grid-template-columns: 1fr; row-gap: 48px; }
 }

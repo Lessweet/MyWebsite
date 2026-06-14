@@ -58,14 +58,14 @@
   .banner-words .bw b { font-weight: 300; color: #000; }
   .banner-words .bw-role { font-size: 0.88em; font-weight: 300; color: rgba(0, 0, 0, 0.5); }
   /* 头像:圆形,展示在文字左边,尺寸随字号(em)缩放 */
-  .banner-words .bw-byline { gap: 0.72em; align-items: center; }
+  .banner-words .bw-byline { gap: 0.72em; align-items: center; font-size: 15px; }
   .banner-words .bw-avatar {
-    width: 3em;
-    height: 3em;
+    width: 1.9em;
+    height: 1.9em;
     flex: 0 0 auto;
     border-radius: 50%;
     overflow: hidden;
-    display: none;   /* 暂时隐藏头像,保留结构待启用 */
+    display: block;   /* 展示黑白头像,位于右下角署名左侧 */
   }
   .banner-words .bw-avatar img { display: block; width: 100%; height: 100%; object-fit: cover; }
   .banner-words .bw-meta {
@@ -90,9 +90,16 @@
     color: rgba(0, 0, 0, 0.45);
   }
   .banner-words .bw-headline .accent { color: #000; }
-  /* 手机端:署名沿用右下角定位;slogan 抬高避让,并进一步放大字号 */
-  @media (max-width: 600px) {
+  /* ≤900px:slogan 抬高避让并放大字号;署名组整体左对齐、靠左下角布局(头像在左、文字左对齐)。
+     与小屏(≤560 单列)同一套布局 —— 标题+署名这组在 ≤900 就切到这套。 */
+  @media (max-width: 900px) {
     .banner-words .bw-headline { bottom: 88px; font-size: clamp(42px, 13vw, 60px); }
+    .banner-words .bw-group {
+      left: max(24px, calc((100% - 1280px) / 2));
+      right: auto;
+      justify-content: flex-start;
+      text-align: left;
+    }
   }
   /* bare 模式(?bare=1):只要流沙渐变,不要 VIBEUX 释义文字 —— 用作顶栏背景层 */
   html.bare .banner-words { display: none; }
