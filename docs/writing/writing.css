@@ -1345,21 +1345,15 @@ body .home-nav .nav-cats .nav-cat.active {
         transform: none;
         transition-delay: 0.26s;       /* 在三项之后出现 */
     }
-    /* 同一行:描述(强,深色,贴左)+ 版权(弱,浅色,贴右)。仅用颜色区分,均不加粗。 */
+    /* 分割线下两行(描述 + 版权):字号、颜色统一,均不加粗。 */
     .home-v2 .header.home-nav .nav-collapse .nav-modal-desc,
     .home-v2 .header.home-nav .nav-collapse .nav-modal-copy {
         line-height: 1.4;
         white-space: nowrap;
         -webkit-user-select: none;
         user-select: none;
-    }
-    .home-v2 .header.home-nav .nav-collapse .nav-modal-desc {
-        font-size: var(--fs-p);          /* 正文 18px */
-        color: rgba(0, 0, 0, 0.92);     /* 描述:强 */
-    }
-    .home-v2 .header.home-nav .nav-collapse .nav-modal-copy {
-        font-size: 13px;
-        color: rgba(0, 0, 0, 0.38);     /* 版权:弱 */
+        font-size: var(--fs-p);          /* 18px,两行一致 */
+        color: rgba(0, 0, 0, 0.92);     /* 颜色一致 */
     }
 
     /* 手机端顶栏背景保持透明(让通栏 banner 透出),不出现白底。
@@ -1794,7 +1788,9 @@ body.reading-page .header.home-nav::after {
 .design-menu .nav-cat.active {
     color: var(--gray-900);
     font-weight: 600;
-    border-bottom-color: var(--gray-900);
+    /* 选中下划线:Figma 素材的紫→蓝→绿线性渐变(border 不支持渐变,用 border-image)
+       border-image 会忽略 border-radius,但本就是直角下划线,无影响 */
+    border-image: linear-gradient(90deg, rgba(214,166,255,1) 0%, rgba(136,172,255,1) 50%, rgba(74,191,127,1) 100%) 1;
 }
 .design-menu .nav-cat.active .menu-icon svg { fill: currentColor; }
 

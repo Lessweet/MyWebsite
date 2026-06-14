@@ -9,9 +9,9 @@
 |---|---|---|---|
 | `--fs-h1` | 52px | `<h1>` 大标题 | 文章标题 `.article-h1`(**特例:桌面 ≥769px 单独放大到 68px**,移动端 52) |
 | `--fs-h2` | 32px | `<h2>` 小标题 | 文章章节 `.article-body h2`、Design/Writing 页模块标题 `.section-divider h2` |
-| `--fs-h3` | 22px | 卡片标题(h3 级) | 首页卡片 `.w-title`、design 卡片 `.card-label`、文章列表标题 `.a-title`、文章内 `.article-body h3` |
+| `--fs-h3` | 24px | 卡片标题(h3 级) | 首页卡片 `.w-title`、design 卡片 `.card-label`、文章列表标题 `.a-title`、文章内 `.article-body h3` |
 | `--fs-p` | 18px | `<p>` 正文 | 文章正文 / highlight、二级 tab `.design-menu .nav-cat`、桌面顶栏导航(≥801)、页脚 `.pn-title`/`.ft-title`、菜单底部 `.nav-modal-desc` |
-| `--fs-caption` | 14px | 小字(无单一标签) | 简介 `.w-excerpt/.a-excerpt`、日期 `.w-date/.card-date/.a-date`、tag `.a-tag`、图注 `.img-caption`、byline、`.same-collection`、`.ft-desc`、`.back-link` |
+| `--fs-caption` | 16px | 小字(无单一标签) | 简介 `.w-excerpt/.a-excerpt`、日期 `.w-date/.card-date/.a-date`、tag `.a-tag`、图注 `.img-caption`、byline、`.same-collection`、`.ft-desc`、`.back-link` |
 
 用法:`font-size: var(--fs-p);`
 
