@@ -32,11 +32,13 @@
   来源在 article-template skill:`render.py`(网站生成)+ `template.html`(公众号)+ `SKILL.md`(规范表)。
 - 改了规范后,**已发布的老文章不会自动更新**,需重新跑同步或手动改对应 `writing/article-{slug}.html`。
 
-## 字重 / 行高(配套)
+## 字重 token(与字号一套,`:root` 维护)
 
-| 角色 | 字重 | 行高 |
+| Token | 值 | 用途 |
 |---|---|---|
-| H1 | 400 | 1.2 |
-| H2 | 500 | 1.2 |
-| 正文 / highlight | 300 | 1.4 |
-| `<strong>` | 400(不加粗) | — |
+| `--fw-normal` | 400 | 正文 / UI 常规 |
+| `--fw-bold` | 500 | 标题层级「加粗一档」(h1/h2/h3 + 卡片标题 `.w-title`/`.card-label` + `.article-h1`) |
+
+- 列表页(Blog/Skills)基调:`* → var(--fw-normal)`,标题层级 `→ var(--fw-bold)`(`writing.css` 顶部那条规则)。
+- 文章正文 inline 样式按字面值对齐(h2 500 = --fw-bold、正文 300、`<strong>` 400 不加粗)。
+- 行高:标题 1.2、正文 / highlight 1.4(目前直接写值,未 token 化)。

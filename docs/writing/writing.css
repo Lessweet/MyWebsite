@@ -22,11 +22,12 @@
 :root { --cat-tab-size: 16px; }
 @media (max-width: 600px) { :root { --cat-tab-size: 14px; } }
 
-/* Blog(index-v2)与 Skills(design.html)两页:所有文字字重上限 400 ——
-   二级筛选 tab、作品标题、Skills 分组小标题等原本 600/650/680 的一律压到 400,页面不出现任何加粗。
-   排除文章详情页(reading-page),其正文标题层级仍保留。 */
+/* Blog(index-v2)与 Skills(design.html)两页字重基调:正文 / UI 一律常规 400,
+   仅「标题层级」加粗一档 = 500 —— h1/h2/h3 + 卡片标题(.w-title / .card-label)。
+   原本散落的 600/650/680 统一收成 500,既不全平也不杂乱。排除文章详情页(reading-page)。 */
 body.design-page:not(.reading-page),
-body.design-page:not(.reading-page) * { font-weight: 400 !important; }
+body.design-page:not(.reading-page) * { font-weight: var(--fw-normal) !important; }
+body.design-page:not(.reading-page) :is(h1, h2, h3, .w-title, .card-label) { font-weight: var(--fw-bold) !important; }
 
 /* ---------- 顶层支柱切换(header-center 内) ---------- */
 .pillar-nav {
@@ -552,7 +553,7 @@ body.reading-page .article-body blockquote { border-left-color: #1a1a1a; }
 .reader-thumb-ph { font-size: var(--fs-caption); color: var(--gray-400); }
 .reader-text { order: 2; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
 .reader-title {
-    font-size: var(--fs-mini);   /* 12px(2 行截断) */
+    font-size: var(--fs-body);   /* 16px(2 行截断) */
     line-height: 1.4;
     font-weight: 550;
     color: var(--gray-900);
@@ -653,7 +654,7 @@ body.reading-page .article-eyebrow .a-tag {
 .article-h1 {
     /* 字号随视口流动(窄屏自动缩小,减少折行);text-wrap: balance 让多行更均衡,避免末行只剩一个字 */
     font-size: var(--fs-h1);   /* 大标题 56px(桌面/手机统一) */
-    font-weight: 500;
+    font-weight: var(--fw-bold);
     line-height: 1.2;
     color: var(--gray-900);
     margin: 0 0 22px;   /* 标题下方间距 ×1.6 */
@@ -687,10 +688,10 @@ body.reading-page .article-eyebrow .a-tag {
 /* H1 桌面 / 手机统一 = --fs-h1(48px),不再分断点 */
 /* tag、byline 维持基准值(手机端有单独的尺寸/内边距微调,见下方 ≤600 段)。 */
 
-/* 标题组(态度标签 / 标题 / 发布时间·阅读时长)整体左对齐 —— 所有断点统一 */
-body.reading-page .article-eyebrow { justify-content: flex-start; text-align: left; }
-body.reading-page .article-h1 { text-align: left; }
-body.reading-page .article-byline { text-align: left; justify-content: flex-start; }
+/* 标题组(态度标签 / 标题 / 发布时间·阅读时长)整体居中 —— 所有断点统一 */
+body.reading-page .article-eyebrow { justify-content: center; text-align: center; }
+body.reading-page .article-h1 { text-align: center; }
+body.reading-page .article-byline { text-align: center; justify-content: center; }
 
 /* 手机端:标题组上下间距同步缩小并保持一致(封面下 = byline 下 = 40px) */
 @media (max-width: 600px) {
@@ -1438,6 +1439,29 @@ body.home-v2 .header-placeholder { height: 76px; }
 .writing-info { align-items: flex-start; text-align: left; gap: 12px; }
 /* Blog 卡片:封面下方文字块宽度 = 封面宽度的 90%,与封面左对齐(右侧留 10%) */
 .home-v2 .writing-info { width: 100%; margin-left: 0; margin-right: auto; }
+/* 首页卡片标题上方的「有态度」标签:与文章页 eyebrow 标签样式一模一样 */
+/* 标签:标题上方一行(时间单独在底部左下,沿用 .w-date 默认左对齐) */
+.home-v2 .writing-info .w-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.home-v2 .writing-info .w-tags .a-tag {
+    background: none;
+    border: 0.6px solid #1a1a1a;
+    border-radius: 6px;
+    padding: 4px 11px;
+    font-size: var(--fs-caption);
+    font-weight: 400;
+    color: #1a1a1a;
+    line-height: 1.2;
+    transition: color 0.3s ease, border-color 0.3s ease;
+}
+/* 卡片 hover 时标签随其它信息一起淡化(边框 + 文字 + 图标[currentColor]) */
+.card-wrapper:hover .writing-info .w-tags .a-tag {
+    color: var(--gray-500);
+    border-color: var(--gray-400);
+}
+/* 标签内 Outlined 图标(静态):随文字色描边,固定 14px;标签内联排布、图标在文字左侧 */
+body.reading-page .article-eyebrow .a-tag,
+.home-v2 .writing-info .w-tags .a-tag { display: inline-flex; align-items: center; gap: 5px; }
+.a-tag .tag-ico { width: 18px; height: 18px; flex: 0 0 auto; }
 .writing-info .w-title {
     font-size: var(--fs-h3);   /* 卡片标题 22px */
     font-weight: 600;
@@ -1452,7 +1476,7 @@ body.home-v2 .header-placeholder { height: 76px; }
     line-height: 1.4;
 }
 .writing-info .w-excerpt {
-    font-size: var(--fs-caption);   /* 简介 14px */
+    font-size: var(--fs-body);   /* 简介 16px */
     color: var(--gray-600);
     line-height: 1.6;
     display: -webkit-box;
