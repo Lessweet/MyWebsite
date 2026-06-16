@@ -371,6 +371,7 @@ body.writing-page.design-page.reading-page .header {
     background-size: 100vw 100vh;
     background-position: left top;
     background-repeat: no-repeat;
+    border-bottom: 1px solid var(--ink-08);   /* 顶栏底部细分割线(同列表选中态底色) */
 }
 /* 内容元素回纯白,在彩色底上浮起来 */
 body.reading-page .article-cover,
@@ -400,17 +401,77 @@ body.reading-page .article-body blockquote { border-left-color: #1a1a1a; }
 .reading-layout {
     width: min(1280px, calc(100% - 48px));
     margin: 0 auto;
-    padding: 80px 0 80px;   /* 正文顶部与顶栏间距 80px */
-}
-/* 桌面端:正文整体距顶栏的间距 ×2(80 → 160) */
-@media (min-width: 769px) {
-    .reading-layout { padding-top: 160px; }
+    /* 正文顶部与顶栏间距统一为 160px,不随视窗变化(桌面/平板/手机一致) */
+    padding: 160px 0 80px;
 }
 /* 文章列表(左)/ 目录(右)/「文章 ▾」开关一律不展示。
    用 .reading-layout 后代选择器提高特异度,稳定盖过下方 .reader-list{display:flex} 等原三栏样式 */
 .reading-layout .reader-list,
 .reading-layout .article-toc,
 .reading-layout .reader-list-toggle { display: none !important; }
+
+/* 网页端(≥1000px):启用 master–detail 两栏 —— 左 = 文章列表,右 = 对应正文;窄屏仍单栏纯正文。
+   article-toc 仍隐藏(display:none 不占 grid 槽),所以两栏 = reader-list | article-reading。 */
+@media (min-width: 1000px) {
+    .reading-layout {
+        display: grid;
+        grid-template-columns: 320px minmax(0, 1fr);
+        column-gap: 20px;
+        align-items: start;
+        padding-top: 0;   /* 顶部间距归零:两栏顶到顶栏下沿,竖分割线与顶栏底部横线拼接 */
+    }
+    .reading-layout .reader-list { display: flex !important; }
+
+    /* 右栏正文撑满右栏(去掉 760px 限制),封面 / 正文同宽同左缘。
+       标题组(tag/标题/byline)的「有左栏居中 / 无左栏左对齐」在下方基准规则之后的 ≥1000 块里处理。 */
+    .reading-layout .article-eyebrow,
+    .reading-layout .article-h1,
+    .reading-layout .article-byline,
+    .reading-layout .article-cover,
+    .reading-layout .article-body,
+    .reading-layout .article-footer {
+        max-width: none;
+        margin-left: 0;
+        margin-right: 0;
+        text-align: left;
+    }
+
+    /* 竖分割线改用下方整屏 fixed 线绘制(border 会随内容滚动且高度有限),这里只保留内边距 */
+    .reading-layout .article-reading {
+        padding-left: 72px;   /* 正文左右内边距:60 + 12 */
+        padding-right: 72px;
+        padding-top: 64px;   /* 两栏内容顶部间距 ×2(32 → 64) */
+    }
+    /* 吸顶点对齐顶栏下沿(72px = .home-nav 高度),与右栏顶部齐平;padding-top 与右栏一致 64px。
+       左栏配 20px 内边距避免文字贴左侧竖线 */
+    .reading-layout .reader-list {
+        top: 72px;
+        padding-top: 64px;
+        padding-left: 20px;
+    }
+
+    /* 三条竖分割线:整屏高度、position:fixed —— 通到视口最底部,页面滚动时不下滑。
+       横向位置由 JS 量出的列边变量精确对齐(避开 100vw 滚动条误差);复用 --ink-08。
+       挂在 ::before/::after 上且 fixed 脱流,不影响 flex/grid 布局,不占内容空间。
+         左线 = reading-layout::before → 布局左缘 (--reading-x)
+         中线 = reading-layout::after  → 正文左缘 (--reading-mid)
+         右线 = article-reading::after → 布局右缘 (--reading-x + --reading-w) */
+    .reading-layout::before,
+    .reading-layout::after,
+    .reading-layout .article-reading::after {
+        content: "";
+        position: fixed;
+        top: 72px;            /* 顶栏下沿 */
+        bottom: 0;            /* 通到视口底部 */
+        width: 1px;
+        background: var(--ink-08);
+        pointer-events: none;
+        z-index: 0;
+    }
+    .reading-layout::before { left: var(--reading-x, 0); }
+    .reading-layout::after  { left: var(--reading-mid, 0); }
+    .reading-layout .article-reading::after { left: calc(var(--reading-x, 0) + var(--reading-w, 0) - 1px); }
+}
 
 /* 正文与底部模块收窄到可读宽度并居中 */
 .article-body,
@@ -423,47 +484,63 @@ body.reading-page .article-body blockquote { border-left-color: #1a1a1a; }
     align-self: start;
     max-height: calc(100vh - var(--reader-toc-top, 120px) - 24px);
     overflow-y: auto;
+    overscroll-behavior: contain;   /* 左栏滚到头不链式带动页面(右侧)滚动 */
     display: flex;
     flex-direction: column;
 }
 .reader-cats {
     display: flex;
     gap: 6px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;       /* 筛选栏控制在一行 */
     margin-bottom: 14px;
+    overflow-x: auto;        /* 仅 tab 区横向滑动 */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;             /* Firefox 隐藏滚动条 */
+    /* 默认只右侧淡出(左侧不淡);左侧淡出由 JS 在向左滑出后动态加上(见 writing.js initReaderCatsFade) */
+    -webkit-mask-image: linear-gradient(to right, #000, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(to right, #000, #000 calc(100% - 28px), transparent);
 }
+.reader-cats::-webkit-scrollbar { display: none; }   /* WebKit 隐藏滚动条 */
+.reader-cat { flex: 0 0 auto; }       /* 不收缩,溢出则横滑 */
 .reader-cat {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     font-family: inherit;
-    font-size: 12px;
+    font-size: var(--fs-caption);
     color: var(--gray-600);
     background: transparent;
-    border: 1px solid var(--gray-300);
+    border: 1px solid transparent;
     border-radius: 999px;
     padding: 3px 11px;
     cursor: pointer;
     white-space: nowrap;
     transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
-.reader-cat:hover { border-color: var(--gray-400); color: var(--gray-900); }
-.reader-cat.active { background: var(--gray-900); color: var(--white); border-color: var(--gray-900); }
+/* 与首页二级分类一致:图标 fill 跟随文字色 */
+.reader-cat .menu-icon { display: inline-flex; flex: 0 0 auto; }
+.reader-cat .menu-icon svg { width: 18px; height: 18px; fill: currentColor; stroke: none; }
+/* 默认也显示文字(图标 + 文字);选中态额外加浅灰底区分 */
+.reader-cat:hover { background: var(--ink-08); color: var(--gray-900); border-color: transparent; }   /* hover = 选中样式 */
+.reader-cat.active { background: var(--ink-08); color: var(--gray-900); border-color: transparent; }   /* 选中态:分割线色值 --ink-08 */
 
 .reader-items { display: flex; flex-direction: column; gap: 2px; }
 .reader-item {
     display: flex;
     gap: 12px;
-    align-items: center;
+    align-items: center;     /* 封面固定方块,与右侧文字垂直居中对齐 */
     padding: 11px 10px;
     border-radius: 10px;
     transition: background 0.18s ease;
 }
 .reader-item[hidden] { display: none; }
-.reader-item:hover { background: rgba(0, 0, 0, 0.08); }
-.reader-item.active { background: rgba(0, 0, 0, 0.08); }
+.reader-item:hover { background: var(--ink-08); }
+.reader-item.active { background: var(--ink-08); }
 .reader-thumb {
-    order: 2;                /* 左文右图:封面排到文字右侧 */
-    flex: 0 0 56px;
-    width: 56px;
-    height: 56px;
+    order: 1;                /* 左图右文:封面在文字左侧 */
+    flex: 0 0 auto;
+    width: 64px;             /* 固定 64×64 方块:所有项(含默认占位)尺寸/比例完全一致 */
+    height: 64px;
     border-radius: 6px;
     overflow: hidden;
     background: var(--gray-100);
@@ -472,10 +549,10 @@ body.reading-page .article-body blockquote { border-left-color: #1a1a1a; }
     justify-content: center;
 }
 .reader-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.reader-thumb-ph { font-size: 10px; color: var(--gray-400); }
-.reader-text { order: 1; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.reader-thumb-ph { font-size: var(--fs-caption); color: var(--gray-400); }
+.reader-text { order: 2; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
 .reader-title {
-    font-size: 13.5px;
+    font-size: var(--fs-mini);   /* 12px(2 行截断) */
     line-height: 1.4;
     font-weight: 550;
     color: var(--gray-900);
@@ -486,7 +563,7 @@ body.reading-page .article-body blockquote { border-left-color: #1a1a1a; }
     transition: color 0.18s ease;
 }
 .reader-item:not(.active):hover .reader-title { color: var(--gray-700); }
-.reader-date { font-family: var(--font-mono); font-size: 11px; color: #969696; }
+.reader-date { font-family: var(--font-mono); font-size: var(--fs-caption); color: rgba(150, 150, 150, 0.5); }   /* #969696 透明度降 50% */
 
 /* 切换中:正文淡一下,给「正在加载」一点反馈 */
 .reading-layout.reader-loading .article-reading { opacity: 0.5; transition: opacity 0.15s ease; }
@@ -529,7 +606,7 @@ body.reading-page .article-body blockquote { border-left-color: #1a1a1a; }
     font-size: 12.5px;
     line-height: 1.4;
     color: var(--gray-500);
-    border-left: 2px solid rgba(0, 0, 0, 0.08);
+    border-left: 2px solid var(--ink-08);
     transition: color 0.2s ease, border-color 0.2s ease;
 }
 
@@ -575,8 +652,8 @@ body.reading-page .article-eyebrow .a-tag {
 
 .article-h1 {
     /* 字号随视口流动(窄屏自动缩小,减少折行);text-wrap: balance 让多行更均衡,避免末行只剩一个字 */
-    font-size: var(--fs-h1);   /* 大标题 52px */
-    font-weight: 400;
+    font-size: var(--fs-h1);   /* 大标题 56px(桌面/手机统一) */
+    font-weight: 500;
     line-height: 1.2;
     color: var(--gray-900);
     margin: 0 0 22px;   /* 标题下方间距 ×1.6 */
@@ -591,8 +668,8 @@ body.reading-page .article-eyebrow .a-tag {
     display: flex;
     align-items: center;
     gap: 20px;   /* 日期 / 阅读时长 横向间距 ×2 */
-    /* 标题组下方间距 = 上方(封面 72px),与首段清零的上边距配合,精确对齐 */
-    margin-bottom: 72px;
+    /* 标题组(byline)→ 封面 间距 */
+    margin-bottom: 48px;
 }
 
 /* 标题组(标题 / 署名)收窄到与正文段落同宽,左缘与下方正文对齐
@@ -607,13 +684,11 @@ body.reading-page .article-eyebrow .a-tag {
     margin-left: auto;
     margin-right: auto;
 }
-/* H1 基准 = --fs-h1(52px,手机端);桌面端单独放大到 68px */
-@media (min-width: 769px) {
-    .article-h1 { font-size: 68px; }
-}
+/* H1 桌面 / 手机统一 = --fs-h1(48px),不再分断点 */
 /* tag、byline 维持基准值(手机端有单独的尺寸/内边距微调,见下方 ≤600 段)。 */
 
-/* 标题组内部一律左对齐,覆盖 genie/figma 文章 inline <style> 的居中 */
+/* 标题组(态度标签 / 标题 / 发布时间·阅读时长)整体左对齐 —— 所有断点统一 */
+body.reading-page .article-eyebrow { justify-content: flex-start; text-align: left; }
 body.reading-page .article-h1 { text-align: left; }
 body.reading-page .article-byline { text-align: left; justify-content: flex-start; }
 
@@ -911,18 +986,6 @@ body.reading-page .article-byline { text-align: left; justify-content: flex-star
     color: var(--gray-600);
 }
 
-/* 窄屏:分类仍固定在顶栏中心,不换到第二行 */
-@media (max-width: 800px) {
-    .home-nav { flex-wrap: nowrap; row-gap: 0; }
-    .home-nav .header-left,
-    .home-nav .header-right { flex: 1 1 auto; }
-    .home-nav .nav-cats {
-        order: 0;
-        flex: 0 0 auto;
-        justify-content: center;
-    }
-}
-
 .site-title {
     display: inline-flex;
     align-items: center;
@@ -945,13 +1008,13 @@ body.reading-page .article-byline { text-align: left; justify-content: flex-star
 /* Design / 阅读页:左上角 logo + VIBEUX 字标放大 */
 .design-page .site-title { margin: 8px 0; }
 .design-page .site-title .site-logo {
-    width: 38px;
-    height: 38px;
+    width: 28.5px;    /* 38px × 75% */
+    height: 28.5px;
 }
 /* logo 高度与右侧 Blog/Skills/Contact 三项同走 3.4vw、桌面同样封顶 36px;
    但兜底抬到 20px(原 12px):字标是品牌,手机端不跟着文字缩到那么小,保持可读。
    仅影响 ≤~588px(3.4vw < 20)的手机端,桌面/平板与三项文字仍逐像素同步。 */
-.design-page .site-wordmark { height: clamp(22px, 3.6vw, 38px); }
+.design-page .site-wordmark { height: 28.5px; }   /* 38px × 75%,固定不随窗口缩放 */
 
 /* 顶栏三段式:左 = 分类(Writing/Design),中 = VIBEUX 字标,右 = Contact。
    左右两组 flex:1 等宽,把中间字标挤到正中。 */
@@ -990,12 +1053,13 @@ body.reading-page .article-byline { text-align: left; justify-content: flex-star
    header-right(含 1 项)分右半(2+1),三个文字项各落在右半的 1/3 中心。
    gap 归零,让占比精确;移动端不再切换为「靠右挤一排」布局,保持同样均分。
    选择器同时带 .design-page 与基础 .home-nav,覆盖所有页面顶栏。 */
-.home-nav { justify-content: flex-start; gap: 0; }
+/* 右侧三项(Blog / Cases / Contact)成簇、从右缘开始布局,彼此间距 36px;logo 占左侧把它们顶到最右 */
+.home-nav { justify-content: flex-start; gap: 36px; }
 
 .design-page .home-nav .header-left,
 .home-nav .header-left {
     order: 1;
-    flex: 3 1 0;
+    flex: 1 1 0;                   /* 填满左侧空白,把右侧三项推到右缘 */
     align-items: flex-start;       /* header-left 是 column flex,横向贴左靠 align-items */
 }
 .design-page .home-nav .nav-cats,
@@ -1005,20 +1069,20 @@ body.reading-page .article-byline { text-align: left; justify-content: flex-star
     left: auto;
     top: auto;
     order: 2;
-    flex: 2 1 0;
-    gap: 0;
-    justify-content: space-around;
+    flex: 0 0 auto;                /* 自然宽度成簇,不再三等分铺开 */
+    gap: 36px;                     /* Blog ↔ Cases 间距 */
+    justify-content: flex-end;
 }
 .design-page .home-nav .nav-cats .nav-cat,
 .home-nav .nav-cats .nav-cat {
-    flex: 1 1 0;
-    justify-content: center;       /* Blog / Skills 各居其 1/3 中心 */
+    flex: 0 0 auto;                /* 不拉伸,按文字自然宽 */
+    justify-content: center;
     text-align: center;
 }
 .design-page .home-nav .header-right,
 .home-nav .header-right {
     order: 3;
-    flex: 1 1 0;
+    flex: 0 0 auto;
     justify-content: flex-end;     /* Contact 贴最右 */
 }
 
@@ -1058,8 +1122,8 @@ body.reading-page .article-byline { text-align: left; justify-content: flex-star
 
 /* pillar 页(Writing + Design)共用顶栏:Writing/Design + 邮箱联系方式 全部靠右,统一胶囊样式
    导航 HTML 由 writing.js 的 initSiteNav() 生成,本就是同一个组件;这里只统一外观 */
-.design-page .home-nav { gap: 10px; }                /* 分类组 ↔ 邮箱按钮间距 */
-.design-page .home-nav .nav-cats { gap: 28px; }      /* Blog ↔ Skills 间距 */
+.design-page .home-nav { gap: 36px; }                /* 右侧三项成簇间距(nav-cats 组 ↔ Contact) */
+.design-page .home-nav .nav-cats { gap: 36px; }      /* Blog ↔ Cases 间距 */
 .design-page .home-nav .nav-cat,
 .design-page .home-nav .header-connect {
     padding: 7px 18px;
@@ -1103,8 +1167,8 @@ body .home-nav .header-connect {
     padding: 0;                  /* 文字本身不加左右内边距 */
     letter-spacing: 0;           /* 不加字间距 */
 }
-/* 桌面端(≥801,与顶栏布局断点一致):顶栏 3 个 tab 固定为 h3(22px);移动端仍用上面的响应式 clamp */
-@media (min-width: 801px) {
+/* >560px(汉堡断点以上)全程:顶栏 3 个 tab 固定为 h3(24px),不随窗口缩小跳变;≤560 进汉堡 */
+@media (min-width: 561px) {
     body.design-page .home-nav .nav-cat,
     body.design-page .home-nav .header-connect,
     body .home-nav .nav-cat,
@@ -1146,57 +1210,15 @@ body .home-nav .nav-cats .nav-cat.active {
     font-weight: 400 !important;
 }
 
-/* 手机:顶栏整体缩小,保证右侧 Writing / Design / 邮箱 三个胶囊完整可见
-   (取消大写 VIBEUX 的纵向拉伸与超大字号) */
-@media (max-width: 768px) {
-    .design-page .site-title { margin: 6px 0; }
-    .design-page .site-title .site-logo {
-        width: 26px;
-        height: 26px;
-    }
-    /* logo 不再在此单独缩小;改与右侧文字一致,由 --cat-tab-size 在 ≤600px 统一缩 */
-    /* 手机端不再三等分:logo 占满左侧把三项推到最右,Blog/Skills/Contact 成一组紧贴右缘、间距更小 */
-    .design-page .home-nav { gap: 14px; }                  /* nav-cats 组 ↔ Contact 间距 */
-    .design-page .home-nav .header-left { flex: 1 1 auto; }    /* 吃掉中间空白,把右侧三项顶到最右 */
-    .design-page .home-nav .nav-cats {
-        flex: 0 0 auto;
-        gap: 14px;                                         /* Blog ↔ Skills 间距 */
-        justify-content: flex-end;
-    }
-    .design-page .home-nav .nav-cats .nav-cat { flex: 0 0 auto; }
-    .design-page .home-nav .header-right { flex: 0 0 auto; }
-    .design-page .home-nav .nav-cat,
-    .design-page .home-nav .header-connect {
-        padding: 0;
-    }
-    /* 三项成组右对齐后空间充裕,字号放大(不再受三等分槽位限制);
-       匹配全局三项规则的 (0,3,1) 特异性,位于其后生效 */
-    body.design-page .home-nav .nav-cat,
-    body.design-page .home-nav .header-connect,
-    body .home-nav .nav-cat,
-    body .home-nav .header-connect {
-        font-size: clamp(17px, 5vw, 22px);
-    }
-    /* 窄屏文字比 logo 矮,改为整体垂直居中:logo / Blog / Skills / Contact 落在同一条水平线。
-       (默认的 align-items:flex-end 底对齐会暴露 site-title 的 6px 外边距 + Contact 的 align-self:center,
-        导致 Blog/Skills 比其它元素低一截) */
-    .design-page .home-nav { align-items: center; }
-    .design-page .home-nav .site-title { margin: 0; }
-}
-
-/* 平板窄屏:左侧分类纯文字,右侧联系是图标+文字;给分类组补上同等纵向留白,
-   让两组可见内容落在同一条水平线上。 */
-@media (min-width: 601px) and (max-width: 768px) {
-    .design-page .home-nav .nav-cats { padding: 4px 0; }
-}
+/* 顶栏只有两态:>560 桌面 / ≤560 汉堡。中间断点(768 / 561–768 / 900)已删除。 */
 
 /* 手机:网格列表改为单列;单列时纵向间距 ×2(原 40px → 80px) */
 @media (max-width: 620px) {
     .home-v2 .category-grid { grid-template-columns: minmax(0, 1fr); row-gap: 48px; }
 }
 
-/* 手机:减少左右页边距(顶栏 / 内容区 / 二级菜单 统一收到 16px) */
-@media (max-width: 600px) {
+/* 手机模式(≤560px):减少左右页边距 + 顶栏右侧三项收进汉堡菜单 */
+@media (max-width: 560px) {
     .home-v2 .header.home-nav {
         padding-left: 16px;
         padding-right: 16px;
@@ -1220,12 +1242,12 @@ body .home-nav .nav-cats .nav-cat.active {
         display: flex;
         flex-direction: column;
         justify-content: center;
-        align-items: flex-end;      /* 三条线靠按钮右侧,整体更贴右 */
+        align-items: center;        /* 三条线在按钮区域内水平居中 */
         gap: 4px;
         width: 40px;
         height: 40px;
-        margin-left: auto;          /* 顶到最右,紧邻屏幕右边 */
-        padding: 9px 0 9px 8px;     /* 取消右内边距,横线再往右移到按钮右沿 */
+        margin-left: auto;          /* 按钮整体仍靠顶栏最右 */
+        padding: 9px 0;             /* 左右内边距对称,横线居中 */
         border: none;
         background: none;
         cursor: pointer;
@@ -1791,9 +1813,9 @@ body.reading-page .header.home-nav::after {
 .design-menu .nav-cat.active {
     color: var(--gray-900);
     font-weight: 600;
-    /* 选中下划线:Figma 素材的紫→蓝→绿线性渐变(border 不支持渐变,用 border-image)
+    /* 选中下划线:品牌渐变 token(border 不支持渐变,用 border-image)
        border-image 会忽略 border-radius,但本就是直角下划线,无影响 */
-    border-image: linear-gradient(90deg, rgba(214,166,255,1) 0%, rgba(136,172,255,1) 50%, rgba(74,191,127,1) 100%) 1;
+    border-image: var(--brand-grad) 1;
 }
 .design-menu .nav-cat.active .menu-icon svg { fill: currentColor; }
 
