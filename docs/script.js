@@ -389,20 +389,33 @@ function initPillarEntrance() {
     }
 
     const STAGGER = 110;   // 相邻「片」(行)之间的间隔(ms)
-    const ROW_TOL = 28;    // 顶部相差小于此值视为同一片,一起淡入
+    const ROW_TOL = 28;    // 顶部相差小于此值视为同一片
+    const COL_STAGGER = 180; // 同一行内多张卡片,从左到右依次出现的间隔(ms)
 
     const revealByRow = (els) => {
+        // 先按垂直位置把元素分成一「片」一「片」(行)
         const sorted = els.slice().sort(
             (a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top
         );
+        const rows = [];
         let lastTop = null;
-        let step = 0;
         sorted.forEach((el) => {
             const top = Math.round(el.getBoundingClientRect().top);
-            if (lastTop !== null && top - lastTop > ROW_TOL) step += 1;
+            if (lastTop === null || top - lastTop > ROW_TOL) rows.push([]);
             lastTop = top;
-            setTimeout(() => reveal(el), step * STAGGER);
-            el.dataset.entered = '1';
+            rows[rows.length - 1].push(el);
+        });
+
+        // 行与行依次错开;行内有 2 张及以上时,再从左到右依次出现,带错落感
+        rows.forEach((row, step) => {
+            const rowDelay = step * STAGGER;
+            const ordered = row.slice().sort(
+                (a, b) => a.getBoundingClientRect().left - b.getBoundingClientRect().left
+            );
+            ordered.forEach((el, col) => {
+                setTimeout(() => reveal(el), rowDelay + col * COL_STAGGER);
+                el.dataset.entered = '1';
+            });
         });
     };
 

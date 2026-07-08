@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+*{margin:0;padding:0;box-sizing:border-box;}
+.wrap{position:fixed;inset:0;overflow:hidden;background:#F2CF1D;}
+#sh{position:absolute;inset:0;width:100%;height:100%;display:block;}
+.grain{position:absolute;inset:0;opacity:.10;mix-blend-mode:overlay;pointer-events:none;}
+.center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+.group{display:flex;align-items:center;justify-content:center;gap:38px;transform-origin:center center;will-change:transform;}
+/* LiquidGlass 磁块：白 14% 毛玻璃 + 渐变折光边（左上/右下偏白），无投影 */
+.ic{width:150px;height:150px;flex:none;position:relative;border-radius:23%;background:rgba(255,255,255,0.14);-webkit-backdrop-filter:blur(14px) saturate(1.25);backdrop-filter:blur(14px) saturate(1.25);}
+.ic::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.6px;background:linear-gradient(135deg,rgba(255,255,255,0.95),rgba(255,255,255,0.12) 42%,rgba(255,255,255,0.12) 58%,rgba(255,255,255,0.95));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}
+.ic svg{position:absolute;inset:0;width:100%;height:100%;display:block;}
+.wm{height:124px;width:auto;display:block;flex:none;}
+/* 叠箱三块碰撞（icon-studio ne-stack 动效）：块画在 mask 里，白块 + 黑缝线 = 真镂空透出玻璃 */
+.stk-t,.stk-m,.stk-b{transform-box:view-box;will-change:transform;}
+.stk-t{animation:stk-t 1.9s cubic-bezier(0.5,1.4,0.4,1) infinite;}
+.stk-m{animation:stk-m 1.9s cubic-bezier(0.5,1.4,0.4,1) infinite;}
+.stk-b{animation:stk-b 1.9s cubic-bezier(0.5,1.4,0.4,1) infinite;}
+@keyframes stk-t{0%,10%{transform:translateY(0);}32%,44%{transform:translateY(-10px);}56%{transform:translateY(2px);}66%{transform:translateY(-0.8px);}76%,100%{transform:translateY(0);}}
+@keyframes stk-m{0%,10%{transform:translateY(0);}32%,44%{transform:translateY(-4px);}56%{transform:translateY(1.2px);}66%{transform:translateY(-0.4px);}76%,100%{transform:translateY(0);}}
+@keyframes stk-b{0%,10%{transform:translateY(0);}32%,44%{transform:translateY(4.5px);}56%{transform:translateY(-1px);}66%{transform:translateY(0.4px);}76%,100%{transform:translateY(0);}}
+</style></head><body>
+<div class="wrap">
+<canvas id="sh"></canvas>
+<svg class="grain"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>
+<div class="center"><div class="group">
+<div class="ic"><svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><defs><mask id="stkcut" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64"><g transform="translate(32 32) scale(1.2) translate(-32 -32)" fill="none" stroke="#000000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><g class="stk-b"><path fill="#ffffff" d="M 19.71 31.96 L 32.79 24.04 C 33.73 23.46 35.24 23.51 36.14 24.14 L 44.36 29.86 C 45.26 30.49 46 31.9 46 33 L 46 40.5 C 46 41.6 45.23 42.96 44.29 43.54 L 31.21 51.46 C 30.27 52.04 28.76 51.99 27.86 51.36 L 19.64 45.64 C 18.74 45.01 18 43.6 18 42.5 L 18 35 C 18 33.9 18.77 32.54 19.71 31.96 Z"/><path d="M18 33 L29.5 41 L46 31 M29.5 41 L29.5 52.5"/></g><g class="stk-m"><path fill="#ffffff" d="M 19.71 20.46 L 32.79 12.54 C 33.73 11.96 35.24 12.01 36.14 12.64 L 44.36 18.36 C 45.26 18.99 46 20.4 46 21.5 L 46 29 C 46 30.1 45.23 31.46 44.29 32.04 L 31.21 39.96 C 30.27 40.54 28.76 40.49 27.86 39.86 L 19.64 34.14 C 18.74 33.51 18 32.1 18 31 L 18 23.5 C 18 22.4 18.77 21.04 19.71 20.46 Z"/><path d="M18 21.5 L29.5 29.5 L46 19.5 M29.5 29.5 L29.5 41"/></g><path class="stk-t" fill="#ffffff" d="M 19.71 20.46 L 32.79 12.54 C 33.73 11.96 35.24 12.01 36.14 12.64 L 44.36 18.36 C 45.26 18.99 45.23 19.96 44.29 20.54 L 31.21 28.46 C 30.27 29.04 28.76 28.99 27.86 28.36 L 19.64 22.64 C 18.74 22.01 18.77 21.04 19.71 20.46 Z"/></g></mask></defs><rect width="64" height="64" fill="#FFFFFF" mask="url(#stkcut)"/></svg></div>
+<svg class="wm" width="765" height="171" viewBox="0 0 765 171" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_18_154)">
+<path d="M58.2992 5.12466C62.7246 4.71918 67.2212 4.49393 71.6315 5.2298C77.541 6.11585 83.6141 9.11189 89.3471 10.3884C102.521 13.3018 125.42 14.2255 128.79 31.1806C133.974 57.2664 107.956 56.2752 90.548 59.0986C86.9038 59.6842 80.9185 61.9595 79.0544 65.4436C74.3835 75.7984 88.1957 79.9432 95.2039 82.7666C110.307 88.8788 126.176 94.548 130.908 111.946C136.46 132.363 126.401 148.995 108.991 159.357C103.784 162.458 99.1763 163.727 93.3871 165.297C76.4489 166.701 77.7655 161.97 65.4164 160.168C45.3568 157.69 27.9492 157.3 10.9727 144.437C0.784545 136.35 -3.88645 126.168 3.88482 114.161C10.9896 100.285 50.4318 112.119 46.605 91.5069C43.6316 75.498 15.7237 73.3504 14.4251 52.731C12.5727 23.3187 32.5406 8.75896 58.2992 5.12466Z" fill="white"/>
+<path d="M158.877 0.464212C194.546 -2.15714 188.725 40.4258 187.005 62.7534C198.053 47.9347 207.269 35.8701 221.622 22.3579C232.948 11.7028 257.253 5.6228 256.982 29.9569C256.922 36.0954 250.005 42.3841 244.958 45.932C246.009 47.37 247.008 49.2337 247.519 50.9292C248.916 55.6861 248.443 60.7959 246.189 65.2126C241.886 73.5377 233.594 77.3875 225.114 79.9833C232.167 86.7834 243.005 97.5857 242.674 107.557C242.201 121.758 249.87 113.72 256.449 123.901C267.325 140.747 262.368 164.373 237.162 157.524C214.419 147.316 203.739 124.443 188.439 106.449C190.129 114.014 190.542 121.525 190.648 129.245C190.798 141.082 190.648 154.21 181.695 163.173C177.453 167.423 171.696 170.013 165.647 169.952C160.172 169.897 155.008 167.789 151.262 163.752C135.897 147.189 153.964 133.913 153.072 130.62C151.573 125.085 144.353 122.588 144.997 110.481C145.396 102.978 148.758 97.3837 154.216 92.4871C152.821 85.1284 135.554 80.3039 153.335 62.3142C143.193 54.7948 143.771 43.9467 152.442 35.5998C140.673 24.0406 141.172 5.77224 158.877 0.464212Z" fill="white"/>
+<path d="M305.92 48.3963C292.621 45.9041 271.712 41.2411 274.085 23.1417C277.01 0.828299 323.954 -0.756079 340.38 3.08096C375.193 11.2131 373.296 40.9461 336.259 48.0142C325.265 50.1302 316.903 49.5242 305.92 48.3963Z" fill="white"/>
+<path d="M303.176 124.065C312.604 122.121 327.135 123.313 336.855 124.266L338.03 126.005C347.521 128.565 361.72 132.11 364.198 143.352C365.136 147.65 364.279 152.144 361.826 155.796C351.803 170.905 322.864 169.262 307.016 168.191C294.939 167.375 277.102 164.037 275.236 149.56C273.138 133.295 289.699 127.53 302.294 125.457L303.176 124.065Z" fill="white"/>
+<path d="M303.176 124.065C312.604 122.121 327.135 123.313 336.855 124.266L338.03 126.005C323.99 124.221 316.507 123.94 302.294 125.457L303.176 124.065Z" fill="white"/>
+<path d="M305.92 48.3965C316.903 49.5244 325.265 50.1304 336.259 48.0143L337.1 49.6558C337.242 65.8292 337.276 82.0026 337.204 98.1752C337.197 104.291 337.499 118.799 336.855 124.266C327.135 123.313 312.604 122.121 303.176 124.065C302.723 109.065 303.328 92.8905 303.09 77.7863C303.008 72.6758 302.803 53.9989 303.69 50.1521L305.677 49.2848L305.92 48.3965Z" fill="white"/>
+<path d="M305.92 48.3965C316.903 49.5244 325.265 50.1304 336.259 48.0143L337.1 49.6558C322.569 49.9734 322.698 52.3282 305.677 49.2848L305.92 48.3965Z" fill="white"/>
+<path d="M399.076 0C403.335 0.419747 407.338 1.3749 410.65 4.3364C425.529 17.6271 414.894 39.7423 416.584 55.6416C418.078 64.2025 423.501 71.3818 422.374 80.5013C420.76 92.2625 403.147 122.133 420.069 130.826C437.636 139.848 438.244 117.064 462.264 135.606C467.574 132.077 474.416 126.499 481.183 129.362C495.071 135.238 498.022 161.673 482.505 167.643C474.972 170.543 468.648 167.119 461.971 163.83C451.501 162.844 449.188 169.293 439.409 170.196C432.364 171.377 422.412 162.169 415.637 164.279C401.217 168.772 392.294 175 381.013 159.83C371.174 149.395 386.548 134.861 385.189 126.978C382.35 110.6 369.521 107.646 384.333 90.2531C392.076 81.1591 380.254 72.1431 378.151 63.2842C375.673 53.5481 383.942 49.6788 387.682 43.2797C394.495 31.647 372.736 23.1056 383.461 9.15409C387.938 3.33546 392.069 1.22245 399.076 0Z" fill="white"/>
+<path d="M526.694 0C530.953 0.419747 534.956 1.3749 538.268 4.3364C553.147 17.6271 542.512 39.7423 544.202 55.6416C545.697 64.2025 551.119 71.3818 549.993 80.5013C548.378 92.2625 530.765 122.133 547.687 130.826C565.254 139.848 565.863 117.064 589.882 135.606C595.192 132.077 602.034 126.499 608.802 129.362C622.689 135.238 625.641 161.673 610.124 167.643C602.59 170.543 596.266 167.119 589.589 163.83C579.119 162.844 576.806 169.293 567.027 170.196C559.982 171.377 550.03 162.169 543.256 164.279C528.835 168.772 519.912 175 508.631 159.83C498.792 149.395 514.167 134.861 512.807 126.978C509.968 110.6 497.14 107.646 511.951 90.2531C519.694 81.1591 507.873 72.1431 505.77 63.2842C503.291 53.5481 511.56 49.6788 515.301 43.2797C522.113 31.647 500.354 23.1056 511.08 9.15409C515.556 3.33546 519.687 1.22245 526.694 0Z" fill="white"/>
+<path d="M690.861 5.12466C695.286 4.71918 699.783 4.49393 704.193 5.2298C710.102 6.11585 716.176 9.11189 721.908 10.3884C735.082 13.3018 757.981 14.2255 761.351 31.1806C766.535 57.2664 740.518 56.2752 723.109 59.0986C719.465 59.6842 713.48 61.9595 711.616 65.4436C706.945 75.7984 720.757 79.9432 727.765 82.7666C742.869 88.8788 758.737 94.548 763.469 111.946C769.021 132.363 758.963 148.995 741.552 159.357C736.346 162.458 731.738 163.727 725.948 165.297C709.01 166.701 710.327 161.97 697.978 160.168C677.918 157.69 660.511 157.3 643.534 144.437C633.346 136.35 628.675 126.168 636.446 114.161C643.551 100.285 682.993 112.119 679.166 91.5069C676.193 75.498 648.285 73.3504 646.987 52.731C645.134 23.3187 665.102 8.75896 690.861 5.12466Z" fill="white"/>
+</g>
+<defs>
+<clipPath id="clip0_18_154">
+<rect width="764.095" height="170.1" fill="white" transform="scale(1.00119)"/>
+</clipPath>
+</defs>
+</svg>
+</div></div>
+</div>
+<script>
+// icon-studio 实验二·三色版：Lissajous 漂浮三色点 + inverse-distance(pow3.5) + 液化 0.45 / 漩涡 0.35 / 颗粒 0.25
+const COLORS=["#F2CF1D","#F0F4F6","#7ED6F2"], U_TIME=12;
+const cv=document.getElementById('sh');
+const gl=cv.getContext('webgl2',{antialias:false,premultipliedAlpha:false,preserveDrawingBuffer:true});
+const VERT=`#version 300 es
+in vec2 a_pos;out vec2 v_uv;
+void main(){v_uv=a_pos*0.5+0.5;gl_Position=vec4(a_pos,0.0,1.0);}`;
+const FRAG=`#version 300 es
+precision highp float;
+in vec2 v_uv;
+out vec4 fragColor;
+uniform float u_time;
+uniform float u_aspect;
+uniform vec4  u_colors[3];
+uniform float u_distortion;
+uniform float u_swirl;
+uniform float u_grain;
+float hash21(vec2 p){p=fract(p*vec2(0.3183099,0.3678794))+0.1;p+=dot(p,p+19.19);return fract(p.x*p.y);}
+float valueNoise(vec2 st){vec2 i=floor(st);vec2 f=fract(st);float a=hash21(i);float b=hash21(i+vec2(1.,0.));float c=hash21(i+vec2(0.,1.));float d=hash21(i+vec2(1.,1.));vec2 u=f*f*(3.-2.*f);return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);}
+vec2 rotate(vec2 p,float th){return mat2(cos(th),sin(th),-sin(th),cos(th))*p;}
+vec2 getPosition(int i,float t){
+  float a=float(i)*0.37;
+  float b=0.6+fract(float(i)/3.0)*0.9;
+  float c=0.8+fract(float(i+1)/4.0);
+  return 0.5+0.5*vec2(sin(t*b+a),cos(t*c+a*1.5));
+}
+void main(){
+  vec2 uv=v_uv;
+  vec2 uvSq=(uv-0.5)*vec2(u_aspect,1.0)+0.5;
+  vec2 grainUV=uv*vec2(u_aspect,1.0)*1000.0;
+  float mixerGrain=0.4*u_grain*(valueNoise(grainUV)-0.5);
+  float t=0.5*(u_time+41.5);
+  float radius=smoothstep(0.0,1.0,length(uvSq-0.5));
+  float center=1.0-radius;
+  for(float i=1.0;i<=2.0;i++){
+    uvSq.x+=u_distortion*center/i*sin(t+i*0.4*smoothstep(0.0,1.0,uvSq.y))*cos(0.2*t+i*2.4*smoothstep(0.0,1.0,uvSq.y));
+    uvSq.y+=u_distortion*center/i*cos(t+i*2.0*smoothstep(0.0,1.0,uvSq.x));
+  }
+  vec2 uvR=uvSq-0.5;
+  float angle=3.0*u_swirl*radius;
+  uvR=rotate(uvR,-angle);
+  uvR+=0.5;
+  vec3 color=vec3(0.0);
+  float totalWeight=0.0;
+  for(int i=0;i<3;i++){
+    vec2 pos=getPosition(i,t)+mixerGrain;
+    float d=length(uvR-pos);
+    d=pow(d,3.5);
+    float w=1.0/(d+1e-3);
+    color+=u_colors[i].rgb*u_colors[i].a*w;
+    totalWeight+=w;
+  }
+  color/=max(1e-4,totalWeight);
+  float go=valueNoise(rotate(grainUV,1.0)+vec2(3.0));
+  go=mix(go,valueNoise(rotate(grainUV,2.0)+vec2(-1.0)),0.5);
+  go=pow(go,1.3);
+  float goV=go*2.0-1.0;
+  float goStrength=pow(u_grain*abs(goV),0.8);
+  color=mix(color,vec3(step(0.0,goV)),0.35*goStrength);
+  fragColor=vec4(color,1.0);
+}`;
+function compile(t,s){const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);
+  if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS)){console.error(gl.getShaderInfoLog(sh));}return sh;}
+const prog=gl.createProgram();
+gl.attachShader(prog,compile(gl.VERTEX_SHADER,VERT));
+gl.attachShader(prog,compile(gl.FRAGMENT_SHADER,FRAG));
+gl.linkProgram(prog);gl.useProgram(prog);
+const quad=new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]);
+const vbo=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,vbo);gl.bufferData(gl.ARRAY_BUFFER,quad,gl.STATIC_DRAW);
+const aPos=gl.getAttribLocation(prog,'a_pos');gl.enableVertexAttribArray(aPos);gl.vertexAttribPointer(aPos,2,gl.FLOAT,false,0,0);
+function hx(h){h=h.replace('#','');return [parseInt(h.slice(0,2),16)/255,parseInt(h.slice(2,4),16)/255,parseInt(h.slice(4,6),16)/255];}
+const colorArr=new Float32Array(12);
+COLORS.forEach((h,i)=>{const[r,g,b]=hx(h);colorArr[i*4]=r;colorArr[i*4+1]=g;colorArr[i*4+2]=b;colorArr[i*4+3]=1.0;});
+gl.uniform4fv(gl.getUniformLocation(prog,'u_colors[0]'),colorArr);
+gl.uniform1f(gl.getUniformLocation(prog,'u_distortion'),0.45);
+gl.uniform1f(gl.getUniformLocation(prog,'u_swirl'),0.35);
+gl.uniform1f(gl.getUniformLocation(prog,'u_grain'),0.25);
+
+let shaderTime=U_TIME, last=performance.now();
+function resize(){const r=cv.getBoundingClientRect();const dpr=Math.min(devicePixelRatio||1,2);
+  const w=Math.max(1,Math.round(r.width*dpr)),h=Math.max(1,Math.round(r.height*dpr));
+  if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}gl.viewport(0,0,cv.width,cv.height);
+  return r.height>0?r.width/r.height:1080/460;}
+function frame(now){const dt=Math.min(0.05,(now-last)/1000);last=now;shaderTime+=dt*0.9;
+  const asp=resize();gl.useProgram(prog);
+  gl.uniform1f(gl.getUniformLocation(prog,'u_time'),shaderTime);
+  gl.uniform1f(gl.getUniformLocation(prog,'u_aspect'),asp);
+  gl.drawArrays(gl.TRIANGLES,0,6);requestAnimationFrame(frame);}
+new ResizeObserver(()=>resize()).observe(cv);
+requestAnimationFrame(frame);
+</script>
+<script>
+(function(){
+  var SAFE_W=560, SAFE_H=380;
+  function fitGroup(){
+    var g=document.querySelector(".group"); if(!g) return;
+    g.style.transform="none";
+    var sx=(window.innerWidth||1080)/1080;
+    var r=g.getBoundingClientRect();
+    var s=Math.min(1, SAFE_W/(r.width/sx), SAFE_H/(r.height/sx));
+    g.style.transform="scale("+s.toFixed(4)+")";
+  }
+  if(document.readyState!=="loading") fitGroup(); else document.addEventListener("DOMContentLoaded",fitGroup);
+  window.addEventListener("resize",fitGroup);
+})();
+</script>
+</body></html>

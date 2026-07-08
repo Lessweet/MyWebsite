@@ -42,23 +42,24 @@
     --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
 
     /* ============================================================
-       全站字号 scale —— 5 级,按 HTML 元素/角色命名,桌面/手机统一(只维护这一处)
-       --fs-h1      52px  <h1> 大标题(文章/页面 hero)
-       --fs-h2      32px  <h2> 小标题(章节)
-       --fs-h3      24px  卡片标题(标题类,h3 级)
-       --fs-p       18px  <p> 正文 / 二级 tab
-       --fs-body      16px  small body:列表标题 / 卡片简介(p 与 caption 之间)
+       全站字号 scale —— 6 级,按 HTML 元素/角色命名,桌面/手机统一(只维护这一处)
+       --fs-h1      36px  <h1> 大标题(文章/页面 hero)
+       --fs-h2      24px  <h2> 小标题(章节)
+       --fs-h3      20px  卡片标题(标题类,h3 级)
+       --fs-body    16px  文章阅读正文段落
+       --fs-p       16px  <p> UI 正文 / 二级 tab / 列表标题 / 卡片简介
        --fs-caption 14px  小字:日期 / tag / 图注 / byline / meta(无单一标签)
-       说明:--fs = font-size。文章正文是 inline 样式(还要兼容公众号,不能用 var),
-             其字号按本表字面值(18 / 32 / 14)手动对齐。
+       说明:--fs = font-size。这一处是唯一数据源 —— 网站直接 var(--fs-*);
+             公众号由 article-template/render.py 读取本表、注入到公众号自己的 :root,
+             同样用 var(--fs-*)。改这里一处,网站立即生效、公众号重渲染即同步。
        顶栏导航(Blog/Cases/Contact)目前不在本 scale —— 单独的响应式 clamp(13→28px)。
        ============================================================ */
-    --fs-h1: 56px;
-    --fs-h2: 32px;
-    --fs-h3: 24px;
-    --fs-p: 18px;
+    --fs-h1: 36px;
+    --fs-h2: 24px;
+    --fs-h3: 20px;
+    --fs-body: 16px;
+    --fs-p: 16px;
     --fs-caption: 14px;
-    --fs-body: 16px;   /* small body:列表标题 / 卡片简介(夹在 p 18 与 caption 14 之间) */
 
     /* 字重 token(与字号一套,只维护这一处):正文常规 + 标题加粗一档 */
     --fw-normal: 400;
@@ -100,7 +101,7 @@ a {
     z-index: 100;
     background: var(--white);
     transform: translateY(0);
-    transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.8s ease;
+    transition: transform 1.12s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 1.12s ease;
 }
 
 .header.header-hidden {
@@ -159,14 +160,14 @@ a {
 
 .brand-banner-grid .px-letter {
     color: #181818;
-    animation: brand-pulse 1.4s ease-in-out infinite;
+    animation: brand-pulse 1.96s ease-in-out infinite;
     animation-delay: var(--d, 0s);
 }
 
 .brand-banner-grid .px-accent,
 .brand-banner-grid .px-star {
     color: var(--gray-400, #969696);
-    animation: brand-twinkle 1.8s ease-in-out infinite;
+    animation: brand-twinkle 2.52s ease-in-out infinite;
     animation-delay: var(--d, 0s);
 }
 
@@ -229,7 +230,7 @@ a {
 .header-link {
     font-size: 14px;
     color: var(--gray-900);
-    transition: color 0.2s ease;
+    transition: color 0.28s ease;
     display: flex;
     align-items: center;
 }
@@ -293,7 +294,7 @@ a {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    transition: all 0.28s ease;
 }
 
 .qrcode-modal-close:hover {
@@ -455,8 +456,8 @@ a {
     opacity: 0;
     white-space: pre;        /* keep spaces */
     transition:
-        transform 0.9s var(--ease-soft) var(--d, 0s),
-        opacity 0.75s ease-out var(--d, 0s);
+        transform 1.26s var(--ease-soft) var(--d, 0s),
+        opacity 1.05s ease-out var(--d, 0s);
     will-change: transform, opacity;
 }
 
@@ -468,7 +469,7 @@ a {
 /* 标题图标随逐字升起一起淡入,不要在文字出现前单独显示(否则页面只剩一个孤零零的图标) */
 .heading-rise .heading-icon {
     opacity: 0;
-    transition: opacity 0.75s var(--ease-soft);
+    transition: opacity 1.05s var(--ease-soft);
 }
 .heading-rise.heading-rise-in .heading-icon {
     opacity: 1;
@@ -540,7 +541,7 @@ a {
     stroke-linecap: round;
     stroke-linejoin: round;
     fill: none;
-    transition: transform 0.18s ease;
+    transition: transform 0.252s ease;
 }
 
 .section-motion-rules[open] summary svg {
@@ -648,8 +649,8 @@ a {
     opacity: 0;
     transform: translateY(22px);
     transition:
-        opacity 2s var(--ease-soft),
-        transform 2s var(--ease-soft);
+        opacity 2.8s var(--ease-soft),
+        transform 2.8s var(--ease-soft);
 }
 
 .card-wrapper.visible {
@@ -769,7 +770,7 @@ a {
     padding: 4px 8px;
     border-radius: 16px;
     color: var(--gray-600);
-    transition: all 0.2s ease;
+    transition: all 0.28s ease;
 }
 
 .card-like:hover {
@@ -787,7 +788,7 @@ a {
 }
 
 .card-like svg {
-    transition: all 0.2s ease;
+    transition: all 0.28s ease;
 }
 
 .like-count {
@@ -805,7 +806,7 @@ a {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.28s ease;
     color: var(--gray-900);
 }
 
@@ -1132,14 +1133,14 @@ a {
 }
 
 .card:hover {
-    --hover-scale: 1.1;
+    --hover-scale: 1.06;   /* 放大量收敛,hover 缩放更缓和 */
 }
 
 /* hover 时封面下面的文字整体变灰 */
 .card-label,
 .card-date,
 .card-meta .card-tag {
-    transition: color 0.3s ease;
+    transition: color 0.42s ease;
 }
 
 .card-wrapper:hover .card-label {
@@ -1158,8 +1159,15 @@ a {
 .iphone-frame {
     transform: scale(var(--hover-scale, 1));
     transform-origin: center center;
-    transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform 1.5s cubic-bezier(0.22, 1, 0.36, 1);   /* ease-soft;此条管「收回」方向 */
     will-change: transform;
+}
+/* 放大(进入)方向单独更缓:hover 态的 transition 决定进入动画,拉长到 2.4s(收回仍 1.5s) */
+.card:hover .card-video,
+.card:hover .card-iframe,
+.card:hover .card-img,
+.card:hover .iphone-frame {
+    transition-duration: 2.4s;
 }
 
 /* ========================================
@@ -1179,7 +1187,7 @@ a {
     background: linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 100%);
     border-radius: 12px;
     transform-style: preserve-3d;
-    animation: cardFloat 4s ease-in-out infinite;
+    animation: cardFloat 5.6s ease-in-out infinite;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
 }
 
@@ -1219,14 +1227,14 @@ a {
         0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
-.b1 { width: 28px; height: 28px; left: 12%; top: 18%; animation: ballBounce 2.5s ease-in-out infinite 0s; }
-.b2 { width: 24px; height: 24px; left: 55%; top: 12%; animation: ballBounce 2.5s ease-in-out infinite 0.2s; }
-.b3 { width: 32px; height: 32px; left: 35%; top: 35%; animation: ballBounce 2.5s ease-in-out infinite 0.4s; }
-.b4 { width: 20px; height: 20px; left: 70%; top: 30%; animation: ballBounce 2.5s ease-in-out infinite 0.6s; }
-.b5 { width: 26px; height: 26px; left: 18%; top: 55%; animation: ballBounce 2.5s ease-in-out infinite 0.8s; }
-.b6 { width: 30px; height: 30px; left: 50%; top: 60%; animation: ballBounce 2.5s ease-in-out infinite 1.0s; }
-.b7 { width: 22px; height: 22px; left: 75%; top: 65%; animation: ballBounce 2.5s ease-in-out infinite 1.2s; }
-.b8 { width: 25px; height: 25px; left: 30%; top: 78%; animation: ballBounce 2.5s ease-in-out infinite 1.4s; }
+.b1 { width: 28px; height: 28px; left: 12%; top: 18%; animation: ballBounce 3.5s ease-in-out infinite 0s; }
+.b2 { width: 24px; height: 24px; left: 55%; top: 12%; animation: ballBounce 3.5s ease-in-out infinite 0.28s; }
+.b3 { width: 32px; height: 32px; left: 35%; top: 35%; animation: ballBounce 3.5s ease-in-out infinite 0.56s; }
+.b4 { width: 20px; height: 20px; left: 70%; top: 30%; animation: ballBounce 3.5s ease-in-out infinite 0.84s; }
+.b5 { width: 26px; height: 26px; left: 18%; top: 55%; animation: ballBounce 3.5s ease-in-out infinite 1.12s; }
+.b6 { width: 30px; height: 30px; left: 50%; top: 60%; animation: ballBounce 3.5s ease-in-out infinite 1.4s; }
+.b7 { width: 22px; height: 22px; left: 75%; top: 65%; animation: ballBounce 3.5s ease-in-out infinite 1.68s; }
+.b8 { width: 25px; height: 25px; left: 30%; top: 78%; animation: ballBounce 3.5s ease-in-out infinite 1.96s; }
 
 @keyframes ballBounce {
     0%, 100% { transform: translateY(0); }
@@ -1256,7 +1264,7 @@ a {
         inset 8px 8px 20px rgba(255, 255, 255, 0.1),
         0 15px 40px rgba(0, 0, 0, 0.2);
     position: relative;
-    animation: sphereSpin 6s linear infinite;
+    animation: sphereSpin 8.4s linear infinite;
 }
 
 .sphere-highlight {
@@ -1291,9 +1299,9 @@ a {
     background: var(--gray-400);
 }
 
-.pb1 { width: 24px; height: 24px; left: 20%; animation: physicsDrop1 2s ease-in-out infinite; }
-.pb2 { width: 20px; height: 20px; left: 45%; animation: physicsDrop2 2s ease-in-out infinite 0.3s; }
-.pb3 { width: 28px; height: 28px; left: 70%; animation: physicsDrop3 2s ease-in-out infinite 0.6s; }
+.pb1 { width: 24px; height: 24px; left: 20%; animation: physicsDrop1 2.8s ease-in-out infinite; }
+.pb2 { width: 20px; height: 20px; left: 45%; animation: physicsDrop2 2.8s ease-in-out infinite 0.42s; }
+.pb3 { width: 28px; height: 28px; left: 70%; animation: physicsDrop3 2.8s ease-in-out infinite 0.84s; }
 
 .physics-ground {
     position: absolute;
@@ -1335,7 +1343,7 @@ a {
     border: 2px solid var(--gray-300);
     border-radius: 50%;
     position: relative;
-    animation: gyroTilt 3s ease-in-out infinite;
+    animation: gyroTilt 4.2s ease-in-out infinite;
 }
 
 .gyro-dot {
@@ -1344,7 +1352,7 @@ a {
     background: var(--gray-900);
     border-radius: 50%;
     position: absolute;
-    animation: gyroDotMove 3s ease-in-out infinite;
+    animation: gyroDotMove 4.2s ease-in-out infinite;
 }
 
 @keyframes gyroTilt {
@@ -1431,7 +1439,7 @@ a {
     background: #1a1a1a;
     border-radius: 10px;
     position: relative;
-    animation: gestureRotate 4s ease-in-out infinite;
+    animation: gestureRotate 5.6s ease-in-out infinite;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
@@ -1444,7 +1452,7 @@ a {
     background: var(--gray-500);
     border-radius: 20px 20px 8px 8px;
     opacity: 0.8;
-    animation: fingerMove 4s ease-in-out infinite;
+    animation: fingerMove 5.6s ease-in-out infinite;
 }
 
 @keyframes gestureRotate {
@@ -1481,7 +1489,7 @@ a {
     border-radius: 999px;
     padding: 6px 14px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.28s ease;
     white-space: nowrap;
 }
 
@@ -1522,7 +1530,7 @@ a {
     border-radius: 999px;
     padding: 5px 12px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.28s ease;
     white-space: nowrap;
 }
 

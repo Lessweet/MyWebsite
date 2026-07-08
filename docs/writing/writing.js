@@ -92,6 +92,15 @@ function initSiteNav() {
     const pencil = '<path d="M16.5 4.5 L19.5 7.5 L8 19 L4 20 L5 16 Z"/><path d="M14.5 6.5 L17.5 9.5"/>';
     const design = '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 10 H20"/><path d="M10 10 V20"/>';
     const a = (cls) => 'nav-cat' + (active === cls ? ' active' : '');
+    // 字标配置:以后换字标只改 WORDMARK 这一处。data-wordmark 写到 .site-title 上,
+    // 供 CSS 区分不同字标的细节(例如 LENS 需要与左侧 favicon 多留一点间距,VIBEUX 不需要)。
+    const WORDMARK = 'lenslab';   // 'lenslab' | 'lens' | 'vibeux'
+    const WORDMARKS = {
+        lenslab: { src: 'logo-lenslab.svg?v=5', alt: 'LENSLAB' },
+        lens:    { src: 'logo-lens-spiral.png?v=1', alt: 'LENS' },
+        vibeux:  { src: 'logo-wordmark.png?v=2',    alt: 'VIBEUX' },
+    };
+    const wm = WORDMARKS[WORDMARK] || WORDMARKS.lens;
     // 顶栏背景层:复用流沙渐变 banner(bare 模式,无文字)。默认透明,滚动到 banner 滚出后(.nav-solid)淡入替代白底。
     // 仅分类页(index-v2 / design = design-page 且非 writing-page / reading-page)注入,与 CSS 作用域一致;
     // 阅读页(article)与 writing/index 顶栏维持现状,不注入。
@@ -103,7 +112,7 @@ function initSiteNav() {
     nav.innerHTML =
         navBg +
         '<div class="header-left">' +
-            '<a href="' + base + 'index-v2.html" class="site-title" aria-label="VIBEUX"><img src="' + base + 'favicon.png?v=14" class="site-logo" alt=""><img src="' + base + 'logo-wordmark.png?v=2" class="site-wordmark" alt="VIBEUX"></a>' +
+            '<a href="' + base + 'index-v2.html" class="site-title" data-wordmark="' + WORDMARK + '" aria-label="' + wm.alt + '"><img src="' + base + 'favicon.png?v=14" class="site-logo" alt=""><img src="' + base + wm.src + '" class="site-wordmark" alt="' + wm.alt + '"></a>' +
         '</div>' +
         // 手机端汉堡按钮:桌面隐藏,≤600px 显示;点击展开 .nav-collapse 下拉
         '<button type="button" class="nav-toggle" aria-label="菜单" aria-expanded="false" aria-controls="nav-collapse">' +
@@ -202,40 +211,44 @@ function initArticleReveal() {
         }
     });
     if (!blocks.length) return;
-    blocks.forEach((el) => el.classList.add('article-enter'));
 
-    const play = (el, delayMs) => {
+    // 首屏块:淡入+上移(.article-enter 含 opacity:0,只给首屏块加)
+    const playEnter = (el, delayMs) => {
+        el.classList.add('article-enter');
         el.style.animationDelay = (delayMs || 0) + 'ms';
         el.classList.add('play');
-        el.dataset.entered = '1';
     };
-    if (!('IntersectionObserver' in window)) { blocks.forEach((el) => play(el, 0)); return; }
 
     const STAGGER = 120;   // 相邻块之间的错峰间隔(ms)
     const ROW_TOL = 28;    // 顶部相差小于此值视为同一片,一起入场
-    // 首屏:按视觉顺序(getBoundingClientRect.top,已含封面 order:-1 置顶)从上到下逐块错开
+    // 首屏可见的块,按视觉顺序(getBoundingClientRect.top,已含封面 order:-1 置顶)从上到下逐块错开
     const vh = window.innerHeight || document.documentElement.clientHeight;
+    const inViewSet = new Set();
     const inView = blocks
         .filter((el) => { const r = el.getBoundingClientRect(); return r.top < vh - 40 && r.bottom > 0; })
         .sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
+    inView.forEach((el) => inViewSet.add(el));
     let lastTop = null;
     let step = 0;
     inView.forEach((el) => {
         const top = Math.round(el.getBoundingClientRect().top);
         if (lastTop !== null && top - lastTop > ROW_TOL) step += 1;
         lastTop = top;
-        play(el, step * STAGGER);
+        playEnter(el, step * STAGGER);
     });
 
-    // 屏外:滚动进入视口时各自即时播放(不再叠加错峰延迟,避免滚动后还要等)
+    // 屏外块:只上移、不淡入。加 .article-move(初始下移、opacity 不变),滚动进入视口时各自播放
+    const offscreen = blocks.filter((el) => !inViewSet.has(el));
+    if (!('IntersectionObserver' in window)) { offscreen.forEach((el) => el.classList.add('article-move', 'play')); return; }
+    offscreen.forEach((el) => el.classList.add('article-move'));
     const observer = new IntersectionObserver((entries) => {
         entries.forEach((e) => {
             if (!e.isIntersecting) return;
             observer.unobserve(e.target);
-            play(e.target, 0);
+            e.target.classList.add('play');
         });
     }, { root: null, rootMargin: '0px 0px -50px 0px', threshold: 0.1 });
-    blocks.forEach((el) => { if (!el.dataset.entered) observer.observe(el); });
+    offscreen.forEach((el) => observer.observe(el));
 }
 
 function initReveal() {
@@ -362,15 +375,42 @@ function initTOC() {
 
 /* ========================================
    阅读页 master–detail 阅读器
-   左栏 = 文章清单(单一数据源,下面 READER_ARTICLES),右栏 = 正文。
+   左栏 = 文章清单。数据源 = writing/articles.json(发布时 render.py 自动维护);
+   下面 READER_ARTICLES 仅是 fetch 不可用(file:// 直开)时的兜底快照。右栏 = 正文。
    点列表项 / 上一篇下一篇 / 合集链接 → fetch 目标页、只换正文,不整页刷新。
    fetch 不可用时(如 file:// 本地直开)自动兜底为普通跳转,体验降级但不坏。
    ======================================== */
-const READER_ARTICLES = [
-    { file: 'article-figma-agent.html', cat: 'ui',      title: 'Figma 把 Agent 装进画布，让设计师同时开多个方向', date: '2026-05-31', cover: 'assets/figma-agent/cover.png' },
-    { file: 'article-genie.html',       cat: 'ui',      title: 'Genie 给 AI 装了一具身体：光、物理和触感',          date: '2026-05-30', cover: 'assets/genie/cover.png' },
-    { file: 'article.html',             cat: 'product', title: 'AI 产品的首屏，正在被重新定义',                     date: '2026-05-24', cover: '' },
+/* READER_ARTICLES:AUTO —— 发布时 render.py 从 articles.json 自动重生成此数组,勿手改。 */
+let READER_ARTICLES = [
+    { file: "article-review-ai-output.html", cat: "ui", title: "设计师的新工作，审查 AI 产物", date: "2026-07-05", cover: "assets/review-ai-output/cover.png", accent: "#0E9E6E" },
+    { file: "article-figma-skills.html", cat: "ui", title: "设计师的新资产，是 Skills", date: "2026-07-05", cover: "assets/figma-skills/cover2.1.png", accent: "#D4A017" },
+    { file: "article-figma-shader-motion.html", cat: "ui", title: "在设计系统里，Figma Shader 和 Motion ，正从效果变成可复用元素", date: "2026-07-01", cover: "assets/figma-shader-motion/cover.png", accent: "#7C4DFF" },
+    { file: "article-figma-config-2026.html", cat: "product", title: "设计师被 AI 替代之前，Figma 用一整套新功能抬高设计师上限", date: "2026-06-26", cover: "assets/figma-config-2026/cover.png", accent: "#D4A017" },
+    { file: "article-app-shape-for-ai.html", cat: "product", title: "SiriAI 设计", date: "2026-06-25", cover: "assets/app-shape-for-ai/cover_v9.png", accent: "#5B7FFF" },
+    { file: "article-sparkle.html", cat: "ui", title: "AI 符号被秒懂，是调用了成熟的用户心智模型", date: "2026-05-24", cover: "assets/sparkle/cover.png", accent: "#6F8FC4" },
 ];
+/* READER_ARTICLES:END */
+
+/* 从 writing/articles.json 拉取最新文章清单 → 映射成 READER_ARTICLES 形状(file/cat/title/date/cover/accent),
+   按 date 倒序。fetch 不可用(file://)或失败时返回 null,调用方继续用内置兜底。 */
+function loadReaderManifest() {
+    // 带时间戳避免浏览器/CDN 缓存旧清单 —— 否则新发布的文章不会同步进左栏列表
+    return fetch('articles.json?t=' + Date.now(), { cache: 'no-store' })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+            const arts = data && data.articles;
+            if (!Array.isArray(arts) || !arts.length) return null;
+            return arts.map((a) => ({
+                file: a.file || ('article-' + a.slug + '.html'),
+                cat: a.cat || 'product',
+                title: a.title || '',
+                date: a.date || '',
+                cover: a.cover || '',
+                accent: a.accent || '',
+            })).sort((x, y) => (y.date || '').localeCompare(x.date || ''));
+        })
+        .catch(() => null);
+}
 const READER_CATS = [
     { key: 'all', label: '全部' },
     { key: 'ui', label: 'UI 视觉' },
@@ -431,7 +471,13 @@ function initReader() {
         if (!canScroll || atTop || atBottom) e.preventDefault();   // 无内容 / 到边界 → 截断,页面不滚
     }, { passive: false });
 
-    renderReaderList(list, currentArticleFile());
+    renderReaderList(list, currentArticleFile());   // 先用内置兜底渲染,避免空白/file:// 直开失效
+    // 再拉 articles.json 刷新:新发布的文章会自动出现(render.py 发布时已写入清单)
+    loadReaderManifest().then((arts) => {
+        if (!arts) return;
+        READER_ARTICLES = arts;
+        renderReaderList(list, currentArticleFile());
+    });
 
     // ≤1440 单栏时:列表收成顶部「文章 ▾」下拉菜单的开关(仅该断点 CSS 显示)
     const setOpen = (open) => {
@@ -549,8 +595,15 @@ function switchArticle(file, push) {
 
             live.innerHTML = next.innerHTML;
             if (doc.title) document.title = doc.title;
+            // 同步底色:底色统一走 data-tint 命名档(见 writing.css 色卡);
+            // 不再用内联 --page-tint,导航时若目标页残留内联则一并清掉,避免带入上一篇底色。
             const tint = doc.body.getAttribute('data-tint');
             if (tint) document.body.setAttribute('data-tint', tint);
+            const accent = doc.body.getAttribute('data-accent');
+            if (accent) document.body.setAttribute('data-accent', accent); else document.body.removeAttribute('data-accent');
+            const inlineTint = doc.body.style.getPropertyValue('--page-tint');
+            if (inlineTint) document.body.style.setProperty('--page-tint', inlineTint);
+            else document.body.style.removeProperty('--page-tint');
 
             document.querySelectorAll('.reader-item').forEach((item) =>
                 item.classList.toggle('active', item.dataset.file === file));

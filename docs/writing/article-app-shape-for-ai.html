@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SiriAI 设计 · VibeUX</title>
+<link href="../favicon.png?v=12" rel="icon" type="image/png"/>
+<link href="../favicon.png?v=12" rel="shortcut icon"/>
+<link href="../apple-touch-icon.png?v=12" rel="apple-touch-icon"/>
+<link href="../style.css?v=127" rel="stylesheet"/>
+<link href="writing.css?v=249" rel="stylesheet"/>
+<!-- 提前加载,使顶部导航能在首次绘制前同步注入,避免空 header 闪烁(与首页一致) -->
+<script src="writing.js?v=71"></script>
+</head>
+<!-- 复用首页 index-v2 的胶囊顶栏:home-v2 控制顶栏内边距,design-page 提供胶囊样式 -->
+<body class="writing-page home-v2 design-page reading-page" data-accent="#5B7FFF" data-tint="blue">
+<!-- 顶部导航:与首页同一个组件(initSiteNav);data-base="../" 把站内链接/资源指回 docs 根目录。
+         返回入口 = 左侧 VIBEUX 与高亮的 Writing 胶囊,均回到 index-v2.html#writing -->
+<header class="header home-nav" data-active="writing" data-base="../" id="site-nav"></header>
+<script>initSiteNav();</script>
+<div class="header-placeholder"></div>
+<script>
+        // 顶栏 fixed 脱流,占位块高度跟随顶栏实际高度(big VIBEUX 标题在不同断点高度不同)
+        // 同时把左侧固定目录的 top 对齐到正文顶部 = 顶栏高度 + 正文上间距(56px,见 .reading-layout)
+        (function () {
+            const READING_TOP = 104;
+            const h = document.querySelector('.header');
+            const ph = document.querySelector('.header-placeholder');
+            const set = () => {
+                if (!h) return;
+                if (ph) ph.style.height = h.offsetHeight + 'px';
+                document.documentElement.style.setProperty('--toc-top', (h.offsetHeight + READING_TOP) + 'px');
+            };
+            set();
+            window.addEventListener('resize', set);
+            window.addEventListener('load', set);
+        })();
+    </script>
+<div class="reading-layout">
+<!-- ① 文章列表(JS 渲染,master–detail 左栏) -->
+<aside aria-label="文章列表" class="reader-list"></aside>
+<!-- ③ 浮动目录(JS 自动生成) -->
+<aside aria-label="目录" class="article-toc">
+<div class="article-toc-title">目录</div>
+<nav id="toc"></nav>
+</aside>
+<!-- 正文 -->
+<article class="article-reading">
+<h1 class="article-h1">SiriAI 设计</h1>
+<div class="article-byline"><div class="article-eyebrow"><span class="a-tag">即将发布</span></div></div>
+<div class="article-body">
+<style>
+.article-eyebrow { text-align: center; justify-content: center; }
+.article-eyebrow .a-tag { font-weight: 400; color: #5B7FFF; background: rgba(91,127,255,0.1); border-radius: 999px; padding: 3px 12px; }
+.article-h1 { text-align: center; }
+.article-byline { text-align: center; justify-content: center; }
+.coming-soon { text-align: center; padding: 96px 20px 120px; color: #1a1a1a; }
+.coming-soon .cs-badge { display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-body); font-weight: 400; color: #5B7FFF; }
+.coming-soon .cs-badge svg { width: 34px; height: 34px; }
+.coming-soon .cs-text { font-size: var(--fs-body); font-weight: 300; color: #9a9aa6; margin-top: 18px; line-height: 1.5; }
+.coming-soon .cs-dot { animation: cs-dot 1.6s ease-in-out infinite; transform-box: view-box; transform-origin: 12px 8px; }
+@keyframes cs-dot { 0%,100% { opacity: 0.35; } 50% { opacity: 1; } }
+</style>
+<div class="coming-soon">
+<div class="cs-badge">
+<svg fill="none" stroke="#5B7FFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9"></circle><path d="M12 7 L12 12 L15.5 14"></path><circle class="cs-dot" cx="12" cy="8" fill="#5B7FFF" r="0.9" stroke="none"></circle></svg>
+即将发布
+</div>
+<div class="cs-text">这篇文章正在打磨中，敬请期待。</div>
+</div>
+</div>
+<!-- 底部 -->
+<footer class="article-footer">
+<div class="same-collection"></div>
+</footer>
+</article>
+</div>
+<script src="../script.js?v=27"></script>
+</body>
+</html>

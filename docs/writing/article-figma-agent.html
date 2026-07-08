@@ -8,13 +8,13 @@
 <link href="../favicon.png?v=12" rel="icon" type="image/png"/>
 <link href="../favicon.png?v=12" rel="shortcut icon"/>
 <link href="../apple-touch-icon.png?v=12" rel="apple-touch-icon"/>
-<link href="../style.css?v=123" rel="stylesheet"/>
-<link href="writing.css?v=236" rel="stylesheet"/>
+<link href="../style.css?v=127" rel="stylesheet"/>
+<link href="writing.css?v=249" rel="stylesheet"/>
 <!-- 提前加载,使顶部导航能在首次绘制前同步注入,避免空 header 闪烁(与首页一致) -->
-<script src="writing.js?v=66"></script>
+<script src="writing.js?v=71"></script>
 </head>
 <!-- 复用首页 index-v2 的胶囊顶栏:home-v2 控制顶栏内边距,design-page 提供胶囊样式 -->
-<body class="writing-page home-v2 design-page reading-page" data-tint="mint">
+<body class="writing-page home-v2 design-page reading-page" data-accent="#3B82F6" data-tint="blue">
 <!-- 顶部导航:与首页同一个组件(initSiteNav);data-base="../" 把站内链接/资源指回 docs 根目录。
          返回入口 = 左侧 VIBEUX 与高亮的 Writing 胶囊,均回到 index-v2.html#writing -->
 <header class="header home-nav" data-active="writing" data-base="../" id="site-nav"></header>
@@ -39,7 +39,7 @@
     </script>
 <div class="reading-layout">
 <!-- ① 文章列表(JS 渲染,master–detail 左栏) -->
-<aside class="reader-list" aria-label="文章列表"></aside>
+<aside aria-label="文章列表" class="reader-list"></aside>
 <!-- ③ 浮动目录(JS 自动生成) -->
 <aside aria-label="目录" class="article-toc">
 <div class="article-toc-title">目录</div>
@@ -47,9 +47,8 @@
 </aside>
 <!-- 正文 -->
 <article class="article-reading">
-<div class="article-eyebrow"><span class="a-tag"><svg class="tag-ico" viewBox="0 0 24 24" aria-hidden="true"><g transform="translate(12 12)" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M 0 -7 C 0.9 -7 1.3 -5.2 1.8 -3.8 C 2.8 -1 5.2 -0.3 7 0 C 5.2 0.3 2.8 1 1.8 3.8 C 1.3 5.2 0.9 7 0 7 C -0.9 7 -1.3 5.2 -1.8 3.8 C -2.8 1 -5.2 0.3 -7 0 C -5.2 -0.3 -2.8 -1 -1.8 -3.8 C -1.3 -5.2 -0.9 -7 0 -7 Z"/></g></svg>反假选择</span><span class="a-tag"><svg class="tag-ico" viewBox="0 0 24 24" aria-hidden="true"><g stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5 C10.6 3.2 7.8 3.2 6.8 5 C4.6 5.2 3.2 7.2 4.3 9 C2.7 10.2 2.7 12 4.3 13.2 C3.5 15 4.8 17 7 17.2 C7.4 19 9.6 20 12 19 C14.4 20 16.6 19 17 17.2 C19.2 17 20.5 15 19.7 13.2 C21.3 12 21.3 10.2 19.7 9 C20.8 7.2 19.4 5.2 17.2 5 C16.2 3.2 13.4 3.2 12 5 Z"/><path d="M12 5 L12 19"/></g></svg>并行思维</span></div>
 <h1 class="article-h1">Figma 把 Agent 装进画布<br/>让设计师同时开多个方向</h1>
-<div class="article-byline"><span>2026-05-31</span><span>阅读约 8 分钟</span></div>
+<div class="article-byline"><div class="article-eyebrow"><span class="a-tag">反假选择</span></div><span>2026-05-31</span><span>阅读约 8 分钟</span></div>
 <div class="article-cover"><img alt="封面" src="assets/figma-agent/cover.png" style="width:100%;display:block;border-radius:8px;"/></div>
 <div class="article-body"><style>
 /* article-template 样式 inline 到网站，仅作用于 .article-body 内 */
@@ -58,14 +57,14 @@
 .article-h1 { text-align: center; }
 .article-byline { text-align: center; justify-content: center; }
 .article-body { color: #1a1a1a; line-height: 1.4; }
-.article-body p { font-size: 18px; margin: 40px 0; color: #1a1a1a; }
+.article-body p { font-size: var(--fs-body); margin: 40px 0; color: #1a1a1a; }
 .article-body strong { font-weight: 400; color: #1a1a1a; }
 .article-body .section-head { text-align: center; margin: 56px 0; }
 .article-body .section-head svg { display: block; margin: 0 auto 14px; width: 36px; height: 36px; overflow: visible; }
-.article-body h2 { font-size: 32px; font-weight: 500; color: #1a1a1a; line-height: 1.2; margin: 0; letter-spacing: 0; text-align: center; }
+.article-body h2 { font-size: var(--fs-h2); font-weight: 400; color: #1a1a1a; line-height: 1.2; margin: 0; letter-spacing: 0; text-align: center; }
 .article-body img { width: 100%; border-radius: 6px; margin: 16px 0 0 0; display: block; }
-.article-body .img-caption { font-size: 14px; color: #aaa; text-align: center; margin: 4px 0 18px 0; line-height: 1.4; }
-.article-body .highlight { font-size: 18px; line-height: 1.4; color: #1a1a1a; margin: 40px 0; }
+.article-body .img-caption { font-size: var(--fs-caption); color: #aaa; text-align: center; margin: 4px 0 18px 0; line-height: 1.4; }
+.article-body .highlight { font-size: var(--fs-body); line-height: 1.4; color: #1a1a1a; margin: 40px 0; }
 .article-body .highlight strong { font-weight: 400; color: #1a1a1a; }
 
 /* outlined 图标动画 CSS（自动从 icon-studio 抽取，不要手改） */
@@ -83,7 +82,7 @@
   transform-box: fill-box;
   transform-origin: center;
 }
-.section-head svg .anim-viewbox {
+.section-head svg .anim-viewBox {
   transform-box: view-box;
   transform-origin: center;
 }
@@ -473,17 +472,17 @@
 <p>产品负责人 Rodrigo Davies 和产品设计师 Tammy Taabassum 在发布博客里写了一句让人愿意停下来读两遍的话：<strong>"Speed or precision? AI generation or direct manipulation? You shouldn't have to choose."</strong> 速度还是精准？AI 生成还是直接操作？你不必二选一。</p>
 <p>这句话听上去像句口号，但它其实点破了过去两年所有 AI 设计工具的尴尬：你要么用 prompt 让 AI 给你出一版，但精准度全交给运气；要么自己拖控件改像素，但速度回到了 AI 出现之前。Figma Agent 的整个设计，是想把这道选择题撕掉。</p>
 <img alt="Figma Agent 整体演示" src="assets/figma-agent/01_hero.gif"/><div class="img-caption">Figma Agent 整体演示</div>
-<div class="section-head"><svg height="36" viewbox="0 0 24 24" width="36" xmlns="http://www.w3.org/2000/svg">
+<div class="section-head"><svg height="36" viewBox="0 0 24 24" width="36" xmlns="http://www.w3.org/2000/svg">
 <g fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" transform="translate(12 12)">
 <g class="anim-shape-cycle">
 <path class="anim-shape-morph" d="M 0 -7 C 0.9 -7 1.3 -5.2 1.8 -3.8 C 2.8 -1 5.2 -0.3 7 0 C 5.2 0.3 2.8 1 1.8 3.8 C 1.3 5.2 0.9 7 0 7 C -0.9 7 -1.3 5.2 -1.8 3.8 C -2.8 1 -5.2 0.3 -7 0 C -5.2 -0.3 -2.8 -1 -1.8 -3.8 C -1.3 -5.2 -0.9 -7 0 -7 Z">
-<animate attributename="d" calcmode="spline" dur="2.5s" keysplines="0.45 0 1 1;0 0 1 1;0 0 0.55 1;0 0 1 1" keytimes="0;0.2667;0.5333;0.8;1" repeatcount="indefinite" values="M 0 -7 C 0.9 -7 1.3 -5.2 1.8 -3.8 C 2.8 -1 5.2 -0.3 7 0 C 5.2 0.3 2.8 1 1.8 3.8 C 1.3 5.2 0.9 7 0 7 C -0.9 7 -1.3 5.2 -1.8 3.8 C -2.8 1 -5.2 0.3 -7 0 C -5.2 -0.3 -2.8 -1 -1.8 -3.8 C -1.3 -5.2 -0.9 -7 0 -7 Z;
+<animate attributeName="d" calcMode="spline" dur="2.5s" keySplines="0.45 0 1 1;0 0 1 1;0 0 0.55 1;0 0 1 1" keyTimes="0;0.2667;0.5333;0.8;1" repeatCount="indefinite" values="M 0 -7 C 0.9 -7 1.3 -5.2 1.8 -3.8 C 2.8 -1 5.2 -0.3 7 0 C 5.2 0.3 2.8 1 1.8 3.8 C 1.3 5.2 0.9 7 0 7 C -0.9 7 -1.3 5.2 -1.8 3.8 C -2.8 1 -5.2 0.3 -7 0 C -5.2 -0.3 -2.8 -1 -1.8 -3.8 C -1.3 -5.2 -0.9 -7 0 -7 Z;
               M 0 -5.8 C 1.55 -5.8 3.02 -5.18 4.1 -4.1 C 5.18 -3.02 5.8 -1.55 5.8 0 C 5.8 1.55 5.18 3.02 4.1 4.1 C 3.02 5.18 1.55 5.8 0 5.8 C -1.55 5.8 -3.02 5.18 -4.1 4.1 C -5.18 3.02 -5.8 1.55 -5.8 0 C -5.8 -1.55 -5.18 -3.02 -4.1 -4.1 C -3.02 -5.18 -1.55 -5.8 0 -5.8 Z;
               M 0 -5.2 C 1.9 -5.2 3.8 -5.2 5.2 -5.2 C 5.2 -3.8 5.2 -1.9 5.2 0 C 5.2 1.9 5.2 3.8 5.2 5.2 C 3.8 5.2 1.9 5.2 0 5.2 C -1.9 5.2 -3.8 5.2 -5.2 5.2 C -5.2 3.8 -5.2 1.9 -5.2 0 C -5.2 -1.9 -5.2 -3.8 -5.2 -5.2 C -3.8 -5.2 -1.9 -5.2 0 -5.2 Z;
               M 0 -7 C 0.9 -7 1.3 -5.2 1.8 -3.8 C 2.8 -1 5.2 -0.3 7 0 C 5.2 0.3 2.8 1 1.8 3.8 C 1.3 5.2 0.9 7 0 7 C -0.9 7 -1.3 5.2 -1.8 3.8 C -2.8 1 -5.2 0.3 -7 0 C -5.2 -0.3 -2.8 -1 -1.8 -3.8 C -1.3 -5.2 -0.9 -7 0 -7 Z;
               M 0 -7 C 0.9 -7 1.3 -5.2 1.8 -3.8 C 2.8 -1 5.2 -0.3 7 0 C 5.2 0.3 2.8 1 1.8 3.8 C 1.3 5.2 0.9 7 0 7 C -0.9 7 -1.3 5.2 -1.8 3.8 C -2.8 1 -5.2 0.3 -7 0 C -5.2 -0.3 -2.8 -1 -1.8 -3.8 C -1.3 -5.2 -0.9 -7 0 -7 Z"></animate>
 </path>
-<animatetransform additive="sum" attributename="transform" calcmode="spline" dur="2.5s" keysplines="0.45 0 1 1;0 0 1 1;0 0 0.55 1;0 0 1 1" keytimes="0;0.2667;0.5333;0.8;1" repeatcount="indefinite" type="rotate" values="0;120;240;360;360"></animatetransform>
+<animateTransform additive="sum" attributeName="transform" calcMode="spline" dur="2.5s" keySplines="0.45 0 1 1;0 0 1 1;0 0 0.55 1;0 0 1 1" keyTimes="0;0.2667;0.5333;0.8;1" repeatCount="indefinite" type="rotate" values="0;120;240;360;360"></animateTransform>
 </g>
 </g>
 </svg><h2>假选择是怎么来的</h2></div>
@@ -491,7 +490,7 @@
 <p>更糟的是，<strong>AI 通常只给你一个方向</strong>。你想看「如果做得更现代会怎样？如果换个有机风格呢？」你得自己一次次重写 prompt，一次次盯着 loading。</p>
 <p>设计师本来最擅长的就是「同时在脑子里铺开几个方向」，结果 AI 工具反而把这个并行能力压扁成了串行队列。</p>
 <p>Figma Agent 不想让设计师再去做这种排队的事。</p>
-<div class="section-head"><svg height="36" viewbox="0 0 24 24" width="36" xmlns="http://www.w3.org/2000/svg">
+<div class="section-head"><svg height="36" viewBox="0 0 24 24" width="36" xmlns="http://www.w3.org/2000/svg">
 <g class="anim-brain" fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2">
 <path d="M12 5 C10.6 3.2 7.8 3.2 6.8 5 C4.6 5.2 3.2 7.2 4.3 9 C2.7 10.2 2.7 12 4.3 13.2 C3.5 15 4.8 17 7 17.2 C7.4 19 9.6 20 12 19 C14.4 20 16.6 19 17 17.2 C19.2 17 20.5 15 19.7 13.2 C21.3 12 21.3 10.2 19.7 9 C20.8 7.2 19.4 5.2 17.2 5 C16.2 3.2 13.4 3.2 12 5 Z"></path>
 <path d="M12 5 L12 19"></path>
@@ -501,7 +500,7 @@
 <p>比如给同一个界面，让 Agent 同时出<strong>有机风格、现代风格、复古风格</strong>三种方向。三组结果并排出现在画布上，你不用一版版等，直接做横向对比。</p>
 <img alt="一个 prompt 出三种风格方向" src="assets/figma-agent/02_explore_styles.gif"/><div class="img-caption">一个 prompt 出三种风格方向</div>
 <p>这件事的妙处不在「快」，而在<strong>重新分配了设计师的注意力</strong>。AI 在背景里跑探索，设计师的脑子腾出来做判断。判断什么风格更贴品牌、什么排版更适合内容、哪个细节值得保留——这才是设计师该干的活。</p>
-<div class="section-head"><svg height="36" viewbox="0 0 24 24" width="36" xmlns="http://www.w3.org/2000/svg">
+<div class="section-head"><svg height="36" viewBox="0 0 24 24" width="36" xmlns="http://www.w3.org/2000/svg">
 <rect fill="none" height="14" rx="3" stroke="#1a1a1a" stroke-width="1.2" width="14" x="3" y="7"></rect>
 <circle cx="7.5" cy="11" fill="none" r="1.3" stroke="#1a1a1a" stroke-width="1.2"></circle>
 <path d="M3.5 17.8 L7 14 L10 17 L13 14 L16.5 17.5" fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
@@ -512,7 +511,7 @@
 <p>Figma Agent 能直接拉真实图片填充画面，比如户外、运动场景的图像，还能给同一段标题尝试多种处理方式——加大字号、换字重、换排版结构。</p>
 <img alt="真实内容与多种标题处理" src="assets/figma-agent/03_content_fill.gif"/><div class="img-caption">真实内容与多种标题处理</div>
 <p>这一步其实是把传统设计流程里最痛的一环搬到了 Agent 身上：<strong>「找图、试排版、看效果」</strong>。以前是设计师自己开几个标签页搜图、剪裁、塞进去，看完不行再换。现在 Agent 把这条链路自动化了，设计师专注看哪一版的内容和版式咬合得最好。</p>
-<div class="section-head"><svg height="36" viewbox="0 0 24 24" width="36" xmlns="http://www.w3.org/2000/svg">
+<div class="section-head"><svg height="36" viewBox="0 0 24 24" width="36" xmlns="http://www.w3.org/2000/svg">
 <g fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2">
 <rect height="16" rx="3" width="18" x="3" y="4"></rect>
 <path d="M3 8 L21 8"></path>
@@ -530,7 +529,7 @@
 <img alt="批量统一内边距与变量" src="assets/figma-agent/05_automate_b.gif"/><div class="img-caption">批量统一内边距与变量</div>
 <p>你给一句指令，Agent 在几十个 frame 里穿来穿去做修改。重要的是，<strong>它认得设计系统</strong>——它知道「这个按钮」对应的是组件库里哪个 component，「主色」对应的是哪个 token。改完之后，整个文件依然是规范的，不是被 AI 糊出来的散件。</p>
 <p>这正是 Figma 原生 Agent 跟第三方 agent 最大的差别。</p>
-<div class="section-head"><svg height="36" viewbox="0 0 24 24" width="36" xmlns="http://www.w3.org/2000/svg">
+<div class="section-head"><svg height="36" viewBox="0 0 24 24" width="36" xmlns="http://www.w3.org/2000/svg">
 <g class="anim-clap-lines" fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-width="1.2">
 <path d="M10.5 2.2 L10.5 4.4"></path>
 <path d="M5.6 3.8 L7.1 5.3"></path>
@@ -545,7 +544,7 @@
 <img alt="评论按主题归类并生成新版" src="assets/figma-agent/06_feedback.gif"/><div class="img-caption">评论按主题归类并生成新版</div>
 <p>设计师拿到的不再是一堆零散的吐槽，而是一个<strong>已经吸收了反馈的草稿</strong>。你可以从这个草稿出发再迭代，也可以挑挑拣拣只用其中几处改动。</p>
 <p>这一步的设计哲学其实很克制：<strong>Agent 不替你做决定</strong>，它只是把噪音整理成信号，把信号转成可见的草稿。最终是不是采纳，还在设计师手里。</p>
-<div class="section-head"><svg height="36" viewbox="0 0 24 24" width="36" xmlns="http://www.w3.org/2000/svg">
+<div class="section-head"><svg height="36" viewBox="0 0 24 24" width="36" xmlns="http://www.w3.org/2000/svg">
 <g class="anim-gear">
 <circle cx="12" cy="12" fill="none" r="3.2" stroke="#1a1a1a" stroke-width="1.2"></circle>
 <path d="M12 3 L12 6 M12 18 L12 21 M3 12 L6 12 M18 12 L21 12 M5 5 L7.2 7.2 M16.8 16.8 L19 19 M19 5 L16.8 7.2 M7.2 16.8 L5 19" fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
@@ -558,7 +557,7 @@
 <img alt="代码与画布的协同概念" src="assets/figma-agent/concept_code_canvas.png"/><div class="img-caption">代码与画布的协同概念</div>
 <p>跟 MCP 服务器的关系也是互补的，不是竞争。<strong>MCP 管的是代码与画布的同步</strong>，画布改了代码跟着改、代码改了画布跟着改；<strong>Agent 管的是画布内的设计创作</strong>。两边各管一段。</p>
 <p><strong>好的设计系统遇到 Agent，是乘数效应；没有设计系统的 Agent，是危险品</strong>。这句话值得每个团队记一下。</p>
-<div class="section-head"><svg height="36" viewbox="0 0 24 24" width="36" xmlns="http://www.w3.org/2000/svg">
+<div class="section-head"><svg height="36" viewBox="0 0 24 24" width="36" xmlns="http://www.w3.org/2000/svg">
 <g class="anim-bell">
 <path d="M12 3.8 C8 3.8 6.2 6.5 6.2 10.5 C6.2 13 5.5 15 4.4 16.3 C3.9 16.9 4.2 17.5 5 17.5 L19 17.5 C19.8 17.5 20.1 16.9 19.6 16.3 C18.5 15 17.8 13 17.8 10.5 C17.8 6.5 16 3.8 12 3.8 Z" fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
 <path class="anim-bell-clapper" d="M10 19.2 C10 20.4 10.8 21.2 12 21.2 C13.2 21.2 14 20.4 14 19.2" fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
