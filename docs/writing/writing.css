@@ -725,6 +725,19 @@ body.reading-page .article-byline .article-eyebrow {
     margin: 0;
     justify-content: center;
 }
+/* eyebrow 标签与日期/阅读时长同款:剥掉胶囊底,继承 byline 的等宽灰字(#969696、14px)。
+   多带一个 .article-byline 提高优先级,盖过共用 chip 块与手机端 padding 覆盖。 */
+body.reading-page .article-byline .article-eyebrow .a-tag {
+    background: none;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    color: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    font-size: inherit;
+    line-height: inherit;
+}
 
 /* 手机端:标题组上下间距同步缩小并保持一致(封面下 = byline 下 = 40px) */
 @media (max-width: 600px) {
@@ -1528,11 +1541,23 @@ body.home-v2 .header-placeholder { height: 76px; }
 /* 标签:标题上方一行(时间单独在底部左下,沿用 .w-date 默认左对齐)。
    tag 原本嵌在 .w-meta 里随日期沉底,用 display:contents 把 w-date / w-tags 提升为
    .writing-info 的直接 flex 项,再用 order 把 tag 提到标题上方、日期留底部。 */
-.home-v2 .writing-info .w-meta { display: contents; }
-.home-v2 .writing-info .w-tags { display: flex; flex-wrap: wrap; gap: 8px; order: -1; }
-/* chip 样式见上方「标签 chip 共用一套」;这里只留卡片 hover 时的文字淡化(上下文特有) */
-.card-wrapper:hover .writing-info .w-tags .a-tag {
-    color: var(--gray-500);
+/* tag 与日期同排(w-meta 一行),tag 在日期左侧;样式与日期一致:纯灰字、无胶囊底 */
+.home-v2 .writing-info .w-meta { display: flex; align-items: baseline; gap: 10px; }
+.home-v2 .writing-info .w-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.home-v2 .writing-info .w-meta .w-tags .a-tag {
+    background: none;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    font-family: inherit;
+    font-size: var(--fs-caption);   /* 14px,与日期一致 */
+    font-weight: 400;
+    color: #969696;                 /* 与 .w-date 同色 */
+    line-height: inherit;
+}
+/* hover 时与日期同步淡化 */
+.card-wrapper:hover .writing-info .w-meta .w-tags .a-tag {
+    color: var(--gray-300);
 }
 .writing-info .w-title {
     font-size: var(--fs-h3);   /* 卡片标题 20px */
