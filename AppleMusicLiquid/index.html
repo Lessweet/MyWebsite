@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Apple Music 液态渐变封面 · WebGL Demo</title>
+<style>
+  :root { --size: min(92vw, 92vh, 560px); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    background: #1c1c1e;
+    display: grid;
+    place-items: center;
+    font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+  }
+  .cover {
+    position: relative;
+    width: var(--size);
+    height: var(--size);
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px -20px rgba(0,0,0,.6);
+    isolation: isolate;
+  }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+  /* 顶部 Apple Music 标记 */
+  .brand {
+    position: absolute;
+    top: 6.5%;
+    right: 7%;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    color: #fff;
+    font-size: calc(var(--size) * 0.058);
+    font-weight: 500;
+    letter-spacing: .2px;
+    text-shadow: 0 1px 3px rgba(0,0,0,.12);
+    z-index: 2;
+  }
+  .brand svg { width: calc(var(--size) * 0.052); height: calc(var(--size) * 0.052); }
+
+  /* 中央标题 */
+  .title {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-size: calc(var(--size) * 0.155);
+    font-weight: 700;
+    letter-spacing: calc(var(--size) * 0.012);
+    text-shadow: 0 2px 12px rgba(120,60,0,.25);
+    z-index: 2;
+    user-select: none;
+  }
+
+  .hint {
+    position: fixed;
+    bottom: 18px;
+    left: 0; right: 0;
+    text-align: center;
+    color: #8e8e93;
+    font-size: 13px;
+  }
+  .hint code { color: #c7c7cc; }
+</style>
+</head>
+<body>
+  <div class="cover">
+    <canvas id="gl"></canvas>
+    <div class="brand">
+      <!-- Apple logo -->
+      <svg viewBox="0 0 384 512" fill="currentColor" aria-hidden="true">
+        <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
+      </svg>
+      <span>Music</span>
+    </div>
+    <div class="title">爱不释耳</div>
+  </div>
+
+  <div class="hint">WebGL · FBM 域扭曲液态渐变 — 按 <code>S</code> 截图,<code>1/2/3</code> 切换配色</div>
+
+<script type="x-shader/x-fragment" id="frag">
+precision highp float;
+uniform vec2  u_res;
+uniform float u_time;
+uniform int   u_palette;
+
+// ---- 值噪声 ----
+float hash(vec2 p){
+  p = fract(p * vec2(123.34, 456.21));
+  p += dot(p, p + 45.32);
+  return fract(p.x * p.y);
+}
+float noise(vec2 p){
+  vec2 i = floor(p), f = fract(p);
+  float a = hash(i);
+  float b = hash(i + vec2(1.0, 0.0));
+  float c = hash(i + vec2(0.0, 1.0));
+  float d = hash(i + vec2(1.0, 1.0));
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+// ---- 分形噪声 FBM ----
+float fbm(vec2 p){
+  float v = 0.0, a = 0.5;
+  mat2 m = mat2(1.6, 1.2, -1.2, 1.6);
+  for (int i = 0; i < 6; i++){
+    v += a * noise(p);
+    p = m * p;
+    a *= 0.5;
+  }
+  return v;
+}
+
+void main(){
+  // 归一化坐标 + 保持方形比例
+  vec2 uv = gl_FragCoord.xy / u_res.xy;
+  vec2 p  = (uv - 0.5);
+  p.x *= u_res.x / u_res.y;
+  p *= 2.4;                       // 缩放控制纹理密度
+
+  float t = u_time * 0.06;        // 流动速度
+
+  // ---- 两次嵌套域扭曲(丝绸折痕的来源)----
+  vec2 q = vec2(
+    fbm(p + vec2(0.0, 0.0) + t),
+    fbm(p + vec2(5.2, 1.3) - t)
+  );
+  vec2 r = vec2(
+    fbm(p + 4.0 * q + vec2(1.7, 9.2) + 0.15 * t),
+    fbm(p + 4.0 * q + vec2(8.3, 2.8) - 0.12 * t)
+  );
+  float f = fbm(p + 4.0 * r);
+
+  // ---- 调色板 ----
+  vec3 c1, c2, c3, c4;
+  if (u_palette == 1){            // 暖橙(默认,对应示例图)
+    c1 = vec3(0.62, 0.30, 0.05);
+    c2 = vec3(0.93, 0.55, 0.12);
+    c3 = vec3(0.99, 0.78, 0.28);
+    c4 = vec3(1.00, 0.96, 0.82);
+  } else if (u_palette == 2){     // 紫粉
+    c1 = vec3(0.30, 0.08, 0.40);
+    c2 = vec3(0.72, 0.20, 0.62);
+    c3 = vec3(0.98, 0.42, 0.66);
+    c4 = vec3(1.00, 0.86, 0.92);
+  } else {                        // 青蓝
+    c1 = vec3(0.02, 0.18, 0.38);
+    c2 = vec3(0.06, 0.46, 0.66);
+    c3 = vec3(0.30, 0.78, 0.82);
+    c4 = vec3(0.86, 0.98, 0.96);
+  }
+
+  vec3 col = mix(c1, c2, clamp(f * f * 2.2, 0.0, 1.0));
+  col = mix(col, c3, clamp(length(q), 0.0, 1.0));
+  col = mix(col, c4, clamp(r.x * r.x * 1.6, 0.0, 1.0));   // 亮高光折痕
+
+  // 轻微提亮中心,模拟受光
+  float vign = smoothstep(1.2, 0.1, length(p));
+  col *= 0.92 + 0.12 * vign;
+
+  gl_FragColor = vec4(col, 1.0);
+}
+</script>
+
+<script>
+const canvas = document.getElementById('gl');
+const gl = canvas.getContext('webgl', { preserveDrawingBuffer: true });
+if (!gl) { document.body.innerHTML = '<p style="color:#fff">你的浏览器不支持 WebGL</p>'; }
+
+const vsrc = `attribute vec2 a; void main(){ gl_Position = vec4(a, 0.0, 1.0); }`;
+const fsrc = document.getElementById('frag').textContent;
+
+function compile(type, src){
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src); gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s));
+  return s;
+}
+const prog = gl.createProgram();
+gl.attachShader(prog, compile(gl.VERTEX_SHADER, vsrc));
+gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fsrc));
+gl.linkProgram(prog);
+gl.useProgram(prog);
+
+const buf = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+const loc = gl.getAttribLocation(prog, 'a');
+gl.enableVertexAttribArray(loc);
+gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+const uRes = gl.getUniformLocation(prog, 'u_res');
+const uTime = gl.getUniformLocation(prog, 'u_time');
+const uPal  = gl.getUniformLocation(prog, 'u_palette');
+let palette = 1;
+
+function resize(){
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = canvas.clientWidth * dpr, h = canvas.clientHeight * dpr;
+  if (canvas.width !== w || canvas.height !== h){
+    canvas.width = w; canvas.height = h;
+    gl.viewport(0, 0, w, h);
+  }
+}
+window.addEventListener('resize', resize);
+
+const start = performance.now();
+function frame(now){
+  resize();
+  gl.uniform2f(uRes, canvas.width, canvas.height);
+  gl.uniform1f(uTime, (now - start) / 1000);
+  gl.uniform1i(uPal, palette);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === '1') palette = 1;
+  if (e.key === '2') palette = 2;
+  if (e.key === '3') palette = 3;
+  if (e.key.toLowerCase() === 's'){
+    const a = document.createElement('a');
+    a.download = 'apple-music-liquid.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  }
+});
+</script>
+</body>
+</html>
