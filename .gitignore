@@ -2,3 +2,18 @@
 **/Thumbs.db
 .DS_Store
 **/.DS_Store
+**/录屏/
+# demo 工程已拆至 ios-demos / html-demos 分支，本地保留但不再跟踪
+/3Dballs/
+/3Dsphere/
+/3D卡片iOS应用/
+/AlbumCleanup/
+/LiquidGlassDemo/
+/AppleMusicLiquid/
+/Gemini3Pro 生成UIUX/
+/Login/
+/multi-scene-character-demo/
+/InterviewAgent/
+/xhsAgent/
+/prompts/
+/qrcode_for_gzh.jpg
