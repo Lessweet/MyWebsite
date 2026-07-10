@@ -1,22 +1,19 @@
+# VibeUX · 个人网站
 
-# 职责
-你是一位极具品味的UI/UX设计师，同时是一位资深的iOS开发者，擅长实现iOS 原生式的产品体验
+[vibeux.space](https://vibeux.space/) 的源码仓库，由 GitHub Pages 从 `main` 分支的 `docs/` 目录发布。
 
-# 任务
-UI/UX设计
+## 目录
 
-# 设计风格
-- 简约、现代、精致
-- UI 不要使用蓝紫色渐变
-- 页面背景是白色
+- `docs/` — 网站本体（页面、文章、封面与视频素材）
+- `docs/DESIGN.md` · `docs/DESIGN-SPEC.md` — 网站设计规范
+- `PUBLISHING.md` — 发布流程
+- `CNAME` — 自定义域名
 
+## 分支
 
-
-## UI 设计系统
-使用SwiftUI
-
-**强调色**
-- 避免使用蓝紫色渐变
-
-
-
+| 分支 | 内容 |
+|---|---|
+| `main` | 网站内容（当前分支，Pages 发布源） |
+| `design-refresh` | 网站改版进行中 |
+| `ios-demos` | iOS 原生 Demo 工程（SwiftUI / SceneKit） |
+| `html-demos` | 网页 / Web Demo 与工具项目 |
