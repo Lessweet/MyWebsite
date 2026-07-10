@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iOS 26 Cylindrical Warp Tuner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            gap: 30px;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .main-content {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        /* Preview Area */
+        .preview-section {
+            flex: 1;
+            min-width: 320px;
+            max-width: 500px;
+        }
+
+        .preview-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .preview-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .canvas-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 500px;
+            background: linear-gradient(180deg, #2a2a4a 0%, #1a1a2e 100%);
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #warpCanvas {
+            border-radius: 12px;
+        }
+
+        /* Controls */
+        .controls-section {
+            flex: 1;
+            min-width: 320px;
+            max-width: 400px;
+        }
+
+        .controls-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .control-group {
+            margin-bottom: 24px;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-group-title {
+            font-size: 11px;
+            color: #667eea;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-group-title::before {
+            content: '';
+            width: 4px;
+            height: 4px;
+            background: #667eea;
+            border-radius: 50%;
+        }
+
+        .slider-control {
+            margin-bottom: 16px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .slider-label {
+            font-size: 13px;
+            color: #ccc;
+        }
+
+        .slider-value {
+            font-size: 13px;
+            color: #667eea;
+            font-weight: 600;
+            font-family: 'SF Mono', Monaco, monospace;
+            background: rgba(102, 126, 234, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+            transition: transform 0.15s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        /* Toggle Switch */
+        .toggle-control {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .toggle-control:last-child {
+            border-bottom: none;
+        }
+
+        .toggle-label {
+            font-size: 13px;
+            color: #ccc;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.1);
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ccc;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Code Output */
+        .code-section {
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .code-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .code-title {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .copy-btn {
+            padding: 6px 12px;
+            background: rgba(102, 126, 234, 0.2);
+            border: none;
+            border-radius: 6px;
+            color: #667eea;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: rgba(102, 126, 234, 0.3);
+        }
+
+        .code-block {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            padding: 16px;
+            overflow-x: auto;
+        }
+
+        .code-block pre {
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #e0e0e0;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .code-block .keyword {
+            color: #ff79c6;
+        }
+
+        .code-block .function {
+            color: #50fa7b;
+        }
+
+        .code-block .number {
+            color: #bd93f9;
+        }
+
+        .code-block .comment {
+            color: #6272a4;
+        }
+
+        /* Animation Progress */
+        .progress-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .play-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .play-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .play-btn:hover {
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .preview-section,
+            .controls-section {
+                width: 100%;
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>iOS 26 Cylindrical Warp Tuner</h1>
+            <p>Adjust parameters for spatial computing curved card effect</p>
+        </header>
+
+        <div class="main-content">
+            <div class="preview-section">
+                <div class="preview-container">
+                    <div class="preview-label">Preview</div>
+                    <div class="canvas-wrapper">
+                        <canvas id="warpCanvas" width="300" height="500"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls-section">
+                <div class="controls-container">
+                    <!-- Curvature Controls -->
+                    <div class="control-group">
+                        <div class="control-group-title">Curvature</div>
+
+                        <div class="slider-control">
+                            <div class="slider-header">
+                                <span class="slider-label">Curvature Intensity</span>
+                                <span class="slider-value" id="curvatureValue">0.35</span>
+                            </div>
+                            <input type="range" id="curvature" min="0" max="1" step="0.01" value="0.35">
+                        </div>
+
+                        <div class="slider-control">
+                            <div class="slider-header">
+                                <span class="slider-label">Perspective</span>
+                                <span class="slider-value" id="perspectiveValue">0.30</span>
+                            </div>
+                            <input type="range" id="perspective" min="0" max="1" step="0.01" value="0.30">
+                        </div>
+
+                        <div class="slider-control">
+                            <div class="slider-header">
+                                <span class="slider-label">Edge Falloff</span>
+                                <span class="slider-value" id="falloffValue">0.50</span>
+                            </div>
+                            <input type="range" id="falloff" min="0" max="1" step="0.01" value="0.50">
+                        </div>
+                    </div>
+
+                    <!-- Scale Controls -->
+                    <div class="control-group">
+                        <div class="control-group-title">Scale & Position</div>
+
+                        <div class="slider-control">
+                            <div class="slider-header">
+                                <span class="slider-label">Scale</span>
+                                <span class="slider-value" id="scaleValue">0.85</span>
+                            </div>
+                            <input type="range" id="scale" min="0.5" max="1" step="0.01" value="0.85">
+                        </div>
+
+                        <div class="slider-control">
+                            <div class="slider-header">
+                                <span class="slider-label">Corner Radius</span>
+                                <span class="slider-value" id="cornerRadiusValue">40</span>
+                            </div>
+                            <input type="range" id="cornerRadius" min="0" max="80" step="1" value="40">
+                        </div>
+                    </div>
+
+                    <!-- Effect Options -->
+                    <div class="control-group">
+                        <div class="control-group-title">Options</div>
+
+                        <div class="toggle-control">
+                            <span class="toggle-label">Show Grid Overlay</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="showGrid">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="toggle-control">
+                            <span class="toggle-label">Shadow</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="showShadow" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="toggle-control">
+                            <span class="toggle-label">Dark Card</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="darkCard">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Animation -->
+                    <div class="control-group progress-section">
+                        <div class="control-group-title">Animation</div>
+
+                        <div class="slider-control">
+                            <div class="slider-header">
+                                <span class="slider-label">Progress</span>
+                                <span class="slider-value" id="progressValue">0.50</span>
+                            </div>
+                            <input type="range" id="progress" min="0" max="1" step="0.01" value="0.50">
+                        </div>
+
+                        <div class="play-controls">
+                            <button class="play-btn" id="playBtn">▶</button>
+                            <button class="btn btn-secondary" id="resetBtn" style="flex: 1;">Reset</button>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn btn-primary" id="exportBtn">Export Values</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Code Output -->
+        <div class="code-section">
+            <div class="code-container">
+                <div class="code-header">
+                    <span class="code-title">Metal Shader Code</span>
+                    <button class="copy-btn" id="copyBtn">Copy Code</button>
+                </div>
+                <div class="code-block">
+                    <pre id="codeOutput"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Parameters
+        const params = {
+            curvature: 0.35,
+            perspective: 0.30,
+            falloff: 0.50,
+            scale: 0.85,
+            cornerRadius: 40,
+            progress: 0.50,
+            showGrid: false,
+            showShadow: true,
+            darkCard: false
+        };
+
+        // Canvas setup
+        const canvas = document.getElementById('warpCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Card image (create a simple card representation)
+        let cardImage = null;
+
+        function createCardImage() {
+            const offscreen = document.createElement('canvas');
+            offscreen.width = 300;
+            offscreen.height = 500;
+            const offCtx = offscreen.getContext('2d');
+
+            // Card background
+            const gradient = offCtx.createLinearGradient(0, 0, 0, 500);
+            if (params.darkCard) {
+                gradient.addColorStop(0, '#2a2a2a');
+                gradient.addColorStop(1, '#1a1a1a');
+            } else {
+                gradient.addColorStop(0, '#ffffff');
+                gradient.addColorStop(1, '#f0f0f0');
+            }
+
+            // Draw rounded rectangle
+            const r = params.cornerRadius;
+            offCtx.beginPath();
+            offCtx.roundRect(0, 0, 300, 500, r);
+            offCtx.fillStyle = gradient;
+            offCtx.fill();
+
+            // Status bar simulation
+            offCtx.fillStyle = params.darkCard ? '#ffffff' : '#000000';
+            offCtx.font = '600 17px -apple-system, SF Pro Display';
+            offCtx.fillText('15:27', 20, 35);
+
+            // Status icons (right side)
+            offCtx.font = '14px -apple-system';
+            offCtx.fillText('●●●● ⌁ ⚡', 200, 35);
+
+            // Add some content lines
+            offCtx.fillStyle = params.darkCard ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
+            for (let i = 0; i < 8; i++) {
+                const y = 80 + i * 50;
+                const width = 100 + Math.random() * 160;
+                offCtx.fillRect(20, y, width, 12);
+            }
+
+            // Home indicator
+            offCtx.fillStyle = params.darkCard ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)';
+            offCtx.beginPath();
+            offCtx.roundRect(100, 475, 100, 5, 3);
+            offCtx.fill();
+
+            // Grid overlay
+            if (params.showGrid) {
+                offCtx.strokeStyle = 'rgba(102, 126, 234, 0.3)';
+                offCtx.lineWidth = 1;
+
+                // Vertical lines
+                for (let x = 0; x <= 300; x += 30) {
+                    offCtx.beginPath();
+                    offCtx.moveTo(x, 0);
+                    offCtx.lineTo(x, 500);
+                    offCtx.stroke();
+                }
+
+                // Horizontal lines
+                for (let y = 0; y <= 500; y += 30) {
+                    offCtx.beginPath();
+                    offCtx.moveTo(0, y);
+                    offCtx.lineTo(300, y);
+                    offCtx.stroke();
+                }
+            }
+
+            return offscreen;
+        }
+
+        // Cylindrical warp function
+        function cylindricalWarp(x, y, width, height, curvature, perspective, falloff) {
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            // Normalize coordinates to [-1, 1]
+            const normalizedX = (x - centerX) / centerX;
+            const normalizedY = (y - centerY) / centerY;
+
+            // Calculate depth based on cylindrical projection
+            // depth = sqrt(1 - x^2) creates a cylinder cross-section
+            const xSquared = normalizedX * normalizedX;
+            const depth = Math.sqrt(Math.max(0, 1 - xSquared * falloff)) * curvature;
+
+            // Apply perspective: objects further away appear smaller
+            const perspectiveScale = 1 / (1 + depth * perspective);
+
+            // Warp the x coordinate (edges move inward due to perspective)
+            const warpedX = normalizedX * perspectiveScale;
+
+            // Slight Y compression at edges for more realism
+            const yCompression = 1 - (1 - perspectiveScale) * 0.3;
+            const warpedY = normalizedY * yCompression;
+
+            // Convert back to pixel coordinates
+            return {
+                x: warpedX * centerX + centerX,
+                y: warpedY * centerY + centerY,
+                depth: depth
+            };
+        }
+
+        // Inverse warp for sampling
+        function inverseWarp(destX, destY, width, height, curvature, perspective, falloff) {
+            // Binary search / Newton's method approximation
+            // For real-time we use a simplified inverse
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            const normalizedDestX = (destX - centerX) / centerX;
+            const normalizedDestY = (destY - centerY) / centerY;
+
+            // Approximate inverse: iterate to find source
+            let srcX = normalizedDestX;
+
+            // Newton iteration
+            for (let i = 0; i < 5; i++) {
+                const xSquared = srcX * srcX;
+                const depth = Math.sqrt(Math.max(0, 1 - xSquared * falloff)) * curvature;
+                const perspectiveScale = 1 / (1 + depth * perspective);
+                const warpedX = srcX * perspectiveScale;
+
+                const error = warpedX - normalizedDestX;
+                srcX -= error * 0.8;
+            }
+
+            // Y inverse
+            const xSquared = srcX * srcX;
+            const depth = Math.sqrt(Math.max(0, 1 - xSquared * falloff)) * curvature;
+            const perspectiveScale = 1 / (1 + depth * perspective);
+            const yCompression = 1 - (1 - perspectiveScale) * 0.3;
+            const srcY = normalizedDestY / yCompression;
+
+            return {
+                x: srcX * centerX + centerX,
+                y: srcY * centerY + centerY
+            };
+        }
+
+        // Render the warped card
+        function render() {
+            const width = canvas.width;
+            const height = canvas.height;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+
+            // Create fresh card image
+            cardImage = createCardImage();
+
+            // Apply progress-based animation
+            const animatedCurvature = params.curvature * (1 - params.progress);
+            const animatedScale = params.scale + (1 - params.scale) * params.progress;
+
+            // Get source image data
+            const srcCtx = cardImage.getContext('2d');
+            const srcData = srcCtx.getImageData(0, 0, 300, 500);
+
+            // Create output image data
+            const outputCanvas = document.createElement('canvas');
+            outputCanvas.width = 300;
+            outputCanvas.height = 500;
+            const outputCtx = outputCanvas.getContext('2d');
+            const outputData = outputCtx.createImageData(300, 500);
+
+            // Warp each pixel
+            for (let destY = 0; destY < 500; destY++) {
+                for (let destX = 0; destX < 300; destX++) {
+                    // Find source position using inverse warp
+                    const src = inverseWarp(
+                        destX, destY,
+                        300, 500,
+                        animatedCurvature,
+                        params.perspective,
+                        params.falloff
+                    );
+
+                    const srcX = Math.round(src.x);
+                    const srcY = Math.round(src.y);
+
+                    // Check bounds
+                    if (srcX >= 0 && srcX < 300 && srcY >= 0 && srcY < 500) {
+                        const srcIdx = (srcY * 300 + srcX) * 4;
+                        const destIdx = (destY * 300 + destX) * 4;
+
+                        outputData.data[destIdx] = srcData.data[srcIdx];
+                        outputData.data[destIdx + 1] = srcData.data[srcIdx + 1];
+                        outputData.data[destIdx + 2] = srcData.data[srcIdx + 2];
+                        outputData.data[destIdx + 3] = srcData.data[srcIdx + 3];
+                    }
+                }
+            }
+
+            outputCtx.putImageData(outputData, 0, 0);
+
+            // Draw shadow
+            if (params.showShadow) {
+                ctx.save();
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+                ctx.shadowBlur = 40;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 20;
+                ctx.fillStyle = 'rgba(0,0,0,0.01)';
+                ctx.fillRect(0, 0, width, height);
+                ctx.restore();
+            }
+
+            // Draw the warped card with scale
+            ctx.save();
+            ctx.translate(width / 2, height / 2);
+            ctx.scale(animatedScale, animatedScale);
+            ctx.translate(-150, -250);
+            ctx.drawImage(outputCanvas, 0, 0);
+            ctx.restore();
+        }
+
+        // Generate Metal shader code
+        function generateShaderCode() {
+            return `<span class="comment">// iOS 26 Cylindrical Warp Shader</span>
+<span class="comment">// Generated parameters from tuner</span>
+
+<span class="keyword">[[ stitchable ]]</span> <span class="keyword">float2</span> <span class="function">cylindricalWarp</span>(
+    <span class="keyword">float2</span> position,
+    <span class="keyword">float4</span> bounds,
+    <span class="keyword">float</span> progress
+) {
+    <span class="keyword">float2</span> size = bounds.zw;
+    <span class="keyword">float2</span> center = size * <span class="number">0.5</span>;
+
+    <span class="comment">// Normalize to [-1, 1]</span>
+    <span class="keyword">float2</span> uv = (position - center) / center;
+
+    <span class="comment">// Animation: curvature decreases as progress increases</span>
+    <span class="keyword">float</span> curvature = <span class="number">${params.curvature.toFixed(2)}</span> * (<span class="number">1.0</span> - progress);
+    <span class="keyword">float</span> perspective = <span class="number">${params.perspective.toFixed(2)}</span>;
+    <span class="keyword">float</span> falloff = <span class="number">${params.falloff.toFixed(2)}</span>;
+
+    <span class="comment">// Cylindrical depth: sqrt(1 - x²)</span>
+    <span class="keyword">float</span> xSquared = uv.x * uv.x;
+    <span class="keyword">float</span> depth = <span class="function">sqrt</span>(<span class="function">max</span>(<span class="number">0.0</span>, <span class="number">1.0</span> - xSquared * falloff)) * curvature;
+
+    <span class="comment">// Perspective scaling</span>
+    <span class="keyword">float</span> perspectiveScale = <span class="number">1.0</span> / (<span class="number">1.0</span> + depth * perspective);
+
+    <span class="comment">// Apply warp</span>
+    <span class="keyword">float2</span> warped = uv;
+    warped.x *= perspectiveScale;
+    warped.y *= <span class="number">1.0</span> - (<span class="number">1.0</span> - perspectiveScale) * <span class="number">0.3</span>;
+
+    <span class="comment">// Convert back to pixel coordinates</span>
+    <span class="keyword">float2</span> result = warped * center + center;
+
+    <span class="comment">// Clamp to bounds</span>
+    result = <span class="function">clamp</span>(result, <span class="keyword">float2</span>(<span class="number">0.0</span>), size);
+
+    <span class="keyword">return</span> result;
+}
+
+<span class="comment">// SwiftUI Usage:</span>
+<span class="comment">// .distortionEffect(</span>
+<span class="comment">//     ShaderLibrary.cylindricalWarp(</span>
+<span class="comment">//         .float(progress)</span>
+<span class="comment">//     ),</span>
+<span class="comment">//     maxSampleOffset: CGSize(width: 50, height: 50)</span>
+<span class="comment">// )</span>`;
+        }
+
+        // Update code display
+        function updateCode() {
+            document.getElementById('codeOutput').innerHTML = generateShaderCode();
+        }
+
+        // Bind controls
+        function bindControls() {
+            const controls = ['curvature', 'perspective', 'falloff', 'scale', 'cornerRadius', 'progress'];
+
+            controls.forEach(name => {
+                const input = document.getElementById(name);
+                const display = document.getElementById(name + 'Value');
+
+                input.addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    params[name] = value;
+                    display.textContent = name === 'cornerRadius' ? value.toFixed(0) : value.toFixed(2);
+                    render();
+                    updateCode();
+                });
+            });
+
+            // Toggle controls
+            ['showGrid', 'showShadow', 'darkCard'].forEach(name => {
+                document.getElementById(name).addEventListener('change', (e) => {
+                    params[name] = e.target.checked;
+                    render();
+                });
+            });
+
+            // Play animation
+            let isPlaying = false;
+            let animationId = null;
+
+            document.getElementById('playBtn').addEventListener('click', () => {
+                if (isPlaying) {
+                    isPlaying = false;
+                    document.getElementById('playBtn').textContent = '▶';
+                    if (animationId) cancelAnimationFrame(animationId);
+                } else {
+                    isPlaying = true;
+                    document.getElementById('playBtn').textContent = '⏸';
+                    params.progress = 0;
+
+                    const animate = () => {
+                        params.progress += 0.015;
+                        if (params.progress > 1) {
+                            params.progress = 0;
+                        }
+
+                        document.getElementById('progress').value = params.progress;
+                        document.getElementById('progressValue').textContent = params.progress.toFixed(2);
+                        render();
+
+                        if (isPlaying) {
+                            animationId = requestAnimationFrame(animate);
+                        }
+                    };
+                    animate();
+                }
+            });
+
+            // Reset
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                params.curvature = 0.35;
+                params.perspective = 0.30;
+                params.falloff = 0.50;
+                params.scale = 0.85;
+                params.cornerRadius = 40;
+                params.progress = 0.50;
+
+                document.getElementById('curvature').value = params.curvature;
+                document.getElementById('perspective').value = params.perspective;
+                document.getElementById('falloff').value = params.falloff;
+                document.getElementById('scale').value = params.scale;
+                document.getElementById('cornerRadius').value = params.cornerRadius;
+                document.getElementById('progress').value = params.progress;
+
+                document.getElementById('curvatureValue').textContent = params.curvature.toFixed(2);
+                document.getElementById('perspectiveValue').textContent = params.perspective.toFixed(2);
+                document.getElementById('falloffValue').textContent = params.falloff.toFixed(2);
+                document.getElementById('scaleValue').textContent = params.scale.toFixed(2);
+                document.getElementById('cornerRadiusValue').textContent = params.cornerRadius.toFixed(0);
+                document.getElementById('progressValue').textContent = params.progress.toFixed(2);
+
+                render();
+                updateCode();
+            });
+
+            // Export
+            document.getElementById('exportBtn').addEventListener('click', () => {
+                const exportData = {
+                    curvature: params.curvature,
+                    perspective: params.perspective,
+                    falloff: params.falloff,
+                    scale: params.scale,
+                    cornerRadius: params.cornerRadius
+                };
+
+                alert('Exported Values:\n\n' + JSON.stringify(exportData, null, 2));
+            });
+
+            // Copy code
+            document.getElementById('copyBtn').addEventListener('click', () => {
+                const code = document.getElementById('codeOutput').textContent;
+                navigator.clipboard.writeText(code).then(() => {
+                    const btn = document.getElementById('copyBtn');
+                    btn.textContent = 'Copied!';
+                    setTimeout(() => btn.textContent = 'Copy Code', 2000);
+                });
+            });
+        }
+
+        // Initialize
+        bindControls();
+        render();
+        updateCode();
+    </script>
+</body>
+</html>
