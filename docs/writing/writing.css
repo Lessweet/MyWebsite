@@ -559,8 +559,8 @@ body.reading-page .article-body blockquote { border-left-color: #1a1a1a; }
 .reader-thumb {
     order: 1;                /* 左图右文:封面在文字左侧 */
     flex: 0 0 auto;
-    width: 77px;             /* 固定 77×77 方块(64×1.2):所有项(含默认占位)尺寸/比例完全一致 */
-    height: 77px;
+    width: 92px;             /* 固定 92×69 的 4:3 封面:所有项(含默认占位)尺寸/比例完全一致 */
+    height: 69px;
     border-radius: 6px;
     overflow: hidden;
     background: var(--gray-100);
