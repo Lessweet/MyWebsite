@@ -1,6 +1,20 @@
 {
   "articles": [
     {
+      "slug": "figma-make-gpt-5-6",
+      "title": "设计师的新习惯，给 AI 模型分工",
+      "date": "2026-07-11",
+      "read_time": "6 分钟",
+      "tags": [
+        "AI 设计工作流"
+      ],
+      "cat": "product",
+      "accent": "#5F82F5",
+      "collection": "Figma 观察",
+      "excerpt": "Fable 做复杂设计，Opus 做常规实现，Sonnet 干辅助活；新模型发布就拿旧任务再做一遍，感知质量的进步，再决定要不要换进工作流。",
+      "cover": "assets/figma-make-gpt-5-6/cover3.png"
+    },
+    {
       "slug": "review-ai-output",
       "title": "设计师的新工作，审查 AI 产物",
       "date": "2026-07-05",
