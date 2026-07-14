@@ -16,15 +16,6 @@
    "added_at": "2026-07-14"
   },
   {
-   "url": "https://example.com/pipeline-test",
-   "title": "Pipeline Test",
-   "channel": "watch",
-   "source": "test",
-   "date": "2026-07-14",
-   "id": "a970c11881",
-   "added_at": "2026-07-15"
-  },
-  {
    "id": "5c86f6bff5",
    "url": "https://newsletter.uxdesign.cc/p/wait-who-made-this",
    "title": "Wait, who made this?",
