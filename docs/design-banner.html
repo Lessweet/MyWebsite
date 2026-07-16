@@ -1502,7 +1502,9 @@
         decorationColor: (r, c) => DOT_PALETTE[(Math.floor(c / 7) + Math.floor(r / 2) + 2) % DOT_PALETTE.length],
       },
     ];
-    const SWITCH_MS = 5000;
+    // 切换节奏:样式 1、2 快速闪过(FAST_MS),落到第 3 个样式停留 1 秒(HOLD_MS),再回到 1 快速循环
+    const FAST_MS = 200;
+    const HOLD_MS = 1000;
     const PARTICLE_TOP = { r: 255, g: 38, b: 132 };
     const PARTICLE_MID = { r: 255, g: 116, b: 176 };
     const PARTICLE_BOTTOM = { r: 155, g: 72, b: 244 };
@@ -1976,9 +1978,15 @@
       idx = (idx + 1) % STYLES.length;
       applyStyle(STYLES[idx]);
     };
+    // 当前样式的停留时长:落在最后一个样式(第 3 个)停 HOLD_MS(1 秒),其余快速切换 FAST_MS
+    const stepDelay = () => (idx === STYLES.length - 1 ? HOLD_MS : FAST_MS);
     const scheduleAutoSwitch = () => {
-      clearInterval(timer);
-      timer = setInterval(advance, SWITCH_MS);
+      clearTimeout(timer);
+      const tick = () => {
+        advance();
+        timer = setTimeout(tick, stepDelay());
+      };
+      timer = setTimeout(tick, stepDelay());
     };
 
     applyStyle(STYLES[idx]);

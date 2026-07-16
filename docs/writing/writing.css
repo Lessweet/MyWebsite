@@ -686,6 +686,23 @@ body.reading-page .article-eyebrow .a-tag,
     transition: color 0.42s ease, background-color 0.42s ease;
 }
 
+/* 文章详情页:tag 移到标题上方,纯文字加粗(不用胶囊底),与标题一起居中。
+   优先级 (0,3,0) 压过各文章内联的 .article-eyebrow .a-tag{font-weight:400}。 */
+body.reading-page .article-eyebrow-top {
+    justify-content: center;
+    margin-bottom: 14px;
+}
+body.reading-page .article-eyebrow-top .a-tag {
+    background: none;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    color: #1a1a1a;
+    font-weight: 700;
+    font-size: var(--fs-caption);
+    line-height: 1.2;
+}
+
 .article-h1 {
     /* 字号随视口流动(窄屏自动缩小,减少折行);text-wrap: balance 让多行更均衡,避免末行只剩一个字 */
     font-size: var(--fs-h1);   /* 大标题 48px(桌面/手机统一) */
@@ -1065,6 +1082,10 @@ body.reading-page .article-byline .article-eyebrow .a-tag {
     height: 26px;
     display: block;
     flex: 0 0 auto;
+    /* 一圈细、浅的描边。用 box-shadow 而不是 border:不撑大盒子、不产生布局位移。
+       favicon 是圆角图标,配上同半径的 border-radius,描边就贴着圆角走。 */
+    border-radius: 7px;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
 }
 /* 字标:用图片字体,按高度等比缩放(保留原始字形比例) */
 .site-wordmark {
@@ -1081,8 +1102,8 @@ body.reading-page .article-byline .article-eyebrow .a-tag {
 /* Design / 阅读页:左上角 logo + VIBEUX 字标放大 */
 .design-page .site-title { margin: 8px 0; }
 .design-page .site-title .site-logo {
-    width: 28.5px;    /* 38px × 75% */
-    height: 28.5px;
+    width: 32px;
+    height: 32px;
 }
 /* logo 高度与右侧 Blog/Skills/Contact 三项同走 3.4vw、桌面同样封顶 36px;
    但兜底抬到 20px(原 12px):字标是品牌,手机端不跟着文字缩到那么小,保持可读。
@@ -2330,6 +2351,19 @@ body.works-page .category-section[data-category="visualux"] .card-img {
     border-radius: 0 !important;
 }
 
+/* Cases 卡片全部无边框:深色页面下浅底卡自带边界,不需要 card-gray-outline 的描边 */
+body.works-page .card,
+body.works-page .card-gray-outline {
+    border: none !important;
+}
+
+/* 消除封面媒体与卡片边缘之间、因 1fr 网格分数取整产生的亚像素缝(深底卡上表现为底部
+   黑线、浅底卡上表现为角部发虚/圆角感;hover 放大到 1.06 时缝被盖住才「消失」)。
+   做法:把静止态的封面缩放基准从 1 抬到 1.006,让媒体常态极轻微溢出盖住缝;
+   hover 规则特异性更高(带 :hover),仍能覆盖回 1.06,放大交互不受影响。 */
+body.works-page .card { --hover-scale: 1.006; }
+body.works-page .card:hover { --hover-scale: 1.06; }
+
 /* 卡片默认底色:比页面亮一档,给卡片一个边界(作品填满卡面时看不到它)。
    下面几组按各自内容的实际底色单独覆盖 —— 用 :has() 按内容源精确选中,不必往 HTML
    加定位类(散在 HTML 里更难维护),选择器本身就说明了这张卡是谁。 */
@@ -2338,10 +2372,12 @@ body.works-page .card { background: var(--card-bg); }
 /* 内容自带浅灰底的作品(iOS mockup 的 #F2F2F7):卡片同色,消除四周 / 上下的深色接缝。
    Eye Tracking、Voice Particles 是 iframe(body 底 #F2F2F7);
    3D Rotation(Metal)、Glass Balls 是视频,采样四角同为 #F2F2F7。 */
-body.works-page .card:has(iframe[src*="multi-scene-character-demo"]),
-body.works-page .card:has(iframe[src*="voice-particles/index"]),
 body.works-page .card:has(source[src*="Metal_compressed"]),
 body.works-page .card:has(source[src*="3DBallsIPhone"]) { background: #F2F2F7; }
+/* Voice Particles:外框改取粒子色(demo 的 body 也同步改成 #C5A065),卡底跟着走保持无缝 */
+body.works-page .card:has(iframe[src*="voice-particles/index"]) { background: #C5A065; }
+/* Eye Tracking(Welcome Back 登录页):外框取小人脸的蓝(demo body 同步改 #4A90E2) */
+body.works-page .card:has(iframe[src*="multi-scene-character-demo"]) { background: #4A90E2; }
 /* 3DCardGlass 视频底稍深,采样为 #E3E3E5,单独取 */
 body.works-page .card:has(source[src*="3DCardGlass"]) { background: #E3E3E5; }
 
@@ -2350,9 +2386,9 @@ body.works-page .card:has(source[src*="3DCardGlass"]) { background: #E3E3E5; }
 body.works-page .card:has(source[src*="3DSphere-particle"]) { background: #16E816; }
 
 /* 两张 icon 卡:年轻潮流纯色底(取代之前的深灰)。
-   Outlined → 薄荷绿,Pixel → 酸性青柠。两张底色都浅,白图标看不清,
+   Outlined → 亮绿 #45E55F,Pixel → 酸性青柠。两张底色都够亮,白图标看不清,
    各自单独取消整体反相(下方 .icon-preview-frame 的 invert),让图标回到深色。 */
-body.works-page .foundation-card.icon-cover:has(iframe[src*="preview-outlined"]) { background: #9FE5BC; }
+body.works-page .foundation-card.icon-cover:has(iframe[src*="preview-outlined"]) { background: #45E55F; }
 body.works-page .foundation-card.icon-cover:has(iframe[src*="preview-pixel"]) { background: #C8F135; }
 body.works-page .icon-cover:has(iframe[src*="preview-outlined"]) .icon-preview-frame,
 body.works-page .icon-cover:has(iframe[src*="preview-pixel"]) .icon-preview-frame { filter: none; }
