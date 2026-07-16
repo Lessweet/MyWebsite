@@ -2389,7 +2389,7 @@ body.works-page .card:has(source[src*="3DSphere-particle"]) { background: #16E81
    Outlined → 亮绿 #45E55F,Pixel → 酸性青柠。两张底色都够亮,白图标看不清,
    各自单独取消整体反相(下方 .icon-preview-frame 的 invert),让图标回到深色。 */
 body.works-page .foundation-card.icon-cover:has(iframe[src*="preview-outlined"]) { background: #45E55F; }
-body.works-page .foundation-card.icon-cover:has(iframe[src*="preview-pixel"]) { background: #C8F135; }
+body.works-page .foundation-card.icon-cover:has(iframe[src*="preview-pixel"]) { background: #FFE01A; }
 body.works-page .icon-cover:has(iframe[src*="preview-outlined"]) .icon-preview-frame,
 body.works-page .icon-cover:has(iframe[src*="preview-pixel"]) .icon-preview-frame { filter: none; }
 
