@@ -1366,12 +1366,15 @@
 </style>
 <style>
   html, body { background: transparent !important; margin: 0; padding: 0; min-height: 0 !important; }
-  main { width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
+  /* 3×3 图标群整体收紧:网格只占卡片宽度 64% 并水平垂直居中,格距归零;
+     图标改占格子 62%(原 44% 占满宽格子),绝对大小基本不变、彼此间距缩小 */
+  main { width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important;
+         display: flex !important; align-items: center !important; justify-content: center !important; min-height: 100vh !important; }
   .back-to-design { display: none !important; }
-  .preview-grid { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 16px !important; padding: 26px !important; }
+  .preview-grid { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 0 !important; padding: 0 !important; width: 64% !important; }
   .preview-grid .icon-card { padding: 0 !important; background: transparent !important; border: none !important; box-shadow: none !important; min-height: 0 !important; gap: 0 !important; cursor: default; }
   .preview-grid .icon-preview { background: transparent !important; border-radius: 0 !important; }
-  .preview-grid .icon-preview svg { width: 44% !important; height: 44% !important; }
+  .preview-grid .icon-preview svg { width: 62% !important; height: 62% !important; }
 </style>
 </head>
 <body data-view="outlined">
