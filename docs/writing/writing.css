@@ -2046,7 +2046,10 @@ body.reading-page .header.home-nav::after {
    现状:首页 index.html 带 .theme-dark .no-banner .menu-hidden(黑底、无 banner、无筛选条);
         Cases(design.html)只带 .menu-hidden(白底、保留 banner);文章阅读页三个都不带。
    ======================================== */
-body.home-v2.theme-dark { background: #000; }
+/* 页面底色:不用纯黑 —— 纯黑在 OLED 上边缘发硬,亮色封面压上去还容易炸光晕。
+   收成一个 token,顶栏 / 手机端全屏菜单都引用它,改底色只动这一行。 */
+body.theme-dark { --page-bg: #0F0F0F; }
+body.home-v2.theme-dark { background: var(--page-bg); }
 
 /* 二级分类菜单:由 .menu-hidden 单独控制 —— 想恢复展示,删掉 body 上的 menu-hidden 即可,不影响配色 */
 body.menu-hidden .design-menu { display: none; }
@@ -2063,7 +2066,7 @@ body.no-banner .design-layout {
 /* 顶栏:没有 banner 可透出了,滚动前后都用纯黑底 —— 否则白色导航文字会压在黑内容上看不清,
    滚动后又会淡入一条米色 .nav-bg 亮条 */
 body.no-banner.theme-dark .header.home-nav,
-body.design-page.no-banner.theme-dark:not(.writing-page) .header.home-nav { background: #000; }
+body.design-page.no-banner.theme-dark:not(.writing-page) .header.home-nav { background: var(--page-bg); }
 body.no-banner.theme-dark .header.home-nav .nav-bg { display: none; }
 /* 字标是黑色 SVG,黑底上会消失 —— 整体反相为白 */
 body.no-banner.theme-dark .site-wordmark { filter: invert(1); }
@@ -2104,12 +2107,91 @@ body.theme-dark .design-content .category-section .section-divider {
    断点与上面 .home-v2 .header.home-nav 那套手机端规则对齐(≤600px) */
 @media (max-width: 600px) {
     body.no-banner.theme-dark .header.home-nav .nav-toggle span { background: #fff; }
-    body.no-banner.theme-dark .header.home-nav .nav-collapse { background: #000; }
+    body.no-banner.theme-dark .header.home-nav .nav-collapse { background: var(--page-bg); }
     body.no-banner.theme-dark .header.home-nav .nav-collapse .nav-modal-desc,
     body.no-banner.theme-dark .header.home-nav .nav-collapse .nav-modal-copy {
         color: rgba(255, 255, 255, 0.92);
     }
     body.no-banner.theme-dark .header.home-nav .nav-modal-footer { border-top-color: rgba(255, 255, 255, 0.08); }
     /* 手机端上面有条 body.home-v2:not(.reading-page) 的 transparent !important,得压回来 */
-    body.home-v2.no-banner.theme-dark:not(.reading-page) .header.home-nav { background: #000 !important; }
+    body.home-v2.no-banner.theme-dark:not(.reading-page) .header.home-nav { background: var(--page-bg) !important; }
+}
+
+/* ========================================
+   首页 hero(index.html)—— 黑底居中排版
+   占原顶部渐变 banner 的位置,但不是旧 banner:旧的是米色底 + 左下角标题 + 右下角署名的
+   通栏 iframe;这块是纯 HTML/CSS、居中、黑底。
+   与顶栏的间距由 body.no-banner .design-layout 的 padding-top 负责,这里不再重复加。
+   ======================================== */
+.home-hero {
+    text-align: center;
+    padding: 40px 0 88px;
+}
+
+/* 标题:细体 + 紧字距,居中、黑底反白。
+   text-wrap: balance 让两行更均衡,避免末行只剩一个词。 */
+.hero-headline {
+    margin: 0;
+    font-weight: 300;
+    font-size: clamp(30px, 5.4vw, 76px);
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    color: rgba(255, 255, 255, 0.45);   /* 前半句「旧范式」压暗 */
+    text-wrap: balance;
+}
+/* 强调词:Kaushan Script。手写体字面比无衬线小、视觉重心也低,所以放大一档并压低一点,
+   与前半句看齐(纯视觉校正,不是 bug)。
+
+   这里刻意用 inline 而不是 inline-block:inline-block 会以自身盒高(1.2em)撑开行盒,
+   父级的 line-height 就压不下去了 —— 行距怎么调都松。改回 inline 后由下面的
+   line-height: 0.8(× 1.2em ≈ 0.96em)约束它的行盒贡献,父级的 0.92 才真正生效。
+   代价是 inline 元素不吃 transform,基线校正改用 vertical-align。 */
+.hero-headline .accent {
+    font-family: "Kaushan Script", cursive;
+    font-weight: 400;                   /* Kaushan 只有一个字重,写 300 会触发合成字重 */
+    color: #fff;
+    font-size: 1.2em;
+    line-height: 0.8;
+    vertical-align: -0.04em;
+    letter-spacing: 0;                  /* 手写体本就连笔,负字距会糊在一起 */
+}
+
+/* 署名组:标题下方居中一行 —— 头像 + By Tongrong / UI Designer */
+.hero-byline {
+    margin-top: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.72em;
+    font-size: 15px;
+    font-weight: 300;
+}
+/* 头像是深色线稿 SVG(#050505 头发 + #D9D9D9 脸),直接放黑底上头发会融进背景、只剩一张浮着的脸。
+   给它一个浅色圆底当底衬,还原成图稿里那种「浅底上的线稿像」。 */
+.hero-avatar {
+    width: 1.9em;
+    height: 1.9em;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    overflow: hidden;
+    display: block;
+    background: #D9D9D9;
+}
+.hero-avatar img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.hero-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;   /* 两行左对齐(整组仍居中) */
+    text-align: left;
+    gap: 0.32em;
+    line-height: 1.15;
+}
+.hero-by { color: rgba(255, 255, 255, 0.5); }
+.hero-by b { font-weight: 300; color: #fff; }
+.hero-role { font-size: 0.88em; color: rgba(255, 255, 255, 0.5); }
+
+/* 手机端:hero 上下留白收紧,署名与标题的间距同步缩 */
+@media (max-width: 600px) {
+    .home-hero { padding: 16px 0 56px; }
+    .hero-byline { margin-top: 28px; }
 }
