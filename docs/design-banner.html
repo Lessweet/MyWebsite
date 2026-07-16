@@ -15,7 +15,7 @@
     --text-dim: #969696;
     --brand: #000000;
     --brand-soft: rgba(0, 0, 0, 0.08);
-    --brand-banner-bg: #C3C0FA;
+    --brand-banner-bg: #EB86D4;
     --dur-1-5: 1.5s;
     --dur-1-8: 1.8s;
     --dur-2-1: 2.1s;
@@ -1468,11 +1468,11 @@
         ambient: pick(['*', '\\']),
         densityByDist: { 1: 0.28, 2: 0.28 },
         ambientDensity: 0.015,
-        backgroundColor: '#C3C0FA',
+        backgroundColor: '#EB86D4',
         lineHeight: '0.65',
         letterSpacing: '0',
-        letterColor: () => '#8F940A',
-        decorationColor: () => '#8F940A',
+        letterColor: () => '#2E46E5',
+        decorationColor: () => '#2E46E5',
       },
       {
         id: 'block',
@@ -1969,7 +1969,7 @@
       }
       grid.dataset.styleId = style.id;
       if (bannerShell) {
-        bannerShell.style.setProperty('--brand-banner-bg', style.backgroundColor || '#C3C0FA');
+        bannerShell.style.setProperty('--brand-banner-bg', style.backgroundColor || '#EB86D4');
       }
       grid.replaceChildren(build(style));
       originsDirty = true;
