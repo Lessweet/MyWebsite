@@ -105,9 +105,10 @@ function initSiteNav() {
     // 仅分类页(index / design = design-page 且非 writing-page / reading-page)注入,与 CSS 作用域一致;
     // 阅读页(article)与 writing/index 顶栏维持现状,不注入。
     const bd = document.body.classList;
-    // 首页地址:字标与「Blog」都指向它。index.html = GitHub Pages 的根,全站唯一首页。
-    // 页面仍可用 <body data-home="..."> 临时覆盖(比如本地并排比对某个改版稿)。
-    const HOME = document.body.dataset.home || 'index.html';
+    // 首页地址:字标与「Blog」都指向它。用目录形式而不是 index.html —— 两者是同一个页面,
+    // 但目录形式才是规范地址(点字标停在 vibeux.space/,不会变成 vibeux.space/index.html)。
+    // base 本身就是「回到 docs 根」的相对路径;根目录页 base 为空,用 './' 兜底。
+    const HOME = base || './';
     const wantNavBg = bd.contains('design-page') && !bd.contains('writing-page') && !bd.contains('reading-page');
     const navBg = wantNavBg
         ? '<iframe class="nav-bg" src="' + base + 'writing-banner.html?v=10&bare=1" title="" aria-hidden="true" tabindex="-1" scrolling="no"></iframe>'
@@ -115,7 +116,7 @@ function initSiteNav() {
     nav.innerHTML =
         navBg +
         '<div class="header-left">' +
-            '<a href="' + base + HOME + '" class="site-title" data-wordmark="' + WORDMARK + '" aria-label="' + wm.alt + '"><img src="' + base + 'favicon.png?v=14" class="site-logo" alt=""><img src="' + base + wm.src + '" class="site-wordmark" alt="' + wm.alt + '"></a>' +
+            '<a href="' + HOME + '" class="site-title" data-wordmark="' + WORDMARK + '" aria-label="' + wm.alt + '"><img src="' + base + 'favicon.png?v=14" class="site-logo" alt=""><img src="' + base + wm.src + '" class="site-wordmark" alt="' + wm.alt + '"></a>' +
         '</div>' +
         // 手机端汉堡按钮:桌面隐藏,≤600px 显示;点击展开 .nav-collapse 下拉
         '<button type="button" class="nav-toggle" aria-label="菜单" aria-expanded="false" aria-controls="nav-collapse">' +
@@ -125,7 +126,7 @@ function initSiteNav() {
         // 手机端变为绝对定位下拉面板,三项纵向排布
         '<div class="nav-collapse" id="nav-collapse">' +
             '<nav class="nav-cats" aria-label="分类">' +
-                '<a href="' + base + HOME + '#writing" class="' + a('writing') + '">' + I(pencil) + 'Blog</a>' +
+                '<a href="' + HOME + '" class="' + a('writing') + '">' + I(pencil) + 'Blog</a>' +
                 '<a href="' + base + 'design.html" class="' + a('design') + '">' + I(design) + 'Cases</a>' +
             '</nav>' +
             '<div class="header-right">' +
@@ -159,7 +160,7 @@ function initNavToggle(nav) {
         setOpen(!nav.classList.contains('nav-open'));
     });
     // 点击模态内的链接(Blog / Skills / Contact)收起菜单,再正常跳转 ——
-    // 尤其首页点 Blog 是同页锚点(index.html#writing),不收起就看不到滚动结果。
+    // 首页点 Blog 是跳回本页(./),不收起菜单就会盖在刚加载出来的页面上。
     // 点击模态空白区 / 模态外 / Esc 仍不收起(只有 X 或选项能关)。
     panel.addEventListener('click', (e) => {
         if (e.target.closest('a[href]')) setOpen(false);
