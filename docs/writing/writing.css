@@ -2244,21 +2244,44 @@ body.theme-dark .design-content .category-section .section-divider {
    banner 是整块视觉,和顶栏之间留缝会像没对齐。 */
 body.works-page .design-layout { padding-top: var(--design-menu-top, 76px); }
 
-/* banner 收进内容带,与下方作品网格同宽同边距。
-   基础样式用 width:100vw + margin-left/right: calc(50% - 50vw) 硬撑破居中容器做通栏,
-   两样都得撤:只改 width 不撤负 margin,banner 会向左偏出去。 */
-body.works-page .design-banner-frame {
-    width: 100%;
-    margin-left: 0;
-    margin-right: 0;
+/* banner 与全部作品拼成一个连续的 3 列网格。
+   原结构:banner 与 4 个 .category-section 在 .design-layout 里平级,每个 section 各自
+   带一个 .category-grid —— 所以作品被切成 4 块互不相干的网格,banner 更在网格之外。
+   做法:把中间三层(.design-content / .category-section / .category-grid)的盒子用
+   display:contents 取消掉,19 个 .card-wrapper 全部升成 .design-layout 的直接网格子项,
+   banner 也就和作品同处一个网格,才拼得起来。
+   display:contents 只去掉盒子、元素仍在 DOM 里,所以 [data-category] 选后代的那些规则
+   (圆角 / 底色)照常命中。 */
+body.works-page .design-layout {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+}
+body.works-page .design-content,
+body.works-page .category-section,
+body.works-page .category-grid {
+    display: contents;
 }
 
-/* 宫格间距归零。三处都得压:style.css 的 gap(40px + clamp 列距)、
-   writing.css 上面那条 .home-v2 .category-grid 的 column-gap、以及两个窄屏断点的 row-gap。
-   漏掉任何一处,对应断点就会漏出间距。 */
-body.works-page .category-grid { gap: 0; }
-@media (max-width: 860px) { body.works-page .category-grid { gap: 0; } }
-@media (max-width: 620px) { body.works-page .category-grid { gap: 0; } }
+/* 分类小标题(Icon Skill / AIGC / Visual Motion / Visual UX)隐藏 */
+body.works-page .section-divider { display: none; }
+
+/* banner 占第一行左侧 2 格,第 3 格自然落进第一个作品。
+   基础样式用 width:100vw + margin-left/right:calc(50% - 50vw) 撑破居中容器做通栏,
+   两样都得撤:只改 width 不撤负 margin,banner 会向左偏出去。
+   高度用 100% 而不是 auto:iframe 是替换元素,height:auto 时网格的 stretch 对它无效,
+   会退回 iframe 的固有高度 150px(第一版就是这么塌的)。100% 解析成整个网格区域的高度,
+   于是 banner 底边永远和右侧作品卡(卡片 + 下方标题)齐平,不会漏缝。 */
+body.works-page .design-banner-frame {
+    grid-column: span 2;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
+
+/* 宫格间距归零 —— 现在只需压 .design-layout 这一个网格。
+   .category-grid 已被上面设成 display:contents(盒子取消),它自己的 gap 连同
+   style.css 与两个窄屏断点里的 gap 一并失效,不必再逐条覆盖。 */
 
 /* 作品展示区域直角。要压的对手有 5 组、散在两个文件里、全都带 !important:
      style.css:406 / 424    motion-posters 与 visualux 的 .card 及内层可视层
@@ -2295,6 +2318,13 @@ body.works-page .category-section[data-category="visualux"] .card-img {
 /* 卡片底色跟页面走。原本是浅灰 --gray-100:间距归零后卡片彼此贴合,浅灰会在黑底上
    拼成一整块白板,作品之间的边界反而消失。 */
 body.works-page .card { background: var(--page-bg); }
+
+/* Icon 预览卡:icon-studio/preview-*.html 的 html 与 body 都是透明的(底色本来由宿主
+   卡片提供),图标是 #181818 的深色线稿 —— 卡片跟着页面转黑后图标直接融进背景。
+   iframe 是独立文档,外面改不到里面的图标色;好在它透明且图标是单色,整体反相即可:
+   透明区仍透明,#181818 反成浅色线稿。与顶栏字标反白是同一招
+   (body.no-banner.theme-dark .site-wordmark)。 */
+body.works-page .icon-preview-frame { filter: invert(1); }
 
 /* 卡片文字与分组标题反白 */
 body.works-page .section-divider h2 { color: #fff; }
