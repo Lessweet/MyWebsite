@@ -2042,13 +2042,17 @@ body.reading-page .header.home-nav::after {
                     单独用 .theme-dark 而不带这个(给带 banner 的页面转黑),顶栏会保持
                     透明叠在 banner 上、文字维持深色 —— 这是有意的,别把两者合并。
      .menu-hidden   隐藏二级分类菜单。
+     .menu-dark     手机端全屏菜单模态转黑。与 .theme-dark 分开 —— Cases 页面本身是白底,
+                    但菜单要跟首页一致,只能单独给它这个类。
 
-   现状:首页 index.html 带 .theme-dark .no-banner .menu-hidden(黑底、无 banner、无筛选条);
-        Cases(design.html)只带 .menu-hidden(白底、保留 banner);文章阅读页三个都不带。
+   现状:首页 index.html 带 .theme-dark .no-banner .menu-hidden .menu-dark(黑底、无 banner、
+        无筛选条、黑菜单);Cases(design.html)带 .menu-hidden .menu-dark(白底、保留 banner、
+        黑菜单);文章阅读页都不带。
    ======================================== */
-/* 页面底色:不用纯黑 —— 纯黑在 OLED 上边缘发硬,亮色封面压上去还容易炸光晕。
-   收成一个 token,顶栏 / 手机端全屏菜单都引用它,改底色只动这一行。 */
-body.theme-dark { --page-bg: #0F0F0F; }
+/* 深色底:不用纯黑 —— 纯黑在 OLED 上边缘发硬,亮色封面压上去还容易炸光晕。
+   放在 :root 而不是 .theme-dark 上 —— Cases 是白底页但共用黑菜单(.menu-dark),
+   拿不到定义在 .theme-dark 上的值。改深色底只动这一行。 */
+:root { --page-bg: #0F0F0F; }
 body.home-v2.theme-dark { background: var(--page-bg); }
 
 /* 二级分类菜单:由 .menu-hidden 单独控制 —— 想恢复展示,删掉 body 上的 menu-hidden 即可,不影响配色 */
@@ -2103,16 +2107,37 @@ body.theme-dark .design-content .category-section .section-divider {
     border-top-color: rgba(255, 255, 255, 0.08);
 }
 
-/* 手机端:汉堡三条线反白;全屏菜单模态由奶油色转黑、内文反白。
-   断点与上面 .home-v2 .header.home-nav 那套手机端规则对齐(≤600px) */
+/* 手机端(≤600px,断点与上面 .home-v2 .header.home-nav 那套规则对齐)。
+   这里分两组,别混:
+     .menu-dark   —— 全屏菜单模态转黑 + 内文反白。首页与 Cases 共用:Cases 页面本身是白底,
+                     但菜单要跟首页一致,所以这组不能挂在 .theme-dark 下。
+     .theme-dark  —— 页面本身是黑底才需要的(顶栏底色、未展开时的汉堡反白)。 */
 @media (max-width: 600px) {
-    body.no-banner.theme-dark .header.home-nav .nav-toggle span { background: #fff; }
-    body.no-banner.theme-dark .header.home-nav .nav-collapse { background: var(--page-bg); }
-    body.no-banner.theme-dark .header.home-nav .nav-collapse .nav-modal-desc,
-    body.no-banner.theme-dark .header.home-nav .nav-collapse .nav-modal-copy {
+    /* —— 全屏菜单模态(.menu-dark:首页 + Cases) —— */
+    body.menu-dark .header.home-nav .nav-collapse { background: var(--page-bg); }
+    body.menu-dark .header.home-nav .nav-collapse .nav-modal-desc,
+    body.menu-dark .header.home-nav .nav-collapse .nav-modal-copy {
         color: rgba(255, 255, 255, 0.92);
     }
-    body.no-banner.theme-dark .header.home-nav .nav-modal-footer { border-top-color: rgba(255, 255, 255, 0.08); }
+    body.menu-dark .header.home-nav .nav-modal-footer { border-top-color: rgba(255, 255, 255, 0.08); }
+    /* 模态里的 Blog / Cases / Contact 三项反白。必须连 .nav-collapse 一起写满 ——
+       上面 .home-v2 .header.home-nav .nav-collapse .nav-cat/.header-connect(0,5,0)
+       给三项写死了 #1a1a1a(那是白底菜单的深灰),不写满就压不过,Contact 会黑进背景里。
+       (.nav-cat 曾侥幸躲过,只因它的反白选择器多带了 .nav-cats 凑到 0,5,1 —— 别依赖这个。) */
+    body.menu-dark .header.home-nav .nav-collapse .nav-cat,
+    body.menu-dark .header.home-nav .nav-collapse .header-connect {
+        color: rgba(255, 255, 255, 0.3);
+    }
+    body.menu-dark .header.home-nav .nav-collapse .nav-cat.active { color: #fff; }
+    /* 展开后 X 与字标压在黑模态上,必须反白。只在 .nav-open 时 ——
+       Cases 是白底页,未展开时反白会让汉堡 / 字标直接消失在白底 banner 里。
+       (首页由 body.no-banner.theme-dark .site-wordmark 常驻反白,这条对它只是同值重复。) */
+    body.menu-dark .header.home-nav.nav-open .nav-toggle span { background: #fff; }
+    body.menu-dark .header.home-nav.nav-open .site-wordmark { filter: invert(1); }
+
+    /* —— 页面本身是黑底才需要的(.theme-dark) —— */
+    /* 未展开时的汉堡:黑底页上要反白(Cases 白底页不走这条,保持深色) */
+    body.no-banner.theme-dark .header.home-nav .nav-toggle span { background: #fff; }
     /* 手机端上面有条 body.home-v2:not(.reading-page) 的 transparent !important,得压回来 */
     body.home-v2.no-banner.theme-dark:not(.reading-page) .header.home-nav { background: var(--page-bg) !important; }
 }
@@ -2190,8 +2215,15 @@ body.theme-dark .design-content .category-section .section-divider {
 .hero-by b { font-weight: 300; color: #fff; }
 .hero-role { font-size: 0.88em; color: rgba(255, 255, 255, 0.5); }
 
-/* 手机端:hero 上下留白收紧,署名与标题的间距同步缩 */
+/* 手机端 hero */
 @media (max-width: 600px) {
-    .home-hero { padding: 16px 0 56px; }
+    /* 上下留白各翻倍(实测顶栏→标题 48→96、署名→首卡 56→112)。
+       上边少加的 32px 来自 body.no-banner .design-layout 的 padding-top,不是这里漏了。 */
+    .home-hero { padding: 64px 0 112px; }
     .hero-byline { margin-top: 28px; }
+    /* 字号:外面那条 clamp(30px, 5.4vw, 76px) 在手机上永远撞到 30px 下限 —— 不随视口走,
+       342px 的可用宽里标题只占 287px,显小。这里改成跟视口线性缩放。
+       系数由实测得出:第二行(Kaushan 1.2em)自然宽约 9.6×字号,减掉左右各 24px 页面内边距,
+       再留一点余量 → 390px 上约 34px,320px 窄屏也不折行。下限兜底 26px。 */
+    .hero-headline { font-size: clamp(26px, calc(9.9vw - 4.8px), 40px); }
 }
