@@ -2312,22 +2312,21 @@ body.works-page .banner-stack {
     overflow: hidden;
     background: #2B2660;
 }
-/* 卡整体缩小:区域高约为宽的一半,2:1 卡的高度百分比(相对区域高)≈宽度百分比(相对区域宽),
-   垂直错距 ≥ 卡高 70% 才能让上层卡压不到下层卡居中的 VIBEDESIGN 文字带 */
+/* 斜放出血版:三张卡统一斜 8°,沿对角线错位叠放,允许压边出血 */
 body.works-page .banner-stack .stack-card {
     position: absolute;
-    width: 38%;
+    width: 66%;
     aspect-ratio: 2 / 1;
     height: auto;
     border: 0;
     border-radius: 18px;
     box-shadow: 0 24px 48px rgba(0, 0, 0, 0.38);
     pointer-events: none;
+    transform: rotate(-8deg);
 }
-/* 对角错位:三张卡沿左上→右下排开,每张的文字完整可见 */
-body.works-page .banner-stack .stack-card:nth-child(1) { top: 4%;  left: 3%; }
-body.works-page .banner-stack .stack-card:nth-child(2) { top: 31%; left: 31%; }
-body.works-page .banner-stack .stack-card:nth-child(3) { top: 58%; left: 59%; }
+body.works-page .banner-stack .stack-card:nth-child(1) { top: -2%; left: -2%; }
+body.works-page .banner-stack .stack-card:nth-child(2) { top: 24%; left: 15%; }
+body.works-page .banner-stack .stack-card:nth-child(3) { top: 54%; left: 36%; }
 
 /* 小屏(≤600px):统一网格从 3 列改 2 列(否则每张卡只有约 130px,挤成一团),
    banner 独占整行。
