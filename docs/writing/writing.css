@@ -2057,9 +2057,8 @@ body.reading-page .header.home-nav::after {
    取不到定义在 .theme-dark 上的值。改深色底只动这一行。 */
 :root {
     --page-bg: #0F0F0F;
-    /* 卡片底色:比页面底色亮一档,让卡片本身有边界。
-       作品填满卡面时(海报、视频)根本看不到它;但 icon 预览卡的内容是透明的
-       —— 底色本来就该由宿主卡片提供 —— 与页面同色就彻底没有边界、糊成一片。 */
+    /* 卡片默认底色:比页面底色亮一档,给卡片一个边界(作品填满卡面时看不到它)。
+       只作兜底 —— 内容自带底色的卡(浅灰 mockup、icon 卡)在下方各自覆盖。 */
     --card-bg: #1A1A1A;
 }
 body.home-v2.theme-dark { background: var(--page-bg); }
@@ -2321,11 +2320,28 @@ body.works-page .category-section[data-category="visualux"] .card-img {
     border-radius: 0 !important;
 }
 
-/* 卡片底色:原本是浅灰 --gray-100,在黑底上会拼成一整块白板。
-   用 --card-bg(比页面亮一档)而不是 --page-bg —— 与页面同色的话,内容透明的
-   icon 预览卡会和背景糊在一起、完全看不出卡片边界。 */
-body.works-page .card,
-body.works-page .foundation-card.icon-cover { background: var(--card-bg); }
+/* 卡片默认底色:比页面亮一档,给卡片一个边界(作品填满卡面时看不到它)。
+   下面几组按各自内容的实际底色单独覆盖 —— 用 :has() 按内容源精确选中,不必往 HTML
+   加定位类(散在 HTML 里更难维护),选择器本身就说明了这张卡是谁。 */
+body.works-page .card { background: var(--card-bg); }
+
+/* 内容自带浅灰底的作品(iOS mockup 的 #F2F2F7):卡片同色,消除四周 / 上下的深色接缝。
+   Eye Tracking、Voice Particles 是 iframe(body 底 #F2F2F7);
+   3D Rotation(Metal)、Glass Balls 是视频,采样四角同为 #F2F2F7。 */
+body.works-page .card:has(iframe[src*="multi-scene-character-demo"]),
+body.works-page .card:has(iframe[src*="voice-particles/index"]),
+body.works-page .card:has(source[src*="Metal_compressed"]),
+body.works-page .card:has(source[src*="3DBallsIPhone"]) { background: #F2F2F7; }
+/* 3DCardGlass 视频底稍深,采样为 #E3E3E5,单独取 */
+body.works-page .card:has(source[src*="3DCardGlass"]) { background: #E3E3E5; }
+
+/* 两张 icon 卡:年轻潮流纯色底(取代之前的深灰)。
+   Outlined → 热珊瑚粉,配白色图标(沿用下方 .icon-preview-frame 的整体反相);
+   Pixel → 酸性青柠,底太亮,这张单独取消反相,让图标回到深色。
+   青柠 + 珊瑚粉是一组年轻撞色。 */
+body.works-page .foundation-card.icon-cover:has(iframe[src*="preview-outlined"]) { background: #FF5470; }
+body.works-page .foundation-card.icon-cover:has(iframe[src*="preview-pixel"]) { background: #C8F135; }
+body.works-page .icon-cover:has(iframe[src*="preview-pixel"]) .icon-preview-frame { filter: none; }
 
 /* 卡片下方的标题与日期先隐藏。
    隐藏它才真正「拼在一起」:这段文字原本夹在行与行之间,横向拼死了、纵向却被文字隔开。
