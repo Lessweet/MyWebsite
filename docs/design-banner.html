@@ -15,7 +15,7 @@
     --text-dim: #969696;
     --brand: #000000;
     --brand-soft: rgba(0, 0, 0, 0.08);
-    --brand-banner-bg: #D2EEDF;
+    --brand-banner-bg: #C3C0FA;
     --dur-1-5: 1.5s;
     --dur-1-8: 1.8s;
     --dur-2-1: 2.1s;
@@ -60,7 +60,9 @@
     margin: 0 calc(50% - 50vw) 24px;
     background-color: var(--brand-banner-bg);
     overflow: hidden;
-    transition: background-color 0.35s ease;
+    /* 字色随样式瞬时切换,底色过渡必须明显短于最快的样式停留时间(200ms),
+       否则「字色+底色」的成对配色会错位(黄字压在柠檬绿底上看不清)。 */
+    transition: background-color 0.12s ease;
   }
 
   .brand-banner {
@@ -1465,11 +1467,11 @@
         ambient: pick(['*', '\\']),
         densityByDist: { 1: 0.28, 2: 0.28 },
         ambientDensity: 0.015,
-        backgroundColor: '#D2EEDF',
+        backgroundColor: '#C3C0FA',
         lineHeight: '0.65',
         letterSpacing: '0',
-        letterColor: (r, c) => ASCII_PALETTE[Math.floor((c - r + 120) / 8) % ASCII_PALETTE.length],
-        decorationColor: (r, c) => ASCII_PALETTE[Math.floor((c + r + 240) / 9) % ASCII_PALETTE.length],
+        letterColor: () => '#F0FA54',
+        decorationColor: () => '#F0FA54',
       },
       {
         id: 'block',
@@ -1479,11 +1481,11 @@
         ambient: pick(['▀', '▄']),
         densityByDist: { 1: 0.18, 2: 0.18 },
         ambientDensity: 0.012,
-        backgroundColor: '#dde4ec',
+        backgroundColor: '#90E5B4',
         lineHeight: '0.65',
         letterSpacing: '0',
-        letterColor: (r, c) => BLOCK_PALETTE[Math.floor((c + r * 2) / 7) % BLOCK_PALETTE.length],
-        decorationColor: (r, c) => BLOCK_DECOR_PALETTE[Math.floor((c * 2 - r + 240) / 10) % BLOCK_DECOR_PALETTE.length],
+        letterColor: () => '#A8B4F0',
+        decorationColor: () => '#A8B4F0',
       },
       {
         id: 'dots',
@@ -1495,11 +1497,11 @@
         ambient: pick(['•', '•', '•', '•', '✦', '✦', '✦', '▪', '▪', '▴', '▴']),
         densityByDist: {},
         ambientDensity: 0.038,
-        backgroundColor: '#ffe0e8',
+        backgroundColor: '#CFFA58',
         lineHeight: '0.65',
         letterSpacing: '0',
-        letterColor: (r, c) => DOT_PALETTE[(Math.floor(c / 5) + Math.floor(r / 3)) % DOT_PALETTE.length],
-        decorationColor: (r, c) => DOT_PALETTE[(Math.floor(c / 7) + Math.floor(r / 2) + 2) % DOT_PALETTE.length],
+        letterColor: () => '#6EC0F7',
+        decorationColor: () => '#6EC0F7',
       },
     ];
     // 切换节奏:样式 1、2 快速闪过(FAST_MS),落到第 3 个样式停留 1 秒(HOLD_MS),再回到 1 快速循环
@@ -1966,7 +1968,7 @@
       }
       grid.dataset.styleId = style.id;
       if (bannerShell) {
-        bannerShell.style.setProperty('--brand-banner-bg', style.backgroundColor || '#D2EEDF');
+        bannerShell.style.setProperty('--brand-banner-bg', style.backgroundColor || '#C3C0FA');
       }
       grid.replaceChildren(build(style));
       originsDirty = true;
