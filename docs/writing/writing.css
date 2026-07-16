@@ -2314,18 +2314,19 @@ body.works-page .banner-stack {
 }
 body.works-page .banner-stack .stack-card {
     position: absolute;
-    width: 66%;
+    width: 70%;
     aspect-ratio: 2 / 1;
     height: auto;
     border: 0;
     border-radius: 18px;
     box-shadow: 0 24px 48px rgba(0, 0, 0, 0.38);
     pointer-events: none;
-    transform: rotate(-8deg);
 }
-body.works-page .banner-stack .stack-card:nth-child(1) { top: -2%; left: -2%; }
-body.works-page .banner-stack .stack-card:nth-child(2) { top: 24%; left: 15%; }
-body.works-page .banner-stack .stack-card:nth-child(3) { top: 54%; left: 36%; }
+/* 对角错位:三张卡沿左上→右下排布,首尾两张允许轻微出血到区域外,
+   换来更大的纵向错距,让下层卡片的 VIBEDESIGN 多露出来 */
+body.works-page .banner-stack .stack-card:nth-child(1) { top: -8%; left: -3%; }
+body.works-page .banner-stack .stack-card:nth-child(2) { top: 18%; left: 15%; }
+body.works-page .banner-stack .stack-card:nth-child(3) { top: 44%; left: 33%; }
 
 /* 小屏(≤600px):统一网格从 3 列改 2 列(否则每张卡只有约 130px,挤成一团),
    banner 独占整行。
