@@ -1387,7 +1387,8 @@
 <body>
 <main>
 <div class="brand-banner-shell">
-    <canvas class="brand-particle-canvas" id="brand-particle-canvas" aria-hidden="true"></canvas>
+    <!-- 漂浮粒子已移除:canvas 不渲染。JS 里所有粒子逻辑都有 particleCanvas 空值保护,
+         元素不在则整套粒子系统自动停用,无需改脚本。 -->
     <div class="brand-banner" aria-label="VIBEDESIGN"><div class="brand-banner-grid" id="brand-banner-grid"></div></div>
   </div>
 <script>
@@ -1470,8 +1471,8 @@
         backgroundColor: '#C3C0FA',
         lineHeight: '0.65',
         letterSpacing: '0',
-        letterColor: () => '#F0FA54',
-        decorationColor: () => '#F0FA54',
+        letterColor: () => '#CDD107',
+        decorationColor: () => '#CDD107',
       },
       {
         id: 'block',
@@ -1484,8 +1485,8 @@
         backgroundColor: '#90E5B4',
         lineHeight: '0.65',
         letterSpacing: '0',
-        letterColor: () => '#A8B4F0',
-        decorationColor: () => '#A8B4F0',
+        letterColor: () => '#5B69E4',
+        decorationColor: () => '#5B69E4',
       },
       {
         id: 'dots',
@@ -1500,8 +1501,8 @@
         backgroundColor: '#CFFA58',
         lineHeight: '0.65',
         letterSpacing: '0',
-        letterColor: () => '#6EC0F7',
-        decorationColor: () => '#6EC0F7',
+        letterColor: () => '#2E8FE5',
+        decorationColor: () => '#2E8FE5',
       },
     ];
     // 切换节奏:样式 1、2 快速闪过(FAST_MS),落到第 3 个样式停留 1 秒(HOLD_MS),再回到 1 快速循环
