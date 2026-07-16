@@ -2035,23 +2035,26 @@ body.reading-page .header.home-nav::after {
 }
 
 /* ========================================
-   深色主题 —— 三个 class 各管一件事,可自由组合,谁都不带就是原来的浅色版:
+   深色主题 —— 每个 class 各管一件事,可自由组合,谁都不带就是原来的浅色版:
 
      .theme-dark    黑色页面底色 + 内容区文字反白。
-     .no-banner     顶部没有 banner 的页面专用:补回顶栏占位 + 顶栏整组反白。
-                    单独用 .theme-dark 而不带这个(给带 banner 的页面转黑),顶栏会保持
-                    透明叠在 banner 上、文字维持深色 —— 这是有意的,别把两者合并。
+     .no-banner     顶栏不叠在 banner 上的页面:补回顶栏占位(内容整体下移到顶栏之下)
+                    + 顶栏转实底并整组反白。
+                    名字是历史遗留 —— 它管的不是「有没有 banner」,而是「顶栏叠不叠在
+                    banner 上」。Cases 有 banner,但 banner 从顶栏下方才开始,所以也带它。
+                    单独用 .theme-dark 而不带这个,顶栏会保持透明叠在 banner 上、
+                    文字维持深色 —— 这是给「顶栏浮在 banner 上」的版式留的,别把两者合并。
      .menu-hidden   隐藏二级分类菜单。
-     .menu-dark     手机端全屏菜单模态转黑。与 .theme-dark 分开 —— Cases 页面本身是白底,
-                    但菜单要跟首页一致,只能单独给它这个类。
+     .menu-dark     手机端全屏菜单模态转黑。与 .theme-dark 分开 —— 白底页也可能要黑菜单。
+     .works-page    Cases 专属钩子。见下方「Cases 深色改版」一节,那里解释了为什么必须有它。
 
-   现状:首页 index.html 带 .theme-dark .no-banner .menu-hidden .menu-dark(黑底、无 banner、
-        无筛选条、黑菜单);Cases(design.html)带 .menu-hidden .menu-dark(白底、保留 banner、
-        黑菜单);文章阅读页都不带。
+   现状:首页 index.html 带 .theme-dark .no-banner .menu-hidden .menu-dark;
+        Cases(design.html)在此基础上多一个 .works-page;
+        文章阅读页都不带。
    ======================================== */
 /* 深色底:不用纯黑 —— 纯黑在 OLED 上边缘发硬,亮色封面压上去还容易炸光晕。
-   放在 :root 而不是 .theme-dark 上 —— Cases 是白底页但共用黑菜单(.menu-dark),
-   拿不到定义在 .theme-dark 上的值。改深色底只动这一行。 */
+   放在 :root 而不是 .theme-dark 上 —— 手机端黑菜单(.menu-dark)可能挂在白底页上,
+   取不到定义在 .theme-dark 上的值。改深色底只动这一行。 */
 :root { --page-bg: #0F0F0F; }
 body.home-v2.theme-dark { background: var(--page-bg); }
 
@@ -2227,3 +2230,77 @@ body.theme-dark .design-content .category-section .section-divider {
        再留一点余量 → 390px 上约 34px,320px 窄屏也不折行。下限兜底 26px。 */
     .hero-headline { font-size: clamp(26px, calc(9.9vw - 4.8px), 40px); }
 }
+
+/* ========================================
+   Cases(design.html)—— 深色改版
+
+   为什么必须有 .works-page 这个专属类:首页 index.html 的 body 类与 Cases 几乎完全一样
+   (两边都是 home-v2 design-page theme-dark no-banner menu-hidden menu-dark),而且两边
+   都有 .design-content 和 .category-grid。只按这些类写规则,下面的栅格归零 / 直角 / 卡片
+   反白会连首页的文章卡片一起改掉。加类是这里唯一能把两页分开的手段。
+   ======================================== */
+
+/* banner 紧贴顶栏下沿:.no-banner 默认还会多留 32px(那是给首页文字 hero 的呼吸),
+   banner 是整块视觉,和顶栏之间留缝会像没对齐。 */
+body.works-page .design-layout { padding-top: var(--design-menu-top, 76px); }
+
+/* banner 收进内容带,与下方作品网格同宽同边距。
+   基础样式用 width:100vw + margin-left/right: calc(50% - 50vw) 硬撑破居中容器做通栏,
+   两样都得撤:只改 width 不撤负 margin,banner 会向左偏出去。 */
+body.works-page .design-banner-frame {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* 宫格间距归零。三处都得压:style.css 的 gap(40px + clamp 列距)、
+   writing.css 上面那条 .home-v2 .category-grid 的 column-gap、以及两个窄屏断点的 row-gap。
+   漏掉任何一处,对应断点就会漏出间距。 */
+body.works-page .category-grid { gap: 0; }
+@media (max-width: 860px) { body.works-page .category-grid { gap: 0; } }
+@media (max-width: 620px) { body.works-page .category-grid { gap: 0; } }
+
+/* 作品展示区域直角。要压的对手有 5 组、散在两个文件里、全都带 !important:
+     style.css:406 / 424    motion-posters 与 visualux 的 .card 及内层可视层
+     writing.css:1633       .home-v2 下的 card-iframe / card-img / card-video /
+                            foundation-card / icon-cover / icon-preview-frame 一整串
+     writing.css:1640       #ai-native-design .foundation-card —— 用了 ID,特异性 (1,1,0)。
+                            ID 那一位压死一切 class 组合,光加 !important 没用,
+                            必须把这个 ID 原样写进选择器才盖得住。
+     writing.css:2027       ai-generated 分区的 .card
+   漏掉任何一组,对应分区就会漏出 12px 圆角(第一版就漏了,Icon Skill 卡还是圆的)。
+   这里的 !important 是被迫对齐对手,不是图省事。 */
+body.works-page .card,
+body.works-page .card-visual,
+body.works-page .card-iframe-container,
+body.works-page .card-iframe,
+body.works-page .card-img,
+body.works-page .card-video,
+body.works-page .card-video-contained,
+body.works-page .foundation-card,
+body.works-page .icon-cover,
+body.works-page .icon-preview-frame,
+body.works-page #ai-native-design .foundation-card,
+body.works-page .category-section[data-category="ai-generated"] .card,
+body.works-page .category-section[data-category="motion-posters"] .card,
+body.works-page .category-section[data-category="visualux"] .card,
+body.works-page .category-section[data-category="visualux"] .card-visual,
+body.works-page .category-section[data-category="visualux"] .card-iframe-container,
+body.works-page .category-section[data-category="visualux"] .card-iframe,
+body.works-page .category-section[data-category="visualux"] .card-video,
+body.works-page .category-section[data-category="visualux"] .card-img {
+    border-radius: 0 !important;
+}
+
+/* 卡片底色跟页面走。原本是浅灰 --gray-100:间距归零后卡片彼此贴合,浅灰会在黑底上
+   拼成一整块白板,作品之间的边界反而消失。 */
+body.works-page .card { background: var(--page-bg); }
+
+/* 卡片文字与分组标题反白 */
+body.works-page .section-divider h2 { color: #fff; }
+body.works-page .card-label { color: #fff; }
+body.works-page .card-date,
+body.works-page .card-meta .card-tag { color: rgba(255, 255, 255, 0.4); }
+body.works-page .card-wrapper:hover .card-label { color: rgba(255, 255, 255, 0.6); }
+body.works-page .card-wrapper:hover .card-date,
+body.works-page .card-wrapper:hover .card-meta .card-tag { color: rgba(255, 255, 255, 0.3); }
