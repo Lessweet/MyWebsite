@@ -2312,6 +2312,14 @@ body.works-page .banner-stack {
     overflow: hidden;
     background: #2B2660;
 }
+/* 内层安全区:三张卡整体收在区域中部,四周留出深靛蓝底,不贴边不出血 */
+body.works-page .banner-stack .stack-inner {
+    position: absolute;
+    top: 16%;
+    left: 10%;
+    width: 72%;
+    height: 64%;
+}
 body.works-page .banner-stack .stack-card {
     position: absolute;
     width: 70%;
@@ -2322,11 +2330,10 @@ body.works-page .banner-stack .stack-card {
     box-shadow: 0 24px 48px rgba(0, 0, 0, 0.38);
     pointer-events: none;
 }
-/* 对角错位:三张卡沿左上→右下排布,首尾两张允许轻微出血到区域外,
-   换来更大的纵向错距,让下层卡片的 VIBEDESIGN 多露出来 */
-body.works-page .banner-stack .stack-card:nth-child(1) { top: -8%; left: -3%; }
-body.works-page .banner-stack .stack-card:nth-child(2) { top: 18%; left: 15%; }
-body.works-page .banner-stack .stack-card:nth-child(3) { top: 44%; left: 33%; }
+/* 对角错位:三张卡沿左上→右下铺满安全区 */
+body.works-page .banner-stack .stack-card:nth-child(1) { top: 0;   left: 0; }
+body.works-page .banner-stack .stack-card:nth-child(2) { top: 13%; left: 15%; }
+body.works-page .banner-stack .stack-card:nth-child(3) { top: 26%; left: 30%; }
 
 /* 小屏(≤600px):统一网格从 3 列改 2 列(否则每张卡只有约 130px,挤成一团),
    banner 独占整行。

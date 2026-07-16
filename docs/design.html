@@ -8,7 +8,7 @@
     <link rel="shortcut icon" href="favicon.png?v=12">
     <link rel="apple-touch-icon" href="apple-touch-icon.png?v=12">
     <link rel="stylesheet" href="style.css?v=128">
-    <link rel="stylesheet" href="writing/writing.css?v=289">
+    <link rel="stylesheet" href="writing/writing.css?v=290">
     <!-- 提前加载,使顶部导航能在首次绘制前同步注入,避免空 header 闪烁 -->
     <script src="writing/writing.js?v=75"></script>
 </head>
@@ -25,9 +25,11 @@
     <main class="design-layout">
         <!-- VIBEDESIGN banner:三套配色各做一张 2:1 横卡,斜向错位叠放(?style= 锁定单一样式,不轮播) -->
         <div class="design-banner-frame banner-stack" aria-label="VIBEDESIGN">
-            <iframe src="design-banner.html?style=ascii&amp;v=22" class="stack-card" title="VIBEDESIGN ascii" scrolling="no"></iframe>
-            <iframe src="design-banner.html?style=block&amp;v=22" class="stack-card" title="VIBEDESIGN block" scrolling="no"></iframe>
-            <iframe src="design-banner.html?style=dots&amp;v=22" class="stack-card" title="VIBEDESIGN dots" scrolling="no"></iframe>
+            <div class="stack-inner">
+                <iframe src="design-banner.html?style=ascii&amp;v=22" class="stack-card" title="VIBEDESIGN ascii" scrolling="no"></iframe>
+                <iframe src="design-banner.html?style=block&amp;v=22" class="stack-card" title="VIBEDESIGN block" scrolling="no"></iframe>
+                <iframe src="design-banner.html?style=dots&amp;v=22" class="stack-card" title="VIBEDESIGN dots" scrolling="no"></iframe>
+            </div>
         </div>
         <aside class="design-menu" aria-label="Design 分类">
             <a href="#ai-native-design" class="nav-cat"><span class="menu-icon"><svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12.38,0.75 12.0,0.75 12.0,1.5 11.62,1.5 11.62,3.38 11.25,3.38 11.25,4.5 10.88,4.5 10.88,5.25 10.5,5.25 10.5,6.0 10.12,6.0 10.12,6.75 9.75,6.75 9.75,7.12 9.38,7.12 9.38,7.88 9.0,7.88 9.0,8.25 8.62,8.25 8.62,8.62 9.38,8.62 9.38,8.25 10.5,8.25 10.5,7.88 13.5,7.88 13.5,8.25 15.0,8.25 15.0,8.62 15.38,8.62 15.38,7.88 15.0,7.88 15.0,7.5 14.62,7.5 14.62,7.12 14.25,7.12 14.25,6.38 13.88,6.38 13.88,5.62 13.5,5.62 13.5,4.88 13.12,4.88 13.12,3.75 12.75,3.75 12.75,2.62 12.38,2.62ZM8.25,9.0 7.88,9.0 7.88,9.38 7.12,9.38 7.12,9.75 6.38,9.75 6.38,10.12 5.62,10.12 5.62,10.5 4.88,10.5 4.88,10.88 4.12,10.88 4.12,11.25 2.62,11.25 2.62,11.62 0.38,11.62 0.38,12.38 2.62,12.38 2.62,12.75 3.75,12.75 3.75,13.12 4.88,13.12 4.88,13.5 5.62,13.5 5.62,13.88 6.38,13.88 6.38,14.25 7.12,14.25 7.12,14.62 7.5,14.62 7.5,15.0 8.25,15.0 8.25,14.25 7.88,14.25 7.88,13.12 7.5,13.12 7.5,11.25 7.88,11.25 7.88,9.75 8.25,9.75ZM15.75,9.0 15.75,9.38 16.12,9.38 16.12,10.12 16.5,10.12 16.5,13.88 16.12,13.88 16.12,14.62 15.75,14.62 15.75,15.38 16.12,15.38 16.12,15.0 16.5,15.0 16.5,14.62 17.25,14.62 17.25,14.25 17.62,14.25 17.62,13.88 18.38,13.88 18.38,13.5 19.5,13.5 19.5,13.12 20.25,13.12 20.25,12.75 21.75,12.75 21.75,12.38 24.0,12.38 24.0,12.0 23.62,12.0 23.62,11.62 21.38,11.62 21.38,11.25 20.25,11.25 20.25,10.88 19.12,10.88 19.12,10.5 18.38,10.5 18.38,10.12 17.62,10.12 17.62,9.75 16.88,9.75 16.88,9.38 16.5,9.38 16.5,9.0ZM9.0,15.38 8.62,15.38 8.62,15.75 9.0,15.75ZM9.0,15.75 9.0,16.12 9.38,16.12 9.38,16.88 9.75,16.88 9.75,17.25 10.12,17.25 10.12,18.0 10.5,18.0 10.5,18.75 10.88,18.75 10.88,19.5 11.25,19.5 11.25,20.62 11.62,20.62 11.62,22.88 12.0,22.88 12.0,23.25 12.38,23.25 12.38,21.38 12.75,21.38 12.75,20.25 13.12,20.25 13.12,19.12 13.5,19.12 13.5,18.38 13.88,18.38 13.88,17.62 14.25,17.62 14.25,17.25 14.62,17.25 14.62,16.5 15.0,16.5 15.0,16.12 15.38,16.12 15.38,15.38 15.0,15.38 15.0,15.75 14.25,15.75 14.25,16.12 10.12,16.12 10.12,15.75Z"/></svg></span>Icon Skill</a>
