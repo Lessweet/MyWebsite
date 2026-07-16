@@ -2284,6 +2284,16 @@ body.works-page .design-banner-frame {
     margin: 0;
 }
 
+/* 小屏(≤600px):统一网格从 3 列改 2 列(否则每张卡只有约 130px,挤成一团),
+   banner 独占整行。
+   桌面端 banner 靠同行右侧那张作品卡撑出行高;移动端它独占一行、没有同行卡片,
+   height:100% 会塌回 iframe 固有高度(150px)。所以这里给一个固定高度 —— banner 内部
+   stage 是 min-height:440 且 logo 垂直居中,iframe 只露中间 260px 也能看到完整 logo。 */
+@media (max-width: 600px) {
+    body.works-page .design-layout { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    body.works-page .design-banner-frame { grid-column: 1 / -1; height: 260px; }
+}
+
 /* 宫格间距归零 —— 现在只需压 .design-layout 这一个网格。
    .category-grid 已被上面设成 display:contents(盒子取消),它自己的 gap 连同
    style.css 与两个窄屏断点里的 gap 一并失效,不必再逐条覆盖。 */
@@ -2335,12 +2345,16 @@ body.works-page .card:has(source[src*="3DBallsIPhone"]) { background: #F2F2F7; }
 /* 3DCardGlass 视频底稍深,采样为 #E3E3E5,单独取 */
 body.works-page .card:has(source[src*="3DCardGlass"]) { background: #E3E3E5; }
 
+/* 3D Sphere:视频是黑底,卡底取球体本身的荧光绿(采样球体范围的平均绿),让两侧留边
+   与球体呼应。源名匹配 3DSphere-particle,别撞上 Gesture 的 3DSphere_compressed。 */
+body.works-page .card:has(source[src*="3DSphere-particle"]) { background: #16E816; }
+
 /* 两张 icon 卡:年轻潮流纯色底(取代之前的深灰)。
-   Outlined → 热珊瑚粉,配白色图标(沿用下方 .icon-preview-frame 的整体反相);
-   Pixel → 酸性青柠,底太亮,这张单独取消反相,让图标回到深色。
-   青柠 + 珊瑚粉是一组年轻撞色。 */
-body.works-page .foundation-card.icon-cover:has(iframe[src*="preview-outlined"]) { background: #FF5470; }
+   Outlined → 薄荷绿,Pixel → 酸性青柠。两张底色都浅,白图标看不清,
+   各自单独取消整体反相(下方 .icon-preview-frame 的 invert),让图标回到深色。 */
+body.works-page .foundation-card.icon-cover:has(iframe[src*="preview-outlined"]) { background: #9FE5BC; }
 body.works-page .foundation-card.icon-cover:has(iframe[src*="preview-pixel"]) { background: #C8F135; }
+body.works-page .icon-cover:has(iframe[src*="preview-outlined"]) .icon-preview-frame,
 body.works-page .icon-cover:has(iframe[src*="preview-pixel"]) .icon-preview-frame { filter: none; }
 
 /* 卡片下方的标题与日期先隐藏。
