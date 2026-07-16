@@ -15,7 +15,7 @@
     --text-dim: #969696;
     --brand: #000000;
     --brand-soft: rgba(0, 0, 0, 0.08);
-    --brand-banner-bg: #E9F7F1;
+    --brand-banner-bg: #D2EEDF;
     --dur-1-5: 1.5s;
     --dur-1-8: 1.8s;
     --dur-2-1: 2.1s;
@@ -1465,7 +1465,7 @@
         ambient: pick(['*', '\\']),
         densityByDist: { 1: 0.28, 2: 0.28 },
         ambientDensity: 0.015,
-        backgroundColor: '#E9F7F1',
+        backgroundColor: '#D2EEDF',
         lineHeight: '0.65',
         letterSpacing: '0',
         letterColor: (r, c) => ASCII_PALETTE[Math.floor((c - r + 120) / 8) % ASCII_PALETTE.length],
@@ -1479,7 +1479,7 @@
         ambient: pick(['▀', '▄']),
         densityByDist: { 1: 0.18, 2: 0.18 },
         ambientDensity: 0.012,
-        backgroundColor: '#eef2f5',
+        backgroundColor: '#dde4ec',
         lineHeight: '0.65',
         letterSpacing: '0',
         letterColor: (r, c) => BLOCK_PALETTE[Math.floor((c + r * 2) / 7) % BLOCK_PALETTE.length],
@@ -1495,7 +1495,7 @@
         ambient: pick(['•', '•', '•', '•', '✦', '✦', '✦', '▪', '▪', '▴', '▴']),
         densityByDist: {},
         ambientDensity: 0.038,
-        backgroundColor: '#fff1f4',
+        backgroundColor: '#ffe0e8',
         lineHeight: '0.65',
         letterSpacing: '0',
         letterColor: (r, c) => DOT_PALETTE[(Math.floor(c / 5) + Math.floor(r / 3)) % DOT_PALETTE.length],
@@ -1966,7 +1966,7 @@
       }
       grid.dataset.styleId = style.id;
       if (bannerShell) {
-        bannerShell.style.setProperty('--brand-banner-bg', style.backgroundColor || '#E9F7F1');
+        bannerShell.style.setProperty('--brand-banner-bg', style.backgroundColor || '#D2EEDF');
       }
       grid.replaceChildren(build(style));
       originsDirty = true;
