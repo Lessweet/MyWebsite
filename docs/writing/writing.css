@@ -2305,6 +2305,28 @@ body.works-page .design-banner-frame {
     margin: 0;
 }
 
+/* banner 改版:三套样式各做一张 2:1 横卡,斜向错位叠放在原 banner 区域内。
+   卡片用绝对定位 + 百分比坐标,区域缩放时构图不变;后面的卡自然叠在前面的上方。 */
+body.works-page .banner-stack {
+    position: relative;
+    overflow: hidden;
+    background: #2B2660;
+}
+body.works-page .banner-stack .stack-card {
+    position: absolute;
+    width: 66%;
+    aspect-ratio: 2 / 1;
+    height: auto;
+    border: 0;
+    border-radius: 18px;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.38);
+    pointer-events: none;
+    transform: rotate(-8deg);
+}
+body.works-page .banner-stack .stack-card:nth-child(1) { top: -2%; left: -2%; }
+body.works-page .banner-stack .stack-card:nth-child(2) { top: 24%; left: 15%; }
+body.works-page .banner-stack .stack-card:nth-child(3) { top: 54%; left: 36%; }
+
 /* 小屏(≤600px):统一网格从 3 列改 2 列(否则每张卡只有约 130px,挤成一团),
    banner 独占整行。
    桌面端 banner 靠同行右侧那张作品卡撑出行高;移动端它独占一行、没有同行卡片,
