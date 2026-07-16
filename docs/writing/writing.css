@@ -22,7 +22,7 @@
 :root { --cat-tab-size: 16px; }
 @media (max-width: 600px) { :root { --cat-tab-size: 14px; } }
 
-/* Blog(index-v2)与 Skills(design.html)两页字重基调:正文 / UI 一律常规 400,
+/* Blog(index.html)与 Skills(design.html)两页字重基调:正文 / UI 一律常规 400,
    仅「标题层级」加粗一档 = 500 —— h1/h2/h3 + 卡片标题(.w-title / .card-label)。
    原本散落的 600/650/680 统一收成 500,既不全平也不杂乱。排除文章详情页(reading-page)。 */
 body.design-page:not(.reading-page),
@@ -535,6 +535,16 @@ body.reading-page .article-body blockquote { border-left-color: #1a1a1a; }
     mask-image: linear-gradient(to right, #000, #000 calc(100% - 28px), transparent);
 }
 .reader-cats::-webkit-scrollbar { display: none; }   /* WebKit 隐藏滚动条 */
+
+/* 阅读页左栏的内容筛选 tab(全部 / UI 视觉 / 产品体验):暂时不展示。想恢复删掉这两条即可。
+   这里不复用首页那个 .menu-hidden 开关 —— 阅读页的 tab 是 writing.js 注入的、每篇文章都有,
+   走 class 就得给 11 篇文章 + template.html 全加一遍,漏一个新文章就冒出来。用页面级规则更稳。
+   筛选默认是「全部」且只在点击时才隐藏条目,所以藏掉 tab 后左栏文章仍然全显示。 */
+body.reading-page .reader-cats { display: none; }
+/* tab 没了之后,上面 @media(min-width:1000px) 里那条 padding-top:64px(原意是让左栏顶部与右栏正文齐平)
+   就成了一段纯空白 —— 一并去掉,让文章列表直接顶到左栏顶部。
+   特异性 (0,3,1) 压过 .reading-layout .reader-list (0,2,0);恢复 tab 时把这条也删掉。 */
+body.reading-page .reading-layout .reader-list { padding-top: 0; }
 /* 分类 tab 直接复用首页二级分类(.design-menu .nav-cat)的下划线选中样式,不另造样式:
    下方 .design-menu .nav-cat 规则组已并入 .reader-cat(字号/颜色/选中下划线全共用)。
    这里只留侧栏专属:不收缩横滑 + 图标压到侧栏尺寸。 */
@@ -1377,7 +1387,7 @@ body .home-nav .nav-cats .nav-cat.active {
     }
 
     /* 三项:字号 56px、细字重、实色深灰、左对齐;入场逐项上移淡入。
-       font-weight 用 !important 压过 index-v2 的全局 body.design-page * { font-weight:400!important } */
+       font-weight 用 !important 压过 index.html 的全局 body.design-page * { font-weight:400!important } */
     .home-v2 .header.home-nav .nav-collapse .nav-cat,
     .home-v2 .header.home-nav .nav-collapse .header-connect {
         width: auto;
@@ -1623,7 +1633,7 @@ body.home-v2 .header-placeholder { height: 76px; }
 .home-v2 .icon-preview-frame { border-radius: 12px !important; }
 .article-cover { border-radius: 6px !important; }
 
-/* 首页(index-v2)网格列表封面单独加大圆角到 24px;design.html 不含 .writing-card,文章详情页 .article-cover 不受影响 */
+/* 首页(index.html)网格列表封面单独加大圆角到 24px;design.html 不含 .writing-card,文章详情页 .article-cover 不受影响 */
 .home-v2 .writing-card { border-radius: 12px !important; }
 
 /* AI-Native Design 基础三卡:Pixel Banner 作品 + 两个 icon 封面 */
@@ -1838,7 +1848,7 @@ body.writing-page .brand-banner-grid {
     /* 通栏细灰分割线 6% 黑 —— 暂不展示,保留代码以便随时恢复 */
     /* border-bottom: 1px solid rgba(0, 0, 0, 0.06); */
 }
-/* 分类页(index-v2 / design,非文章页):顶栏背景透明,让通到页顶的 banner 透出;
+/* 分类页(index / design,非文章页):顶栏背景透明,让通到页顶的 banner 透出;
    滚动到 banner 滚出顶栏后(JS 加 .nav-solid)变白底 */
 body.design-page:not(.writing-page) .header.home-nav {
     background: transparent;
@@ -1925,8 +1935,8 @@ body.reading-page .header.home-nav::after {
     cursor: pointer;
     line-height: 1.3;
 }
-/* Blog(index-v2)与 Skills(design.html)两页共用同一二级筛选规范:tab 字号统一 24px。
-   覆盖两页两种标签(design.html 用 a、index-v2 用 button);顶栏 Blog/Skills 是 .nav-cats 内的
+/* Blog(index.html)与 Skills(design.html)两页共用同一二级筛选规范:tab 字号统一 24px。
+   覆盖两页两种标签(design.html 用 a、index.html 用 button);顶栏 Blog/Skills 是 .nav-cats 内的
    .nav-cat,不受影响,也不改共用的 --cat-tab-size token。 */
 .design-menu a.nav-cat,
 .design-menu button.nav-cat,
@@ -2022,4 +2032,84 @@ body.reading-page .header.home-nav::after {
 }
 .home-v2 .category-section[data-category="ai-generated"] .card-video-contained::before {
     display: none;
+}
+
+/* ========================================
+   深色主题 —— 三个 class 各管一件事,可自由组合,谁都不带就是原来的浅色版:
+
+     .theme-dark    黑色页面底色 + 内容区文字反白。
+     .no-banner     顶部没有 banner 的页面专用:补回顶栏占位 + 顶栏整组反白。
+                    单独用 .theme-dark 而不带这个(给带 banner 的页面转黑),顶栏会保持
+                    透明叠在 banner 上、文字维持深色 —— 这是有意的,别把两者合并。
+     .menu-hidden   隐藏二级分类菜单。
+
+   现状:首页 index.html 带 .theme-dark .no-banner .menu-hidden(黑底、无 banner、无筛选条);
+        Cases(design.html)只带 .menu-hidden(白底、保留 banner);文章阅读页三个都不带。
+   ======================================== */
+body.home-v2.theme-dark { background: #000; }
+
+/* 二级分类菜单:由 .menu-hidden 单独控制 —— 想恢复展示,删掉 body 上的 menu-hidden 即可,不影响配色 */
+body.menu-hidden .design-menu { display: none; }
+
+/* ---- 以下只作用于「没有 banner」的页面(index-v3) ---- */
+
+/* banner 原本从页顶铺到顶栏之下,兼着占位;移除后内容会顶到 fixed 顶栏底下,
+   这里补回 = 顶栏实际高度(JS 写入 --design-menu-top)+ 一段呼吸空间。
+   特异性要压过 .design-page .design-layout 的 padding-top: 0 */
+body.no-banner .design-layout {
+    padding-top: calc(var(--design-menu-top, 76px) + 32px);
+}
+
+/* 顶栏:没有 banner 可透出了,滚动前后都用纯黑底 —— 否则白色导航文字会压在黑内容上看不清,
+   滚动后又会淡入一条米色 .nav-bg 亮条 */
+body.no-banner.theme-dark .header.home-nav,
+body.design-page.no-banner.theme-dark:not(.writing-page) .header.home-nav { background: #000; }
+body.no-banner.theme-dark .header.home-nav .nav-bg { display: none; }
+/* 字标是黑色 SVG,黑底上会消失 —— 整体反相为白 */
+body.no-banner.theme-dark .site-wordmark { filter: invert(1); }
+/* 顶栏三项(Blog / Cases / Contact):未选中 30% 白,选中 100% 白 —— 与浅色版的 30% 黑 / 纯黑对称。
+   未选中态必须写满 .nav-cats .nav-cat(4 类 + body = 0,4,1),才压得过前面
+   .design-page .home-nav .nav-cats .nav-cat(0,4,0)的 30% 黑 —— 否则 Cases 会是黑字贴黑底、整个消失 */
+body.no-banner.theme-dark .home-nav .nav-cats .nav-cat,
+body.no-banner.theme-dark .home-nav .header-connect { color: rgba(255, 255, 255, 0.3); }
+body.no-banner.theme-dark .home-nav .nav-cats .nav-cat:hover,
+body.no-banner.theme-dark .home-nav .header-connect:hover { color: rgba(255, 255, 255, 0.6); }
+body.no-banner.theme-dark .home-nav .nav-cats .nav-cat.active { color: #fff; }
+
+/* 卡片封面下方文字块。封面本身是各自独立的 iframe/video 文档,保持原样 —— 亮色封面浮在黑底上即预期效果 */
+body.theme-dark .writing-info .w-title { color: #fff; }
+body.theme-dark .writing-info .w-excerpt { color: rgba(255, 255, 255, 0.6); }
+body.theme-dark .writing-info .w-date { color: rgba(255, 255, 255, 0.4); }
+/* hover 整体淡化(浅色主题里是变灰,黑底上改为降透明度) */
+body.theme-dark .card-wrapper:hover .writing-info .w-title { color: rgba(255, 255, 255, 0.5); }
+body.theme-dark .card-wrapper:hover .writing-info .w-excerpt,
+body.theme-dark .card-wrapper:hover .writing-info .w-date { color: rgba(255, 255, 255, 0.3); }
+
+/* 底部 meta 一行的标签:与左侧的 .w-date 同款纯灰字,不是胶囊。
+   去胶囊底由上面 .home-v2 .writing-info .w-meta .w-tags .a-tag(0,5,0)负责,这里只翻颜色。
+   选择器必须写满 .w-meta —— 少写这一层的话特异性算下来会盖过那条去胶囊规则,黑底上又冒出胶囊。 */
+body.theme-dark .writing-info .w-meta .w-tags .a-tag {
+    color: rgba(255, 255, 255, 0.4);   /* = .w-date 同色 */
+}
+body.theme-dark .card-wrapper:hover .writing-info .w-meta .w-tags .a-tag {
+    color: rgba(255, 255, 255, 0.3);   /* = .w-date hover 同色 */
+}
+
+/* 模块分割线(如启用):8% 黑 → 8% 白 */
+body.theme-dark .design-content .category-section .section-divider {
+    border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+/* 手机端:汉堡三条线反白;全屏菜单模态由奶油色转黑、内文反白。
+   断点与上面 .home-v2 .header.home-nav 那套手机端规则对齐(≤600px) */
+@media (max-width: 600px) {
+    body.no-banner.theme-dark .header.home-nav .nav-toggle span { background: #fff; }
+    body.no-banner.theme-dark .header.home-nav .nav-collapse { background: #000; }
+    body.no-banner.theme-dark .header.home-nav .nav-collapse .nav-modal-desc,
+    body.no-banner.theme-dark .header.home-nav .nav-collapse .nav-modal-copy {
+        color: rgba(255, 255, 255, 0.92);
+    }
+    body.no-banner.theme-dark .header.home-nav .nav-modal-footer { border-top-color: rgba(255, 255, 255, 0.08); }
+    /* 手机端上面有条 body.home-v2:not(.reading-page) 的 transparent !important,得压回来 */
+    body.home-v2.no-banner.theme-dark:not(.reading-page) .header.home-nav { background: #000 !important; }
 }

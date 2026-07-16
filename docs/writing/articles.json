@@ -1,6 +1,22 @@
 {
   "articles": [
     {
+      "slug": "voices",
+      "title": "Voices",
+      "date": "2026-07-14",
+      "read_time": "3 分钟",
+      "tags": [
+        "听觉优先",
+        "无界面交互"
+      ],
+      "cat": "ui",
+      "accent": "#D6558E",
+      "collection": "",
+      "excerpt": "当界面开始说话，设计的重心从「看」挪到「听」——一篇跑封面与发布链路的测试稿。",
+      "cover": "assets/voices/cover.png",
+      "draft": true
+    },
+    {
       "slug": "figma-make-gpt-5-6",
       "title": "设计师的新习惯，给 AI 模型分工",
       "date": "2026-07-11",

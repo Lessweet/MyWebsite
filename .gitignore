@@ -17,3 +17,10 @@
 /xhsAgent/
 /prompts/
 /qrcode_for_gzh.jpg
+
+# 草稿文章:articles.json 里标了 "draft": true 的那些。
+# 站内不列它们(render.py 的 _published() + writing.js 的 fetch 过滤都会滤掉),
+# 这里再挡住文件本身,保证连 URL 都不会部署到线上。
+# 转正 = markdown frontmatter 里 draft 改 false + 重新渲染 + 把这两行删掉。
+/docs/writing/article-voices.html
+/docs/writing/assets/voices/
