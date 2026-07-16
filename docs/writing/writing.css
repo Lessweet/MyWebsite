@@ -2055,7 +2055,13 @@ body.reading-page .header.home-nav::after {
 /* 深色底:不用纯黑 —— 纯黑在 OLED 上边缘发硬,亮色封面压上去还容易炸光晕。
    放在 :root 而不是 .theme-dark 上 —— 手机端黑菜单(.menu-dark)可能挂在白底页上,
    取不到定义在 .theme-dark 上的值。改深色底只动这一行。 */
-:root { --page-bg: #0F0F0F; }
+:root {
+    --page-bg: #0F0F0F;
+    /* 卡片底色:比页面底色亮一档,让卡片本身有边界。
+       作品填满卡面时(海报、视频)根本看不到它;但 icon 预览卡的内容是透明的
+       —— 底色本来就该由宿主卡片提供 —— 与页面同色就彻底没有边界、糊成一片。 */
+    --card-bg: #1A1A1A;
+}
 body.home-v2.theme-dark { background: var(--page-bg); }
 
 /* 二级分类菜单:由 .menu-hidden 单独控制 —— 想恢复展示,删掉 body 上的 menu-hidden 即可,不影响配色 */
@@ -2315,9 +2321,16 @@ body.works-page .category-section[data-category="visualux"] .card-img {
     border-radius: 0 !important;
 }
 
-/* 卡片底色跟页面走。原本是浅灰 --gray-100:间距归零后卡片彼此贴合,浅灰会在黑底上
-   拼成一整块白板,作品之间的边界反而消失。 */
-body.works-page .card { background: var(--page-bg); }
+/* 卡片底色:原本是浅灰 --gray-100,在黑底上会拼成一整块白板。
+   用 --card-bg(比页面亮一档)而不是 --page-bg —— 与页面同色的话,内容透明的
+   icon 预览卡会和背景糊在一起、完全看不出卡片边界。 */
+body.works-page .card,
+body.works-page .foundation-card.icon-cover { background: var(--card-bg); }
+
+/* 卡片下方的标题与日期先隐藏。
+   隐藏它才真正「拼在一起」:这段文字原本夹在行与行之间,横向拼死了、纵向却被文字隔开。
+   下面那几条文字配色规则暂时失效,但保留 —— 想放回来时删掉这一条即可。 */
+body.works-page .card-info { display: none; }
 
 /* Icon 预览卡:icon-studio/preview-*.html 的 html 与 body 都是透明的(底色本来由宿主
    卡片提供),图标是 #181818 的深色线稿 —— 卡片跟着页面转黑后图标直接融进背景。
