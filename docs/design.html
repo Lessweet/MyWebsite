@@ -49,13 +49,6 @@
             position: absolute; inset: 0;
             filter: blur(10px);
         }
-        /* 背景发光:第三份副本整体大模糊、不加蒙版 —— 光晕贴字形扩散;
-           text-shadow 会被蒙版按元素盒裁切,出现方形亮块,不能用 */
-        #page-loader .pl-glow {
-            position: absolute; inset: 0;
-            filter: blur(22px);
-            opacity: 0.9;
-        }
         html.is-loading, html.is-loading body { overflow: hidden; }
         /* loading 已承担开场:原「菜单/banner/卡片依次淡入」的入场动画在遮罩掀开后
            仍会继续跑 1~3 秒,内容在眼前浮现看起来像闪屏 → 全部禁用,掀开即就位 */
@@ -77,7 +70,7 @@
          资源就绪(或超时兜底)后淡出。样式内联,保证在外部 CSS 到达前就能正确渲染。 -->
     <div id="page-loader" aria-hidden="true">
         <div class="pl-fill" id="pl-fill"></div>
-        <div class="pl-num" id="pl-num"><span class="pl-num-stack"><span aria-hidden="true" class="pl-num-row pl-glow"><span class="pl-digits js-digits">0</span><span class="pl-pct">%</span></span><span class="pl-num-row pl-sharp"><span class="pl-digits js-digits">0</span><span class="pl-pct">%</span></span><span aria-hidden="true" class="pl-num-row pl-blur"><span class="pl-digits js-digits">0</span><span class="pl-pct">%</span></span></span></div>
+        <div class="pl-num" id="pl-num"><span class="pl-num-stack"><span class="pl-num-row pl-sharp"><span class="pl-digits js-digits">0</span><span class="pl-pct">%</span></span><span aria-hidden="true" class="pl-num-row pl-blur"><span class="pl-digits js-digits">0</span><span class="pl-pct">%</span></span></span></div>
     </div>
     <script>
         /* 进度 = max(资源真实完成度, 缓慢爬向 90% 的模拟值),两者取大避免长时间停在 0;
