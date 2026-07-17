@@ -22,7 +22,7 @@
 :root { --cat-tab-size: 16px; }
 @media (max-width: 600px) { :root { --cat-tab-size: 14px; } }
 
-/* Blog(index.html)与 Skills(design.html)两页字重基调:正文 / UI 一律常规 400,
+/* Blog(index.html)与 Skills(cases.html)两页字重基调:正文 / UI 一律常规 400,
    仅「标题层级」加粗一档 = 500 —— h1/h2/h3 + 卡片标题(.w-title / .card-label)。
    原本散落的 600/650/680 统一收成 500,既不全平也不杂乱。排除文章详情页(reading-page)。 */
 body.design-page:not(.reading-page),
@@ -1545,8 +1545,11 @@ body.home-v2 .header-placeholder { height: 76px; }
 @media (prefers-reduced-motion: reduce) {
     .writing-card .card-badge::before { animation: none; }
 }
-/* 封面内元素:hover 时平滑放大到 108%(直接用 :hover transform,过渡稳定) */
+/* 封面内元素:hover 时平滑放大到 108%(直接用 :hover transform,过渡稳定)。
+   封面可能是 img / video / iframe(HTML 封面)三种载体,选择器要全覆盖。 */
 .writing-card img,
+.writing-card video,
+.writing-card iframe,
 .writing-card .img-ph.fill {
     transform: scale(1);
     transform-origin: center center;
@@ -1554,14 +1557,20 @@ body.home-v2 .header-placeholder { height: 76px; }
     will-change: transform;
 }
 .writing-card:hover img,
+.writing-card:hover video,
+.writing-card:hover iframe,
 .writing-card:hover .img-ph.fill {
     transform: scale(1.08);
     transition: transform 0.77s cubic-bezier(0.22, 1, 0.36, 1);   /* 移入:放大稍快 */
 }
 @media (prefers-reduced-motion: reduce) {
     .writing-card img,
+    .writing-card video,
+    .writing-card iframe,
     .writing-card .img-ph.fill { transition: none; }
     .writing-card:hover img,
+    .writing-card:hover video,
+    .writing-card:hover iframe,
     .writing-card:hover .img-ph.fill { transform: none; }
 }
 
@@ -1654,7 +1663,7 @@ body.home-v2 .header-placeholder { height: 76px; }
 .home-v2 .icon-preview-frame { border-radius: 12px !important; }
 .article-cover { border-radius: 6px !important; }
 
-/* 首页(index.html)网格列表封面单独加大圆角到 24px;design.html 不含 .writing-card,文章详情页 .article-cover 不受影响 */
+/* 首页(index.html)网格列表封面单独加大圆角到 24px;cases.html 不含 .writing-card,文章详情页 .article-cover 不受影响 */
 .home-v2 .writing-card { border-radius: 12px !important; }
 
 /* AI-Native Design 基础三卡:Pixel Banner 作品 + 两个 icon 封面 */
@@ -1956,8 +1965,8 @@ body.reading-page .header.home-nav::after {
     cursor: pointer;
     line-height: 1.3;
 }
-/* Blog(index.html)与 Skills(design.html)两页共用同一二级筛选规范:tab 字号统一 24px。
-   覆盖两页两种标签(design.html 用 a、index.html 用 button);顶栏 Blog/Skills 是 .nav-cats 内的
+/* Blog(index.html)与 Skills(cases.html)两页共用同一二级筛选规范:tab 字号统一 24px。
+   覆盖两页两种标签(cases.html 用 a、index.html 用 button);顶栏 Blog/Skills 是 .nav-cats 内的
    .nav-cat,不受影响,也不改共用的 --cat-tab-size token。 */
 .design-menu a.nav-cat,
 .design-menu button.nav-cat,
@@ -2070,7 +2079,7 @@ body.reading-page .header.home-nav::after {
      .works-page    Cases 专属钩子。见下方「Cases 深色改版」一节,那里解释了为什么必须有它。
 
    现状:首页 index.html 带 .theme-dark .no-banner .menu-hidden .menu-dark;
-        Cases(design.html)在此基础上多一个 .works-page;
+        Cases(cases.html)在此基础上多一个 .works-page;
         文章阅读页都不带。
    ======================================== */
 /* 深色底:不用纯黑 —— 纯黑在 OLED 上边缘发硬,亮色封面压上去还容易炸光晕。
@@ -2260,7 +2269,7 @@ body.theme-dark .design-content .category-section .section-divider {
 }
 
 /* ========================================
-   Cases(design.html)—— 深色改版
+   Cases(cases.html)—— 深色改版
 
    为什么必须有 .works-page 这个专属类:首页 index.html 的 body 类与 Cases 几乎完全一样
    (两边都是 home-v2 design-page theme-dark no-banner menu-hidden menu-dark),而且两边
