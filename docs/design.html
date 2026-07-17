@@ -13,6 +13,102 @@
     <script src="writing/writing.js?v=75"></script>
 </head>
 <body class="home-v2 design-page theme-dark no-banner menu-hidden menu-dark works-page">
+    <!-- 首屏 loading 遮罩:页面 iframe/图片/视频多、首载慢,先用黑屏+进度条盖住空状态,
+         资源就绪(或超时兜底)后淡出。样式内联,保证在外部 CSS 到达前就能正确渲染。 -->
+    <div id="page-loader" aria-hidden="true">
+        <div class="pl-track"><div class="pl-fill" id="pl-fill"></div></div>
+        <div class="pl-num" id="pl-num">0%</div>
+    </div>
+    <style>
+        #page-loader {
+            position: fixed; inset: 0; z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+            background: #0a0a0a;
+            transition: opacity 0.45s ease;
+        }
+        #page-loader.done { opacity: 0; pointer-events: none; }
+        #page-loader .pl-track {
+            width: min(240px, 56vw); height: 2px;
+            background: rgba(255, 255, 255, 0.16); border-radius: 2px; overflow: hidden;
+        }
+        #page-loader .pl-fill {
+            width: 0%; height: 100%;
+            background: #fff; border-radius: 2px;
+            transition: width 0.25s ease;
+        }
+        #page-loader .pl-num {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px; letter-spacing: 0.08em;
+            font-variant-numeric: tabular-nums;
+            font-family: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+        }
+        html.is-loading, html.is-loading body { overflow: hidden; }
+    </style>
+    <script>
+        /* 进度 = max(资源真实完成度, 缓慢爬向 90% 的模拟值),两者取大避免长时间停在 0;
+           收尾条件:window load / 全部资源就绪 / 8s 超时兜底,三者先到先算,补到 100% 后淡出。 */
+        (function () {
+            var docEl = document.documentElement;
+            docEl.classList.add('is-loading');
+            var pct = 0, sim = 0, loaded = 0, total = 0, finished = false;
+            var fill, num, trickle;
+            function render(p) {
+                p = Math.max(pct, Math.min(99, Math.round(p)));
+                if (p <= pct) return;
+                pct = p;
+                if (fill) fill.style.width = pct + '%';
+                if (num) num.textContent = pct + '%';
+            }
+            function finish() {
+                if (finished) return;
+                finished = true;
+                clearInterval(trickle);
+                if (fill) fill.style.width = '100%';
+                if (num) num.textContent = '100%';
+                setTimeout(function () {
+                    var loader = document.getElementById('page-loader');
+                    if (loader) {
+                        loader.classList.add('done');
+                        loader.addEventListener('transitionend', function () { loader.remove(); }, { once: true });
+                    }
+                    docEl.classList.remove('is-loading');
+                }, 250);
+            }
+            document.addEventListener('DOMContentLoaded', function () {
+                fill = document.getElementById('pl-fill');
+                num = document.getElementById('pl-num');
+                var els = [].slice.call(document.querySelectorAll('iframe, img, video'));
+                total = els.length;
+                function mark() {
+                    loaded++;
+                    render(loaded / total * 100);
+                    if (loaded >= total) finish();
+                }
+                els.forEach(function (el) {
+                    var tag = el.tagName;
+                    if (tag === 'IMG') {
+                        if (el.complete) { mark(); return; }
+                        el.addEventListener('load', mark, { once: true });
+                        el.addEventListener('error', mark, { once: true });
+                    } else if (tag === 'VIDEO') {
+                        if (el.readyState >= 2) { mark(); return; }
+                        el.addEventListener('loadeddata', mark, { once: true });
+                        el.addEventListener('error', mark, { once: true });
+                    } else {
+                        el.addEventListener('load', mark, { once: true });
+                        el.addEventListener('error', mark, { once: true });
+                    }
+                });
+                if (!total) finish();
+                trickle = setInterval(function () {
+                    sim += (90 - sim) * 0.045;
+                    render(Math.max(sim, total ? loaded / total * 100 : sim));
+                }, 180);
+            });
+            window.addEventListener('load', finish);
+            setTimeout(finish, 8000);
+        })();
+    </script>
     <header class="header home-nav" id="site-nav" data-active="design"></header>
     <script>
         initSiteNav();
