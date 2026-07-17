@@ -105,8 +105,9 @@ function initSiteNav() {
     // 仅分类页(index / design = design-page 且非 writing-page / reading-page)注入,与 CSS 作用域一致;
     // 阅读页(article)与 writing/index 顶栏维持现状,不注入。
     const bd = document.body.classList;
-    // 站内「首页」= blog.html(无 loading 的 Feed 页)。带 loading 的 index.html 只做
-    // 站点入口(直接输网址/外链进来),站内导航一律不指回它,避免每次切换都重播 loading。
+    // 字标 → 首页入口(index,带 loading;目录形式是规范地址);
+    // 「Blog」标签 → blog.html(无 loading 的 Feed 页),Cases⇄Blog 切换不重播 loading。
+    const LOGO_HOME = base || './';
     const HOME = base + 'blog.html';
     const wantNavBg = bd.contains('design-page') && !bd.contains('writing-page') && !bd.contains('reading-page');
     const navBg = wantNavBg
@@ -115,7 +116,7 @@ function initSiteNav() {
     nav.innerHTML =
         navBg +
         '<div class="header-left">' +
-            '<a href="' + HOME + '" class="site-title" data-wordmark="' + WORDMARK + '" aria-label="' + wm.alt + '"><img src="' + base + 'favicon.png?v=14" class="site-logo" alt=""><img src="' + base + wm.src + '" class="site-wordmark" alt="' + wm.alt + '"></a>' +
+            '<a href="' + LOGO_HOME + '" class="site-title" data-wordmark="' + WORDMARK + '" aria-label="' + wm.alt + '"><img src="' + base + 'favicon.png?v=14" class="site-logo" alt=""><img src="' + base + wm.src + '" class="site-wordmark" alt="' + wm.alt + '"></a>' +
         '</div>' +
         // 手机端汉堡按钮:桌面隐藏,≤600px 显示;点击展开 .nav-collapse 下拉
         '<button type="button" class="nav-toggle" aria-label="菜单" aria-expanded="false" aria-controls="nav-collapse">' +
