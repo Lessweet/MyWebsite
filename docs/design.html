@@ -80,28 +80,36 @@
                 docEl.classList.remove('is-loading');
                 docEl.style.background = '#0a0a0a';   /* 撤掉首帧灰底,回到页面深色 */
             }
+            /* 最短展示时长:加载再快(缓存/本地),进度也要平滑扫到 100 再上滑,
+               保证每次访问都有完整的 loading 过程且不生硬 */
+            var MIN_MS = 1100;
+            function setPct(p) {
+                p = Math.round(p);
+                if (fill) fill.style.transform = 'translateX(' + (p - 100) + '%)';
+                if (num && p >= 52) num.style.color = '#fff';
+                if (digits) for (var i = 0; i < digits.length; i++) digits[i].textContent = p;
+            }
             function finish() {
                 if (finished) return;
                 finished = true;
                 clearInterval(trickle);
                 var loader = document.getElementById('page-loader');
-                /* 快速通道:缓存/本地等秒开场景,没必要强制看完整段进度动画,
-                   直接摘掉遮罩,避免每次刷新都灰屏闪一下 */
-                if (Date.now() - t0 < 400) {
-                    if (loader) loader.remove();
-                    cleanup();
-                    return;
-                }
-                if (fill) fill.style.transform = 'translateX(0)';
-                if (num) num.style.color = '#fff';
-                if (digits) for (var j = 0; j < digits.length; j++) digits[j].textContent = '100';
-                setTimeout(function () {
-                    if (loader) {
-                        loader.classList.add('done');
-                        loader.addEventListener('transitionend', function () { loader.remove(); }, { once: true });
+                var remaining = Math.max(0, MIN_MS - (Date.now() - t0));
+                var from = pct, tFinish = Date.now();
+                var sweep = setInterval(function () {
+                    var k = remaining ? Math.min(1, (Date.now() - tFinish) / remaining) : 1;
+                    setPct(from + (100 - from) * k);
+                    if (k >= 1) {
+                        clearInterval(sweep);
+                        setTimeout(function () {
+                            if (loader) {
+                                loader.classList.add('done');
+                                loader.addEventListener('transitionend', function () { loader.remove(); }, { once: true });
+                            }
+                            cleanup();
+                        }, 450);   /* 等黑色进度面走满再上滑 */
                     }
-                    cleanup();
-                }, 450);   /* 等黑色进度面走满再上滑 */
+                }, 40);
             }
             document.addEventListener('DOMContentLoaded', function () {
                 fill = document.getElementById('pl-fill');
