@@ -29,9 +29,9 @@
             position: absolute; inset: 0;
             display: flex; align-items: center; justify-content: center;
             color: #111;   /* 黑面推进过半后由 JS 切成白色 */
-            font-size: 16px; letter-spacing: 0.1em;
-            font-variant-numeric: tabular-nums;
-            font-family: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+            font-size: 68px;
+            font-variant-numeric: tabular-nums;   /* 等宽数字,跳动时不左右晃 */
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif;
         }
         html.is-loading, html.is-loading body { overflow: hidden; }
         /* loading 已承担开场:原「菜单/banner/卡片依次淡入」的入场动画在遮罩掀开后
