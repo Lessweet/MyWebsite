@@ -82,7 +82,7 @@
             }
             /* 最短展示时长:加载再快(缓存/本地),进度也要平滑扫到 100 再上滑,
                保证每次访问都有完整的 loading 过程且不生硬 */
-            var MIN_MS = 1100;
+            var MIN_MS = 3000;
             function setPct(p) {
                 p = Math.round(p);
                 if (fill) fill.style.transform = 'translateX(' + (p - 100) + '%)';
