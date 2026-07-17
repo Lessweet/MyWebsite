@@ -33,22 +33,9 @@
             font-variant-numeric: tabular-nums;   /* 等宽数字,跳动时不左右晃 */
             font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif;
         }
-        #page-loader .pl-num-stack { position: relative; display: inline-block; }
         #page-loader .pl-num-row { display: flex; align-items: flex-end; }
         #page-loader .pl-digits { font-size: 68px; font-weight: 500; line-height: 0.82; }
         #page-loader .pl-pct { font-size: 26px; font-weight: 500; line-height: 1; margin-left: 2px; }
-        /* 下半模糊:双层同文案叠放 —— 上层清晰、向下渐隐;下层高斯模糊、只在下半段显影,
-           两层蒙版交叉过渡,数字看起来从清晰「晕开」成光斑 */
-        #page-loader .pl-sharp {
-            -webkit-mask-image: linear-gradient(to bottom, #000 52%, transparent 90%);
-            mask-image: linear-gradient(to bottom, #000 52%, transparent 90%);
-        }
-        /* 模糊层不加蒙版:上半被清晰层盖住,下半随清晰层渐隐自然显影;
-           加蒙版会在元素盒边缘把模糊光晕切出直边 */
-        #page-loader .pl-blur {
-            position: absolute; inset: 0;
-            filter: blur(10px);
-        }
         html.is-loading, html.is-loading body { overflow: hidden; }
         /* loading 已承担开场:原「菜单/banner/卡片依次淡入」的入场动画在遮罩掀开后
            仍会继续跑 1~3 秒,内容在眼前浮现看起来像闪屏 → 全部禁用,掀开即就位 */
@@ -70,7 +57,7 @@
          资源就绪(或超时兜底)后淡出。样式内联,保证在外部 CSS 到达前就能正确渲染。 -->
     <div id="page-loader" aria-hidden="true">
         <div class="pl-fill" id="pl-fill"></div>
-        <div class="pl-num" id="pl-num"><span class="pl-num-stack"><span class="pl-num-row pl-sharp"><span class="pl-digits js-digits">0</span><span class="pl-pct">%</span></span><span aria-hidden="true" class="pl-num-row pl-blur"><span class="pl-digits js-digits">0</span><span class="pl-pct">%</span></span></span></div>
+        <div class="pl-num" id="pl-num"><span class="pl-num-row"><span class="pl-digits js-digits">0</span><span class="pl-pct">%</span></span></div>
     </div>
     <script>
         /* 进度 = max(资源真实完成度, 缓慢爬向 90% 的模拟值),两者取大避免长时间停在 0;
