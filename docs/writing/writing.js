@@ -105,10 +105,9 @@ function initSiteNav() {
     // 仅分类页(index / design = design-page 且非 writing-page / reading-page)注入,与 CSS 作用域一致;
     // 阅读页(article)与 writing/index 顶栏维持现状,不注入。
     const bd = document.body.classList;
-    // 首页地址:字标与「Blog」都指向它。用目录形式而不是 index.html —— 两者是同一个页面,
-    // 但目录形式才是规范地址(点字标停在 vibeux.space/,不会变成 vibeux.space/index.html)。
-    // base 本身就是「回到 docs 根」的相对路径;根目录页 base 为空,用 './' 兜底。
-    const HOME = base || './';
+    // 站内「首页」= blog.html(无 loading 的 Feed 页)。带 loading 的 index.html 只做
+    // 站点入口(直接输网址/外链进来),站内导航一律不指回它,避免每次切换都重播 loading。
+    const HOME = base + 'blog.html';
     const wantNavBg = bd.contains('design-page') && !bd.contains('writing-page') && !bd.contains('reading-page');
     const navBg = wantNavBg
         ? '<iframe class="nav-bg" src="' + base + 'writing-banner.html?v=10&bare=1" title="" aria-hidden="true" tabindex="-1" scrolling="no"></iframe>'
