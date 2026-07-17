@@ -7,6 +7,34 @@
     <link rel="icon" type="image/png" href="favicon.png?v=12">
     <link rel="shortcut icon" href="favicon.png?v=12">
     <link rel="apple-touch-icon" href="apple-touch-icon.png?v=12">
+    <!-- loading 遮罩样式放在 head 最前:首帧直接画灰底,避免外部 CSS 阻塞期间的白屏闪烁 -->
+    <style>
+        html { background: #D9D9D9; }
+        #page-loader {
+            position: fixed; inset: 0; z-index: 9999;
+            background: #D9D9D9;
+            overflow: hidden;
+            transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+        #page-loader.done { transform: translateY(-100%); pointer-events: none; }
+        /* 进度面动画只用 translateX(合成器线程):width 走主线程会掉帧,
+           scaleX 大图层缩放右缘有反锯齿接缝、看起来像闪 */
+        #page-loader .pl-fill {
+            position: absolute; inset: 0;
+            transform: translateX(-100%);
+            background: #0a0a0a;
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        #page-loader .pl-num {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            color: #111;   /* 黑面推进过半后由 JS 切成白色 */
+            font-size: 16px; letter-spacing: 0.1em;
+            font-variant-numeric: tabular-nums;
+            font-family: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+        }
+        html.is-loading, html.is-loading body { overflow: hidden; }
+    </style>
     <link rel="stylesheet" href="style.css?v=128">
     <link rel="stylesheet" href="writing/writing.css?v=290">
     <!-- 提前加载,使顶部导航能在首次绘制前同步注入,避免空 header 闪烁 -->
@@ -19,36 +47,6 @@
         <div class="pl-fill" id="pl-fill"></div>
         <div class="pl-num" id="pl-num">0%</div>
     </div>
-    <style>
-        /* 灰底全屏,黑色进度面(100% 高)从左往右推进;走满后整个遮罩向上滑出 */
-        #page-loader {
-            position: fixed; inset: 0; z-index: 9999;
-            background: #D9D9D9;
-            overflow: hidden;
-            transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
-        }
-        #page-loader.done { transform: translateY(-100%); pointer-events: none; }
-        /* 进度面用 transform 而不是 width:width 是布局属性、走主线程,首载时主线程
-           忙着解析 iframe/视频必然掉帧;scaleX 由合成器线程处理,加载再重也顺滑 */
-        #page-loader .pl-fill {
-            position: absolute; top: 0; left: 0; bottom: 0;
-            width: 100%;
-            transform: scaleX(0);
-            transform-origin: 0 50%;
-            background: #0a0a0a;
-            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-            will-change: transform;
-        }
-        #page-loader .pl-num {
-            position: absolute; inset: 0;
-            display: flex; align-items: center; justify-content: center;
-            color: #fff; mix-blend-mode: difference;   /* 黑面扫过数字时自动反色,始终可读 */
-            font-size: 16px; letter-spacing: 0.1em;
-            font-variant-numeric: tabular-nums;
-            font-family: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
-        }
-        html.is-loading, html.is-loading body { overflow: hidden; }
-    </style>
     <script>
         /* 进度 = max(资源真实完成度, 缓慢爬向 90% 的模拟值),两者取大避免长时间停在 0;
            收尾条件:window load / 全部资源就绪 / 8s 超时兜底,三者先到先算,补到 100% 后淡出。 */
@@ -61,14 +59,16 @@
                 p = Math.max(pct, Math.min(99, Math.round(p)));
                 if (p <= pct) return;
                 pct = p;
-                if (fill) fill.style.transform = 'scaleX(' + pct / 100 + ')';
+                if (fill) fill.style.transform = 'translateX(' + (pct - 100) + '%)';
+                if (num && pct >= 52) num.style.color = '#fff';   /* 黑面过半,数字换白 */
                 if (num) num.textContent = pct + '%';
             }
             function finish() {
                 if (finished) return;
                 finished = true;
                 clearInterval(trickle);
-                if (fill) fill.style.transform = 'scaleX(1)';
+                if (fill) fill.style.transform = 'translateX(0)';
+                if (num) num.style.color = '#fff';
                 if (num) num.textContent = '100%';
                 setTimeout(function () {
                     var loader = document.getElementById('page-loader');
@@ -77,7 +77,8 @@
                         loader.addEventListener('transitionend', function () { loader.remove(); }, { once: true });
                     }
                     docEl.classList.remove('is-loading');
-                }, 450);   /* 等黑色进度面走满(width 过渡 0.25s)再上滑 */
+                    docEl.style.background = '#0a0a0a';   /* 撤掉首帧灰底,回到页面深色 */
+                }, 450);   /* 等黑色进度面走满再上滑 */
             }
             document.addEventListener('DOMContentLoaded', function () {
                 fill = document.getElementById('pl-fill');
