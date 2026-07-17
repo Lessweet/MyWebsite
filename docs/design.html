@@ -28,11 +28,16 @@
             transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
         }
         #page-loader.done { transform: translateY(-100%); pointer-events: none; }
+        /* 进度面用 transform 而不是 width:width 是布局属性、走主线程,首载时主线程
+           忙着解析 iframe/视频必然掉帧;scaleX 由合成器线程处理,加载再重也顺滑 */
         #page-loader .pl-fill {
             position: absolute; top: 0; left: 0; bottom: 0;
-            width: 0%;
+            width: 100%;
+            transform: scaleX(0);
+            transform-origin: 0 50%;
             background: #0a0a0a;
-            transition: width 0.25s ease;
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            will-change: transform;
         }
         #page-loader .pl-num {
             position: absolute; inset: 0;
@@ -56,14 +61,14 @@
                 p = Math.max(pct, Math.min(99, Math.round(p)));
                 if (p <= pct) return;
                 pct = p;
-                if (fill) fill.style.width = pct + '%';
+                if (fill) fill.style.transform = 'scaleX(' + pct / 100 + ')';
                 if (num) num.textContent = pct + '%';
             }
             function finish() {
                 if (finished) return;
                 finished = true;
                 clearInterval(trickle);
-                if (fill) fill.style.width = '100%';
+                if (fill) fill.style.transform = 'scaleX(1)';
                 if (num) num.textContent = '100%';
                 setTimeout(function () {
                     var loader = document.getElementById('page-loader');
