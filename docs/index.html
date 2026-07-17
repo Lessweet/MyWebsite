@@ -83,6 +83,11 @@
             var pct = 0, sim = 0, loaded = 0, total = 0, finished = false;
             var fill, num, digits, trickle;
             function render(p) {
+                /* 时间曲线上限:资源秒开时数字也不许一下冲到 99,
+                   最多沿 MIN_MS 的缓动曲线走(先慢后匀速、近 99 再放缓) */
+                var t = Math.min(1, (Date.now() - t0) / MIN_MS);
+                var ceil = 99 * (0.5 - 0.5 * Math.cos(Math.PI * t));
+                p = Math.min(p, ceil);
                 p = Math.max(pct, Math.min(99, Math.round(p)));
                 if (p <= pct) return;
                 pct = p;
@@ -112,6 +117,7 @@
                 var from = pct, tFinish = Date.now();
                 var sweep = setInterval(function () {
                     var k = remaining ? Math.min(1, (Date.now() - tFinish) / remaining) : 1;
+                    k = 0.5 - 0.5 * Math.cos(Math.PI * k);   /* 缓入缓出,前段更缓和 */
                     setPct(from + (100 - from) * k);
                     if (k >= 1) {
                         clearInterval(sweep);
