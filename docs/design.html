@@ -16,29 +16,29 @@
     <!-- 首屏 loading 遮罩:页面 iframe/图片/视频多、首载慢,先用黑屏+进度条盖住空状态,
          资源就绪(或超时兜底)后淡出。样式内联,保证在外部 CSS 到达前就能正确渲染。 -->
     <div id="page-loader" aria-hidden="true">
-        <div class="pl-track"><div class="pl-fill" id="pl-fill"></div></div>
+        <div class="pl-fill" id="pl-fill"></div>
         <div class="pl-num" id="pl-num">0%</div>
     </div>
     <style>
+        /* 灰底全屏,黑色进度面(100% 高)从左往右推进;走满后整个遮罩向上滑出 */
         #page-loader {
             position: fixed; inset: 0; z-index: 9999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
-            background: #0a0a0a;
-            transition: opacity 0.45s ease;
+            background: #D9D9D9;
+            overflow: hidden;
+            transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
         }
-        #page-loader.done { opacity: 0; pointer-events: none; }
-        #page-loader .pl-track {
-            width: min(240px, 56vw); height: 2px;
-            background: rgba(255, 255, 255, 0.16); border-radius: 2px; overflow: hidden;
-        }
+        #page-loader.done { transform: translateY(-100%); pointer-events: none; }
         #page-loader .pl-fill {
-            width: 0%; height: 100%;
-            background: #fff; border-radius: 2px;
+            position: absolute; top: 0; left: 0; bottom: 0;
+            width: 0%;
+            background: #0a0a0a;
             transition: width 0.25s ease;
         }
         #page-loader .pl-num {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 12px; letter-spacing: 0.08em;
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; mix-blend-mode: difference;   /* 黑面扫过数字时自动反色,始终可读 */
+            font-size: 16px; letter-spacing: 0.1em;
             font-variant-numeric: tabular-nums;
             font-family: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
         }
@@ -72,7 +72,7 @@
                         loader.addEventListener('transitionend', function () { loader.remove(); }, { once: true });
                     }
                     docEl.classList.remove('is-loading');
-                }, 250);
+                }, 450);   /* 等黑色进度面走满(width 过渡 0.25s)再上滑 */
             }
             document.addEventListener('DOMContentLoaded', function () {
                 fill = document.getElementById('pl-fill');
