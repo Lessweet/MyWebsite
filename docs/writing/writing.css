@@ -2148,7 +2148,9 @@ body.theme-dark .design-content .category-section .section-divider {
     body.menu-dark .header.home-nav .nav-collapse .nav-modal-copy {
         color: rgba(255, 255, 255, 0.92);
     }
-    body.menu-dark .header.home-nav .nav-modal-footer { border-top-color: rgba(255, 255, 255, 0.08); }
+    /* 必须带上 .nav-collapse 凑满 5 个 class + body,否则压不过上面
+       白底菜单基础规则(0,5,0)里的 border-top:#000,暗色菜单会显示错误的黑线 */
+    body.menu-dark .header.home-nav .nav-collapse .nav-modal-footer { border-top-color: rgba(255, 255, 255, 0.08); }
     /* 模态里的 Blog / Cases / Contact 三项反白。必须连 .nav-collapse 一起写满 ——
        上面 .home-v2 .header.home-nav .nav-collapse .nav-cat/.header-connect(0,5,0)
        给三项写死了 #1a1a1a(那是白底菜单的深灰),不写满就压不过,Contact 会黑进背景里。
