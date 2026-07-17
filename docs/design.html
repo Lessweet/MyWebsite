@@ -7,6 +7,8 @@
     <link rel="icon" type="image/png" href="favicon.png?v=12">
     <link rel="shortcut icon" href="favicon.png?v=12">
     <link rel="apple-touch-icon" href="apple-touch-icon.png?v=12">
+    <!-- 预载 DIN 数字字体:保证 loading 首帧就是 DIN 字形,不闪回退字体 -->
+    <link rel="preload" href="vendor/fonts/D-DIN.otf" as="font" type="font/otf" crossorigin>
     <!-- loading 遮罩样式放在 head 最前:首帧直接画灰底,避免外部 CSS 阻塞期间的白屏闪烁 -->
     <style>
         html { background: #F7F7F4; }
@@ -15,7 +17,8 @@
             font-family: 'D-DIN';
             src: url('vendor/fonts/D-DIN.otf') format('opentype');
             font-weight: 400;
-            font-display: swap;
+            /* block:字体就绪前数字宁可短暂隐形,也不闪 Helvetica 回退字形 */
+            font-display: block;
         }
         #page-loader {
             position: fixed; inset: 0; z-index: 9999;
