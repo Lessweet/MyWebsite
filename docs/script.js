@@ -422,7 +422,7 @@ function initPillarEntrance() {
     // 关键:先让初始 opacity:0 真正绘制至少一帧,再开始逐行显现。
     // 双 requestAnimationFrame 确保跨过一次绘制——否则首屏第一波可能在首次绘制前
     // 就被加上 .visible,浏览器直接以最终态绘制、跳过过渡(表现为「没有淡入」)。
-    requestAnimationFrame(() => requestAnimationFrame(() => {
+    const start = () => requestAnimationFrame(() => requestAnimationFrame(() => {
         // 首屏:一次性从上到下排好波次
         const vh = window.innerHeight || document.documentElement.clientHeight;
         const inView = targets.filter((el) => {
@@ -440,6 +440,20 @@ function initPillarEntrance() {
 
         targets.forEach((el) => { if (!el.dataset.entered) observer.observe(el); });
     }));
+
+    // 首页 loading 遮罩在场时(html.is-loading 用 !important 把卡片按住),级联的
+    // setTimeout 会在遮罩期间全部跑完,放闸后所有卡片同时上移、错峰节奏丢失。
+    // 所以等 is-loading 摘掉(遮罩完全离场)再开始级联;无遮罩的页面直接开始。
+    const docEl = document.documentElement;
+    if (docEl.classList.contains('is-loading')) {
+        new MutationObserver((_, obs) => {
+            if (docEl.classList.contains('is-loading')) return;
+            obs.disconnect();
+            start();
+        }).observe(docEl, { attributes: true, attributeFilter: ['class'] });
+    } else {
+        start();
+    }
 }
 
 /**
