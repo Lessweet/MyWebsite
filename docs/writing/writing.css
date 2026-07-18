@@ -2295,7 +2295,7 @@ body.works-page .design-layout { padding-top: var(--design-menu-top, 76px); }
    (圆角 / 底色)照常命中。 */
 body.works-page .design-layout {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0;
 }
 body.works-page .design-content,
@@ -2342,6 +2342,11 @@ body.works-page .banner-stack .stack-card {
 body.works-page .banner-stack .stack-card:nth-child(1) { top: -2%; left: -2%; }
 body.works-page .banner-stack .stack-card:nth-child(2) { top: 24%; left: 15%; }
 body.works-page .banner-stack .stack-card:nth-child(3) { top: 54%; left: 36%; }
+
+/* 中屏(≤900px):4 列回 3 列,避免每张卡窄于 200px */
+@media (max-width: 900px) {
+    body.works-page .design-layout { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 
 /* 小屏(≤600px):统一网格从 3 列改 2 列(否则每张卡只有约 130px,挤成一团),
    banner 独占整行。
