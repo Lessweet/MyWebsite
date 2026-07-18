@@ -2,16 +2,16 @@
   "articles": [
     {
       "slug": "remove-ai-taste-in-design",
-      "title": "用 AI 做设计，平庸感是默认值",
+      "title": "看不出 AI 味的 AI 设计方式",
       "date": "2026-07-16",
       "read_time": "6 分钟",
       "tags": [
-        "AI 设计工作流"
+        "刻意零 AI"
       ],
       "cat": "ui",
       "accent": "#5A6CD8",
       "collection": "",
-      "excerpt": "one-shot 出来的设计平庸不平庸，几乎完全取决于喂了多厚的上下文——只丢一句「设计个网站」，拿到的当然是模板脸。",
+      "excerpt": "AI 能实现 shader，但给的默认值不代表你要的感觉——设计师的品味得通过参数、mood board、甚至刻意零 AI 的手绘，一层层喂进去。",
       "cover": "assets/remove-ai-taste-in-design/cover4.png"
     },
     {

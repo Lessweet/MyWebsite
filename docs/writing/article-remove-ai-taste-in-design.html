@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>用 AI 做设计，平庸感是默认值 · VibeUX</title>
+<title>看不出 AI 味的 AI 设计方式 · VibeUX</title>
 <link href="../favicon.png?v=12" rel="icon" type="image/png"/>
 <link href="../favicon.png?v=12" rel="shortcut icon"/>
 <link href="../apple-touch-icon.png?v=12" rel="apple-touch-icon"/>
@@ -47,8 +47,8 @@
 </aside>
 <!-- 正文 -->
 <article class="article-reading">
-<h1 class="article-h1">用 AI 做设计<br/>平庸感是默认值</h1>
-<div class="article-byline"><div class="article-eyebrow article-eyebrow-top"><span class="a-tag">AI 设计工作流</span></div><span>2026-07-16</span><span>阅读约 6 分钟</span></div>
+<h1 class="article-h1">看不出 AI 味的 AI 设计方式</h1>
+<div class="article-byline"><div class="article-eyebrow article-eyebrow-top"><span class="a-tag">刻意零 AI</span></div><span>2026-07-16</span><span>阅读约 6 分钟</span></div>
 <div class="article-cover"><iframe loading="lazy" src="assets/remove-ai-taste-in-design/cover4.html"></iframe></div>
 <div class="article-body"><style>
 /* article-template 样式 inline 到网站，仅作用于 .article-body 内 */
@@ -481,31 +481,52 @@
     42% { transform: scale(1.2); }
   }
 </style>
-<p>我让 AI 出设计稿，拿回来的通常不丑——配色合理、间距没毛病、该有的信息层级都在。但一眼看过去没有任何记忆点，换个品牌名放上去毫不违和。YC 设计负责人 Eve Bouffard 最近在 Design Review 节目里讲自己怎么用 AI 做设计，30 分钟摊开三个项目从灵感到上线的过程，我来回看了两遍，她处理平庸感的做法挺具体的。</p>
-<div class="section-head"><span class="icon-badge" style="background: transparent;"><svg height="40" viewBox="0 0 48 48" width="40" xmlns="http://www.w3.org/2000/svg"><rect fill="#5A6CD8" fill-opacity="0.08" height="48" rx="13" width="48"></rect><g fill="none" stroke="#5A6CD8" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" transform="translate(9.6 9.6) scale(1.2)"><path d="M9 3.5 V7.5"></path><path d="M15 3.5 V7.5"></path><path d="M7.5 7.5 H16.5 C17.05 7.5 17.5 7.95 17.5 8.5 V10.5 C17.5 13.54 15.04 16 12 16 C8.96 16 6.5 13.54 6.5 10.5 V8.5 C6.5 7.95 6.95 7.5 7.5 7.5 Z"></path><path d="M12 16 V20.5"></path></g></svg></span><h2 style="color: #5A6CD8;">上下文喂够了<br/>one-shot 才有辨识度</h2></div>
-<p>Sodazine 是 YC 做的一本庆祝旧金山的实体杂志，soda 取 state of the art 的缩写，YC CEO Gary Tan 发起。网站部分 Eve 的做法是：项目里每一次会议都录音，transcript 全部倒进一份 soul.md；团队写给自己的 manifesto 也倒进去——她要让这个文件成为项目的唯一上下文来源，能多详尽就多详尽。</p>
-<img alt="Sodazine 的 soul.md：Why San Francisco、On tactility——会议记录和 manifesto 全倒在这一份文件里" src="assets/remove-ai-taste-in-design/sodazine-soulmd-tile.png"/>
-<p>视觉方向先在 Pinterest 拼了个情绪板，黑白、粗粝，几张喜欢的参考图。然后连图带 soul.md 一起喂给 Claude，让它一口气 one-shot 了 16 版完整网站。为了浏览这 16 版她又顺手造了一个索引页，想收藏中意的就再加一个 pin 功能。</p>
-<img alt="从情绪板到索引页：Pinterest 黑白粗粝情绪板 → one-shot 探索的 PAGE INDEX，17 个方向（D0 原版 + 16 版 one-shot）里星标了 5 个" src="assets/remove-ai-taste-in-design/sodazine-moodboard-index.png"/>
-<p>这轮探索里出现了她说的「AGI moment」：因为 soul.md 里记着 4 月 17 日 launch party 的信息，agent 自作主张把派对时间排进了某一版设计；还有一版发现「这是本实体杂志」，自动加上了条形码和多币种定价。这些细节不在 prompt 里，是 agent 从上下文自己找出来的。</p>
-<img alt="Sodazine 的一版 one-shot 探索：黑白粗粝方向，agent 自动排进 4 月 17 日派对时间，还加了条形码和多币种定价" src="assets/remove-ai-taste-in-design/sodazine-oneshot-tile.png"/>
-<p>她在节目里的判断我很认同——<strong>one-shot 出来的设计平庸不平庸，几乎完全取决于喂了多厚的上下文</strong>。只丢一句「设计个网站」，agent 当然只能往最安全的模板方向走；会议记录、项目宣言、视觉参考图全倒进去，agent 才有可能做出你事先没想到的细节。</p>
-<p>【补充亲历：自己给 Agent 喂参考图 / 情绪板来打破平庸设计的一次经历，效果如何】</p>
-<div class="section-head"><span class="icon-badge" style="background: transparent;"><svg height="40" viewBox="0 0 48 48" width="40" xmlns="http://www.w3.org/2000/svg"><rect fill="#5A6CD8" fill-opacity="0.08" height="48" rx="13" width="48"></rect><g fill="none" stroke="#5A6CD8" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" transform="translate(9.6 9.6) scale(1.2)"><path d="M4.9 11 L16.2 4.4 C16.7 4.1 17.3 4.3 17.6 4.8 L19.1 7.4 C19.4 7.9 19.2 8.5 18.7 8.8 L7.4 15.4 C6.9 15.7 6.3 15.5 6 15 L4.5 12.4 C4.2 11.9 4.4 11.3 4.9 11 Z"></path><path d="M6.7 9.9 L8.6 13.2"></path><path d="M11 15.2 L8.5 20.5"></path><path d="M13.6 13.7 L16.5 20.5"></path></g></svg></span><h2 style="color: #5A6CD8;">默认参数不对味<br/>得造工具来拨</h2></div>
-<p>Paxel 是 YC 最近上线的另一个项目——给编码记录做 Spotify Wrapped，着陆页首屏显示已分析 639,335 个 session。页面背景用了 paper.design 的 dithering shader，Eve 让 Claude 实现之后，默认参数出来的颗粒感不对味。她没有回头反复改 prompt 让 AI 重试，转手造了一个调参 modal，把 dithering 的每一项参数一点点拨到自己满意为止——这个 modal 还留在线上，桌面端打开谁都能玩。</p>
-<img alt='Paxel 着陆页：首屏写着 "我们都在用 AI 写软件，却不知道彼此怎么写"，背景 dithering shader 的颗粒感经过手动调参' src="assets/remove-ai-taste-in-design/paxel-landing-tile.png"/>
-<p>同样的做法在 Startup School 上铺得更开。这是 YC 今年最大的活动，Chase Center 现场超 6000 人，讲者包括 Jensen Huang、Sam Altman、Alexandr Wang、Jeff Dean。视觉定了橙色渐变方向，底层还是 paper.design 的 shader，颗粒度、边缘、旋转、缩放各有参数可调；她同样给自己造了一个调参面板，把渐变的质感一点点拨对。</p>
-<p>同一组 shader 参数从社交平台的讲者卡片、到录取通知的个人化门票（渲染姓名和所在城市）、到活动现场 Chase Center 的大屏，全程复用。一套品牌视觉能在所有触点上保持一致，靠的就是参数本身可以带着走，不用每次手动对齐。</p>
-<img alt="Startup School 讲者卡片：橙色渐变 shader 背景，右下角挂着 shader 调参入口" src="assets/remove-ai-taste-in-design/startup-school-card-tile.png"/>
-<p>这就是人的品味介入 AI 产物的具体形态——AI 能实现 shader，但给的默认值不代表你要的感觉；设计师的活儿是造一个调参界面，把那些数值一个个拨到自己认可的位置。Eve 自己说这些 shader 放一年前她连从哪开始都不知道；现在她的 Claude 知道她喜欢 paper.design，会自动去拉资料来用。能力是 AI 给的，品味得自己拨进去。</p>
-<div class="section-head"><span class="icon-badge" style="background: transparent;"><svg height="40" viewBox="0 0 48 48" width="40" xmlns="http://www.w3.org/2000/svg"><rect fill="#5A6CD8" fill-opacity="0.08" height="48" rx="13" width="48"></rect><g fill="none" stroke="#5A6CD8" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" transform="translate(9.6 9.6) scale(1.2)"><path d="M12 2.5 C13 8.5 15.5 11 21.5 12 C15.5 13 13 15.5 12 21.5 C11 15.5 8.5 13 2.5 12 C8.5 11 11 8.5 12 2.5 Z"></path></g></svg></span><h2 style="color: #5A6CD8;">刻意零 AI<br/>人花过时间本身是卖点</h2></div>
-<p>同一个项目 Sodazine，杂志内容和网站走了两条完全不同的路。网站全力用 AI 做快速探索——soul.md 倒进一切，one-shot 16 版；但实体杂志的封面和内页插画，团队做了个明确的决定：零 AI，回到 Illustrator，手工画。</p>
-<p>Eve 在节目里说，这些插画一眼就能看出极其用心、极其精细，看得出有人在上面花了好几个月。AI 时代，「人花过时间」传递的信号变了：当周围的视觉产出越来越快、越来越像，纯手工的作品反而成了稀缺——它说的不只是风格，还有「有人愿意为这件事投入真实的时间」。</p>
-<img alt="Sodazine 的两条路：网站全力 AI，one-shot 16 版快速探索；实体杂志零 AI，回到 Illustrator 手工画了几个月" src="assets/remove-ai-taste-in-design/sodazine-two-paths.png"/>
+<p>最近几个项目全是 vibe coding 起步，越做越觉得一件事，稍微复杂一点的视觉，纯靠自然语言描述特别费劲；颗粒感、质感、品牌调性，prompt 改了几轮还是对不上脑子里的画面，有时候真想打开 Figma 手搓算了。</p>
+<p>最近看了 YC 的设计负责人 Eve Bouffard 在 Design Review 节目里展示的她用 AI 做设计的方式。看最终上线的作品：风格很鲜明，完全看不出 AI 味。有几个做法很值得借鉴，可以搬进日常 AI 设计工作流。</p>
+<div class="section-head"><span class="icon-badge" style="background: rgba(90, 108, 216, 0.1);"><svg height="40" viewBox="0 0 24 24" width="40" xmlns="http://www.w3.org/2000/svg">
+<g fill="none" stroke="#5A6CD8" stroke-linecap="round" stroke-linejoin="round" stroke-width="1">
+<animateTransform attributeName="transform" calcMode="spline" dur="2.4s" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1" keyTimes="0;0.2;0.4;0.6;0.82;1" repeatCount="indefinite" type="rotate" values="0 12 19.5;14 12 19.5;-8 12 19.5;10 12 19.5;-3 12 19.5;0 12 19.5"></animateTransform>
+<path d="M 16.5 11.25 V 7.5 a 1.5 1.5 0 0 0 -1.5 -1.5 a 1.5 1.5 0 0 0 -1.5 1.5"></path>
+<path d="M 13.5 10.5 V 6.0 a 1.5 1.5 0 0 0 -1.5 -1.5 a 1.5 1.5 0 0 0 -1.5 1.5 v 1.5"></path>
+<path d="M 10.5 10.88 V 7.5 a 1.5 1.5 0 0 0 -1.5 -1.5 a 1.5 1.5 0 0 0 -1.5 1.5 v 6.0"></path>
+<path d="M 16.5 9.0 a 1.5 1.5 0 1 1 3.0 0.0 v 4.5 a 6.0 6.0 0 0 1 -6.0 6.0 h -1.5 c -2.1 0.0 -3.38 -0.65 -4.49 -1.75 l -2.7 -2.7 a 1.5 1.5 0 0 1 2.12 -2.11 L 8.25 14.25"></path>
+</g>
+</svg></span><h2 style="color: #5A6CD8;">把 AI 参数化</h2></div>
+<p>第一个做法是<strong>可视化调参面板</strong>。在用 prompt 工作方式时，经常会反复调试参数看效果，这个过程可以采用自制调参工具。一方面可以探索不同的效果、另一方面可以节省 token。我觉得这个方法最核心的点是：从一开始构思时，就想到了之后会需要的参数调试方向。</p>
+<p>这个项目案例是 YC 最近上线的另一个项目——给 AI coding 记录做总结，landing 页首屏显示已分析 639,335 个 session。页面背景用了 paper.design 的 dithering shader，设计师让 Claude 实现之后，默认参数出来的颗粒感效果不好，她没有反复改 prompt 让 AI 重试，而是创建了一个调参 modal，精准控制 dithering 的每一项参数，以达到满意效果。</p>
+<img alt="Paxel 着陆页与 dithering 调参面板：面板留在线上，桌面端打开就能玩" src="assets/remove-ai-taste-in-design/paxel-landing-tuning.png"/>
+<p>同样的做法在另一个项目—— Startup School 上得到了进一步验证。这是 YC 今年最大的活动，Chase Center 现场超 6000 人，讲者包括 Jensen Huang、Sam Altman、Alexandr Wang、Jeff Dean。设计师把视觉定了橙色渐变方向，底层还是 paper.design 的 shader，颗粒度、边缘、旋转、缩放各有参数可调；她同样给自己造了一个调参面板，可以把渐变的质感一点点调试。</p>
+<p>同一组 shader 参数从社交平台的讲者卡片、到录取通知的个人化门票、到活动现场 Chase Center 的大屏，全程复用。一套品牌视觉能在所有触点上保持一致，靠的就是参数本身可以复用，不用每次手动对齐。</p>
+<img alt="Startup School 讲者卡片生成工具：上为工具界面，下排是左栏一键切换出的三种文字排版（Main 与两种 Alt）" src="assets/remove-ai-taste-in-design/startup-school-panel.png"/>
+<p>这就是人的品味介入 AI 产物的具体形态。AI 能实现 shader，但给的默认值不代表你要的感觉；设计师自己说这些 shader 放一年前她连从哪开始都不知道；现在她的 Claude 知道她喜欢 paper.design，会自动去拉资料来用。</p>
+<div class="section-head"><span class="icon-badge" style="background: rgba(90, 108, 216, 0.1);"><svg height="40" viewBox="0 0 24 24" width="40" xmlns="http://www.w3.org/2000/svg">
+<g fill="none" stroke="#5A6CD8" stroke-linecap="round" stroke-linejoin="round" stroke-width="1">
+<path d="M 17.25 15.75 V 6.75 a 1.5 1.5 0 0 0 -1.5 -1.5 H 6.0"></path>
+<path d="M 9.0 18.75 h 9.0 a 1.5 1.5 0 0 0 1.5 -1.5 v -0.75 a 0.75 0.75 0 0 0 -0.75 -0.75 H 11.25 a 0.75 0.75 0 0 0 -0.75 0.75 v 0.75 a 1.5 1.5 0 1 1 -3.0 0.0 V 6.75 a 1.5 1.5 0 1 0 -3.0 0.0 v 1.5 a 0.75 0.75 0 0 0 0.75 0.75 h 2.25"></path>
+</g>
+<path d="M 10.5 10.95 L 11.62 9.68 L 12.75 10.95 L 13.88 9.68 L 15.0 10.95" fill="none" pathlength="1" stroke="#5A6CD8" stroke-dasharray="1" stroke-dashoffset="1" stroke-linecap="round" stroke-linejoin="round" stroke-width="1">
+<animate attributeName="stroke-dashoffset" calcMode="spline" dur="2.8s" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1" keyTimes="0;0.12;0.42;0.76;1" repeatCount="indefinite" values="1;1;0;0;0"></animate>
+<animate attributeName="opacity" calcMode="spline" dur="2.8s" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1" keyTimes="0;0.12;0.42;0.76;1" repeatCount="indefinite" values="0;0;1;1;0"></animate>
+</path>
+</svg></span><h2 style="color: #5A6CD8;">把 context 视觉化</h2></div>
+<p>第二个做法是<strong>给 AI 足够多的个人品味参考图</strong>。她要为一个纸质杂志做一个线上杂志网站，在未进入 vibe coding 流程之前，她花了很大功夫创建 mood board，也自始至终没打开 Figma。她在 Pinterest 建了个情绪板，收集了大量的、风格统一的黑白、粗粝的参考图，然后和一份明显手搓的 .md 一起给 Claude，并进行了 16 次迭代。为了浏览这 16 版她又顺手造了一个索引页，觉得喜欢的就再加一个 pin 功能，然后再将喜欢的结合起来继续迭代。过程中，Agent 会根据很明确的风格主题，加入细节，比如：Agent 发现「这是本实体杂志」，自动加上了条形码和多币种定价。</p>
+<img alt="Sodazine 建站三步：Pinterest 情绪板、手搓的 soul.md、探索索引页——17 个方向（D0 原版 + 16 版 one-shot）里星标了 5 个" src="assets/remove-ai-taste-in-design/sodazine-context-chain.png"/>
+<img alt="Sodazine 网站成品：SOTA 首页（agent 自动加的条形码和多币种定价就在右上）、可交互的目录字墙、Grecofuturism 与 Waymo 文章页" src="assets/remove-ai-taste-in-design/sodazine-showcase.png"/>
+<p>从灵感到上线的过程，看似平庸感的做法，但流程是具体有效的、值得借鉴的。我之前没想过可以喂这么多 mood board 参考图，我都是给一个精准的图让 AI 实现，在实现的过程中就会陷入细节，就会缺少很多创意可能性。另外一点是，她的 md 文档完全是注入了个人品味；如果让 AI 自己写，可能就会掺杂着 AI 味了。</p>
+<div class="section-head"><span class="icon-badge" style="background: rgba(90, 108, 216, 0.1);"><svg height="40" viewBox="0 0 24 24" width="40" xmlns="http://www.w3.org/2000/svg">
+<g fill="none" stroke="#5A6CD8" stroke-linecap="round" stroke-linejoin="round" stroke-width="1">
+<animateTransform additive="sum" attributeName="transform" calcMode="spline" dur="2.3s" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1" keyTimes="0;0.4;0.7;1" repeatCount="indefinite" type="translate" values="0 0;0 -1.2;0 0.3;0 0"></animateTransform>
+<animateTransform additive="sum" attributeName="transform" calcMode="spline" dur="2.3s" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1" keyTimes="0;0.4;0.7;1" repeatCount="indefinite" type="rotate" values="0 12 12;-3 12 12;2 12 12;0 12 12"></animateTransform>
+<path d="M 4.88 10.5 L 4.88 13.5"></path>
+<rect height="7.5" rx="1.12" width="2.25" x="6.38" y="8.25"></rect>
+<path d="M 8.62 12.0 L 15.38 12.0"></path>
+<rect height="7.5" rx="1.12" width="2.25" x="15.38" y="8.25"></rect>
+<path d="M 19.12 10.5 L 19.12 13.5"></path>
+</g>
+</svg></span><h2 style="color: #5A6CD8;">刻意零 AI</h2></div>
+<p>第三个做法是<strong>加入手搓设计</strong>。虽然是网站全力用 AI 做快速探索，但封面和内页插画，团队做了个明确的决定：零 AI，回到 Illustrator，手工画。这些插画一眼就能看出极其用心、极其精细，看得出有人在上面花了时间。AI 时代，「人花了时间」传递的信号变了：当周围的视觉产出越来越快、越来越像，纯手工的作品反而成了稀缺。不只是风格，有人愿意为这件事投入真实的时间。</p>
+<img alt="Sodazine 的手绘插画：Grecofuturism 版面的树与建筑（署名 Pablo Peniche）、Waymo 文章 hover 出的 Alcatraz 手绘、手绘风的 SF 地图页" src="assets/remove-ai-taste-in-design/sodazine-illustrations.png"/>
 <p>这也是去平庸感的一条路。不是所有环节都要交给 AI；选择在哪些地方保留纯人工，本身就是设计决策。</p>
-<p style="display:flex; align-items:center; margin:40px 0;"><span style="flex:1 1 auto;height:1px;background:#5A6CD8;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" fill="#5A6CD8" r="4.3"></circle></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#5A6CD8" points="8,3.50 4.10,10.25 11.90,10.25"></polygon></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#5A6CD8" points="8,3.20 9.18,6.38 12.57,6.52 9.90,8.62 10.82,11.88 8,10.00 5.18,11.88 6.10,8.62 3.44,6.52 6.82,6.38"></polygon></svg><span style="flex:1 1 auto;height:1px;background:#5A6CD8;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span></p>
-<p>Eve Bouffard 在节目里有段话，正好说的是这件事：</p>
-<p>你得引导你的 agent，把你想要的感觉明确传达给它。能放截图就放截图，能放情绪板就放情绪板，尽可能多地把信息喂给 agent，让它真正理解你想要什么——然后它会用最漂亮的方式给你惊喜。</p>
 <p style="display:flex; align-items:center; margin:40px 0;"><span style="flex:1 1 auto;height:1px;background:#5A6CD8;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" fill="#5A6CD8" r="4.3"></circle></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#5A6CD8" points="8,3.50 4.10,10.25 11.90,10.25"></polygon></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#5A6CD8" points="8,3.20 9.18,6.38 12.57,6.52 9.90,8.62 10.82,11.88 8,10.00 5.18,11.88 6.10,8.62 3.44,6.52 6.82,6.38"></polygon></svg><span style="flex:1 1 auto;height:1px;background:#5A6CD8;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span></p>
 <p style="color:#aaa; font-size:var(--fs-caption); text-align:center; margin:24px 0;">本文素材来自 YouTube 视频 YC's Head of Design Shows You How To Design With AI（Y Combinator 频道 Design Review 节目），文中截图取自该视频。</p></div>
 <!-- 底部 -->
