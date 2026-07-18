@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>用 AI 做设计，平庸感是默认值 · VibeUX</title>
+<link href="../favicon.png?v=12" rel="icon" type="image/png"/>
+<link href="../favicon.png?v=12" rel="shortcut icon"/>
+<link href="../apple-touch-icon.png?v=12" rel="apple-touch-icon"/>
+<link href="../style.css?v=127" rel="stylesheet"/>
+<link href="writing.css?v=282" rel="stylesheet"/>
+<!-- 提前加载,使顶部导航能在首次绘制前同步注入,避免空 header 闪烁(与首页一致) -->
+<script src="writing.js?v=78"></script>
+</head>
+<!-- 复用首页 index.html 的胶囊顶栏:home-v2 控制顶栏内边距,design-page 提供胶囊样式 -->
+<body class="writing-page home-v2 design-page reading-page" data-accent="#D85E30" data-tint="peach">
+<!-- 顶部导航:与首页同一个组件(initSiteNav);data-base="../" 把站内链接/资源指回 docs 根目录。
+         返回入口 = 左侧 VIBEUX 与高亮的 Writing 胶囊,均回到 index.html#writing -->
+<header class="header home-nav" data-active="writing" data-base="../" id="site-nav"></header>
+<script>initSiteNav();</script>
+<div class="header-placeholder"></div>
+<script>
+        // 顶栏 fixed 脱流,占位块高度跟随顶栏实际高度(big VIBEUX 标题在不同断点高度不同)
+        // 同时把左侧固定目录的 top 对齐到正文顶部 = 顶栏高度 + 正文上间距(56px,见 .reading-layout)
+        (function () {
+            const READING_TOP = 104;
+            const h = document.querySelector('.header');
+            const ph = document.querySelector('.header-placeholder');
+            const set = () => {
+                if (!h) return;
+                if (ph) ph.style.height = h.offsetHeight + 'px';
+                document.documentElement.style.setProperty('--toc-top', (h.offsetHeight + READING_TOP) + 'px');
+            };
+            set();
+            window.addEventListener('resize', set);
+            window.addEventListener('load', set);
+        })();
+    </script>
+<div class="reading-layout">
+<!-- ① 文章列表(JS 渲染,master–detail 左栏) -->
+<aside aria-label="文章列表" class="reader-list"></aside>
+<!-- ③ 浮动目录(JS 自动生成) -->
+<aside aria-label="目录" class="article-toc">
+<div class="article-toc-title">目录</div>
+<nav id="toc"></nav>
+</aside>
+<!-- 正文 -->
+<article class="article-reading">
+<h1 class="article-h1">用 AI 做设计<br/>平庸感是默认值</h1>
+<div class="article-byline"><div class="article-eyebrow article-eyebrow-top"><span class="a-tag">AI 设计工作流</span></div><span>2026-07-16</span><span>阅读约 6 分钟</span></div>
+<div class="article-cover"><iframe loading="lazy" src="assets/remove-ai-taste-in-design/cover.html"></iframe></div>
+<div class="article-body"><style>
+/* article-template 样式 inline 到网站，仅作用于 .article-body 内 */
+.article-eyebrow { text-align: center; justify-content: center; }
+.article-eyebrow .a-tag { font-weight: 400; }
+.article-h1 { text-align: center; }
+.article-byline { text-align: center; justify-content: center; }
+.article-body { color: #1a1a1a; line-height: 1.4; }
+.article-body p { font-size: var(--fs-body); font-weight: 300; margin: 40px 0; color: #1a1a1a; }
+.article-body strong { font-weight: 400; color: #D85E30; }
+.article-body .list-dot { font-weight: 600; margin-right: 4px; color: #1a1a1a; }
+.article-body .section-head { text-align: center; margin: 56px 0; }
+/* 图标居中：svg display:block + margin auto，别改回 vertical-align/line-height/padding（微信按基线对齐会贴底、border-box 下 padding 挤小图标）。跟 template.html 保持一致。详见记忆 wechat-icon-vertical-center。 */
+.article-body .icon-badge { display: inline-block; width: 56px; height: 56px; border-radius: 14px; background: rgba(102, 102, 102, 0.08); margin-bottom: 14px; }
+.article-body .section-head svg { display: block; width: 36px; height: 36px; margin: 10px auto; overflow: visible; }
+.article-body h2 { font-size: var(--fs-h2); font-weight: 400; color: #1a1a1a; line-height: 1.2; margin: 0; letter-spacing: 0; text-align: center; }
+.article-body img { width: 100%; margin: 16px 0 0 0; display: block; }
+.article-body .img-caption { font-size: var(--fs-caption); color: #aaa; text-align: center; margin: 4px 0 18px 0; line-height: 1.4; }
+.article-body .img-ph { display: flex; align-items: center; justify-content: center; text-align: center; min-height: 160px; margin: 24px 0; padding: 28px 20px; border: 1px dashed #d6d6de; border-radius: 12px; background: repeating-linear-gradient(45deg, #fafafb, #fafafb 10px, #f3f3f6 10px, #f3f3f6 20px); }
+.article-body .img-ph .img-ph-cap { font-size: var(--fs-caption); color: #9a9aa6; line-height: 1.5; max-width: 80%; }
+.article-body .highlight { font-size: var(--fs-body); font-weight: 300; line-height: 1.4; color: #1a1a1a; margin: 40px 0; }
+.article-body .highlight strong { font-weight: 400; color: #D85E30; }
+
+/* outlined 图标动画 CSS（自动从 design-gallery 抽取，不要手改） */
+/* 时长/延迟变量（在 design-gallery 基础上整体提速 ~40%，文章里看着更精神） */
+.section-head {
+  --dur-1-5: 0.9s; --dur-1-8: 1.1s; --dur-2-1: 1.2s; --dur-2-2: 1.3s;
+  --dur-2-3: 1.4s; --dur-2-4: 1.4s; --dur-2-5: 1.5s; --dur-2-6: 1.6s;
+  --dur-2-8: 1.7s; --dur-4-0: 2.4s; --dur-5-0: 3s;
+  --delay-150: 100ms; --delay-300: 180ms; --delay-600: 360ms;
+}
+/* 通用 transform-box */
+.section-head svg [class*="anim-"],
+.section-head svg .favorite-star,
+.section-head svg .favorite-rays {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.section-head svg .anim-viewBox {
+  transform-box: view-box;
+  transform-origin: center;
+}
+
+/* ---- 各图标动画规则 ---- */
+.section-head svg .anim-doc-line {
+    animation: doc-line-write var(--dur-2-8) ease-in-out infinite;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+.section-head svg .anim-doc-line-2 { animation-delay: var(--delay-300); }
+.section-head svg .anim-doc-line-3 { animation-delay: var(--delay-600); }
+.section-head svg .anim-user-head { animation: user-head var(--dur-2-3) ease-out infinite; }
+.section-head svg .anim-user-shoulders { animation: user-shoulders var(--dur-2-3) ease-out infinite; }
+.section-head svg .anim-gear { animation: gear-turn var(--dur-2-8) cubic-bezier(0.25, 0.8, 0.2, 1) infinite; transform-box: view-box; transform-origin: 12px 12px; }
+.section-head svg .anim-search { animation: search-scan var(--dur-4-0) cubic-bezier(0.16, 0.9, 0.2, 1) infinite; transform-box: view-box; transform-origin: center; }
+.section-head svg .anim-cart-burst {
+    animation: cart-burst var(--dur-2-5) ease-out infinite;
+    opacity: 0;
+  }
+.section-head svg .anim-cart-burst-1 { --tx: -5px; --ty: -9px; }
+.section-head svg .anim-cart-burst-2 { --tx: -1px; --ty: -11px; animation-delay: var(--delay-150); }
+.section-head svg .anim-cart-burst-3 { --tx: 3px; --ty: -10px; animation-delay: var(--delay-300); }
+.section-head svg .anim-cart-burst-4 { --tx: 6px; --ty: -8px; animation-delay: var(--delay-300); }
+.section-head svg .anim-clap-hand { animation: clap-hand var(--dur-1-8) ease-in-out infinite; transform-box: view-box; transform-origin: 9px 14px; }
+.section-head svg .anim-clap-lines { animation: clap-lines var(--dur-1-8) ease-out infinite; transform-box: view-box; transform-origin: center; }
+.section-head svg .anim-music-note {
+    animation: music-float var(--dur-2-8) ease-in-out infinite;
+    opacity: 0;
+    transform-box: view-box;
+    transform-origin: center;
+  }
+.section-head svg .anim-music-base {
+    animation: music-tilt var(--dur-2-8) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 12px 14px;
+  }
+.section-head svg .anim-music-note-2 { animation-delay: calc(var(--dur-2-8) / 2); }
+.section-head svg .anim-lightning {
+    animation: lightning-flash var(--dur-2-4) ease-in-out infinite;
+  }
+.section-head svg .anim-pencil { animation: pencil-write var(--dur-5-0) ease-in-out infinite; transform-box: view-box; transform-origin: 13px 12px; }
+.section-head svg .anim-pencil-trace {
+    animation: pencil-trace var(--dur-5-0) ease-in-out infinite;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+.section-head svg .anim-eye-shape { animation: eye-blink var(--dur-2-8) ease-in-out infinite; transform-box: view-box; transform-origin: 12px 12px; }
+.section-head svg .anim-eye-pupil { animation: eye-pupil-blink var(--dur-2-8) ease-in-out infinite; transform-box: view-box; transform-origin: center; }
+.section-head svg .anim-bell { animation: bell-rattle var(--dur-5-0) cubic-bezier(0.3, 0.7, 0.2, 1) infinite; transform-box: view-box; transform-origin: 12px 4px; }
+.section-head svg .anim-bell-clapper { animation: bell-clapper var(--dur-5-0) linear infinite; transform-box: view-box; transform-origin: 12px 17px; }
+.section-head svg .anim-ide-cursor { animation: ide-blink var(--dur-1-5) step-end infinite; }
+.section-head svg .anim-pin-ripple {
+    animation: pin-ripple var(--dur-2-5) ease-out infinite;
+    opacity: 0;
+  }
+.section-head svg .anim-pin-ripple-2 { animation-delay: calc(var(--dur-2-5) / 3); }
+.section-head svg .anim-pin-ripple-3 { animation-delay: calc(var(--dur-2-5) * 2 / 3); }
+.section-head svg .anim-brain {
+    animation: brain-pulse var(--dur-2-2) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 12px 12px;
+  }
+.section-head svg .anim-ai-spark {
+    animation: ai-twinkle var(--dur-2-2) ease-in-out infinite;
+  }
+.section-head svg .anim-ai-spark-small {
+    animation-delay: calc(var(--dur-2-2) / 2);
+  }
+.section-head svg .anim-cursor {
+    animation: cursor-nudge var(--dur-2-2) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 10px 12px;
+  }
+.section-head svg .anim-cursor-click {
+    animation: cursor-click var(--dur-2-2) ease-out infinite;
+    opacity: 0;
+    transform-box: view-box;
+    transform-origin: 6px 5px;
+  }
+.section-head svg .anim-cursor-spark {
+    animation: ai-twinkle var(--dur-2-2) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 18px 6px;
+  }
+.section-head svg .anim-hourglass-top {
+    animation: hourglass-top var(--dur-2-8) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 12px 8px;
+  }
+.section-head svg .anim-hourglass-stream {
+    animation: hourglass-stream var(--dur-2-8) ease-in-out infinite;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+.section-head svg .anim-hourglass-bottom {
+    animation: hourglass-bottom var(--dur-2-8) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 12px 18px;
+  }
+.section-head svg .anim-shape-cycle {
+    transform-box: view-box;
+    transform-origin: 12px 12px;
+  }
+.section-head svg .anim-home { animation: home-settle var(--dur-2-4) ease-out infinite; }
+.section-head svg .anim-lock-shackle { animation: lock-shackle var(--dur-2-6) ease-in-out infinite; transform-box: view-box; transform-origin: 12px 12px; }
+.section-head svg .anim-lock-dot { animation: lock-dot var(--dur-2-6) ease-out infinite; }
+.section-head svg .anim-message-dot-1 { animation: typing-dot var(--dur-1-5) ease-in-out infinite 0ms; }
+.section-head svg .anim-message-dot-2 { animation: typing-dot var(--dur-1-5) ease-in-out infinite var(--delay-150); }
+.section-head svg .anim-message-dot-3 { animation: typing-dot var(--dur-1-5) ease-in-out infinite var(--delay-300); }
+.section-head svg .anim-heart { animation: heart-flutter var(--dur-2-8) cubic-bezier(0.2, 0.85, 0.25, 1) infinite; transform-box: view-box; transform-origin: 12px 12px; }
+.section-head svg .favorite-star { animation: favorite-pop var(--dur-2-2) cubic-bezier(0.2, 0.85, 0.25, 1) infinite; }
+.section-head svg .favorite-rays { animation: favorite-rays var(--dur-2-2) ease-out infinite; transform-box: view-box; transform-origin: center; }
+.section-head svg .anim-gift-lid { animation: gift-lid var(--dur-2-8) ease-in-out infinite; transform-box: view-box; transform-origin: 12px 8px; }
+.section-head svg .anim-gift-particle {
+    animation: gift-particle var(--dur-2-8) ease-out infinite;
+    opacity: 0;
+    transform-box: view-box;
+    transform-origin: center;
+  }
+.section-head svg .anim-gift-particle-1 { --tx: -5px; --ty: -9px; }
+.section-head svg .anim-gift-particle-2 { --tx: 4px; --ty: -10px; animation-delay: var(--delay-150); }
+.section-head svg .anim-gift-particle-3 { --tx: -8px; --ty: -6px; animation-delay: var(--delay-300); }
+.section-head svg .anim-gift-particle-4 { --tx: 7px; --ty: -7px; animation-delay: var(--delay-300); }
+.section-head svg .anim-gift-particle-5 { --tx: -2px; --ty: -11px; animation-delay: var(--delay-600); }
+.section-head svg .anim-gift-particle-6 { --tx: 6px; --ty: -5px; animation-delay: var(--delay-600); }
+/* 以下两条此前未接入(class 存在但没有匹配规则,design-gallery 里同样是孤儿 keyframe)。
+   现补上选择器,和 icons-outlined/*.svg 里新加的 SMIL 保持一致。 */
+.section-head svg .anim-bookmark { animation: bookmark-tuck var(--dur-2-4) ease-in-out infinite; }
+.section-head svg .anim-clock-minute { animation: clock-hand 3s linear infinite; transform-box: view-box; transform-origin: 12px 12px; }
+
+/* ---- keyframes ---- */
+@keyframes ai-twinkle {
+    0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+    50% { opacity: 0.35; transform: scale(0.6) rotate(25deg); }
+  }
+@keyframes bell-clapper {
+    0%, 8%, 84%, 100% { transform: rotate(0deg); }
+    20% { transform: rotate(13deg); }
+    36% { transform: rotate(-9deg); }
+    52% { transform: rotate(6deg); }
+    68% { transform: rotate(-3deg); }
+  }
+@keyframes bell-rattle {
+    0%, 8%, 84%, 100% { transform: rotate(0deg); }
+    20% { transform: rotate(-11deg); }
+    36% { transform: rotate(8deg); }
+    52% { transform: rotate(-5deg); }
+    68% { transform: rotate(3deg); }
+  }
+@keyframes bookmark-tuck {
+    0%, 100% { transform: translateY(0); }
+    42% { transform: translateY(2px); }
+    72% { transform: translateY(-1px); }
+  }
+@keyframes brain-pulse {
+    0%, 100% { transform: scale(1); }
+    22% { transform: scale(1.06); }
+    44% { transform: scale(0.98); }
+    62% { transform: scale(1.06); }
+    82% { transform: scale(0.98); }
+  }
+@keyframes calendar-page {
+    0%, 100% { transform: translateY(0); }
+    45% { transform: translateY(1.2px); }
+  }
+@keyframes calendar-tabs {
+    0%, 100% { transform: translateY(0); }
+    35% { transform: translateY(-1.8px); }
+  }
+@keyframes cart-burst {
+    0%, 14% { opacity: 0; transform: translate(0, 0) scale(0.4) rotate(0deg); }
+    28% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+    72% { opacity: 0.85; transform: translate(var(--tx), var(--ty)) scale(1) rotate(18deg); }
+    100% { opacity: 0; transform: translate(calc(var(--tx) * 1.25), calc(var(--ty) * 1.2)) scale(0.7) rotate(30deg); }
+  }
+@keyframes cart-roll {
+    0%, 100% { transform: translateX(0); }
+    42% { transform: translateX(3px); }
+    75% { transform: translateX(-1px); }
+  }
+@keyframes clap-hand {
+    0%, 100% { transform: translateX(-1.5px) rotate(-7deg); }
+    24%, 50% { transform: translateX(1px) rotate(3deg); }
+    70% { transform: translateX(-0.6px) rotate(-3deg); }
+  }
+@keyframes clap-lines {
+    0%, 14%, 72%, 100% { opacity: 0; transform: scale(0.88); }
+    26%, 48% { opacity: 1; transform: scale(1); }
+    58% { opacity: 0.45; transform: scale(1.08); }
+  }
+@keyframes clock-hand {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+@keyframes cursor-click {
+    0%, 34% { opacity: 0; transform: scale(0.45); }
+    46% { opacity: 0.85; transform: scale(0.78); }
+    74%, 100% { opacity: 0; transform: scale(1.55); }
+  }
+@keyframes cursor-nudge {
+    0%, 100% { transform: translate(0, 0); }
+    42% { transform: translate(1px, -1px); }
+    66% { transform: translate(0.35px, -0.35px); }
+  }
+@keyframes doc-line-write {
+    0%, 12% {
+      opacity: 0;
+      stroke-dashoffset: 1;
+    }
+    42%, 76% {
+      opacity: 1;
+      stroke-dashoffset: 0;
+    }
+    100% {
+      opacity: 0;
+      stroke-dashoffset: 0;
+    }
+  }
+@keyframes eye-blink {
+    0%, 44%, 58%, 70%, 100% { transform: scaleY(1); }
+    50%, 64% { transform: scaleY(0.08); }
+  }
+@keyframes eye-pupil-blink {
+    0%, 44%, 58%, 70%, 100% { opacity: 1; transform: scaleY(1); }
+    50%, 64% { opacity: 0; transform: scaleY(0.08); }
+  }
+@keyframes favorite-pop {
+    0%   { transform: scale(1); }
+    20%  { transform: scale(0.72); }
+    46%  { transform: scale(1.2); }
+    72%  { transform: scale(0.94); }
+    100% { transform: scale(1); }
+  }
+@keyframes favorite-rays {
+    0%   { opacity: 0; transform: scale(0.58) rotate(0deg); }
+    18%  { opacity: 0; transform: scale(0.62) rotate(0deg); }
+    34%  { opacity: 1; }
+    76%  { opacity: 0.75; }
+    100% { opacity: 0; transform: scale(1.28) rotate(10deg); }
+  }
+@keyframes gear-turn {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(90deg); }
+  }
+@keyframes gift-box {
+    0%, 100% { transform: scaleY(1); }
+    42% { transform: scaleY(0.96); }
+  }
+@keyframes gift-lid {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    42% { transform: translateY(-3px) rotate(-4deg); }
+    70% { transform: translateY(-1px) rotate(2deg); }
+  }
+@keyframes gift-particle {
+    0%, 18% { opacity: 0; transform: translate(0, 3px) scale(0.62) rotate(0deg); }
+    32% { opacity: 1; transform: translate(0, 0) scale(1) rotate(8deg); }
+    72% { opacity: 0.9; transform: translate(var(--tx), var(--ty)) scale(1.05) rotate(18deg); }
+    100% { opacity: 0; transform: translate(calc(var(--tx) * 1.2), calc(var(--ty) * 1.25)) scale(0.78) rotate(28deg); }
+  }
+@keyframes heart-flutter {
+    0%, 10%, 68%, 100% { transform: scale(1) rotate(0deg); }
+    16% { transform: scale(0.94) rotate(-1.5deg); }
+    23% { transform: scale(1.18) rotate(1.5deg); }
+    31% { transform: scale(0.98) rotate(0deg); }
+    42% { transform: scale(1.1) rotate(-0.8deg); }
+    54% { transform: scale(1.01) rotate(0.4deg); }
+  }
+@keyframes home-settle {
+    0%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-2px); }
+    70% { transform: translateY(1px); }
+  }
+@keyframes hourglass-bottom {
+    0%, 100% { opacity: 0.68; transform: scaleX(0.72); }
+    60% { opacity: 1; transform: scaleX(1.08); }
+  }
+@keyframes hourglass-stream {
+    0%, 14% { opacity: 0; stroke-dashoffset: 1; }
+    30% { opacity: 1; }
+    68% { opacity: 1; stroke-dashoffset: 0; }
+    100% { opacity: 0; stroke-dashoffset: -1; }
+  }
+@keyframes hourglass-top {
+    0%, 100% { opacity: 0.95; transform: scaleY(1); }
+    54% { opacity: 0.5; transform: scaleY(0.64); }
+    78% { opacity: 0.9; transform: scaleY(0.86); }
+  }
+@keyframes ide-blink {
+    0%, 49% { opacity: 1; }
+    50%, 99% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+@keyframes lightning-flash {
+    0%, 100% { opacity: 0.92; transform: scale(1); }
+    42% { opacity: 1; transform: scale(1.08); }
+    72% { opacity: 0.78; transform: scale(0.98); }
+  }
+@keyframes lightning-pulse {
+    0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+    36% { transform: translateY(-1px) rotate(-3deg) scale(1.04); }
+    64% { transform: translateY(0.6px) rotate(2deg) scale(0.98); }
+  }
+@keyframes lock-dot {
+    0%, 100% { transform: scale(1); }
+    45% { transform: scale(1.35); }
+  }
+@keyframes lock-shackle {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    36% { transform: translateY(-2px) rotate(-9deg); }
+    72% { transform: translateY(0) rotate(0deg); }
+  }
+@keyframes music-float {
+    0% { opacity: 0; transform: translate(0, 3px) scale(0.82) rotate(-5deg); }
+    18% { opacity: 1; }
+    68% { opacity: 1; transform: translate(0.8px, -4px) scale(1) rotate(6deg); }
+    100% { opacity: 0; transform: translate(-0.5px, -7px) scale(0.86) rotate(-8deg); }
+  }
+@keyframes music-tilt {
+    0%, 100% { transform: rotate(0deg) translateY(0); }
+    34% { transform: rotate(-5deg) translateY(-0.8px); }
+    68% { transform: rotate(4deg) translateY(0.5px); }
+  }
+@keyframes pencil-trace {
+    0%, 14% {
+      opacity: 0;
+      stroke-dashoffset: 1;
+    }
+    46% {
+      opacity: 1;
+      stroke-dashoffset: 0;
+    }
+    72% {
+      opacity: 1;
+      stroke-dashoffset: 0;
+    }
+    100% {
+      opacity: 0;
+      stroke-dashoffset: 0;
+    }
+  }
+@keyframes pencil-write {
+    0%, 100% { transform: translate(-0.8px, -0.8px) rotate(-4deg); }
+    18% { transform: translate(1.4px, -2.4px) rotate(-1deg); }
+    36% { transform: translate(3.8px, -0.5px) rotate(3deg); }
+    56% { transform: translate(6.4px, -2.2px) rotate(1deg); }
+    76% { transform: translate(9px, -0.7px) rotate(4deg); }
+    88% { transform: translate(4.2px, -1.5px) rotate(-1deg); }
+  }
+@keyframes pin-drop {
+    0% { transform: translateY(-6px); opacity: 0; }
+    55% { transform: translateY(1px); opacity: 1; }
+    75% { transform: translateY(-1px); }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+@keyframes pin-ripple {
+    0% { opacity: 0; transform: scale(0.45); }
+    20% { opacity: 0.9; }
+    100% { opacity: 0; transform: scale(1.8); }
+  }
+@keyframes search-scan {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    10% { transform: translate(-4.2px, 0.4px) rotate(-10deg); }
+    18% { transform: translate(-1.1px, -0.2px) rotate(-2deg); }
+    30% { transform: translate(0.6px, -3.8px) rotate(7deg); }
+    39% { transform: translate(1.6px, -1px) rotate(2deg); }
+    52% { transform: translate(3px, 3.4px) rotate(9deg); }
+    62% { transform: translate(0.8px, 1px) rotate(2deg); }
+    78% { transform: translate(-0.7px, 0.2px) rotate(-1deg); }
+  }
+@keyframes search-sway {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    25% { transform: translateX(-1.4px) rotate(-7deg); }
+    55% { transform: translateX(1.4px) rotate(7deg); }
+    78% { transform: translateX(-0.5px) rotate(-3deg); }
+  }
+@keyframes typing-dot {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 1; }
+    38% { transform: translateY(-2px) scale(1.18); opacity: 0.75; }
+  }
+@keyframes user-head {
+    0%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-2px); }
+  }
+@keyframes user-shoulders {
+    0%, 100% { transform: scaleX(1); }
+    45% { transform: scaleX(1.08); }
+  }
+@keyframes wheel-pulse {
+    0%, 100% { transform: scale(1); }
+    42% { transform: scale(1.2); }
+  }
+</style>
+<p>我让 AI 出设计稿，拿回来的通常不丑——配色合理、间距没毛病、该有的信息层级都在。但一眼看过去没有任何记忆点，换个品牌名放上去毫不违和。YC 设计负责人 Eve Bouffard 最近在 Design Review 节目里讲自己怎么用 AI 做设计，30 分钟摊开三个项目从灵感到上线的过程，我来回看了两遍，她处理平庸感的做法挺具体的。</p>
+<div class="section-head"><span class="icon-badge" style="background: transparent;"><svg height="56" viewBox="0 0 48 48" width="56" xmlns="http://www.w3.org/2000/svg"><rect fill="#D85E30" fill-opacity="0.08" height="48" rx="13" width="48"></rect><g fill="none" stroke="#D85E30" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" transform="translate(9.6 9.6) scale(1.2)"><path d="M9 3.5 V7.5"></path><path d="M15 3.5 V7.5"></path><path d="M7.5 7.5 H16.5 C17.05 7.5 17.5 7.95 17.5 8.5 V10.5 C17.5 13.54 15.04 16 12 16 C8.96 16 6.5 13.54 6.5 10.5 V8.5 C6.5 7.95 6.95 7.5 7.5 7.5 Z"></path><path d="M12 16 V20.5"></path></g></svg></span><h2 style="color: #D85E30;">上下文喂够了<br/>one-shot 才有辨识度</h2></div>
+<p>Sodazine 是 YC 做的一本庆祝旧金山的实体杂志，soda 取 state of the art 的缩写，YC CEO Gary Tan 发起。网站部分 Eve 的做法是：项目里每一次会议都录音，transcript 全部倒进一份 soul.md；团队写给自己的 manifesto 也倒进去——她要让这个文件成为项目的唯一上下文来源，能多详尽就多详尽。</p>
+<img alt="Sodazine 的 soul.md：Why San Francisco、On tactility——会议记录和 manifesto 全倒在这一份文件里" src="assets/remove-ai-taste-in-design/sodazine-soulmd-tile.png"/>
+<p>视觉方向先在 Pinterest 拼了个情绪板，黑白、粗粝，几张喜欢的参考图。然后连图带 soul.md 一起喂给 Claude，让它一口气 one-shot 了 16 版完整网站。为了浏览这 16 版她又顺手造了一个索引页，想收藏中意的就再加一个 pin 功能。</p>
+<img alt="从情绪板到索引页：Pinterest 黑白粗粝情绪板 → one-shot 探索的 PAGE INDEX，17 个方向（D0 原版 + 16 版 one-shot）里星标了 5 个" src="assets/remove-ai-taste-in-design/sodazine-moodboard-index.png"/>
+<p>这轮探索里出现了她说的「AGI moment」：因为 soul.md 里记着 4 月 17 日 launch party 的信息，agent 自作主张把派对时间排进了某一版设计；还有一版发现「这是本实体杂志」，自动加上了条形码和多币种定价。这些细节不在 prompt 里，是 agent 从上下文自己找出来的。</p>
+<img alt="Sodazine 的一版 one-shot 探索：黑白粗粝方向，agent 自动排进 4 月 17 日派对时间，还加了条形码和多币种定价" src="assets/remove-ai-taste-in-design/sodazine-oneshot-tile.png"/>
+<p>她在节目里的判断我很认同——<strong>one-shot 出来的设计平庸不平庸，几乎完全取决于喂了多厚的上下文</strong>。只丢一句「设计个网站」，agent 当然只能往最安全的模板方向走；会议记录、项目宣言、视觉参考图全倒进去，agent 才有可能做出你事先没想到的细节。</p>
+<p>【补充亲历：自己给 Agent 喂参考图 / 情绪板来打破平庸设计的一次经历，效果如何】</p>
+<div class="section-head"><span class="icon-badge" style="background: transparent;"><svg height="56" viewBox="0 0 48 48" width="56" xmlns="http://www.w3.org/2000/svg"><rect fill="#D85E30" fill-opacity="0.08" height="48" rx="13" width="48"></rect><g fill="none" stroke="#D85E30" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" transform="translate(9.6 9.6) scale(1.2)"><path d="M4.9 11 L16.2 4.4 C16.7 4.1 17.3 4.3 17.6 4.8 L19.1 7.4 C19.4 7.9 19.2 8.5 18.7 8.8 L7.4 15.4 C6.9 15.7 6.3 15.5 6 15 L4.5 12.4 C4.2 11.9 4.4 11.3 4.9 11 Z"></path><path d="M6.7 9.9 L8.6 13.2"></path><path d="M11 15.2 L8.5 20.5"></path><path d="M13.6 13.7 L16.5 20.5"></path></g></svg></span><h2 style="color: #D85E30;">默认参数不对味<br/>得造工具来拨</h2></div>
+<p>Paxel 是 YC 最近上线的另一个项目——给编码记录做 Spotify Wrapped，着陆页首屏显示已分析 639,335 个 session。页面背景用了 paper.design 的 dithering shader，Eve 让 Claude 实现之后，默认参数出来的颗粒感不对味。她没有回头反复改 prompt 让 AI 重试，转手造了一个调参 modal，把 dithering 的每一项参数一点点拨到自己满意为止——这个 modal 还留在线上，桌面端打开谁都能玩。</p>
+<img alt='Paxel 着陆页：首屏写着 "我们都在用 AI 写软件，却不知道彼此怎么写"，背景 dithering shader 的颗粒感经过手动调参' src="assets/remove-ai-taste-in-design/paxel-landing-tile.png"/>
+<p>同样的做法在 Startup School 上铺得更开。这是 YC 今年最大的活动，Chase Center 现场超 6000 人，讲者包括 Jensen Huang、Sam Altman、Alexandr Wang、Jeff Dean。视觉定了橙色渐变方向，底层还是 paper.design 的 shader，颗粒度、边缘、旋转、缩放各有参数可调；她同样给自己造了一个调参面板，把渐变的质感一点点拨对。</p>
+<p>同一组 shader 参数从社交平台的讲者卡片、到录取通知的个人化门票（渲染姓名和所在城市）、到活动现场 Chase Center 的大屏，全程复用。一套品牌视觉能在所有触点上保持一致，靠的就是参数本身可以带着走，不用每次手动对齐。</p>
+<img alt="Startup School 讲者卡片：橙色渐变 shader 背景，右下角挂着 shader 调参入口" src="assets/remove-ai-taste-in-design/startup-school-card-tile.png"/>
+<p>这就是人的品味介入 AI 产物的具体形态——AI 能实现 shader，但给的默认值不代表你要的感觉；设计师的活儿是造一个调参界面，把那些数值一个个拨到自己认可的位置。Eve 自己说这些 shader 放一年前她连从哪开始都不知道；现在她的 Claude 知道她喜欢 paper.design，会自动去拉资料来用。能力是 AI 给的，品味得自己拨进去。</p>
+<div class="section-head"><span class="icon-badge" style="background: transparent;"><svg height="56" viewBox="0 0 48 48" width="56" xmlns="http://www.w3.org/2000/svg"><rect fill="#D85E30" fill-opacity="0.08" height="48" rx="13" width="48"></rect><g fill="none" stroke="#D85E30" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" transform="translate(9.6 9.6) scale(1.2)"><path d="M12 2.5 C13 8.5 15.5 11 21.5 12 C15.5 13 13 15.5 12 21.5 C11 15.5 8.5 13 2.5 12 C8.5 11 11 8.5 12 2.5 Z"></path></g></svg></span><h2 style="color: #D85E30;">刻意零 AI<br/>人花过时间本身是卖点</h2></div>
+<p>同一个项目 Sodazine，杂志内容和网站走了两条完全不同的路。网站全力用 AI 做快速探索——soul.md 倒进一切，one-shot 16 版；但实体杂志的封面和内页插画，团队做了个明确的决定：零 AI，回到 Illustrator，手工画。</p>
+<p>Eve 在节目里说，这些插画一眼就能看出极其用心、极其精细，看得出有人在上面花了好几个月。AI 时代，「人花过时间」传递的信号变了：当周围的视觉产出越来越快、越来越像，纯手工的作品反而成了稀缺——它说的不只是风格，还有「有人愿意为这件事投入真实的时间」。</p>
+<img alt="Sodazine 的两条路：网站全力 AI，one-shot 16 版快速探索；实体杂志零 AI，回到 Illustrator 手工画了几个月" src="assets/remove-ai-taste-in-design/sodazine-two-paths.png"/>
+<p>这也是去平庸感的一条路。不是所有环节都要交给 AI；选择在哪些地方保留纯人工，本身就是设计决策。</p>
+<p style="display:flex; align-items:center; margin:40px 0;"><span style="flex:1 1 auto;height:1px;background:#D85E30;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" fill="#D85E30" r="4.3"></circle></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#D85E30" points="8,3.50 4.10,10.25 11.90,10.25"></polygon></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#D85E30" points="8,3.20 9.18,6.38 12.57,6.52 9.90,8.62 10.82,11.88 8,10.00 5.18,11.88 6.10,8.62 3.44,6.52 6.82,6.38"></polygon></svg><span style="flex:1 1 auto;height:1px;background:#D85E30;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span></p>
+<p>Eve Bouffard 在节目里有段话，正好说的是这件事：</p>
+<p>你得引导你的 agent，把你想要的感觉明确传达给它。能放截图就放截图，能放情绪板就放情绪板，尽可能多地把信息喂给 agent，让它真正理解你想要什么——然后它会用最漂亮的方式给你惊喜。</p>
+<p style="display:flex; align-items:center; margin:40px 0;"><span style="flex:1 1 auto;height:1px;background:#D85E30;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" fill="#D85E30" r="4.3"></circle></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#D85E30" points="8,3.50 4.10,10.25 11.90,10.25"></polygon></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#D85E30" points="8,3.20 9.18,6.38 12.57,6.52 9.90,8.62 10.82,11.88 8,10.00 5.18,11.88 6.10,8.62 3.44,6.52 6.82,6.38"></polygon></svg><span style="flex:1 1 auto;height:1px;background:#D85E30;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span></p>
+<p style="color:#aaa; font-size:var(--fs-caption); text-align:center; margin:24px 0;">本文素材来自 YouTube 视频 YC's Head of Design Shows You How To Design With AI（Y Combinator 频道 Design Review 节目），文中截图取自该视频。</p></div>
+<!-- 底部 -->
+<footer class="article-footer">
+<div class="same-collection"></div>
+</footer>
+</article>
+</div>
+<script src="../script.js?v=27"></script>
+</body>
+</html>
