@@ -47,9 +47,8 @@
 </aside>
 <!-- 正文 -->
 <article class="article-reading">
-<div class="article-eyebrow article-eyebrow-top"><span class="a-tag">AI 设计工作流</span></div>
 <h1 class="article-h1">设计师被 AI 替代之前<br/>Figma 用一整套新功能抬高设计师上限</h1>
-<div class="article-byline"><span>2026-06-26</span><span>阅读约 7 分钟</span></div>
+<div class="article-byline"><div class="article-eyebrow article-eyebrow-top"><span class="a-tag">AI 设计工作流</span></div><span>2026-06-26</span><span>阅读约 7 分钟</span></div>
 <div class="article-cover"><iframe loading="lazy" src="assets/figma-config-2026/cover.html"></iframe></div>
 <div class="article-body"><style>
 /* article-template 样式 inline 到网站，仅作用于 .article-body 内 */
@@ -62,8 +61,9 @@
 .article-body strong { font-weight: 400; color: #D4A017; }
 .article-body .list-dot { font-weight: 600; margin-right: 4px; color: #1a1a1a; }
 .article-body .section-head { text-align: center; margin: 56px 0; }
-.article-body .icon-badge { display: inline-block; width: 56px; height: 56px; border-radius: 14px; background: rgba(102, 102, 102, 0.08); margin-bottom: 14px; }
-.article-body .section-head svg { display: block; width: 36px; height: 36px; margin: 10px auto; overflow: visible; }
+/* 图标居中：svg display:block + margin auto，别改回 vertical-align/line-height/padding（微信按基线对齐会贴底、border-box 下 padding 挤小图标）。跟 template.html 保持一致。详见记忆 wechat-icon-vertical-center。 */
+.article-body .icon-badge { display: inline-block; width: 40px; height: 40px; border-radius: 10px; background: rgba(102, 102, 102, 0.08); margin-bottom: 14px; }
+.article-body .section-head svg { display: block; width: 40px; height: 40px; margin: 0 auto; overflow: visible; }
 .article-body h2 { font-size: var(--fs-h2); font-weight: 400; color: #1a1a1a; line-height: 1.2; margin: 0; letter-spacing: 0; text-align: center; }
 .article-body img { width: 100%; margin: 16px 0 0 0; display: block; }
 .article-body .img-caption { font-size: var(--fs-caption); color: #aaa; text-align: center; margin: 4px 0 18px 0; line-height: 1.4; }
@@ -72,8 +72,8 @@
 .article-body .highlight { font-size: var(--fs-body); font-weight: 300; line-height: 1.4; color: #1a1a1a; margin: 40px 0; }
 .article-body .highlight strong { font-weight: 400; color: #D4A017; }
 
-/* outlined 图标动画 CSS（自动从 icon-studio 抽取，不要手改） */
-/* 时长/延迟变量（在 icon-studio 基础上整体提速 ~40%，文章里看着更精神） */
+/* outlined 图标动画 CSS（自动从 design-gallery 抽取，不要手改） */
+/* 时长/延迟变量（在 design-gallery 基础上整体提速 ~40%，文章里看着更精神） */
 .section-head {
   --dur-1-5: 0.9s; --dur-1-8: 1.1s; --dur-2-1: 1.2s; --dur-2-2: 1.3s;
   --dur-2-3: 1.4s; --dur-2-4: 1.4s; --dur-2-5: 1.5s; --dur-2-6: 1.6s;
@@ -214,6 +214,10 @@
 .section-head svg .anim-gift-particle-4 { --tx: 7px; --ty: -7px; animation-delay: var(--delay-300); }
 .section-head svg .anim-gift-particle-5 { --tx: -2px; --ty: -11px; animation-delay: var(--delay-600); }
 .section-head svg .anim-gift-particle-6 { --tx: 6px; --ty: -5px; animation-delay: var(--delay-600); }
+/* 以下两条此前未接入(class 存在但没有匹配规则,design-gallery 里同样是孤儿 keyframe)。
+   现补上选择器,和 icons-outlined/*.svg 里新加的 SMIL 保持一致。 */
+.section-head svg .anim-bookmark { animation: bookmark-tuck var(--dur-2-4) ease-in-out infinite; }
+.section-head svg .anim-clock-minute { animation: clock-hand 3s linear infinite; transform-box: view-box; transform-origin: 12px 12px; }
 
 /* ---- keyframes ---- */
 @keyframes ai-twinkle {
@@ -372,6 +376,11 @@
     54% { opacity: 0.5; transform: scaleY(0.64); }
     78% { opacity: 0.9; transform: scaleY(0.86); }
   }
+@keyframes ide-blink {
+    0%, 49% { opacity: 1; }
+    50%, 99% { opacity: 0; }
+    100% { opacity: 1; }
+  }
 @keyframes lightning-flash {
     0%, 100% { opacity: 0.92; transform: scale(1); }
     42% { opacity: 1; transform: scale(1.08); }
@@ -481,7 +490,7 @@
 <p>不只是设计师，65%的开发者也表示相同看法。一个受访的软件工程师说得直白：「设计、品味和用户体验比以前更重要，所以我们每天都在改进它。」</p>
 <p>当 AI 能给任何人带来十倍提速，个人的十倍就没意义了，竞争重新落到集体速度上——一个团队整体能多快地做出好设计的判断。</p>
 <p>设计工作最有价值的地方之一是设计判断，而判断不是 AI 所擅长的（可能大概不是现在）。这时候，设计师的成熟经验、设计敏感，都是无法被轻易替代的优势。</p>
-<div class="section-head"><span class="icon-badge" style="background: rgba(212, 160, 23, 0.1);"><svg height="36" viewBox="0 0 24 24" width="36" xmlns="http://www.w3.org/2000/svg">
+<div class="section-head"><span class="icon-badge" style="background: rgba(212, 160, 23, 0.1);"><svg height="40" viewBox="0 0 24 24" width="40" xmlns="http://www.w3.org/2000/svg">
 <g fill="none" stroke="#D4A017" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" transform="translate(12 12)">
 <g class="anim-shape-cycle">
 <path class="anim-shape-morph" d="M 0 -7 C 0.9 -7 1.3 -5.2 1.8 -3.8 C 2.8 -1 5.2 -0.3 7 0 C 5.2 0.3 2.8 1 1.8 3.8 C 1.3 5.2 0.9 7 0 7 C -0.9 7 -1.3 5.2 -1.8 3.8 C -2.8 1 -5.2 0.3 -7 0 C -5.2 -0.3 -2.8 -1 -1.8 -3.8 C -1.3 -5.2 -0.9 -7 0 -7 Z">
@@ -500,13 +509,18 @@
 <img alt="跨职能协作数据" src="assets/figma-config-2026/03-crossfunc-charts.jpg"/>
 <p>这就引出报告反复在强调的一个词——画布（canvas）。76% 的产品团队，至少有一半的工作发生在协作画布上；六成人大部分时间都在画布上工作。终端和聊天框的环境是单人的，一次只服务一个人的思路；画布是可以多人协作的，能让讨论、反馈、并行修改发生在同一个空间里。</p>
 <p>个人与环境都在快速迭代。报告中还提到企业采用 AI 的方式可以分为四类：步调一致的「统一型」占 36%，自上而下推的「指令型」占 27%，基层自己长出来的「草根型」占 20%，刚起步的「萌芽型」占 18%。报告指出一个行动指南：一个基层变革者，要推广行之有效的方法——使工作流程可见，围绕它们建立结构，并成为共享空间的倡导者。领导层面推动 AI，要努力弥合战略与实践之间的差距。未来是个人和组织共同推动 AI 画布的采用。</p>
-<div class="section-head"><span class="icon-badge" style="background: rgba(212, 160, 23, 0.1);"><svg height="36" viewBox="0 0 24 24" width="36" xmlns="http://www.w3.org/2000/svg">
-<path class="anim-lightning" d="M14 3 L5 13 L10 13 L9 21 L19 10 L14 10 L15 3 Z" fill="none" stroke="#D4A017" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
+<div class="section-head"><span class="icon-badge" style="background: rgba(212, 160, 23, 0.1);"><svg height="40" viewBox="0 0 24 24" width="40" xmlns="http://www.w3.org/2000/svg">
+<path class="anim-lightning" d="M14 3 L5 13 L10 13 L9 21 L19 10 L14 10 L15 3 Z" fill="none" stroke="#D4A017" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2">
+<animate attributeName="opacity" calcMode="spline" dur="1.4s" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1" keyTimes="0;0.42;0.72;1" repeatCount="indefinite" values="0.92;1;0.78;0.92"></animate>
+<animateTransform additive="sum" attributeName="transform" calcMode="spline" dur="1.4s" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1" keyTimes="0;0.42;0.72;1" repeatCount="indefinite" type="translate" values="0 0;-0.96 -0.96;0.24 0.24;0 0"></animateTransform>
+<animateTransform additive="sum" attributeName="transform" calcMode="spline" dur="1.4s" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1" keyTimes="0;0.42;0.72;1" repeatCount="indefinite" type="scale" values="1;1.08;0.98;1"></animateTransform>
+</path>
 </svg></span><h2 style="color: #D4A017;">Config 2026 的 6 项新功能<br/>4 项以 AI 为核心</h2></div>
 <p>带着上面这套数据背景再去看 Config 2026，每个新功能都在往「画布」和「协作」上发力。推出这些设计生成工具，都具备了 AI 协作能力。在 Figma 这个生态里面，这些 AI 生成的工具就不是独立的，而是可以无限使用、协作使用，相比于在 IDE 、CLI vibe coding 的工具，这在 Figma 里降低了技术门槛。</p>
 <img alt="Config 2026 六项新功能一览" src="assets/figma-config-2026/16-features.png"/>
-<div class="section-head"><span class="icon-badge" style="background: rgba(212, 160, 23, 0.1);"><svg height="36" viewBox="0 0 24 24" width="36" xmlns="http://www.w3.org/2000/svg">
+<div class="section-head"><span class="icon-badge" style="background: rgba(212, 160, 23, 0.1);"><svg height="40" viewBox="0 0 24 24" width="40" xmlns="http://www.w3.org/2000/svg">
 <g class="anim-gear">
+<animateTransform additive="sum" attributeName="transform" calcMode="spline" dur="1.7s" keySplines="0.25 0.8 0.2 1" keyTimes="0;1" repeatCount="indefinite" type="rotate" values="0 12 12;90 12 12"></animateTransform>
 <circle cx="12" cy="12" fill="none" r="3.2" stroke="#D4A017" stroke-width="1.2"></circle>
 <path d="M12 3 L12 6 M12 18 L12 21 M3 12 L6 12 M18 12 L21 12 M5 5 L7.2 7.2 M16.8 16.8 L19 19 M19 5 L16.8 7.2 M7.2 16.8 L5 19" fill="none" stroke="#D4A017" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
 </g>
@@ -519,8 +533,10 @@
 <p>这套可以直接生成插件 workflow 天然就有超低门槛的优势。相比于 Claude Code、cursor 这种 AI Coding 生成的工具，给他人使用，还要上传到 GitHub 、部署到线上环境。在Figma生态里就更便于协作使用。作为设计师的我平时用 vibe Coding 给自己弄了一些 shader 设计小工具，也不愿意部署到 GitHub 或线上，虽然可以让 AI 操作，只是觉得要维护这一套流程，感觉很麻烦，想的是能省则省。那么这个功能确实为设计探索和协作节省了一些工作成本，但算力消耗可能是另一个成本。</p>
 <p>Figma 官方也明确了 AI 积分机制：现在 Beta 版构建生成式插件不消耗 AI 积分，运行插件也不消耗；等 Figma Agent 全量开放后，用 Agent 来构建插件会按标准 AI 积分规则计费。也就是说，花钱的是「让 Agent 生成工具」这一步，后面「使用生成的的工具」本身是免费跑的。</p>
 <img alt="Figma 官方说明 AI 积分机制：用插件/着色器始终免费，让代理开发才在正式版后消耗积分" src="assets/figma-config-2026/08-token-cost.png"/>
-<div class="section-head"><span class="icon-badge" style="background: rgba(212, 160, 23, 0.1);"><svg height="36" viewBox="0 0 24 24" width="36" xmlns="http://www.w3.org/2000/svg">
+<div class="section-head"><span class="icon-badge" style="background: rgba(212, 160, 23, 0.1);"><svg height="40" viewBox="0 0 24 24" width="40" xmlns="http://www.w3.org/2000/svg">
 <g class="anim-brain" fill="none" stroke="#D4A017" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2">
+<animateTransform additive="sum" attributeName="transform" calcMode="spline" dur="1.3s" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1" keyTimes="0;0.22;0.44;0.62;0.82;1" repeatCount="indefinite" type="translate" values="0 0;-0.72 -0.72;0.24 0.24;-0.72 -0.72;0.24 0.24;0 0"></animateTransform>
+<animateTransform additive="sum" attributeName="transform" calcMode="spline" dur="1.3s" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1" keyTimes="0;0.22;0.44;0.62;0.82;1" repeatCount="indefinite" type="scale" values="1;1.06;0.98;1.06;0.98;1"></animateTransform>
 <path d="M12 5 C10.6 3.2 7.8 3.2 6.8 5 C4.6 5.2 3.2 7.2 4.3 9 C2.7 10.2 2.7 12 4.3 13.2 C3.5 15 4.8 17 7 17.2 C7.4 19 9.6 20 12 19 C14.4 20 16.6 19 17 17.2 C19.2 17 20.5 15 19.7 13.2 C21.3 12 21.3 10.2 19.7 9 C20.8 7.2 19.4 5.2 17.2 5 C16.2 3.2 13.4 3.2 12 5 Z"></path>
 <path d="M12 5 L12 19"></path>
 </g>
@@ -530,12 +546,14 @@
 <p>当设计工具千篇一律时，在 AI 时代，设计师已经开始 vibe coding 做一些自己需要的工具。而 Figma 这一套就是把平时在 AI Coding agent 里面的工作流直接可以搬入到 Figma 里面。虽然设计师已经习惯在无数个软件来回倒腾了，对于设计师就可以省去使用两个软件的成本。</p>
 <img alt="Figma Agent 在画布上协作" src="assets/figma-config-2026/07-agent.jpg"/>
 <p>有个设计上的小策略是——与 Agent 的对话默认是团队成员可见的，要私聊才需要单独切私密模式。这个默认团队可见的模式正好对应报告那个结论上：AI 协作的难点往往出在「一个人摸索出的好用法，别人不知道」。把 Agent 对话默认公开，成员可以在上面学习与迭代，有 GitHub 那味了。</p>
-<div class="section-head"><span class="icon-badge" style="background: rgba(212, 160, 23, 0.1);"><svg height="36" viewBox="0 0 24 24" width="36" xmlns="http://www.w3.org/2000/svg">
+<div class="section-head"><span class="icon-badge" style="background: rgba(212, 160, 23, 0.1);"><svg height="40" viewBox="0 0 24 24" width="40" xmlns="http://www.w3.org/2000/svg">
 <g fill="none" stroke="#D4A017" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2">
 <rect height="16" rx="3" width="18" x="3" y="4"></rect>
 <path d="M3 8 L21 8"></path>
 <path d="M7 12 L10 14 L7 16"></path>
-<path class="anim-ide-cursor" d="M12.5 16 L17 16"></path>
+<path class="anim-ide-cursor" d="M12.5 16 L17 16">
+<animate attributeName="opacity" calcMode="discrete" dur="0.9s" keyTimes="0;0.49;0.5;0.99;1" repeatCount="indefinite" values="1;1;0;0;1"></animate>
+</path>
 </g>
 <g fill="#D4A017">
 <circle cx="6.4" cy="6" r="0.7"></circle>
@@ -546,10 +564,11 @@
 <p>落到 Figma 上就是 <strong>Code Layers（代码图层）</strong>。内核是「代码 ↔ 设计」双向互转、可以接 Dev Mode / MCP使用，没有 AI 也能用代码图层，能导出 CSS、JSON 或者框架级的 React 代码。</p>
 <img alt="从 MCP 取码到 Code Layers 的变化" src="assets/figma-config-2026/17-codelayers-before-after.png"/>
 <p>这个比 Dev mode 和 MCP 更往前了一步，之前只能 MCP 到 AI Agent 去使用，离不来 AI 能力。现在代码和设计是在同一环境、同一环节的平级产物了，代码就不是设计交付之后的下游环节，甚至代码还可以反向修改设计。</p>
-<div class="section-head"><span class="icon-badge" style="background: rgba(212, 160, 23, 0.1);"><svg height="36" viewBox="0 0 24 24" width="36" xmlns="http://www.w3.org/2000/svg">
+<div class="section-head"><span class="icon-badge" style="background: rgba(212, 160, 23, 0.1);"><svg height="40" viewBox="0 0 24 24" width="40" xmlns="http://www.w3.org/2000/svg">
 <circle cx="12" cy="12" fill="none" r="9" stroke="#D4A017" stroke-width="1.2"></circle>
 <path class="anim-clock-hour" d="M12 12 L12 6" fill="none" stroke="#D4A017" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
 <g class="anim-clock-minute">
+<animateTransform additive="sum" attributeName="transform" calcMode="linear" dur="3s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"></animateTransform>
 <path d="M12 12 L16 15" fill="none" stroke="#D4A017" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
 </g>
 </svg></span><h2 style="color: #D4A017;">Figma Motion<br/>动画不再是收尾步骤<br/>与设计、开发并列</h2></div>
@@ -558,13 +577,18 @@
 <p>新发布的 Figma Motion 也适用这个切换代码。切换到开发模式时，完整的时序轴会显示并可检查：每个时间值、每条缓动曲线、每个关键帧都可以直接读取。可以直接在 CSS、JSON 、 React 中复制使用动画代码，也兼容 MCP，也可以导出为 MP4、WebM、动画 SVG 或 GIF。还支持一些 3D 的这些效果，其实也挺全面的。Agent 还能辅助 Motion 设计，这个就解决了平时用 AE 来回切换的跨工具的繁琐，遇到一些简约动效的时候，就可以在Figma里面完成了。</p>
 <p>做得好的动态效果是设计中最具表现力的元素之一。它影响着用户如何理解层级结构，以及他们如何感受交互背后的意图。这么重要的创意决策应该从一开始就进行规划和完善。</p>
 <p>动画不再是收尾步骤。如今，动态设计与其他所有环节一样，贯穿整个设计流程：从第一帧到最终成品，所有环节都在同一个地方完成。</p>
-<div class="section-head"><span class="icon-badge" style="background: rgba(212, 160, 23, 0.1);"><svg height="36" viewBox="0 0 24 24" width="36" xmlns="http://www.w3.org/2000/svg">
-<circle class="anim-user-head" cx="12" cy="8.5" fill="none" r="4" stroke="#D4A017" stroke-width="1.2"></circle>
-<path class="anim-user-shoulders" d="M5 20 C5 16 8 14 12 14 C16 14 19 16 19 20" fill="none" stroke="#D4A017" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
+<div class="section-head"><span class="icon-badge" style="background: rgba(212, 160, 23, 0.1);"><svg height="40" viewBox="0 0 24 24" width="40" xmlns="http://www.w3.org/2000/svg">
+<circle class="anim-user-head" cx="12" cy="8.5" fill="none" r="4" stroke="#D4A017" stroke-width="1.2">
+<animateTransform additive="sum" attributeName="transform" calcMode="spline" dur="1.4s" keySplines="0 0 0.58 1;0 0 0.58 1" keyTimes="0;0.4;1" repeatCount="indefinite" type="translateY" values="0;-2;0"></animateTransform>
+</circle>
+<path class="anim-user-shoulders" d="M5 20 C5 16 8 14 12 14 C16 14 19 16 19 20" fill="none" stroke="#D4A017" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2">
+<animateTransform additive="sum" attributeName="transform" calcMode="spline" dur="1.4s" keySplines="0 0 0.58 1;0 0 0.58 1" keyTimes="0;0.45;1" repeatCount="indefinite" type="translate" values="0 0;-0.96 0;0 0"></animateTransform>
+<animateTransform additive="sum" attributeName="transform" calcMode="spline" dur="1.4s" keySplines="0 0 0.58 1;0 0 0.58 1" keyTimes="0;0.45;1" repeatCount="indefinite" type="scaleX" values="1;1.08;1"></animateTransform>
+</path>
 </svg></span><h2 style="color: #D4A017;">Figma 只是工具加持<br/>设计的上限依旧是创意</h2></div>
 <p>在设计领域，Figma 总是领袖、引领未来设计工作，对标 Figma 的设计软件很多，但都在宣扬如何用这些软件生成 AI 设计、如何快、如何数量多。AI 确实把下限降下来了，但没能把上限抬上去。而 Figma AI 能满足设计未来的想象，能感觉上限只会越来越高。</p>
 <p>不过，这些 AI 功能大部分还在 Beta 阶段，在 AI 时代居然还在有测试阶段这个环节。像 Anthropic 发布之后，即发即用。这或许是 AI native 产品与 传统互联网产品加入 AI 能力的迭代差距吧。</p>
-<p style="text-align:center; margin:40px 0;"><span style="display:inline-block;width:28%;height:1px;background:#D4A017;opacity:0.35;vertical-align:middle;font-size:0;line-height:0;overflow:hidden;"></span><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;" width="15" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" fill="#D4A017" r="4.3"></circle></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#D4A017" points="8,3.50 4.10,10.25 11.90,10.25"></polygon></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#D4A017" points="8,3.20 9.18,6.38 12.57,6.52 9.90,8.62 10.82,11.88 8,10.00 5.18,11.88 6.10,8.62 3.44,6.52 6.82,6.38"></polygon></svg><span style="display:inline-block;width:28%;height:1px;background:#D4A017;opacity:0.35;vertical-align:middle;font-size:0;line-height:0;overflow:hidden;"></span></p>
+<p style="display:flex; align-items:center; margin:40px 0;"><span style="flex:1 1 auto;height:1px;background:#D4A017;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" fill="#D4A017" r="4.3"></circle></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#D4A017" points="8,3.50 4.10,10.25 11.90,10.25"></polygon></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#D4A017" points="8,3.20 9.18,6.38 12.57,6.52 9.90,8.62 10.82,11.88 8,10.00 5.18,11.88 6.10,8.62 3.44,6.52 6.82,6.38"></polygon></svg><span style="flex:1 1 auto;height:1px;background:#D4A017;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span></p>
 <p style="color:#aaa; font-size:var(--fs-caption); text-align:center; margin:24px 0;">本文素材来自 Figma 官方博客 Config 2026 recap 与 2026 AI Report</p></div>
 <!-- 底部 -->
 <footer class="article-footer">
