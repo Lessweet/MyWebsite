@@ -1825,11 +1825,15 @@ body.writing-page .brand-banner-grid {
    ======================================== */
 .home-v2 .category-grid { column-gap: 16px; }
 
-/* Writing 列表网格:>900px 3 列 → ≤900px 2 列 → ≤560px 1 列。
+/* Writing 列表网格:>1200px 4 列 → ≤1200px 3 列 → ≤900px 2 列 → ≤560px 1 列。
    用 id 选择器提权,覆盖上面 .category-grid 的 860/620 断点规则;仅作用于 Writing 列表,不影响 Design 页。 */
 #writing-all .category-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     column-gap: 24px;   /* 首页横向间距在 16px 基础上 +8px;不影响 Design 页 */
+}
+/* ≤1200px:三列 */
+@media (max-width: 1200px) {
+    #writing-all .category-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 /* ≤900px:两列(放在 560 规则之前,确保 ≤560 时下面的单列生效) */
 @media (max-width: 900px) {
