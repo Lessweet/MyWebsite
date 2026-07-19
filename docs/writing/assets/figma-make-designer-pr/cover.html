@@ -138,7 +138,7 @@ body.static *{animation:none!important;}
 <div class="center"><div class="group" id="group"></div></div>
 </div>
 <script>
-var HERO_CFG=null;HERO_CFG={"colors":["#F2CF1D","#F0F4F6","#7ED6F2"],"icon":"ne-branch","title":"PR","ink":"#FFFFFF","tile":150,"wmH":124,"gap":38,"bg":"black","sg":{"pal":{"mode":1,"cK":"#050505","cC":"#9a9a9a","cD":"#ffffff","cA":"#2a2a2a","cB":"#000000","hs":0.5,"ex":0.5,"ey":0.78,"er":0.62,"gx":0.7,"gy":-0.8,"clx":0.9,"cly":0.9,"cls":0.2},"shape":0.75,"seed":0.82,"base":0.035,"k":0.7,"mid":0.6,"size":1.2,"seam":0.18},"freeze":null,"static":false,"time0":0};
+var HERO_CFG=null;HERO_CFG={"colors":["#F2CF1D","#F0F4F6","#7ED6F2"],"icon":"ne-branch","title":"PR","ink":"#FFFFFF","tile":150,"wmH":124,"gap":56,"bg":"black","sg":{"pal":{"mode":1,"cK":"#050505","cC":"#9a9a9a","cD":"#ffffff","cA":"#2a2a2a","cB":"#000000","hs":0.5,"ex":0.5,"ey":0.78,"er":0.62,"gx":0.7,"gy":-0.8,"clx":0.9,"cly":0.9,"cls":0.2},"shape":0.75,"seed":0.82,"base":0.035,"k":0.7,"mid":0.6,"size":1.2,"seam":0.18},"freeze":null,"static":false,"time0":0};
 var CFG=Object.assign({
   colors:['#F27FA8','#F0F4F6','#7EC8F2'],  // shader 三色：主色 / 近白 / 辅色（粉蓝默认演示，2026-07-17 用户定）
   icon:'ne-quatrefoil',                     // colorblock ne-* 图标 key
@@ -193,7 +193,7 @@ var ICONS={
   'ne-pause':'<rect x="18" y="15" width="11" height="34" rx="5.5" fill="@grad"/><rect x="35" y="15" width="11" height="34" rx="5.5" fill="@grad"/>',
   'ne-check':'<rect class="ne-check-a" x="15" y="15" width="16" height="16" rx="3" fill="@grad"/><rect class="ne-check-b" x="33" y="33" width="16" height="16" rx="3" fill="@grad"/>',
   'ne-arrow':'<path d="'+roundPoly([[13,26],[35,26],[35,17],[52,32],[35,47],[35,38],[13,38]],4)+'" fill="@grad"/>',
-  'ne-branch':'<g fill="none" stroke="@grad" stroke-width="5" stroke-linecap="round"><circle cx="21" cy="15" r="5.5"/><circle cx="21" cy="49" r="5.5"/><circle cx="43" cy="17" r="5.5"/><path d="M21 21.5 L21 42.5"/><path d="M43 23.5 L43 27.5 Q43 36 34.5 36 L24.5 36"/></g>',
+  'ne-branch':'<g fill="@grad" stroke="@grad" stroke-width="5" stroke-linecap="round"><circle cx="21" cy="15" r="6.5" stroke="none"/><circle cx="21" cy="49" r="6.5" stroke="none"/><circle cx="43" cy="17" r="6.5" stroke="none"/><path fill="none" d="M21 21 L21 43"/><path fill="none" d="M43 23 L43 27.5 Q43 36 34.5 36 L24.5 36"/></g>',
   'ne-asterisk':'<g fill="@grad"><rect x="27.5" y="11" width="9" height="42" rx="4.5"/><rect x="27.5" y="11" width="9" height="42" rx="4.5" transform="rotate(60 32 32)"/><rect x="27.5" y="11" width="9" height="42" rx="4.5" transform="rotate(120 32 32)"/></g>',
   'ne-star8':'<path d="'+roundPoly(gearPts(32,32,8,21,9.5),1.5)+'" fill="@grad"/>',
   'ne-dd':'<path class="ne-dd-a" d="M18 13 A19 19 0 0 1 18 51 Z" fill="@grad"/><path class="ne-dd-b" d="M34 18 A14 14 0 0 1 34 46 Z" fill="@grad"/>',
@@ -226,7 +226,7 @@ if(CFG.static)document.body.classList.add('static');
   div.innerHTML='<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">'
     +'<defs><clipPath id="tclip"><rect width="64" height="64" rx="14.7"/></clipPath>'
     +'<mask id="cut" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64">'
-    +'<g transform="translate(32 32) scale('+(CFG.iconScale||({'ne-branch':1.0})[CFG.icon]||1.2)+') translate(-32 -32)">'+inner+'</g></mask></defs>'
+    +'<g transform="translate(32 32) scale('+(CFG.iconScale||({'ne-branch':0.85})[CFG.icon]||1.2)+') translate(-32 -32)">'+inner+'</g></mask></defs>'
     +'<g clip-path="url(#tclip)"><rect width="64" height="64" fill="'+CFG.ink+'" mask="url(#cut)"/></g></svg>';
   group.appendChild(div);
 })();
