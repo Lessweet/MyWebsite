@@ -2,7 +2,7 @@
   "articles": [
     {
       "slug": "figma-make-designer-pr",
-      "title": "设计师发 PR，Figma 把移交倒过来了",
+      "title": "设计师的交付物，不只设计稿，还有 PR",
       "date": "2026-07-19",
       "read_time": "5 分钟",
       "tags": [
@@ -12,7 +12,7 @@
       "accent": "#2E2E2E",
       "collection": "Figma 观察",
       "excerpt": "Figma Make 连上 GitHub 后，设计师直接改代码发 PR、工程师只做审核——移交流程被整个反转了，但单向同步和 beta 门槛说明信任边界还没跟上。",
-      "cover": "assets/figma-make-designer-pr/cover.png"
+      "cover": "assets/figma-make-designer-pr/cover3.png"
     },
     {
       "slug": "remove-ai-taste-in-design",
