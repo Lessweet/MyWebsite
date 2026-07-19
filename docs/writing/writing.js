@@ -386,6 +386,7 @@ function initTOC() {
    ======================================== */
 /* READER_ARTICLES:AUTO —— 发布时 render.py 从 articles.json 自动重生成此数组,勿手改。 */
 let READER_ARTICLES = [
+    { file: "article-figma-make-designer-pr.html", cat: "product", title: "设计师发 PR，Figma 把移交倒过来了", date: "2026-07-19", cover: "assets/figma-make-designer-pr/cover.png", accent: "#4A6FE0" },
     { file: "article-remove-ai-taste-in-design.html", cat: "ui", title: "看不出 AI 味的 AI 设计方式", date: "2026-07-16", cover: "assets/remove-ai-taste-in-design/cover4.png", accent: "#5A6CD8" },
     { file: "article-figma-make-gpt-5-6.html", cat: "product", title: "设计师的新习惯，给 AI 模型分工", date: "2026-07-11", cover: "assets/figma-make-gpt-5-6/cover3.png", accent: "#5F82F5" },
     { file: "article-review-ai-output.html", cat: "ui", title: "设计师的新工作，审查 AI 产物", date: "2026-07-05", cover: "assets/review-ai-output/cover.png", accent: "#0E9E6E" },
