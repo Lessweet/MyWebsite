@@ -517,6 +517,7 @@
 </g>
 </svg></span><h2 style="color: #0C9C68;">Branch, commit, and ship</h2></div>
 <p>Figma Make 在 2026-05-28 上线了 GitHub 连接功能。可以把 Make 连上一个真实的代码仓库，Make 自动装依赖、起本地 dev server，画布里渲染的是跑起来的真实应用；改动以本地 commit 累积，最后开一条新分支，从 Make 里直接发 PR 给工程师审核合并。</p>
+<img alt="Figma 里的 Connect to GitHub 面板：授权读写权限，把 Figma app 装进自己的 GitHub 组织" src="assets/figma-make-designer-pr/04-connect-github.png"/>
 <img alt="Make 连上仓库后的完整工作流：连接仓库、跑起真实应用、累积 commit、开分支发 PR" src="assets/figma-make-designer-pr/01-make-workflow.png"/>
 <p>用一个叫「未来博物馆 MOSF」的虚构案例，演示了整套流程。案例里的设计师要改几样东西：导航标签措辞、CTA 可见性、空搜索结果的提示文案。改的过程中发现日期选择器是共享组件，改一处得在三个地方同步修改——这是在真实代码库里才会碰到的问题。如果只是传统的需求工单流程，设计师看不到代码，根本不知道一个选择器被复用了几次。</p>
 <p>案例里还用 Figma 注释标了 aria-label、屏幕阅读器文本和焦点顺序。这些无障碍细节正是最容易被「下个版本再说」砍掉的；设计师在代码里直接标注，这些决策第一次以 commit 的形式留进了 git 历史。</p>
