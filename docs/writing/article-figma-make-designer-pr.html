@@ -481,9 +481,10 @@
     42% { transform: scale(1.2); }
   }
 </style>
-<p>设计师想改一个线上细节——空状态少了一句引导、日期选择器的 aria-label 没标——最常见的路径是提工单。描述清楚、附截图、标好预期效果，然后等排期。等开发理解这段描述到底要改哪里，验收发现还有偏差再沟通一轮。这类打磨在需求池里几乎永远排不上优先级，Figma 管它叫「最后 20%」——那些永远被砍掉的体验细节。</p>
-<p>在非 AI 时代， UI/UX 设计工作中的有一部分是细节打磨，永远压在需求池里等排期，或者等着高优需求能够顺手带上的，这类需求是最后 20% 的的设计体验细节这是一个经常出现、且难以解决的问题；到了 AI 时代，</p>
-<p>7 月 16 日 Figma 在 Workflow Lab 栏目发了一篇博客，讲了一条完全不同的路：设计师用 Make 连上真实的 GitHub 仓库，自己改代码、开分支、发 PR。工程师不再做翻译者，只做审核者。</p>
+<p>对于设计师来说，AI coding 有一个很实用的工作场景是， 解决最后 20% 的设计体验细节问题、提交 PR。</p>
+<p>UI/UX 设计工作中，有一部分是线上体验优化需求，永远压在需求池里等排期，或者等着高优需求能够顺手带上，这类需求就是最后 20% ，需要更精细的完成度。设计师直接跳过与工程师一对一交接的过程，在代码中直接发挥“尺的眼睛”的优势。</p>
+<p>以 Figma 为例，可以在 Make 连上真实的 GitHub 仓库，自己改代码、开分支、发 PR。工程师可以更专注于架构改造与审核，设计师负责从始至终的细节完善。</p>
+<img alt="设计师开分支改细节、发 PR，工程师审核合并——分工在一条分支线上倒过来" src="assets/figma-make-designer-pr/01-github-pr-flow.png"/>
 <div class="section-head"><span class="icon-badge" style="background: rgba(74, 95, 214, 0.1);"><svg height="32" viewBox="0 0 24 24" width="32" xmlns="http://www.w3.org/2000/svg">
 <path d="M5 3 L15 3 L19 7 L19 21 L5 21 Z M15 3 L15 7 L19 7" fill="none" stroke="#4A5FD6" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.8"></path>
 <path class="anim-doc-line anim-doc-line-1" d="M8 12 L16 12" fill="none" pathlength="1" stroke="#4A5FD6" stroke-dasharray="1" stroke-linecap="round" stroke-width="0.8">
@@ -515,9 +516,9 @@
 <circle cx="8.8" cy="6" r="0.7"></circle>
 </g>
 </svg></span><h2 style="color: #4A5FD6;">Make 连上仓库<br/>设计师自己开分支发 PR</h2></div>
-<p>Figma Make 在 2026-05-28 上线了 GitHub 连接功能（limited beta，仅 Mac）。做的事很直接：设计师把 Make 连上一个真实的代码仓库，Make 自动装依赖、起本地 dev server，画布里渲染的是跑起来的真实应用；改动以本地 commit 累积，最后开一条新分支，从 Make 里直接发 PR 给工程师审核合并。</p>
+<p>Figma Make 在 2026-05-28 上线了 GitHub 连接功能。设计师把 Make 连上一个真实的代码仓库，Make 自动装依赖、起本地 dev server，画布里渲染的是跑起来的真实应用；改动以本地 commit 累积，最后开一条新分支，从 Make 里直接发 PR 给工程师审核合并。</p>
 <div class="img-ph"><span class="img-ph-cap">图片：Make 连接 GitHub 仓库后的工作流——从连接仓库到发 PR 的完整路径</span></div>
-<p>博客用一个叫「未来博物馆 MOSF」的虚构案例演示了整套流程——是官方造的演示项目，不是真实客户。案例里的设计师要改几样东西：导航标签措辞、CTA 可见性、空搜索结果的提示文案。改的过程中发现日期选择器是共享组件，改一处得在三个地方同步修改——这是在真实代码库里才会碰到的问题，工单流程里设计师根本不知道一个选择器被复用了几次。</p>
+<p>用一个叫「未来博物馆 MOSF」的虚构案例，演示了整套流程。案例里的设计师要改几样东西：导航标签措辞、CTA 可见性、空搜索结果的提示文案。改的过程中发现日期选择器是共享组件，改一处得在三个地方同步修改——这是在真实代码库里才会碰到的问题。如果只是传统的需求工单流程，设计师看不到代码，根本不知道一个选择器被复用了几次。</p>
 <p>案例里还用 Figma 注释标了 aria-label、屏幕阅读器文本和焦点顺序。这些无障碍细节正是最容易被「下个版本再说」砍掉的；设计师在代码里直接标注，这些决策第一次以 commit 的形式留进了 git 历史。</p>
 <div class="img-ph"><span class="img-ph-cap">图片：博客案例中注释标注 aria-label 和焦点顺序的示意</span></div>
 <div class="section-head"><span class="icon-badge" style="background: rgba(74, 95, 214, 0.1);"><svg height="32" viewBox="0 0 24 24" width="32" xmlns="http://www.w3.org/2000/svg">
