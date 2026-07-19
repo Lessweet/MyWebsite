@@ -14,7 +14,7 @@
 <script src="writing.js?v=78"></script>
 </head>
 <!-- 复用首页 index.html 的胶囊顶栏:home-v2 控制顶栏内边距,design-page 提供胶囊样式 -->
-<body class="writing-page home-v2 design-page reading-page" data-accent="#4A6FE0" data-tint="blue">
+<body class="writing-page home-v2 design-page reading-page" data-accent="#4A5FD6" data-tint="blue">
 <!-- 顶部导航:与首页同一个组件(initSiteNav);data-base="../" 把站内链接/资源指回 docs 根目录。
          返回入口 = 左侧 VIBEUX 与高亮的 Writing 胶囊,均回到 index.html#writing -->
 <header class="header home-nav" data-active="writing" data-base="../" id="site-nav"></header>
@@ -58,7 +58,7 @@
 .article-byline { text-align: center; justify-content: center; }
 .article-body { color: #1a1a1a; line-height: 1.4; }
 .article-body p { font-size: var(--fs-body); font-weight: 300; margin: 40px 0; color: #1a1a1a; }
-.article-body strong { font-weight: 400; color: #4A6FE0; }
+.article-body strong { font-weight: 400; color: #4A5FD6; }
 .article-body .list-dot { font-weight: 600; margin-right: 4px; color: #1a1a1a; }
 .article-body .section-head { text-align: center; margin: 56px 0; }
 /* 图标居中：svg display:block + margin auto，别改回 vertical-align/line-height/padding（微信按基线对齐会贴底、border-box 下 padding 挤小图标）。跟 template.html 保持一致。详见记忆 wechat-icon-vertical-center。 */
@@ -70,7 +70,7 @@
 .article-body .img-ph { display: flex; align-items: center; justify-content: center; text-align: center; min-height: 160px; margin: 24px 0; padding: 28px 20px; border: 1px dashed #d6d6de; border-radius: 12px; background: repeating-linear-gradient(45deg, #fafafb, #fafafb 10px, #f3f3f6 10px, #f3f3f6 20px); }
 .article-body .img-ph .img-ph-cap { font-size: var(--fs-caption); color: #9a9aa6; line-height: 1.5; max-width: 80%; }
 .article-body .highlight { font-size: var(--fs-body); font-weight: 300; line-height: 1.4; color: #1a1a1a; margin: 40px 0; }
-.article-body .highlight strong { font-weight: 400; color: #4A6FE0; }
+.article-body .highlight strong { font-weight: 400; color: #4A5FD6; }
 
 /* outlined 图标动画 CSS（自动从 design-gallery 抽取，不要手改） */
 /* 时长/延迟变量（在 design-gallery 基础上整体提速 ~40%，文章里看着更精神） */
@@ -483,25 +483,25 @@
 </style>
 <p>设计师想改一个线上细节——空状态少了一句引导、日期选择器的 aria-label 没标——最常见的路径是提工单。描述清楚、附截图、标好预期效果，然后等排期。等开发理解这段描述到底要改哪里，验收发现还有偏差再沟通一轮。这类打磨在需求池里几乎永远排不上优先级，Figma 管它叫「最后 20%」——那些永远被砍掉的体验细节。</p>
 <p>7 月 16 日 Figma 在 Workflow Lab 栏目发了一篇博客，讲了一条完全不同的路：设计师用 Make 连上真实的 GitHub 仓库，自己改代码、开分支、发 PR。工程师不再做翻译者，只做审核者。</p>
-<div class="section-head"><span class="icon-badge" style="background: rgba(74, 111, 224, 0.1);"><svg height="32" viewBox="0 0 24 24" width="32" xmlns="http://www.w3.org/2000/svg">
-<path d="M5 3 L15 3 L19 7 L19 21 L5 21 Z M15 3 L15 7 L19 7" fill="none" stroke="#4A6FE0" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.8"></path>
-<path class="anim-doc-line anim-doc-line-1" d="M8 12 L16 12" fill="none" pathlength="1" stroke="#4A6FE0" stroke-dasharray="1" stroke-linecap="round" stroke-width="0.8">
+<div class="section-head"><span class="icon-badge" style="background: rgba(74, 95, 214, 0.1);"><svg height="32" viewBox="0 0 24 24" width="32" xmlns="http://www.w3.org/2000/svg">
+<path d="M5 3 L15 3 L19 7 L19 21 L5 21 Z M15 3 L15 7 L19 7" fill="none" stroke="#4A5FD6" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.8"></path>
+<path class="anim-doc-line anim-doc-line-1" d="M8 12 L16 12" fill="none" pathlength="1" stroke="#4A5FD6" stroke-dasharray="1" stroke-linecap="round" stroke-width="0.8">
 <animate attributeName="opacity" calcMode="spline" dur="1.7s" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1" keyTimes="0;0.12;0.42;0.76;1" repeatCount="indefinite" values="0;0;1;1;0"></animate>
 <animate attributeName="stroke-dashoffset" calcMode="spline" dur="1.7s" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1" keyTimes="0;0.12;0.42;0.76;1" repeatCount="indefinite" values="1;1;0;0;0"></animate>
 </path>
-<path class="anim-doc-line anim-doc-line-2" d="M8 15 L16 15" fill="none" pathlength="1" stroke="#4A6FE0" stroke-dasharray="1" stroke-linecap="round" stroke-width="0.8">
+<path class="anim-doc-line anim-doc-line-2" d="M8 15 L16 15" fill="none" pathlength="1" stroke="#4A5FD6" stroke-dasharray="1" stroke-linecap="round" stroke-width="0.8">
 <animate attributeName="opacity" begin="0.18s" calcMode="spline" dur="1.7s" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1" keyTimes="0;0.12;0.42;0.76;1" repeatCount="indefinite" values="0;0;1;1;0"></animate>
 <animate attributeName="stroke-dashoffset" begin="0.18s" calcMode="spline" dur="1.7s" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1" keyTimes="0;0.12;0.42;0.76;1" repeatCount="indefinite" values="1;1;0;0;0"></animate>
 </path>
-<path class="anim-doc-line anim-doc-line-3" d="M8 18 L13 18" fill="none" pathlength="1" stroke="#4A6FE0" stroke-dasharray="1" stroke-linecap="round" stroke-width="0.8">
+<path class="anim-doc-line anim-doc-line-3" d="M8 18 L13 18" fill="none" pathlength="1" stroke="#4A5FD6" stroke-dasharray="1" stroke-linecap="round" stroke-width="0.8">
 <animate attributeName="opacity" begin="0.36s" calcMode="spline" dur="1.7s" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1" keyTimes="0;0.12;0.42;0.76;1" repeatCount="indefinite" values="0;0;1;1;0"></animate>
 <animate attributeName="stroke-dashoffset" begin="0.36s" calcMode="spline" dur="1.7s" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1" keyTimes="0;0.12;0.42;0.76;1" repeatCount="indefinite" values="1;1;0;0;0"></animate>
 </path>
-</svg></span><h2 style="color: #4A6FE0;">工单发出去<br/>设计决策就散了</h2></div>
+</svg></span><h2 style="color: #4A5FD6;">工单发出去<br/>设计决策就散了</h2></div>
 <p>传统流程的问题不仅仅是慢，更是信息在中间环节里一层层丢。设计师提工单时描述的是视觉意图——间距应该收紧、这个按钮不该这么抢视觉、焦点顺序要从左往右——但工单系统承载的是任务颗粒度，视觉判断进了 Jira 就变成一行文字描述加一张标注图。开发拿到的是经过一次转译的信息，还原度取决于那张截图标得够不够细。</p>
 <p>设计决策散落在关闭的工单、评论区的讨论、被新版标注覆盖的旧版截图里。没有一个地方能追溯「为什么这里是 8px 不是 12px」——因为这个判断从来没进过代码历史。</p>
-<div class="section-head"><span class="icon-badge" style="background: rgba(74, 111, 224, 0.1);"><svg height="32" viewBox="0 0 24 24" width="32" xmlns="http://www.w3.org/2000/svg">
-<g fill="none" stroke="#4A6FE0" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.8">
+<div class="section-head"><span class="icon-badge" style="background: rgba(74, 95, 214, 0.1);"><svg height="32" viewBox="0 0 24 24" width="32" xmlns="http://www.w3.org/2000/svg">
+<g fill="none" stroke="#4A5FD6" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.8">
 <rect height="16" rx="3" width="18" x="3" y="4"></rect>
 <path d="M3 8 L21 8"></path>
 <path d="M7 12 L10 14 L7 16"></path>
@@ -509,27 +509,27 @@
 <animate attributeName="opacity" calcMode="discrete" dur="0.9s" keyTimes="0;0.49;0.5;0.99;1" repeatCount="indefinite" values="1;1;0;0;1"></animate>
 </path>
 </g>
-<g fill="#4A6FE0">
+<g fill="#4A5FD6">
 <circle cx="6.4" cy="6" r="0.7"></circle>
 <circle cx="8.8" cy="6" r="0.7"></circle>
 </g>
-</svg></span><h2 style="color: #4A6FE0;">Make 连上仓库<br/>设计师自己开分支发 PR</h2></div>
+</svg></span><h2 style="color: #4A5FD6;">Make 连上仓库<br/>设计师自己开分支发 PR</h2></div>
 <p>Figma Make 在 2026-05-28 上线了 GitHub 连接功能（limited beta，仅 Mac）。做的事很直接：设计师把 Make 连上一个真实的代码仓库，Make 自动装依赖、起本地 dev server，画布里渲染的是跑起来的真实应用；改动以本地 commit 累积，最后开一条新分支，从 Make 里直接发 PR 给工程师审核合并。</p>
 <div class="img-ph"><span class="img-ph-cap">图片：Make 连接 GitHub 仓库后的工作流——从连接仓库到发 PR 的完整路径</span></div>
 <p>博客用一个叫「未来博物馆 MOSF」的虚构案例演示了整套流程——是官方造的演示项目，不是真实客户。案例里的设计师要改几样东西：导航标签措辞、CTA 可见性、空搜索结果的提示文案。改的过程中发现日期选择器是共享组件，改一处得在三个地方同步修改——这是在真实代码库里才会碰到的问题，工单流程里设计师根本不知道一个选择器被复用了几次。</p>
 <p>案例里还用 Figma 注释标了 aria-label、屏幕阅读器文本和焦点顺序。这些无障碍细节正是最容易被「下个版本再说」砍掉的；设计师在代码里直接标注，这些决策第一次以 commit 的形式留进了 git 历史。</p>
 <div class="img-ph"><span class="img-ph-cap">图片：博客案例中注释标注 aria-label 和焦点顺序的示意</span></div>
-<div class="section-head"><span class="icon-badge" style="background: rgba(74, 111, 224, 0.1);"><svg height="32" viewBox="0 0 24 24" width="32" xmlns="http://www.w3.org/2000/svg">
-<rect fill="none" height="10" rx="2.4" stroke="#4A6FE0" stroke-width="0.8" width="14" x="5" y="12"></rect>
-<path class="anim-lock-shackle" d="M8 12 L8 8 C8 5 10 3 12 3 C14 3 16 5 16 8 L16 12" fill="none" stroke="#4A6FE0" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.8">
+<div class="section-head"><span class="icon-badge" style="background: rgba(74, 95, 214, 0.1);"><svg height="32" viewBox="0 0 24 24" width="32" xmlns="http://www.w3.org/2000/svg">
+<rect fill="none" height="10" rx="2.4" stroke="#4A5FD6" stroke-width="0.8" width="14" x="5" y="12"></rect>
+<path class="anim-lock-shackle" d="M8 12 L8 8 C8 5 10 3 12 3 C14 3 16 5 16 8 L16 12" fill="none" stroke="#4A5FD6" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.8">
 <animateTransform additive="sum" attributeName="transform" calcMode="spline" dur="1.6s" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1" keyTimes="0;0.36;0.72;1" repeatCount="indefinite" type="translateY" values="0;-2;0;0"></animateTransform>
 <animateTransform additive="sum" attributeName="transform" calcMode="spline" dur="1.6s" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1" keyTimes="0;0.36;0.72;1" repeatCount="indefinite" type="rotate" values="0 12 12;-9 12 12;0 12 12;0 12 12"></animateTransform>
 </path>
-<circle class="anim-lock-dot" cx="12" cy="16" fill="#4A6FE0" r="1.1">
+<circle class="anim-lock-dot" cx="12" cy="16" fill="#4A5FD6" r="1.1">
 <animateTransform additive="sum" attributeName="transform" calcMode="spline" dur="1.6s" keySplines="0 0 0.58 1;0 0 0.58 1" keyTimes="0;0.45;1" repeatCount="indefinite" type="translate" values="0 0;-4.2 -5.6;0 0"></animateTransform>
 <animateTransform additive="sum" attributeName="transform" calcMode="spline" dur="1.6s" keySplines="0 0 0.58 1;0 0 0.58 1" keyTimes="0;0.45;1" repeatCount="indefinite" type="scale" values="1;1.35;1"></animateTransform>
 </circle>
-</svg></span><h2 style="color: #4A6FE0;">流程能反转<br/>信任边界还没跟上</h2></div>
+</svg></span><h2 style="color: #4A5FD6;">流程能反转<br/>信任边界还没跟上</h2></div>
 <p>角色分配和传统正好倒过来：设计师做开发，工程师做审核。听起来很顺，但几个卡点得看清楚。</p>
 <p>同步目前是<strong>单向的</strong>——Make → GitHub。设计师发了 PR、工程师审核合并之后，代码库往前走了，Make 侧不会自动拉回这些变化。下次再改，设计师看到的基础可能已经过时了。工程师在 PR 里改了一行，设计师在 Make 里完全不知道——对协作来说这是个很实际的断点。</p>
 <p>beta 仅 Mac、还是 limited beta，2026-05-28 上线到现在快两个月还没开放更多平台，说明 Figma 自己也在摸这条路的边界。</p>
@@ -537,7 +537,7 @@
 <p>再看一个更激进的参照。Anthropic 的 Claude Code 设计负责人 Meaghan Choi 日常直接 ship 代码，在 Slack 里用 Claude Tag 协作——AI native 公司的设计师已经在做「设计师直接交付」这件事了。但她的做法有一条清晰的边界：交出去的是自己信任 AI 能做好的部分，复杂的设计判断仍然在 Figma 里完成。即便在最激进的团队，信任也是一步一步给的。</p>
 <div class="img-ph"><span class="img-ph-cap">图片：传统流程与 Make 流程的角色对比——设计师和工程师的位置互换</span></div>
 <p>Figma Make 这个 beta 目前能覆盖的，大概就是「改措辞、调间距、标无障碍属性」这个量级的打磨——刚好对应工单流程里最容易被砍掉的那 20%。再复杂的设计变更，单向同步和 beta 的稳定性都还撑不住。能不能放进日常，现在判断太早；但等它开放了，第一件想试的就是拿一个自己的仓库连上去，看看那 20% 到底能不能不走工单就交掉。</p>
-<p style="display:flex; align-items:center; margin:40px 0;"><span style="flex:1 1 auto;height:1px;background:#4A6FE0;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" fill="#4A6FE0" r="4.3"></circle></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#4A6FE0" points="8,3.50 4.10,10.25 11.90,10.25"></polygon></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#4A6FE0" points="8,3.20 9.18,6.38 12.57,6.52 9.90,8.62 10.82,11.88 8,10.00 5.18,11.88 6.10,8.62 3.44,6.52 6.82,6.38"></polygon></svg><span style="flex:1 1 auto;height:1px;background:#4A6FE0;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span></p>
+<p style="display:flex; align-items:center; margin:40px 0;"><span style="flex:1 1 auto;height:1px;background:#4A5FD6;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" fill="#4A5FD6" r="4.3"></circle></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#4A5FD6" points="8,3.50 4.10,10.25 11.90,10.25"></polygon></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#4A5FD6" points="8,3.20 9.18,6.38 12.57,6.52 9.90,8.62 10.82,11.88 8,10.00 5.18,11.88 6.10,8.62 3.44,6.52 6.82,6.38"></polygon></svg><span style="flex:1 1 auto;height:1px;background:#4A5FD6;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span></p>
 <p style="color:#aaa; font-size:var(--fs-caption); text-align:center; margin:24px 0;">本文素材来自 Figma 官方博客 Workflow Lab: Deploying designs directly with Figma Make 及 Dive Club 播客 Meaghan Choi 访谈。</p></div>
 <!-- 底部 -->
 <footer class="article-footer">
