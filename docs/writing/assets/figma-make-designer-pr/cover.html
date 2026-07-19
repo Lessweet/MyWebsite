@@ -138,7 +138,7 @@ body.static *{animation:none!important;}
 <div class="center"><div class="group" id="group"></div></div>
 </div>
 <script>
-var HERO_CFG=null;HERO_CFG={"colors":["#F2CF1D","#F0F4F6","#7ED6F2"],"icon":"ne-github","title":"PR","ink":"#0C9C68","tile":150,"wmH":124,"gap":38,"iconScale":1,"bg":"heatmap","heat":{"stops":["#6ac2ea","#9fe0dc","#effad6","#93ecb6","#52dd96"],"hot":"#ffffff","iso":0.49,"width":0.06,"glow":0.9,"warp":2.2,"dens":0.95,"speed":2.8,"seed":1059415838,"t0":38.3,"gain":1.35},"freeze":null,"static":false,"time0":38.3};
+var HERO_CFG=null;HERO_CFG={"colors":["#F2CF1D","#F0F4F6","#7ED6F2"],"icon":"ne-branch","title":"PR","ink":"#FFFFFF","tile":150,"wmH":124,"gap":38,"bg":"black","sg":{"pal":{"mode":1,"cK":"#050505","cC":"#9a9a9a","cD":"#ffffff","cA":"#2a2a2a","cB":"#000000","hs":0.5,"ex":0.5,"ey":0.78,"er":0.62,"gx":0.7,"gy":-0.8,"clx":0.9,"cly":0.9,"cls":0.2},"shape":0.75,"seed":0.82,"base":0.035,"k":0.7,"mid":0.6,"size":1.2,"seam":0.18},"freeze":null,"static":false,"time0":0};
 var CFG=Object.assign({
   colors:['#F27FA8','#F0F4F6','#7EC8F2'],  // shader 三色：主色 / 近白 / 辅色（粉蓝默认演示，2026-07-17 用户定）
   icon:'ne-quatrefoil',                     // colorblock ne-* 图标 key
@@ -148,6 +148,7 @@ var CFG=Object.assign({
   dist:null, swirl:null, grain:0.25,        // null=演示模式每次随机（安全区间）；gen.mjs 注入时锁定
   seed:null, time0:null,                    // seed=锚点轨迹相位（换形态）；time0=流动起始时刻
   bg:'soft', heat:null,                     // bg='heatmap' 走实验七热成像背景，heat={stops,hot,iso,width,glow,warp,dens,speed,seed,t0}
+  sg:null,                                  // bg='black' 走实验八贴缝颗粒渐变，sg={pal,shape,seed,base,k,mid,size,seam}
   freeze:null,                              // 数字=冻结 shader 在该时刻（静态出图）；null=流动
   static:false                              // true=同时冻结 CSS 动画
 }, HERO_CFG||{});
@@ -332,6 +333,201 @@ if(CFG.bg==='heatmap'){
   }
   window.__stepShader=function(t){render(t);};   // 导出 GIF/MP4 逐帧驱动
   window.__shaderRate=speed;                     // t 每真实秒推进量
+})();
+}else if(CFG.bg==='black'){
+// ===== 背景 black（design-gallery 实验八·贴缝颗粒渐变移植：噪点强度 = 基础量 + k×颜色变化率，再乘中间调曲线；噪点只抖明度）=====
+(function(){
+  document.querySelector('.grain').style.display='none';   // 颗粒分布是本底核心逻辑（贴缝走），关掉通用均匀 grain 叠层免得双重噪点
+  var ctx2=cv.getContext('2d');
+  var sg=CFG.sg||{};
+  // 双击演示默认 = 日蚀光弧（exp8 palette 8）；正式出图由 gen.mjs 注入
+  var P=sg.pal||{mode:1,cK:'#050505',cC:'#9a9a9a',cD:'#ffffff',cA:'#2a2a2a',cB:'#000000',hs:0.5,ex:0.38,ey:0.78,er:0.60,gx:0.75,gy:-0.66,clx:0.90,cly:0.90,cls:0.20};
+  var BASE=sg.base!=null?sg.base:0.035,K=sg.k!=null?sg.k:0.7,MID=sg.mid!=null?sg.mid:0.6;
+  var SIZE=sg.size!=null?sg.size:1.2,SEAM=sg.seam!=null?sg.seam:0.18;
+  var SHAPE=sg.shape!=null?sg.shape:Math.round(Math.random()*1000)/1000;
+  var GSEED=sg.seed!=null?sg.seed:0.37;
+  var hex2=function(h){return [1,3,5].map(function(i){return parseInt(h.slice(i,i+2),16)/255;});};
+  var clamp01=function(v){return v<0?0:v>1?1:v;};
+  var smooth=function(a,b,x){var t=clamp01((x-a)/(b-a));return t*t*(3-2*t);};
+  var cA=hex2(P.cA),cB=hex2(P.cB),cK=hex2(P.cK),cC=hex2(P.cC),cD=hex2(P.cD);
+  // 底色场 + 颜色变化率 + 明度（exp8 fillField 原公式，扭曲倍率固定 2 = 动态流动形态）
+  function fillField(w,h,s,base,gn,lum){
+    var asp=w/h,ws=SEAM,a1=0.32,a2=0.06;
+    var y,x,uvy,uvx,wx,wy,i,c,v;
+    if(P.mode===1){
+      // 日蚀光弧几何：亮度 = 贴着暗球边缘的光弧（半径阶跃 × 离球缘外光源点的距离衰减），扭曲振幅减半
+      var ecx=P.ex*asp,ecy=P.ey;
+      var gl2=Math.hypot(P.gx,P.gy),gx=P.gx/gl2,gy=P.gy/gl2;
+      var lx=ecx+gx*(P.er+(P.lo||0.1)),ly=ecy+gy*(P.er+(P.lo||0.1));
+      var clx=P.clx*asp,cly=P.cly;
+      for(y=0;y<h;y++){
+        uvy=(h-1-y+0.5)/h;
+        for(x=0;x<w;x++){
+          uvx=(x+0.5)/w;
+          wx=uvx*asp+a1*0.4*Math.sin(uvy*2.2+s)+a2*0.4*Math.sin(uvy*5.3-s*0.8);
+          wy=uvy+a1*0.4*Math.sin(uvx*asp*1.5+s*0.63+1.3)+a2*0.4*Math.sin(uvx*asp*3.7+s*1.1);
+          var d=Math.hypot(wx-ecx,wy-ecy)||1e-4;
+          var rim=smooth(P.er,P.er+ws*(P.rs||1.7),d);
+          var dL=Math.hypot(wx-lx,wy-ly);
+          var glow=1-smooth(P.er*0.25,P.er*1.75,dL);
+          var hot=1-smooth(P.er*0.17,P.er*0.92,dL);
+          var lm=clamp01(rim*(glow+P.hs*hot));
+          var t1=smooth(0,0.6,lm),t2=smooth(0.55,1,lm);
+          var cloud=P.cls*(1-smooth(0,0.85,Math.hypot(wx-clx,wy-cly)))*(1-lm);
+          i=(y*w+x)*3;
+          for(c=0;c<3;c++){
+            v=cK[c]+(cC[c]-cK[c])*t1;
+            v+=(cD[c]-v)*t2;
+            v+=(cA[c]-v)*cloud;
+            base[i+c]=v;
+          }
+        }
+      }
+    }else{
+      // 斜带几何：五色沿 (0.78,0.63) 斜向排布
+      var nl=Math.hypot(0.78,0.63),nx=0.78/nl,ny=0.63/nl;
+      var tden=asp*0.78+0.63;
+      for(y=0;y<h;y++){
+        uvy=(h-1-y+0.5)/h;
+        for(x=0;x<w;x++){
+          uvx=(x+0.5)/w;
+          wx=uvx*asp+a1*Math.sin(uvy*2.2+s)+a2*Math.sin(uvy*5.3-s*0.8);
+          wy=uvy+a1*Math.sin(uvx*asp*1.5+s*0.63+1.3)+a2*Math.sin(uvx*asp*3.7+s*1.1);
+          var t=(wx*nx+wy*ny)/tden+0.10*Math.sin(uvx*3.1+s*0.4);
+          var m1=smooth(0,0.26,t),m2=smooth(0.24,0.24+ws,t);
+          var m3=smooth(0.50,0.50+ws,t),m4=smooth(0.78,1.02,t);
+          var dk=(1-smooth(0.15,0.85,Math.hypot(wx-asp*0.98,wy+0.05)))*0.9;
+          i=(y*w+x)*3;
+          for(c=0;c<3;c++){
+            v=cA[c]+(cB[c]-cA[c])*m1;
+            v+=(cK[c]-v)*m2;
+            v+=(cC[c]-v)*m3;
+            v+=(cD[c]-v)*m4;
+            v+=(cK[c]-v)*dk;
+            base[i+c]=v;
+          }
+        }
+      }
+    }
+    // 颜色变化率（相邻像素色差）与明度
+    for(y=0;y<h;y++){
+      var yn=y<h-1?y+1:y;
+      for(x=0;x<w;x++){
+        i=y*w+x;var i3=i*3;
+        var ix=(y*w+(x<w-1?x+1:x))*3;
+        var iy=(yn*w+x)*3;
+        var r=base[i3],g=base[i3+1],b=base[i3+2];
+        var dxr=Math.hypot(base[ix]-r,base[ix+1]-g,base[ix+2]-b);
+        var dyr=Math.hypot(base[iy]-r,base[iy+1]-g,base[iy+2]-b);
+        gn[i]=clamp01((dxr+dyr)*h/10);
+        lum[i]=0.2126*r+0.7152*g+0.0722*b;
+      }
+    }
+  }
+  // 噪点强度 = 基础量 + k×变化率，再乘中间调曲线（最黑最亮干净、明度中段最粗）
+  function amountOf(g,l){
+    var amount=BASE+K*0.35*g;
+    var mc=smooth(0.01,0.14,l)*(1-smooth(0.42,0.80,l));
+    return amount*((1-MID)+MID*mc);
+  }
+  // 静态：整帧全清逐像素烘焙（噪点直接抖明度，同 exp8 下载 PNG 路径）
+  function renderStatic(tv){
+    var dpr=Math.min(devicePixelRatio||1,2);
+    var w=Math.round(cv.clientWidth*dpr),h=Math.round(cv.clientHeight*dpr);
+    if(!w||!h)return;
+    cv.width=w;cv.height=h;
+    var base=new Float32Array(w*h*3),gn=new Float32Array(w*h),lum=new Float32Array(w*h);
+    fillField(w,h,SHAPE*6.2832+tv*0.3,base,gn,lum);
+    var img=new ImageData(w,h),d=img.data;
+    var gpx=Math.max(1,SIZE*h/1260);
+    for(var y=0;y<h;y++){
+      var cy=Math.floor(y/gpx)*311.7;
+      for(var x=0;x<w;x++){
+        var i=y*w+x,i3=i*3,o=i*4;
+        var amount=amountOf(gn[i],lum[i]);
+        var sv=Math.sin(Math.floor(x/gpx)*127.1+cy+GSEED*13.73)*43758.5453;
+        var n=(sv-Math.floor(sv)-0.5)*amount*2.1;
+        d[o]=clamp01(base[i3]+n)*255;d[o+1]=clamp01(base[i3+1]+n)*255;d[o+2]=clamp01(base[i3+2]+n)*255;d[o+3]=255;
+      }
+    }
+    ctx2.putImageData(img,0,0);
+  }
+  // 动态：底色场降 300px 宽逐帧流动再平滑放大；颗粒层原清静态灰噪，每帧用低清沙带蒙版
+  // destination-in 抠形后 soft-light 叠回 —— 颜色在动、颗粒贴缝不闪（exp8 动态流动同款）
+  var dyn={lw:300,lh:0,base:null,gn:null,lum:null,grainKey:'',
+    baseCv:document.createElement('canvas'),maskCv:document.createElement('canvas'),
+    grainCv:document.createElement('canvas'),compCv:document.createElement('canvas')};
+  function ensureGrain(w,h){
+    var key=w+','+h;
+    if(dyn.grainKey===key)return;
+    dyn.grainKey=key;
+    dyn.grainCv.width=dyn.compCv.width=w;
+    dyn.grainCv.height=dyn.compCv.height=h;
+    var img=new ImageData(w,h),d=img.data;
+    var gpx=Math.max(1,SIZE*h/1260);
+    for(var y=0;y<h;y++){
+      var cy=Math.floor(y/gpx)*311.7;
+      for(var x=0;x<w;x++){
+        var sv=Math.sin(Math.floor(x/gpx)*127.1+cy+GSEED*13.73)*43758.5453;
+        var o=(y*w+x)*4;
+        d[o]=d[o+1]=d[o+2]=128+(sv-Math.floor(sv)-0.5)*216;
+        d[o+3]=255;
+      }
+    }
+    dyn.grainCv.getContext('2d').putImageData(img,0,0);
+  }
+  function renderDynamic(t){
+    var dpr=Math.min(devicePixelRatio||1,2);
+    var w=Math.round(cv.clientWidth*dpr),h=Math.round(cv.clientHeight*dpr);
+    if(!w||!h)return;
+    if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}
+    var lw=dyn.lw,lh=Math.round(lw*h/w);
+    if(dyn.lh!==lh||!dyn.base){
+      dyn.lh=lh;
+      dyn.baseCv.width=dyn.maskCv.width=lw;
+      dyn.baseCv.height=dyn.maskCv.height=lh;
+      dyn.base=new Float32Array(lw*lh*3);
+      dyn.gn=new Float32Array(lw*lh);
+      dyn.lum=new Float32Array(lw*lh);
+    }
+    fillField(lw,lh,SHAPE*6.2832+t*0.3,dyn.base,dyn.gn,dyn.lum);
+    var bImg=new ImageData(lw,lh),bd=bImg.data;
+    var mImg=new ImageData(lw,lh),md=mImg.data;
+    for(var i=0;i<lw*lh;i++){
+      var i3=i*3,o=i*4;
+      bd[o]=dyn.base[i3]*255;bd[o+1]=dyn.base[i3+1]*255;bd[o+2]=dyn.base[i3+2]*255;bd[o+3]=255;
+      var amount=amountOf(dyn.gn[i],dyn.lum[i]);
+      md[o]=md[o+1]=md[o+2]=255;
+      md[o+3]=clamp01(amount*2.8)*255;
+    }
+    dyn.baseCv.getContext('2d').putImageData(bImg,0,0);
+    dyn.maskCv.getContext('2d').putImageData(mImg,0,0);
+    ensureGrain(w,h);
+    var cc=dyn.compCv.getContext('2d');
+    cc.globalCompositeOperation='source-over';
+    cc.drawImage(dyn.grainCv,0,0);
+    cc.globalCompositeOperation='destination-in';
+    cc.imageSmoothingEnabled=true;
+    cc.drawImage(dyn.maskCv,0,0,w,h);
+    ctx2.globalCompositeOperation='source-over';
+    ctx2.imageSmoothingEnabled=true;
+    ctx2.drawImage(dyn.baseCv,0,0,w,h);
+    ctx2.globalCompositeOperation='soft-light';
+    ctx2.drawImage(dyn.compCv,0,0);
+    ctx2.globalCompositeOperation='source-over';
+  }
+  if(CFG.freeze!=null){
+    renderStatic(CFG.freeze);
+    new ResizeObserver(function(){renderStatic(CFG.freeze);}).observe(cv);
+  }else{
+    var tCur=(CFG.time0!=null?CFG.time0:0),lastS=performance.now();
+    var frameS=function(now){var dt=Math.min(0.1,(now-lastS)/1000);lastS=now;tCur+=dt;
+      renderDynamic(tCur);requestAnimationFrame(frameS);};
+    new ResizeObserver(function(){renderDynamic(tCur);}).observe(cv);
+    requestAnimationFrame(frameS);
+  }
+  window.__stepShader=function(t){renderDynamic(t);};   // 导出 GIF/MP4 逐帧驱动（动版合成路径，颗粒不闪）
+  window.__shaderRate=1;                                // t 每真实秒推进量（相位在内部再乘 0.3）
 })();
 }else{
 var gl=cv.getContext('webgl2',{antialias:false,premultipliedAlpha:false,preserveDrawingBuffer:true});

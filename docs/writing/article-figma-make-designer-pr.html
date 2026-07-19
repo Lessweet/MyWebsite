@@ -14,7 +14,7 @@
 <script src="writing.js?v=78"></script>
 </head>
 <!-- 复用首页 index.html 的胶囊顶栏:home-v2 控制顶栏内边距,design-page 提供胶囊样式 -->
-<body class="writing-page home-v2 design-page reading-page" data-accent="#0C9C68" data-tint="mint">
+<body class="writing-page home-v2 design-page reading-page" data-accent="#2E2E2E" data-tint="gray">
 <!-- 顶部导航:与首页同一个组件(initSiteNav);data-base="../" 把站内链接/资源指回 docs 根目录。
          返回入口 = 左侧 VIBEUX 与高亮的 Writing 胶囊,均回到 index.html#writing -->
 <header class="header home-nav" data-active="writing" data-base="../" id="site-nav"></header>
@@ -58,7 +58,7 @@
 .article-byline { text-align: center; justify-content: center; }
 .article-body { color: #1a1a1a; line-height: 1.4; }
 .article-body p { font-size: var(--fs-body); font-weight: 300; margin: 40px 0; color: #1a1a1a; }
-.article-body strong { font-weight: 400; color: #0C9C68; }
+.article-body strong { font-weight: 400; color: #2E2E2E; }
 .article-body .list-dot { font-weight: 600; margin-right: 4px; color: #1a1a1a; }
 .article-body .section-head { text-align: center; margin: 56px 0; }
 /* 图标居中：svg display:block + margin auto，别改回 vertical-align/line-height/padding（微信按基线对齐会贴底、border-box 下 padding 挤小图标）。跟 template.html 保持一致。详见记忆 wechat-icon-vertical-center。 */
@@ -70,7 +70,7 @@
 .article-body .img-ph { display: flex; align-items: center; justify-content: center; text-align: center; min-height: 160px; margin: 24px 0; padding: 28px 20px; border: 1px dashed #d6d6de; border-radius: 12px; background: repeating-linear-gradient(45deg, #fafafb, #fafafb 10px, #f3f3f6 10px, #f3f3f6 20px); }
 .article-body .img-ph .img-ph-cap { font-size: var(--fs-caption); color: #9a9aa6; line-height: 1.5; max-width: 80%; }
 .article-body .highlight { font-size: var(--fs-body); font-weight: 300; line-height: 1.4; color: #1a1a1a; margin: 40px 0; }
-.article-body .highlight strong { font-weight: 400; color: #0C9C68; }
+.article-body .highlight strong { font-weight: 400; color: #2E2E2E; }
 
 /* outlined 图标动画 CSS（自动从 design-gallery 抽取，不要手改） */
 /* 时长/延迟变量（在 design-gallery 基础上整体提速 ~40%，文章里看着更精神） */
@@ -484,10 +484,9 @@
 <p>对于设计师来说，AI coding 有一个很实用的工作场景是， 解决最后 20% 的设计体验细节问题、提交 PR。</p>
 <p>UI/UX 设计工作中，有一部分是线上体验优化需求，永远压在需求池里等排期，或者等着高优需求能够顺手带上，这类需求就是最后 20% ，需要更精细的完成度。工程师更擅长架构改造上，设计师更擅长负责细节完善，</p>
 <p>以 Figma 为例，可以在 Make 连上真实的 GitHub 仓库，自己改代码、开分支、发 PR。工程师可以更专注于架构改造与审核，设计师负责从始至终的细节完善。</p>
-<p>先看这条线怎么走：</p>
 <img alt="设计师开分支改细节、发 PR，工程师审核合并——分工在一条分支线上倒过来" src="assets/figma-make-designer-pr/01-github-pr-flow.png"/>
-<div class="section-head"><span class="icon-badge" style="background: rgba(12, 156, 104, 0.1);"><svg height="32" viewBox="0 0 24 24" width="32" xmlns="http://www.w3.org/2000/svg">
-<g fill="none" stroke="#0C9C68" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.8">
+<div class="section-head"><span class="icon-badge" style="background: rgba(46, 46, 46, 0.1);"><svg height="32" viewBox="0 0 24 24" width="32" xmlns="http://www.w3.org/2000/svg">
+<g fill="none" stroke="#2E2E2E" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.8">
 <rect height="16" rx="3" width="18" x="3" y="4"></rect>
 <path d="M3 8 L21 8"></path>
 <path d="M7 12 L10 14 L7 16"></path>
@@ -495,11 +494,11 @@
 <animate attributeName="opacity" calcMode="discrete" dur="0.9s" keyTimes="0;0.49;0.5;0.99;1" repeatCount="indefinite" values="1;1;0;0;1"></animate>
 </path>
 </g>
-<g fill="#0C9C68">
+<g fill="#2E2E2E">
 <circle cx="6.4" cy="6" r="0.7"></circle>
 <circle cx="8.8" cy="6" r="0.7"></circle>
 </g>
-</svg></span><h2 style="color: #0C9C68;">Branch, commit, and ship</h2></div>
+</svg></span><h2 style="color: #2E2E2E;">Branch, commit, and ship</h2></div>
 <p>Figma Make 的 GitHub 连接功能，可以把 Make 连上一个真实的代码仓库，Make 自动装依赖、起本地 dev server，画布里渲染的是跑起来的真实应用；改动以本地 commit 累积，最后开一条新分支，从 Make 里直接发 PR 给工程师审核合并。</p>
 <p>连接的入口长这样，授权加装 app 两步就完成：</p>
 <img alt="Figma 里的 Connect to GitHub 面板：授权读写权限，把 Figma app 装进自己的 GitHub 组织" src="assets/figma-make-designer-pr/04-connect-github.png"/>
@@ -508,21 +507,20 @@
 <p>案例里还用 Figma 注释标了 aria-label、屏幕阅读器文本和焦点顺序。这些无障碍细节正是最容易被「下个版本再说」砍掉的；设计师在代码里直接标注，这些决策第一次以 commit 的形式留进了 git 历史。</p>
 <p>整条链路捋下来是四步：</p>
 <img alt="Make 连上仓库后的完整工作流：连接仓库、跑起真实应用、累积 commit、开分支发 PR" src="assets/figma-make-designer-pr/01-make-workflow.png"/>
-<p><span class="list-dot" style="font-weight:600;margin-right:4px;color:#0C9C68;">•</span><strong style="font-weight:600">Figma 的好处是可视化 Code</strong>，对于不写 code 的设计师来说，可以选择元素，调整属性，更改布局、颜色、字体或尺寸，Agent 会找到相关的代码并进行编辑。这是在 Code 中进行精确编辑，同时拥有探索的自由。</p>
+<p><span class="list-dot" style="font-weight:600;margin-right:4px;color:#2E2E2E;">•</span><strong style="font-weight:600">Figma 的好处是可视化 Code</strong>，对于不写 code 的设计师来说，可以选择元素，调整属性，更改布局、颜色、字体或尺寸，Agent 会找到相关的代码并进行编辑。这是在 Code 中进行精确编辑，同时拥有探索的自由。</p>
 <p>目前 Figma Make 是<strong>单向的</strong>，只能 Make 到 GitHub。设计师发了 PR、工程师审核合并之后，代码库更新了，Make 侧不会自动拉回这些变化。下次再改，设计师看到的基础可能已经过时了。工程师在 PR 里改了一行，设计师在 Make 里完全不知道，对协作来说这是个很实际的断点。</p>
-<div class="section-head"><span class="icon-badge" style="background: rgba(12, 156, 104, 0.1);"><svg height="32" viewBox="0 0 24 24" width="32" xmlns="http://www.w3.org/2000/svg">
-<path class="anim-lightning" d="M14 3 L5 13 L10 13 L9 21 L19 10 L14 10 L15 3 Z" fill="none" stroke="#0C9C68" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.8">
+<div class="section-head"><span class="icon-badge" style="background: rgba(46, 46, 46, 0.1);"><svg height="32" viewBox="0 0 24 24" width="32" xmlns="http://www.w3.org/2000/svg">
+<path class="anim-lightning" d="M14 3 L5 13 L10 13 L9 21 L19 10 L14 10 L15 3 Z" fill="none" stroke="#2E2E2E" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.8">
 <animate attributeName="opacity" calcMode="spline" dur="1.4s" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1" keyTimes="0;0.42;0.72;1" repeatCount="indefinite" values="0.92;1;0.78;0.92"></animate>
 <animateTransform additive="sum" attributeName="transform" calcMode="spline" dur="1.4s" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1" keyTimes="0;0.42;0.72;1" repeatCount="indefinite" type="translate" values="0 0;-0.96 -0.96;0.24 0.24;0 0"></animateTransform>
 <animateTransform additive="sum" attributeName="transform" calcMode="spline" dur="1.4s" keySplines="0.42 0 0.58 1;0.42 0 0.58 1;0.42 0 0.58 1" keyTimes="0;0.42;0.72;1" repeatCount="indefinite" type="scale" values="1;1.08;0.98;1"></animateTransform>
 </path>
-</svg></span><h2 style="color: #0C9C68;">AI Native 设计工作流的高效习惯</h2></div>
-<p>AI native 公司的设计师已经在做「设计师直接交付」这件事了。Anthropic 的 Claude Code 设计负责人 Meaghan Choi 日常直接 ship 代码，在 Slack 里用 Claude Tag 协作。但她的做法有一条清晰的边界：交出去的是自己信任 AI 能做好的部分，复杂的设计判断仍然在 Figma 里完成。即便在最激进的团队，信任也是一步一步给的。</p>
+</svg></span><h2 style="color: #2E2E2E;">AI Native 更激进</h2></div>
+<p>AI native 公司的设计师已经在做<strong>设计师直接交付</strong>这件事了。Anthropic 的 Claude Code 设计负责人 Meaghan Choi 日常直接 ship 代码，在 Slack 里用 Claude Tag 协作。但她的做法有一条清晰的边界：交出去的是自己信任 AI 能做好的部分，复杂的设计判断仍然在 Figma 里完成。即便在最激进的团队，信任也是一步一步给的。</p>
 <p>她和 Claude Tag 的日常协作长这样，聊天里丢需求带上 Figma 链接，几分钟后草稿 PR 就挂出来了：</p>
 <img alt="Meaghan 在 Slack 频道里让 Claude Tag 重构 Claude Tag 设置页，9:16 提需求、9:20 草稿 PR #56172 就位" src="assets/figma-make-designer-pr/06-meaghan-claude-tag.png"/>
-<p>这套协作是另一种交接。更精细的收尾、无障碍改进这些决定完整体验的润色，设计师直接在代码里工作。不要求设计师变成工程师、工程师变成设计师，各自把判断力花在最各自擅长的地方——MOSF 案例里，工程师留在架构改造上，设计师从头到尾负责细节完善，PM 盯住整个项目的目标；一条分支把每个人的贡献——看得见的设计、写下来的反馈、屏幕阅读器会念出来的标签——从画布一路带进合并的 PR。博客的收束只有一句：这套流程下，最后那 20% 没有被砍掉，它上线了。</p>
-<p>Figma Make 这个 beta 目前能覆盖的，大概就是「改措辞、调间距、标无障碍属性」这个量级的打磨——刚好对应工单流程里最容易被砍掉的那 20%。再复杂的设计变更，单向同步和 beta 的稳定性都还撑不住。能不能放进日常，现在判断太早；但等它开放了，第一件想试的就是拿一个自己的仓库连上去，看看那 20% 到底能不能不走工单就交掉。</p>
-<p style="display:flex; align-items:center; margin:40px 0;"><span style="flex:1 1 auto;height:1px;background:#0C9C68;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" fill="#0C9C68" r="4.3"></circle></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#0C9C68" points="8,3.50 4.10,10.25 11.90,10.25"></polygon></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#0C9C68" points="8,3.20 9.18,6.38 12.57,6.52 9.90,8.62 10.82,11.88 8,10.00 5.18,11.88 6.10,8.62 3.44,6.52 6.82,6.38"></polygon></svg><span style="flex:1 1 auto;height:1px;background:#0C9C68;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span></p>
+<p>从这两例设计工作方法看出，这套协作是另一种交接。更精细的收尾、无障碍改进这些决定完整体验的润色，设计师直接在代码里工作。不要求设计师变成工程师、工程师变成设计师，各自把判断力花在最各自擅长的地方，从画布一路带进合并的 PR。</p>
+<p style="display:flex; align-items:center; margin:40px 0;"><span style="flex:1 1 auto;height:1px;background:#2E2E2E;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" fill="#2E2E2E" r="4.3"></circle></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#2E2E2E" points="8,3.50 4.10,10.25 11.90,10.25"></polygon></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#2E2E2E" points="8,3.20 9.18,6.38 12.57,6.52 9.90,8.62 10.82,11.88 8,10.00 5.18,11.88 6.10,8.62 3.44,6.52 6.82,6.38"></polygon></svg><span style="flex:1 1 auto;height:1px;background:#2E2E2E;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span></p>
 <p style="color:#aaa; font-size:var(--fs-caption); text-align:center; margin:24px 0;">本文素材来自 Figma 官方博客 Workflow Lab: Deploying designs directly with Figma Make 及 Dive Club 播客 Meaghan Choi 访谈。</p></div>
 <!-- 底部 -->
 <footer class="article-footer">
