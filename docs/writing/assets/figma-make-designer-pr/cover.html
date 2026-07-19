@@ -138,7 +138,7 @@ body.static *{animation:none!important;}
 <div class="center"><div class="group" id="group"></div></div>
 </div>
 <script>
-var HERO_CFG=null;HERO_CFG={"colors":["#F2CF1D","#F0F4F6","#7ED6F2"],"icon":"ne-arrow","title":"PR","ink":"#0C9C68","tile":150,"wmH":124,"gap":38,"bg":"heatmap","heat":{"stops":["#6ac2ea","#9fe0dc","#effad6","#93ecb6","#52dd96"],"hot":"#ffffff","iso":0.49,"width":0.06,"glow":0.9,"warp":2.2,"dens":0.95,"speed":2.8,"seed":1059415838,"t0":38.3,"gain":1.35},"freeze":null,"static":false,"time0":38.3};
+var HERO_CFG=null;HERO_CFG={"colors":["#F2CF1D","#F0F4F6","#7ED6F2"],"icon":"ne-branch","title":"PR","ink":"#0C9C68","tile":150,"wmH":124,"gap":38,"bg":"heatmap","heat":{"stops":["#6ac2ea","#9fe0dc","#effad6","#93ecb6","#52dd96"],"hot":"#ffffff","iso":0.49,"width":0.06,"glow":0.9,"warp":2.2,"dens":0.95,"speed":2.8,"seed":1059415838,"t0":38.3,"gain":1.35},"freeze":null,"static":false,"time0":38.3};
 var CFG=Object.assign({
   colors:['#F27FA8','#F0F4F6','#7EC8F2'],  // shader 三色：主色 / 近白 / 辅色（粉蓝默认演示，2026-07-17 用户定）
   icon:'ne-quatrefoil',                     // colorblock ne-* 图标 key
@@ -192,6 +192,7 @@ var ICONS={
   'ne-pause':'<rect x="18" y="15" width="11" height="34" rx="5.5" fill="@grad"/><rect x="35" y="15" width="11" height="34" rx="5.5" fill="@grad"/>',
   'ne-check':'<rect class="ne-check-a" x="15" y="15" width="16" height="16" rx="3" fill="@grad"/><rect class="ne-check-b" x="33" y="33" width="16" height="16" rx="3" fill="@grad"/>',
   'ne-arrow':'<path d="'+roundPoly([[13,26],[35,26],[35,17],[52,32],[35,47],[35,38],[13,38]],4)+'" fill="@grad"/>',
+  'ne-branch':'<g fill="@grad" stroke="@grad" stroke-width="5" stroke-linecap="round"><path fill="none" d="M22 20 L22 44"/><path fill="none" d="M44 28 C44 38 34 41 27 42.5"/><circle cx="22" cy="14" r="6" stroke="none"/><circle cx="22" cy="50" r="6" stroke="none"/><circle cx="44" cy="22" r="6" stroke="none"/></g>',
   'ne-asterisk':'<g fill="@grad"><rect x="27.5" y="11" width="9" height="42" rx="4.5"/><rect x="27.5" y="11" width="9" height="42" rx="4.5" transform="rotate(60 32 32)"/><rect x="27.5" y="11" width="9" height="42" rx="4.5" transform="rotate(120 32 32)"/></g>',
   'ne-star8':'<path d="'+roundPoly(gearPts(32,32,8,21,9.5),1.5)+'" fill="@grad"/>',
   'ne-dd':'<path class="ne-dd-a" d="M18 13 A19 19 0 0 1 18 51 Z" fill="@grad"/><path class="ne-dd-b" d="M34 18 A14 14 0 0 1 34 46 Z" fill="@grad"/>',
@@ -202,7 +203,7 @@ var ICONS={
   'ne-figma':'<g transform="translate(17.6 10) scale(0.772)"><path d="M19 28.5a9.5 9.5 0 1 1 19 0 9.5 9.5 0 0 1-19 0z" fill="@grad"/><path d="M0 47.5A9.5 9.5 0 0 1 9.5 38H19v9.5a9.5 9.5 0 1 1-19 0z" fill="@grad"/><path d="M19 0v19h9.5a9.5 9.5 0 1 0 0-19H19z" fill="@grad"/><path d="M0 9.5A9.5 9.5 0 0 0 9.5 19H19V0H9.5A9.5 9.5 0 0 0 0 9.5z" fill="@grad"/><path d="M0 28.5A9.5 9.5 0 0 0 9.5 38H19V19H9.5A9.5 9.5 0 0 0 0 28.5z" fill="@grad"/></g>',
   'ne-codex':'<path d="M12 36 L12 22 Q12 12 22 12 L42 12 Q52 12 52 22 L52 42 Q52 52 42 52 L27 52 Q20 52 20 45 L20 27 Q20 20 27 20 L37 20 Q44 20 44 27 L44 36 Q44 43 37 43 L33 43 Q29 43 29 39 L29 33.5" fill="none" stroke="@grad" stroke-width="4.4" stroke-linecap="round"/>'
 };
-var NEON_ANIM={'ne-stack':'ne-stack','ne-disc':'ne-beat','ne-rhombus':'ne-tick90','ne-octagon':'ne-tick45','ne-triangle':'ne-jump','ne-steps':'ne-steps','ne-semi':'ne-semi','ne-quatrefoil':'ne-bloom','ne-bowtie':'ne-tick180','ne-diamond':'ne-tick90','ne-flower':'ne-bloom','ne-pause':'ne-jelly','ne-check':'ne-check','ne-arrow':'ne-dart','ne-asterisk':'ne-tick60','ne-star8':'ne-twinkle','ne-dd':'ne-dd','ne-sunburst':'ne-spin','ne-wave':'ne-travel','ne-orbit':'ne-orbit3d','ne-ring':'ne-beat','ne-figma':'','ne-codex':'ne-tick90'};
+var NEON_ANIM={'ne-stack':'ne-stack','ne-disc':'ne-beat','ne-rhombus':'ne-tick90','ne-octagon':'ne-tick45','ne-triangle':'ne-jump','ne-steps':'ne-steps','ne-semi':'ne-semi','ne-quatrefoil':'ne-bloom','ne-bowtie':'ne-tick180','ne-diamond':'ne-tick90','ne-flower':'ne-bloom','ne-pause':'ne-jelly','ne-check':'ne-check','ne-arrow':'ne-dart','ne-branch':'ne-beat','ne-asterisk':'ne-tick60','ne-star8':'ne-twinkle','ne-dd':'ne-dd','ne-sunburst':'ne-spin','ne-wave':'ne-travel','ne-orbit':'ne-orbit3d','ne-ring':'ne-beat','ne-figma':'','ne-codex':'ne-tick90'};
 // mask 换色规则：白=显（透出 ink 色）、黑=镂空缝线。默认整形全白；叠箱=白体块+黑缝线。
 function maskShape(key,shape){
   if(key==='ne-stack')return shape.replace(/#EEC3F5/g,'#ffffff').replace(/@grad/g,'#000000');
