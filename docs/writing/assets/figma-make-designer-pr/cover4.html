@@ -133,7 +133,7 @@ body.static *{animation:none!important;}
 <div class="center"><div class="group" id="group"></div></div>
 </div>
 <script>
-var HERO_CFG=null;HERO_CFG={"colors":["#F2CF1D","#F0F4F6","#7ED6F2"],"icon":"ne-branch","title":"Branch","ink":"#FFFFFF","tile":120,"wmH":99,"gap":30,"track":10,"seed":16.7,"dist":0.41,"swirl":0.29,"bg":"black","sg":{"colors":["#030303","#0e0e0e","#050505","#7a7a7a","#080808"],"base":0.035,"k":0.7,"mid":0.6,"size":4,"seed":0.37},"freeze":null,"static":false,"time0":17.4};
+var HERO_CFG=null;HERO_CFG={"colors":["#F2CF1D","#F0F4F6","#7ED6F2"],"icon":"ne-branch","title":"Branch","ink":"#FFFFFF","tile":120,"wmH":99,"gap":30,"tex":"line","texBlend":"screen","texOp":0.3,"track":10,"seed":16.7,"dist":0.41,"swirl":0.29,"bg":"black","sg":{"colors":["#030303","#0e0e0e","#050505","#7a7a7a","#080808"],"base":0.035,"k":0.7,"mid":0.6,"size":4,"seed":0.37},"freeze":null,"static":false,"time0":17.4};
 var CFG=Object.assign({
   colors:['#F27FA8','#F0F4F6','#7EC8F2'],  // shader 三色：主色 / 近白 / 辅色（粉蓝默认演示，2026-07-17 用户定）
   icon:'ne-quatrefoil',                     // colorblock ne-* 图标 key
@@ -476,6 +476,51 @@ if(CFG.freeze!=null){
 window.__stepShader=function(t){m.draw(t);};   // 导出 GIF/MP4 时逐帧驱动
 window.__shaderRate=0.9;                       // u_time 每真实秒推进量，导出端读它做速率对齐
 }
+</script>
+<script>
+// ===== 符号纹理层（design-gallery 实验五 · Texture Layer）=====
+// 公式 = 底层渐变 × 图案平铺 × 软蒙版：图案本身是规则无限平铺的白色细线，
+// 靠 overlay 借底色 —— 亮处清晰、暗处隐形；不规则感全部来自软蒙版：
+// 2~4 团软椭圆交替落左右三分位、避开中心主体，各自错相位「呼吸」+ 绕基准点慢速漂移。
+// CFG.tex=null 时整层不存在（默认）；CFG.tex='line' 开斜线。蒙版随机数吃 CFG.seed，静/动同画面。
+if(CFG.tex){(function(){
+  var PATTERNS={
+    line:{pat:'repeating-linear-gradient(45deg, rgba(255,255,255,1) 0 1px, transparent 1px 8px)',size:'auto'},
+    dots:{pat:'radial-gradient(circle at 50% 50%, rgba(255,255,255,1) 2px, transparent 2.8px)',size:'16px 16px'}
+  };
+  var p=PATTERNS[CFG.tex]||PATTERNS.line;
+  var el=document.createElement('div');
+  el.style.cssText='position:absolute;inset:0;pointer-events:none;background-image:'+p.pat+
+    ';background-size:'+p.size+';mix-blend-mode:'+(CFG.texBlend||'overlay')+';opacity:'+(CFG.texOp!=null?CFG.texOp:1)+';';
+  var wrap=document.getElementById('wrap');
+  wrap.insertBefore(el,document.querySelector('.center'));   // 铺在 shader 之上、字标之下
+  // 播种随机：同一 seed → 同一组蒙版，静态 PNG 与动态 HTML 不会跑出两套形态
+  var s=(CFG.seed==null?42:CFG.seed)*9301+49297,rnd=function(a,b){s=(s*9301+49297)%233280;return a+(s/233280)*(b-a);};
+  var blobs=(function(){var n=2+Math.floor(rnd(0,3)),o=[];
+    for(var i=0;i<n;i++)o.push({
+      x:(i%2===0)?rnd(60,88):rnd(8,36), y:rnd(18,82), rx:rnd(22,40), ry:rnd(34,58), a:rnd(0.65,1),
+      phA:i/n*6.283+rnd(-0.5,0.5), spA:rnd(0.09,0.16),        // 呼吸：周期 6~11s，相位均匀错开
+      dx:rnd(3,7), dy:rnd(3,7), phD:rnd(0,6.283), spD:rnd(0.04,0.09)   // 漂移：幅度 3~7%、周期 11~25s
+    });
+    return o;})();
+  function paint(t){
+    var m=blobs.map(function(b){
+      var breathe=0.5+0.5*Math.sin(t*b.spA*6.283+b.phA);
+      var x=b.x+b.dx*Math.sin(t*b.spD*6.283+b.phD), y=b.y+b.dy*Math.cos(t*b.spD*6.283+b.phD*1.3);
+      var a=b.a*(0.08+0.92*breathe);
+      return 'radial-gradient(ellipse '+b.rx.toFixed(0)+'% '+b.ry.toFixed(0)+'% at '+x.toFixed(0)+'% '+y.toFixed(0)+'%, rgba(0,0,0,'+a.toFixed(2)+') 0%, transparent 72%)';
+    }).join(',');
+    el.style.webkitMaskImage=m; el.style.maskImage=m;
+  }
+  if(CFG.freeze!=null){paint(CFG.freeze);}
+  else{
+    var st=(CFG.time0!=null?CFG.time0:0),last=performance.now();
+    var frame=function(now){var dt=Math.min(0.05,(now-last)/1000);last=now;st+=dt*0.9;paint(st);requestAnimationFrame(frame);};
+    paint(st);requestAnimationFrame(frame);
+  }
+  var prev=window.__stepShader;                       // GIF 导出：跟着 shader 一起逐帧推进
+  window.__stepShader=function(t){prev&&prev(t);paint(t);};
+})();}
 </script>
 <script>
 // ===== 4:3 安全区自适应（bespoke 封面必备的 CLUSTER 等价物）=====
