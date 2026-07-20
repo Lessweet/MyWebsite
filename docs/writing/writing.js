@@ -391,7 +391,7 @@ let READER_ARTICLES = [
     { file: "article-figma-make-gpt-5-6.html", cat: "product", title: "设计师的新习惯，给 AI 模型分工", date: "2026-07-11", cover: "assets/figma-make-gpt-5-6/cover3.png", accent: "#5F82F5" },
     { file: "article-review-ai-output.html", cat: "ui", title: "设计师的新工作，审查 AI 产物", date: "2026-07-05", cover: "assets/review-ai-output/cover.png", accent: "#0E9E6E" },
     { file: "article-figma-skills.html", cat: "ui", title: "设计师的新资产，是 Skills", date: "2026-07-05", cover: "assets/figma-skills/cover2.1.png", accent: "#D4A017" },
-    { file: "article-figma-shader-motion.html", cat: "ui", title: "在设计系统里，Figma Shader 和 Motion ，正从效果变成可复用元素", date: "2026-07-01", cover: "assets/figma-shader-motion/cover.png", accent: "#7C4DFF" },
+    { file: "article-figma-shader-motion.html", cat: "ui", title: "在设计系统里，Figma Shader 和 Motion ，正从效果变成可复用元素", date: "2026-07-01", cover: "assets/figma-shader-motion/cover.webp", accent: "#7C4DFF" },
     { file: "article-figma-config-2026.html", cat: "product", title: "设计师被 AI 替代之前，Figma 用一整套新功能抬高设计师上限", date: "2026-06-26", cover: "assets/figma-config-2026/cover.png", accent: "#D4A017" },
     { file: "article-app-shape-for-ai.html", cat: "product", title: "SiriAI 设计", date: "2026-06-25", cover: "assets/app-shape-for-ai/cover_v9.png", accent: "#5B7FFF" },
     { file: "article-sparkle.html", cat: "ui", title: "AI 符号被秒懂，是调用了成熟的用户心智模型", date: "2026-05-24", cover: "assets/sparkle/cover.png", accent: "#6F8FC4" },

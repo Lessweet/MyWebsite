@@ -99,7 +99,7 @@
       "accent": "#7C4DFF",
       "collection": "Figma 观察",
       "excerpt": "不开 AE 和 C4D，我在 Figma 里用官方预设做了几张 shader 视觉图和动图；Motion 比 AE 轻，更有用的是能把一段动效做成组件、复用到整套图标上。Figma Shader 和 Motion，正在被当成组件和变量那样对待，从「加在最后」变成「一开始就在画布上」。",
-      "cover": "assets/figma-shader-motion/cover.png"
+      "cover": "assets/figma-shader-motion/cover.webp"
     },
     {
       "slug": "figma-config-2026",
