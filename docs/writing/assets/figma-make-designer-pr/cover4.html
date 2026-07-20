@@ -499,15 +499,26 @@ if(CFG.tex){(function(){
   // 落位两种：默认 = 实验五原版（左右三分位交替、避开中心主体）；
   // texLayout='diag' = 对角线布局：各团串在左上→右下这条对角线上（与 45° 斜线同向），
   // 连成一条斜贯画面的纹理带，而不是散在两侧的孤岛。
+  // 对角线上刻意排得不匀：团数多一点，沿线的间距按随机步长累积（有的挤成一簇、有的空一大段），
+  // 再各自沿对角线的法向偏出去 ±14%，大小和浓度也拉开档次 —— 免得看着像等距贴上去的贴纸。
   var DIAG=(CFG.texLayout==='diag');
-  var blobs=(function(){var n=2+Math.floor(rnd(0,3)),o=[];
-    for(var i=0;i<n;i++)o.push({
-      x:DIAG?(10+80*(i+0.5)/n+rnd(-6,6)):((i%2===0)?rnd(60,88):rnd(8,36)),
-      y:DIAG?(10+80*(i+0.5)/n+rnd(-6,6)):rnd(18,82),
-      rx:rnd(22,40), ry:rnd(34,58), a:rnd(0.65,1),
-      phA:i/n*6.283+rnd(-0.5,0.5), spA:rnd(0.09,0.16),        // 呼吸：周期 6~11s，相位均匀错开
-      dx:rnd(3,7), dy:rnd(3,7), phD:rnd(0,6.283), spD:rnd(0.04,0.09)   // 漂移：幅度 3~7%、周期 11~25s
-    });
+  var blobs=(function(){
+    var n=DIAG?(4+Math.floor(rnd(0,3))):(2+Math.floor(rnd(0,3))),o=[],steps=[],sum=0,i;
+    for(i=0;i<n;i++){var st=rnd(0.35,1.65);steps.push(st);sum+=st;}   // 步长忽长忽短 = 疏密不均
+    var acc=0;
+    for(i=0;i<n;i++){
+      acc+=steps[i];
+      var u=(acc-steps[i]*rnd(0.3,0.7))/sum;                          // 沿对角线的位置 0~1
+      var off=rnd(-14,14);                                            // 法向偏移：+x −y 即垂直于对角线
+      o.push({
+        x:DIAG?(6+88*u+off):((i%2===0)?rnd(60,88):rnd(8,36)),
+        y:DIAG?(6+88*u-off):rnd(18,82),
+        rx:DIAG?rnd(14,46):rnd(22,40), ry:DIAG?rnd(20,66):rnd(34,58),
+        a:DIAG?rnd(0.35,1):rnd(0.65,1),
+        phA:i/n*6.283+rnd(-0.9,0.9), spA:rnd(0.07,0.18),              // 呼吸：周期 6~14s，相位错开
+        dx:rnd(3,8), dy:rnd(3,8), phD:rnd(0,6.283), spD:rnd(0.04,0.09) // 漂移：幅度 3~8%、周期 11~25s
+      });
+    }
     return o;})();
   function paint(t){
     var m=blobs.map(function(b){
