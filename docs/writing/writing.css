@@ -1297,11 +1297,12 @@ body .home-nav .nav-cats .nav-cat.active {
     border: 0;
 }
 
-/* 所有页面顶栏导航文字(Blog / Skills / Contact)统一字重 400 —— 含选中态、所有断点。
-   用 !important 压过各页/各状态遗留的 500 / 600 / 700;仅作用于顶栏,不影响二级筛选 tab。 */
+/* 所有页面顶栏导航文字(Blog / Skills / Contact)统一走 --fw-normal —— 含选中态、所有断点。
+   用 !important 压过各页/各状态遗留的 500 / 600 / 700;仅作用于顶栏,不影响二级筛选 tab。
+   选中/未选中的区别只做在颜色上(100% vs 30%),不靠字重 —— 别再往这里加 font-weight。 */
 .header.home-nav .nav-cats .nav-cat,
 .header.home-nav .header-connect {
-    font-weight: 400 !important;
+    font-weight: var(--fw-normal) !important;
 }
 
 /* 顶栏只有两态:>560 桌面 / ≤560 汉堡。中间断点(768 / 561–768 / 900)已删除。 */
@@ -1545,7 +1546,7 @@ body.home-v2 .header-placeholder { height: 76px; }
 @media (prefers-reduced-motion: reduce) {
     .writing-card .card-badge::before { animation: none; }
 }
-/* 封面内元素:hover 时平滑放大到 108%(直接用 :hover transform,过渡稳定)。
+/* 封面内元素:hover 放大。参数取全站唯一规则(--hover-zoom / -in / -out,见 style.css :root)。
    封面可能是 img / video / iframe(HTML 封面)三种载体,选择器要全覆盖。 */
 .writing-card img,
 .writing-card video,
@@ -1553,15 +1554,15 @@ body.home-v2 .header-placeholder { height: 76px; }
 .writing-card .img-ph.fill {
     transform: scale(1);
     transform-origin: center center;
-    transition: transform 1.54s cubic-bezier(0.22, 1, 0.36, 1);   /* 移出:缩小过程更慢 */
+    transition: transform var(--hover-zoom-out) var(--ease-soft);   /* 移出:缩小过程更慢 */
     will-change: transform;
 }
 .writing-card:hover img,
 .writing-card:hover video,
 .writing-card:hover iframe,
 .writing-card:hover .img-ph.fill {
-    transform: scale(1.08);
-    transition: transform 0.77s cubic-bezier(0.22, 1, 0.36, 1);   /* 移入:放大稍快 */
+    transform: scale(var(--hover-zoom));
+    transition: transform var(--hover-zoom-in) var(--ease-soft);   /* 移入:放大稍快 */
 }
 @media (prefers-reduced-motion: reduce) {
     .writing-card img,
@@ -2414,9 +2415,58 @@ body.works-page .card-gray-outline {
 /* 消除封面媒体与卡片边缘之间、因 1fr 网格分数取整产生的亚像素缝(深底卡上表现为底部
    黑线、浅底卡上表现为角部发虚/圆角感;hover 放大到 1.06 时缝被盖住才「消失」)。
    做法:把静止态的封面缩放基准从 1 抬到 1.006,让媒体常态极轻微溢出盖住缝;
-   hover 规则特异性更高(带 :hover),仍能覆盖回 1.06,放大交互不受影响。 */
+   hover 规则特异性更高(带 :hover),仍能覆盖回全站统一放大量,放大交互不受影响。 */
 body.works-page .card { --hover-scale: 1.006; }
-body.works-page .card:hover { --hover-scale: 1.06; }
+body.works-page .card:hover { --hover-scale: var(--hover-zoom); }
+
+/* ---- 作品卡 hover 蒙层:封面整体压暗,居中显示项目名 + 时间 ----
+   结构由 cases.html 底部脚本注入(文案取自卡片下方已有的 label / date)。
+   时长不跟封面放大(0.77s 进场对蒙层来说太黏,鼠标压上去要等):蒙层单独用更快的
+   0.24s 淡入、0.4s 淡出,反馈即时;封面放大仍走全站 hover 缩放 token。 */
+body.works-page .card-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 20;                /* 盖在封面媒体、iPhone 外框/刘海(z-index 10)之上 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 24px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.48);
+    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px);
+    opacity: 0;
+    pointer-events: none;       /* 不挡点击,整卡仍可跳转 */
+    transition: opacity 0.4s var(--ease-soft);    /* 移出 */
+}
+body.works-page .card:hover .card-overlay {   /* 与封面放大同一个触发源 */
+    opacity: 1;
+    transition-duration: 0.24s;               /* 移入:蒙层立刻跟上鼠标 */
+}
+body.works-page .card-overlay .co-title {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: #fff;
+}
+/* 时间:字体/字号沿用首页 Blog 卡片日期(.home-v2 .w-date)—— 非等宽、14px;
+   颜色不跟 blog 的淡灰,改成与蒙层标题同色(纯白) */
+body.works-page .card-overlay .co-date {
+    font-family: inherit;
+    font-size: var(--fs-caption);   /* 14px */
+    font-weight: 400;
+    line-height: 1.5;
+    color: #fff;                    /* = .co-title 同色 */
+}
+@media (max-width: 768px) {
+    body.works-page .card-overlay .co-title { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    body.works-page .card-overlay { transition: none; }
+}
 
 /* 卡片默认底色:比页面亮一档,给卡片一个边界(作品填满卡面时看不到它)。
    下面几组按各自内容的实际底色单独覆盖 —— 用 :has() 按内容源精确选中,不必往 HTML

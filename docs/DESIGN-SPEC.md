@@ -178,6 +178,7 @@ token 定义在 `style.css` 的 `:root`，跨页面共用；`writing.css` 只在
 ## 动效
 
 - 缓动统一：`--ease: cubic-bezier(0.25, 0.46, 0.45, 0.94)`。
+- **封面 hover 放大（全站唯一规则）**：放大到 `--hover-zoom: 1.08`；移入 `--hover-zoom-in: 0.77s`，移出 `--hover-zoom-out: 1.54s`（收回是放大的 2 倍慢），缓动都用 `--ease-soft: cubic-bezier(0.22, 1, 0.36, 1)`。首页 / Blog（`.writing-card`）与 Cases（`.card`）共用这一组，token 定义在 `style.css :root`。以后任何 hover 放大交互一律引用这三个变量，禁止另写数值。
 - 进场：`.reveal-up`（上浮 24px + 渐显，0.5s）；标题用 `heading-rise-in`。
 - 尊重 `prefers-reduced-motion`：关闭位移与过渡。
 - Icon Library 内动效另有独立规范（Outlined 用平滑 CSS keyframes，Pixel 用 `step-end` 帧跳）。

@@ -42,19 +42,30 @@
             font-family: 'D-DIN', 'DIN Alternate', 'Helvetica Neue', Helvetica, Arial, sans-serif;
         }
         #page-loader .pl-num-row { display: flex; align-items: flex-end; }
-        #page-loader .pl-digits { font-size: 92px; font-weight: 400; line-height: 0.82; --pl-cell: 1.06em; }
+        /* 字重要整棵子树一起压,不能只写在 .pl-digits 上:
+           writing.css 的 body.design-page:not(.reading-page) * { font-weight: … !important }
+           会直接命中 .pl-cell / .pl-w 这些真正承载文字的后代,
+           !important 的通配规则赢过继承 —— 只设父元素的话数字仍然是 400(当时只有 % 变细了)。
+           这里用 ID 起头(1,1,0)压过它的(0,2,1),同时把撑宽度的隐藏 .pl-w 也带上,
+           否则它按 400 的字宽撑格子,和 200 的数字对不齐。 */
+        #page-loader .pl-num, #page-loader .pl-num * { font-weight: 200 !important; }
+        #page-loader .pl-digits { font-size: 64px; line-height: 0.82; --pl-cell: 1.4em; }
         /* 数字轮播:每个数位是一个开了 overflow 的窗口,里面是一条 0-9(末尾补一个 0
            用于无缝回绕)的竖条,按当前进度整体上移 —— 机械里程表那种连续滚动。
            窗口宽度由一个高度归零的隐藏「0」撑住(tabular-nums 下各数字等宽),
            竖条绝对定位不参与撑宽,所以滚动时整行不会左右晃。
            --pl-cell:每格高度,也是竖条每滚一位的位移量。 */
-        /* 格高取整个行盒(1.06em)而不是排版行高 0.82em:窗口比字面矮的话,上下相邻那格的
-           数字会从窗口边缘露出来一条。改成行盒等高后每格自己装得下,窗口里只可能有一个字。
-           多出来的是空的下伸区,用负 margin 收掉,%号仍然贴着数字基线走。 */
+        /* 格高特意取到 1.4em,远大于字面(92px 字的字面约 0.72em):
+           1.06em 时窗口只比字高一点点,滚动中相邻数字紧贴边缘、当前数字被硬边切出一条很显眼的直线。
+           留出的上下空白正好给下面的渐隐遮罩去吃 —— 静止时字完全在实心区不受影响,
+           滚动时进出视野的邻格是淡出去的,不是被一刀切断。
+           格变高后字在格内居中、整体上移,负 margin 同步加大把它按回原位,%号仍贴着数字基线走。 */
         #page-loader .pl-slot {
             position: relative; display: inline-block;
             height: var(--pl-cell); overflow: hidden; vertical-align: bottom;
-            margin-bottom: -0.24em;
+            margin-bottom: -0.41em;
+            -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 15%, #000 85%, transparent 100%);
+                    mask-image: linear-gradient(180deg, transparent 0%, #000 15%, #000 85%, transparent 100%);
         }
         #page-loader .pl-slot .pl-w { visibility: hidden; height: 0; overflow: hidden; font-style: normal; }
         #page-loader .pl-strip {
@@ -66,7 +77,9 @@
             height: var(--pl-cell); line-height: var(--pl-cell);
             text-align: center; font-style: normal;
         }
-        #page-loader .pl-pct { font-size: 35px; font-weight: 400; line-height: 1; margin-left: 3px; }
+        #page-loader .pl-pct { font-size: 24px; line-height: 1; margin-left: 3px; }
+        /* 滤镜挂载点,不占布局也不可见 */
+        #page-loader .pl-defs { position: absolute; width: 0; height: 0; pointer-events: none; }
         html.is-loading, html.is-loading body { overflow: hidden; }
         /* 入场闸门:loading 在场时把 Feed 按住(即使 IntersectionObserver 已加 .visible
            也保持隐藏);loading 上滑离场移除 is-loading 后放闸,卡片按原错峰节奏依次上移入场 */
@@ -77,11 +90,11 @@
             transition: none !important;
         }
     </style>
-<link href="style.css?v=127" rel="stylesheet"/>
+<link href="style.css?v=129" rel="stylesheet"/>
 <!-- Kaushan Script:仅首页 hero 的强调词用它,故只在本页加载,不放进全站 style.css -->
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Kaushan+Script&amp;display=swap" rel="stylesheet"/>
-<link href="writing/writing.css?v=296" rel="stylesheet"/>
+<link href="writing/writing.css?v=303" rel="stylesheet"/>
 <!-- 提前加载,使顶部导航能在首次绘制前同步注入,避免空 header 闪烁 -->
 <script src="writing/writing.js?v=78"></script>
 </head>
@@ -91,6 +104,13 @@
          资源就绪(或超时兜底)后淡出。样式内联,保证在外部 CSS 到达前就能正确渲染。 -->
 <div aria-hidden="true" id="page-loader">
 <div class="pl-fill" id="pl-fill"></div>
+<!-- 拖影用的竖向高斯模糊,一位一个(0=个位)。stdDeviation 由 JS 每帧按该位的瞬时速度改写,
+         「0 N」表示只在竖直方向糊 —— 横向也糊的话数字会像失焦,不像在滚。 -->
+<svg class="pl-defs" aria-hidden="true"><defs>
+<filter id="pl-blur-0" x="-20%" y="-60%" width="140%" height="220%"><feGaussianBlur in="SourceGraphic" stdDeviation="0 0"/></filter>
+<filter id="pl-blur-1" x="-20%" y="-60%" width="140%" height="220%"><feGaussianBlur in="SourceGraphic" stdDeviation="0 0"/></filter>
+<filter id="pl-blur-2" x="-20%" y="-60%" width="140%" height="220%"><feGaussianBlur in="SourceGraphic" stdDeviation="0 0"/></filter>
+</defs></svg>
 <div class="pl-num" id="pl-num"><span class="pl-num-row"><span class="pl-digits js-digits">0</span><span class="pl-pct">%</span></span></div>
 </div>
 <script>
@@ -106,11 +126,31 @@
                不按「整数一跳换一个字」来做,而是每个数位一条 0-9 的竖条、按连续值滚动:
                个位直接跟着 disp 走(一直在滚),十位/百位只在低位快进位时(小数部分 >0.9)
                的那 10% 里滚过去 —— 这样低位连续、高位干脆,才是里程表的手感。
-               disp 每帧向真实进度 pct 缓动,所以进度本身跳得多碎都不影响滚动的顺滑。 */
-            var CELL_N = 10;                 /* 竖条 0-9,外加末尾补一个 0 用于无缝回绕 */
-            var disp = 0, rafId = 0;
+               disp 每帧向真实进度 pct 缓动,所以进度本身跳得多碎都不影响滚动的顺滑。
 
-            function makeSlot() {
+               缓动是「两头缓」:用一个近临界阻尼的弹簧推 disp,而不是 disp += d*k 那种指数追赶
+               —— 指数追赶第一帧就是最快的,只有缓出没有缓入。弹簧的速度从 0 长起来,
+               所以起步是缓入、收尾是缓出,两头都缓。
+               这里不能用「固定时长 + in-out 曲线」的补间:pct 每 40ms 就被改一次,
+               每次重设补间都会退回曲线的缓入段,数字会一直在爬、走不动。弹簧天然支持中途改目标。 */
+            var CELL_N = 10;                 /* 竖条 0-9,外加末尾补一个 0 用于无缝回绕 */
+            var disp = 0, rafId = 0, vel = 0, aligned = false;
+            /* DAMP ≈ 1 - 2√K 即临界阻尼:两头都缓且不回弹。
+               K=0.035 时收敛到位约 4/√K ≈ 21 帧≈350ms。 */
+            var K = 0.035, DAMP = 0.626;
+            var blurs = [], prevPosv = [], blurHold = [];   /* 各位的滤镜 / 上一帧位置 / 上一帧模糊量 */
+            /* 系数按真实速度定:0→100 走 3s ≈ 0.55 格/帧,个位约 54px/帧,
+               要的是「糊但还看得出是数字在滚」,不是糊成一根实心杠,所以取 ~5px 的半径。 */
+            var BLUR_K = 0.09, BLUR_MAX = 10;
+            /* 模糊按帧衰减,相当于给它一个"快门时间"。
+               高位进位只占一两帧,只取瞬时值的话拖影一闪就没、根本看不见;
+               让它从峰值慢慢褪下去,进位那一下才留得住拖影 —— 个位一直在滚,衰减对它几乎没影响。 */
+            var BLUR_DECAY = 0.8;
+
+            /* blankZero:这一格是「新长出来的最高位」,它只会从无到有滚出一个 1,
+               所以把 0 那一格留空 —— 数字是从空白里滚进来的,不会出现 090 这种前导零。
+               等它上面又插入更高一位时(见 tick),再把 0 还回去,它就变回普通数位。 */
+            function makeSlot(blankZero) {
                 var slot = document.createElement('span');
                 slot.className = 'pl-slot';
                 var w = document.createElement('i');
@@ -122,27 +162,41 @@
                 for (var i = 0; i <= CELL_N; i++) {
                     var cell = document.createElement('span');
                     cell.className = 'pl-cell';
-                    cell.textContent = String(i % CELL_N);
+                    cell.textContent = (blankZero && i === 0) ? '' : String(i % CELL_N);
                     strip.appendChild(cell);
                 }
                 slot.appendChild(strip);
                 return slot;
             }
-            /* 数位数按 disp 取:9→10 时提前一帧长出十位(此时它正从 0 滚向 1),
-               这样新数位不是凭空「啪」地出现,而是跟着一起滚进来 */
+            /* 新数位必须在「它自己开始滚」的那一刻就存在,否则等它滚完才创建,
+               看到的就是一个已经滚到 99% 位置的数字凭空出现 —— 既没有滚动过程也没有拖影。
+               每一位的滚动窗口都是本位小数 >0.9,对第 b 位来说就是 v/10^b 的小数 >0.9
+               (十位在 v>9 时开始滚、百位在 v>90 时开始滚)。 */
             function slotCount(v) {
-                return String(Math.floor(v) + (v % 1 > 0.9 ? 1 : 0)).length;
+                var b = String(Math.floor(v)).length;
+                return b + ((v / Math.pow(10, b)) % 1 > 0.9 ? 1 : 0);
             }
             function tick() {
                 rafId = 0;
                 var target = pct;
-                var d = target - disp;
-                disp = Math.abs(d) < 0.02 ? target : disp + d * 0.16;
+                vel = (vel + (target - disp) * K) * DAMP;
+                disp += vel;
+                /* target 只增不减,所以越过它一定是弹簧过冲 —— 直接夹住。
+                   里程表往回倒一格是很显眼的错,宁可牺牲一点弹性 */
+                if (disp > target) { disp = target; vel = 0; }
+                if (Math.abs(target - disp) < 0.02 && Math.abs(vel) < 0.02) { disp = target; vel = 0; }
+                /* 吸附到 100 的这一帧,三个数位才真正对齐在格子中央。
+                   finish() 等的就是这个信号,而不是等一个拍脑袋的时长。 */
+                if (disp === target && target >= 100) aligned = true;
                 for (var b = 0; b < digits.length; b++) {
                     var box = digits[b];
                     var n = slotCount(disp);
                     while (box.children.length > n) box.removeChild(box.firstChild);
-                    while (box.children.length < n) box.insertBefore(makeSlot(), box.firstChild);
+                    while (box.children.length < n) {
+                        /* 原来的最高位不再是最高位了,把它留空的 0 还回去 —— 100 时它要显示 0 */
+                        if (box.firstChild) box.firstChild.lastChild.firstChild.textContent = '0';
+                        box.insertBefore(makeSlot(true), box.firstChild);
+                    }
                     for (var i = 0; i < n; i++) {
                         var place = n - 1 - i;                 /* 0 = 个位 */
                         var v = disp / Math.pow(10, place);
@@ -152,6 +206,22 @@
                         var strip = box.children[i].lastChild;
                         /* 位移按格高算(百分比会以整条竖条为基准,不是一格) */
                         strip.style.transform = 'translate3d(0, calc(var(--pl-cell) * ' + (-(posv % CELL_N)).toFixed(4) + '), 0)';
+                        /* 拖影:按这一位自己的瞬时速度(格/帧 × 格高 = px/帧)算模糊半径。
+                           所以个位一直在滚、一直带影,高位只在进位那 10% 里糊一下,
+                           收尾弹簧减速时影子自己收干净 —— 不是贴一张固定的糊图。
+                           滤镜按 place 复用(0=个位),数位增减时不用重新挂。 */
+                        var fid = 'url(#pl-blur-' + place + ')';
+                        if (strip.style.filter !== fid) strip.style.filter = fid;
+                        if (b === 0 && blurs[place]) {
+                            var cellPx = box.children[i].clientHeight;
+                            var was = prevPosv[place] == null ? posv : prevPosv[place];
+                            var inst = Math.abs(posv - was) * cellPx * BLUR_K;
+                            /* 取「瞬时值」和「上一帧衰减后的值」的大者:上升沿立刻跟上,下降沿慢慢褪 */
+                            var sd = disp === target ? 0 : Math.max(inst, (blurHold[place] || 0) * BLUR_DECAY);
+                            blurHold[place] = sd;
+                            blurs[place].setAttribute('stdDeviation', '0 ' + Math.min(BLUR_MAX, sd).toFixed(2));
+                            prevPosv[place] = posv;
+                        }
                     }
                 }
                 if (disp !== target) rafId = requestAnimationFrame(tick);
@@ -188,6 +258,18 @@
                 if (num && p >= 52) num.style.color = '#fff';
                 showNumber();
             }
+            /* 弹簧是渐近收敛的,固定等一个时长有可能在它还差半格时就把画面抬走
+               (实测差 0.024 格 ≈ 3px,肉眼看得出没对正)。所以等 tick 把 disp 吸附到 100 的
+               那一帧,再停 HOLD_MS 让人看清对齐后的 100%,然后才上滑。
+               ALIGN_MAX 是兜底:万一 rAF 被后台标签页挂起,不能就这么卡住不走。 */
+            var HOLD_MS = 550, ALIGN_MAX = 2000;
+            function whenAligned(cb) {
+                var t0a = Date.now();
+                (function poll() {
+                    if (aligned || Date.now() - t0a > ALIGN_MAX) { setTimeout(cb, HOLD_MS); return; }
+                    requestAnimationFrame(poll);
+                })();
+            }
             function finish() {
                 if (finished) return;
                 finished = true;
@@ -201,7 +283,7 @@
                     setPct(from + (100 - from) * k);
                     if (k >= 1) {
                         clearInterval(sweep);
-                        setTimeout(function () {
+                        whenAligned(function () {
                             var released = false;
                             var release = function () {   /* 上滑完全离场后再放闸,Feed 依次入场 */
                                 if (released) return;
@@ -214,13 +296,14 @@
                                 loader.addEventListener('transitionend', release, { once: true });
                             }
                             setTimeout(release, 800);   /* transitionend 兜底 */
-                        }, 450);   /* 等黑色进度面走满再上滑 */
+                        });   /* 等数字真正对齐、停一拍,再上滑 —— 见 whenAligned */
                     }
                 }, 40);
             }
             document.addEventListener('DOMContentLoaded', function () {
                 fill = document.getElementById('pl-fill');
                 num = document.getElementById('pl-num');
+                blurs = [].slice.call(document.querySelectorAll('.pl-defs feGaussianBlur'));
                 digits = document.querySelectorAll('.js-digits');
                 for (var d = 0; d < digits.length; d++) {
                     digits[d].textContent = '';   /* 换掉首帧那个静态 0,改成竖条 */

@@ -42,6 +42,15 @@
     --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
 
     /* ============================================================
+       封面 hover 放大 —— 全站唯一规则(首页 / Blog / Cases 都用这一组)
+       以后任何「hover 放大」交互,一律引用这三个变量,不要另写数值。
+       ============================================================ */
+    --hover-zoom: 1.08;        /* 放大量 */
+    --hover-zoom-in: 0.77s;    /* 移入(放大)时长 */
+    --hover-zoom-out: 1.54s;   /* 移出(收回)时长,是移入的 2 倍,收得更慢 */
+    /* 缓动统一用 --ease-soft */
+
+    /* ============================================================
        全站字号 scale —— 6 级,按 HTML 元素/角色命名,桌面/手机统一(只维护这一处)
        --fs-h1      36px  <h1> 大标题(文章/页面 hero)
        --fs-h2      24px  <h2> 小标题(章节)
@@ -62,7 +71,7 @@
     --fs-caption: 14px;
 
     /* 字重 token(与字号一套,只维护这一处):正文常规 + 标题加粗一档 */
-    --fw-normal: 400;
+    --fw-normal: 300;
     --fw-bold: 500;
 }
 
@@ -1125,7 +1134,7 @@ a {
 }
 
 /* ========================================
-   卡片封面 hover:封面展示区域里面的元素放大到 150%,离开恢复
+   卡片封面 hover:参数取全站唯一规则(--hover-zoom / -in / -out,见 :root)
    通过 --hover-scale 变量驱动,避免与已有 transform(缩放/动态缩放)冲突
    ======================================== */
 .card {
@@ -1133,7 +1142,7 @@ a {
 }
 
 .card:hover {
-    --hover-scale: 1.06;   /* 放大量收敛,hover 缩放更缓和 */
+    --hover-scale: var(--hover-zoom);
 }
 
 /* hover 时封面下面的文字整体变灰 */
@@ -1159,15 +1168,15 @@ a {
 .iphone-frame {
     transform: scale(var(--hover-scale, 1));
     transform-origin: center center;
-    transition: transform 1.5s cubic-bezier(0.22, 1, 0.36, 1);   /* ease-soft;此条管「收回」方向 */
+    transition: transform var(--hover-zoom-out) var(--ease-soft);   /* 移出:收回更慢 */
     will-change: transform;
 }
-/* 放大(进入)方向单独更缓:hover 态的 transition 决定进入动画,拉长到 2.4s(收回仍 1.5s) */
+/* 移入:放大稍快 */
 .card:hover .card-video,
 .card:hover .card-iframe,
 .card:hover .card-img,
 .card:hover .iphone-frame {
-    transition-duration: 2.4s;
+    transition-duration: var(--hover-zoom-in);
 }
 
 /* ========================================
