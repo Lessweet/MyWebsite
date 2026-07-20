@@ -42,16 +42,29 @@
             font-family: 'D-DIN', 'DIN Alternate', 'Helvetica Neue', Helvetica, Arial, sans-serif;
         }
         #page-loader .pl-num-row { display: flex; align-items: flex-end; }
-        #page-loader .pl-digits { font-size: 92px; font-weight: 400; line-height: 0.82; }
-        /* 数字跳动 = animate-text 的 bottom-up-letters:每个数位一个槽位,旧字上移淡出、
-           新字从下方升起。槽位宽度由一个隐藏的「0」撑住(tabular-nums 下各数字等宽),
-           这样换字时两个字形叠在同一位置、整行不会左右晃。 */
-        #page-loader .pl-slot { position: relative; display: inline-block; }
-        #page-loader .pl-slot .pl-w { visibility: hidden; font-style: normal; }
-        #page-loader .pl-slot .pl-g {
+        #page-loader .pl-digits { font-size: 92px; font-weight: 400; line-height: 0.82; --pl-cell: 1.06em; }
+        /* 数字轮播:每个数位是一个开了 overflow 的窗口,里面是一条 0-9(末尾补一个 0
+           用于无缝回绕)的竖条,按当前进度整体上移 —— 机械里程表那种连续滚动。
+           窗口宽度由一个高度归零的隐藏「0」撑住(tabular-nums 下各数字等宽),
+           竖条绝对定位不参与撑宽,所以滚动时整行不会左右晃。
+           --pl-cell:每格高度,也是竖条每滚一位的位移量。 */
+        /* 格高取整个行盒(1.06em)而不是排版行高 0.82em:窗口比字面矮的话,上下相邻那格的
+           数字会从窗口边缘露出来一条。改成行盒等高后每格自己装得下,窗口里只可能有一个字。
+           多出来的是空的下伸区,用负 margin 收掉,%号仍然贴着数字基线走。 */
+        #page-loader .pl-slot {
+            position: relative; display: inline-block;
+            height: var(--pl-cell); overflow: hidden; vertical-align: bottom;
+            margin-bottom: -0.24em;
+        }
+        #page-loader .pl-slot .pl-w { visibility: hidden; height: 0; overflow: hidden; font-style: normal; }
+        #page-loader .pl-strip {
             position: absolute; left: 0; top: 0; width: 100%;
+            will-change: transform;
+        }
+        #page-loader .pl-cell {
+            display: block;   /* span 默认 inline,不改成块级会横着排、也吃不到 height */
+            height: var(--pl-cell); line-height: var(--pl-cell);
             text-align: center; font-style: normal;
-            will-change: transform, opacity;
         }
         #page-loader .pl-pct { font-size: 35px; font-weight: 400; line-height: 1; margin-left: 3px; }
         html.is-loading, html.is-loading body { overflow: hidden; }
@@ -68,7 +81,7 @@
 <!-- Kaushan Script:仅首页 hero 的强调词用它,故只在本页加载,不放进全站 style.css -->
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Kaushan+Script&amp;display=swap" rel="stylesheet"/>
-<link href="writing/writing.css?v=294" rel="stylesheet"/>
+<link href="writing/writing.css?v=295" rel="stylesheet"/>
 <!-- 提前加载,使顶部导航能在首次绘制前同步注入,避免空 header 闪烁 -->
 <script src="writing/writing.js?v=78"></script>
 </head>
@@ -89,79 +102,63 @@
             var t0 = Date.now();
             var pct = 0, sim = 0, loaded = 0, total = 0, finished = false;
             var fill, num, digits, trickle;
-            /* ── 数字动效:animate-text / bottom-up-letters ──────────────────
-               取 spec 的站点运行时参数(duration/stagger × 0.72,y 位移 × 0.58):
-               enter 288ms / 逐位错开 63ms / 从下方 26.7px 升起,easing (0.18,1,0.32,1);
-               exit 202ms / 上移 8.1px 淡出,easing (0.7,0,0.84,0);中间 micro-delay 35ms。
-               零模糊是这个效果的签名,所以只做 translate + opacity。
-               MIN_GAP:进度本身每 40ms 就会跳一次,直接跟着换字会糊成一团 —— 节流到
-               220ms 一跳(约 13 次),每次跳跃都能看完一个完整的升起动作。 */
-            var G_ENTER_DUR = 288, G_ENTER_STAG = 63, G_ENTER_Y = 26.7;
-            var G_EXIT_DUR = 202, G_EXIT_Y = -8.1, G_MICRO = 35, G_MIN_GAP = 220;
-            var G_ENTER_EASE = 'cubic-bezier(0.18, 1, 0.32, 1)';
-            var G_EXIT_EASE = 'cubic-bezier(0.7, 0, 0.84, 0)';
-            var shownText = null, lastSwap = 0;
-            var canAnimate = typeof Element !== 'undefined' && !!Element.prototype.animate;
+            /* ── 数字轮播(odometer)────────────────────────────────────────
+               不按「整数一跳换一个字」来做,而是每个数位一条 0-9 的竖条、按连续值滚动:
+               个位直接跟着 disp 走(一直在滚),十位/百位只在低位快进位时(小数部分 >0.9)
+               的那 10% 里滚过去 —— 这样低位连续、高位干脆,才是里程表的手感。
+               disp 每帧向真实进度 pct 缓动,所以进度本身跳得多碎都不影响滚动的顺滑。 */
+            var CELL_N = 10;                 /* 竖条 0-9,外加末尾补一个 0 用于无缝回绕 */
+            var disp = 0, rafId = 0;
 
             function makeSlot() {
                 var slot = document.createElement('span');
                 slot.className = 'pl-slot';
                 var w = document.createElement('i');
                 w.className = 'pl-w';
-                w.textContent = '0';   /* 只用来撑宽度,tabular-nums 下各数字同宽 */
+                w.textContent = '0';   /* 只撑宽度,高度归零;tabular-nums 下各数字同宽 */
                 slot.appendChild(w);
+                var strip = document.createElement('span');
+                strip.className = 'pl-strip';
+                for (var i = 0; i <= CELL_N; i++) {
+                    var cell = document.createElement('span');
+                    cell.className = 'pl-cell';
+                    cell.textContent = String(i % CELL_N);
+                    strip.appendChild(cell);
+                }
+                slot.appendChild(strip);
                 return slot;
             }
-            /* delay:该数位在本次跳动里的错峰量;animate=false 用于首帧直出,不做动画 */
-            function fillSlot(slot, ch, delay, animate) {
-                var old = slot.querySelector('.pl-g:not(.pl-out)');
-                if (old) {
-                    if (old.textContent === ch) return;
-                    old.className = 'pl-g pl-out';   /* 退场中的字形不再被当作当前字(定位样式保留) */
-                    if (animate) {
-                        var out = old.animate([
-                            { transform: 'translate3d(0,0,0)', opacity: 1 },
-                            { transform: 'translate3d(0,' + G_EXIT_Y + 'px,0)', opacity: 0 }
-                        ], { duration: G_EXIT_DUR, easing: G_EXIT_EASE, fill: 'forwards' });
-                        out.onfinish = function () { if (old.parentNode) old.parentNode.removeChild(old); };
-                    } else if (old.parentNode) {
-                        old.parentNode.removeChild(old);
+            /* 数位数按 disp 取:9→10 时提前一帧长出十位(此时它正从 0 滚向 1),
+               这样新数位不是凭空「啪」地出现,而是跟着一起滚进来 */
+            function slotCount(v) {
+                return String(Math.floor(v) + (v % 1 > 0.9 ? 1 : 0)).length;
+            }
+            function tick() {
+                rafId = 0;
+                var target = pct;
+                var d = target - disp;
+                disp = Math.abs(d) < 0.02 ? target : disp + d * 0.16;
+                for (var b = 0; b < digits.length; b++) {
+                    var box = digits[b];
+                    var n = slotCount(disp);
+                    while (box.children.length > n) box.removeChild(box.firstChild);
+                    while (box.children.length < n) box.insertBefore(makeSlot(), box.firstChild);
+                    for (var i = 0; i < n; i++) {
+                        var place = n - 1 - i;                 /* 0 = 个位 */
+                        var v = disp / Math.pow(10, place);
+                        var frac = v % 1;
+                        /* 个位连续滚;高位平时不动,只在低位进位前的最后 10% 里滚完一格 */
+                        var posv = place === 0 ? v : Math.floor(v) + Math.min(1, Math.max(0, (frac - 0.9) * 10));
+                        var strip = box.children[i].lastChild;
+                        /* 位移按格高算(百分比会以整条竖条为基准,不是一格) */
+                        strip.style.transform = 'translate3d(0, calc(var(--pl-cell) * ' + (-(posv % CELL_N)).toFixed(4) + '), 0)';
                     }
                 }
-                var g = document.createElement('span');
-                g.className = 'pl-g';
-                g.textContent = ch;
-                slot.appendChild(g);
-                if (!animate) return;
-                g.style.opacity = '0';
-                g.animate([
-                    { transform: 'translate3d(0,' + G_ENTER_Y + 'px,0)', opacity: 0 },
-                    { transform: 'translate3d(0,0,0)', opacity: 1 }
-                ], {
-                    duration: G_ENTER_DUR,
-                    delay: (old ? G_MICRO : 0) + delay,
-                    easing: G_ENTER_EASE,
-                    fill: 'forwards'
-                });
+                if (disp !== target) rafId = requestAnimationFrame(tick);
             }
-            function paint(box, text, animate) {
-                while (box.children.length > text.length) box.removeChild(box.lastChild);
-                for (var i = 0; i < text.length; i++) {
-                    var slot = box.children[i];
-                    if (!slot) { slot = makeSlot(); box.appendChild(slot); }
-                    fillSlot(slot, text.charAt(i), i * G_ENTER_STAG, animate);
-                }
-            }
-            /* force:收尾的 100 必须落地,不受节流拦截 */
-            function showNumber(p, force) {
+            function showNumber() {
                 if (!digits || !digits.length) return;
-                var text = String(p);
-                if (text === shownText) return;
-                var now = Date.now();
-                if (!force && shownText !== null && now - lastSwap < G_MIN_GAP) return;
-                lastSwap = now;
-                shownText = text;
-                for (var i = 0; i < digits.length; i++) paint(digits[i], text, canAnimate);
+                if (!rafId) rafId = requestAnimationFrame(tick);
             }
             function render(p) {
                 /* 时间曲线上限:资源秒开时数字也不许一下冲到 99,
@@ -174,7 +171,7 @@
                 pct = p;
                 if (fill) fill.style.transform = 'translateX(' + (pct - 100) + '%)';
                 if (num && pct >= 52) num.style.color = '#fff';   /* 黑面过半,数字换白 */
-                showNumber(pct);
+                showNumber();
             }
             function cleanup() {
                 docEl.classList.remove('is-loading');
@@ -186,9 +183,10 @@
             var MIN_MS = 3000;
             function setPct(p) {
                 p = Math.round(p);
+                pct = p;   /* 收尾扫到 100 也要写回 pct:轮播的目标值只认它 */
                 if (fill) fill.style.transform = 'translateX(' + (p - 100) + '%)';
                 if (num && p >= 52) num.style.color = '#fff';
-                showNumber(p, p >= 100);
+                showNumber();
             }
             function finish() {
                 if (finished) return;
@@ -225,10 +223,10 @@
                 num = document.getElementById('pl-num');
                 digits = document.querySelectorAll('.js-digits');
                 for (var d = 0; d < digits.length; d++) {
-                    digits[d].textContent = '';
-                    paint(digits[d], '0', false);   /* 首帧的 0 直出,不做入场动画 */
+                    digits[d].textContent = '';   /* 换掉首帧那个静态 0,改成竖条 */
+                    digits[d].appendChild(makeSlot());
                 }
-                shownText = '0';
+                showNumber();
                 var els = [].slice.call(document.querySelectorAll('iframe, img, video'));
                 total = els.length;
                 function mark() {
@@ -277,7 +275,7 @@
      右下角署名,这里是黑底上重做的一块居中排版。强调词用 Kaushan Script(见 head 的字体加载)。
      纯 HTML/CSS,不再走 iframe。上方与顶栏的间距由 body.no-banner 的 padding-top 负责。 -->
 <header class="home-hero">
-<!-- 两行各自成块:mask-reveal-up 是 per-line 效果,需要每行是独立的动画单元(原来的 <br/> 做不到) -->
+<!-- 两行各自成块:原来靠 <br/> 换行,拆成块之后逐字切分才不会把换行也当成一个字 -->
 <h1 class="hero-headline"><span class="hero-line">From AI-Assisted</span><span class="hero-line">to <span class="accent">AI-Native Design.</span></span></h1>
 <div class="hero-byline">
 <span aria-label="Tongrong 头像" class="hero-avatar" role="img"><img alt="" src="writing/assets/tongrong-avatar.svg?v=2"/></span>
@@ -287,6 +285,35 @@
 </span>
 </div>
 </header>
+<script>
+        /* hero 逐字切分:soft-blur-in 是 per-character 效果,每个字符(含空格)是一个动画单元。
+           递归走文本节点,原有的 .accent 等元素结构原样保留,只把里面的文字换成逐字 span;
+           --d 记该字的错峰延迟(18ms/字),署名排在全部字之后。动画本身在 writing.css。 */
+        (function () {
+            var h = document.querySelector('.hero-headline');
+            if (!h) return;
+            var i = 0, STEP = 18;
+            (function walk(node) {
+                [].slice.call(node.childNodes).forEach(function (n) {
+                    if (n.nodeType === 3) {
+                        var frag = document.createDocumentFragment();
+                        n.textContent.split('').forEach(function (ch) {
+                            var s = document.createElement('span');
+                            s.className = 'hero-ch';
+                            s.textContent = ch;
+                            s.style.setProperty('--d', (i++ * STEP) + 'ms');
+                            frag.appendChild(s);
+                        });
+                        node.replaceChild(frag, n);
+                    } else if (n.nodeType === 1) {
+                        walk(n);
+                    }
+                });
+            })(h);
+            var by = document.querySelector('.hero-byline');
+            if (by) by.style.setProperty('--d', (i * STEP + 120) + 'ms');
+        })();
+    </script>
 <aside aria-label="Writing 分类" class="design-menu">
 <button class="nav-cat active" data-filter="all" type="button"><span class="menu-icon"><svg viewbox="0 0 24 24"><path d="M4.25,4.12 4.25,4.38 4.0,4.38 4.0,11.38 11.25,11.38 11.25,4.38 11.0,4.38 11.0,4.12ZM15.5,4.12 15.5,4.38 14.75,4.38 14.75,4.62 14.25,4.62 14.25,4.88 14.0,4.88 14.0,5.12 13.75,5.12 13.75,5.38 13.5,5.38 13.5,5.62 13.25,5.62 13.25,5.88 13.0,5.88 13.0,6.38 12.75,6.38 12.75,7.62 12.5,7.62 12.5,8.12 12.75,8.12 12.75,9.12 13.0,9.12 13.0,9.62 13.25,9.62 13.25,10.12 13.5,10.12 13.5,10.38 13.75,10.38 13.75,10.62 14.25,10.62 14.25,10.88 14.5,10.88 14.5,11.12 15.0,11.12 15.0,11.38 17.5,11.38 17.5,11.12 18.0,11.12 18.0,10.88 18.5,10.88 18.5,10.62 18.75,10.62 18.75,10.38 19.0,10.38 19.0,10.12 19.25,10.12 19.25,9.88 19.5,9.88 19.5,9.38 19.75,9.38 19.75,8.88 20.0,8.88 20.0,6.62 19.75,6.62 19.75,6.12 19.5,6.12 19.5,5.62 19.25,5.62 19.25,5.38 19.0,5.38 19.0,5.12 18.75,5.12 18.75,4.88 18.25,4.88 18.25,4.62 17.75,4.62 17.75,4.38 17.25,4.38 17.25,4.12ZM5.0,12.88 5.0,13.12 4.75,13.12 4.75,13.38 4.5,13.38 4.5,13.62 4.25,13.62 4.25,14.12 4.0,14.12 4.0,15.38 4.25,15.38 4.25,15.88 4.5,15.88 4.5,16.12 5.0,16.12 5.0,16.38 4.75,16.38 4.75,16.62 4.5,16.62 4.5,16.88 4.25,16.88 4.25,17.38 4.0,17.38 4.0,18.62 4.25,18.62 4.25,19.12 4.5,19.12 4.5,19.38 4.75,19.38 4.75,19.62 5.25,19.62 5.25,19.88 6.5,19.88 6.5,19.62 7.0,19.62 7.0,19.38 7.25,19.38 7.25,19.12 8.0,19.12 8.0,19.38 8.25,19.38 8.25,19.62 8.75,19.62 8.75,19.88 9.75,19.88 9.75,19.62 10.25,19.62 10.25,19.38 10.75,19.38 10.75,18.88 11.0,18.88 11.0,18.38 11.25,18.38 11.25,17.38 11.0,17.38 11.0,16.88 10.75,16.88 10.75,16.62 10.5,16.62 10.5,16.38 10.25,16.38 10.25,16.12 10.5,16.12 10.5,15.88 10.75,15.88 10.75,15.62 11.0,15.62 11.0,15.12 11.25,15.12 11.25,14.12 11.0,14.12 11.0,13.62 10.75,13.62 10.75,13.38 10.5,13.38 10.5,13.12 10.25,13.12 10.25,12.88 8.5,12.88 8.5,13.12 8.0,13.12 8.0,13.38 7.75,13.38 7.75,13.62 7.5,13.62 7.5,13.38 7.25,13.38 7.25,13.12 6.75,13.12 6.75,12.88ZM19.5,12.88 19.5,13.12 19.0,13.12 19.0,13.38 18.5,13.38 18.5,13.62 18.0,13.62 18.0,13.88 17.75,13.88 17.75,14.12 17.25,14.12 17.25,14.38 17.0,14.38 17.0,14.62 16.75,14.62 16.75,14.88 16.25,14.88 16.25,15.12 16.0,15.12 16.0,15.38 15.75,15.38 15.75,15.62 15.5,15.62 15.5,15.88 15.25,15.88 15.25,16.12 15.0,16.12 15.0,16.38 14.75,16.38 14.75,16.62 14.5,16.62 14.5,16.88 14.25,16.88 14.25,17.12 14.0,17.12 14.0,17.62 13.75,17.62 13.75,17.88 13.5,17.88 13.5,18.38 13.25,18.38 13.25,18.88 13.0,18.88 13.0,19.38 12.75,19.38 12.75,19.62 13.0,19.62 13.0,19.88 19.75,19.88 19.75,19.62 20.0,19.62 20.0,12.88Z" fill-rule="evenodd"></path></svg></span>All</button>
 <button class="nav-cat" data-filter="ui" type="button"><span class="menu-icon"><svg viewbox="0 0 24 24"><path d="M10.28,5.12 10.28,5.47 9.25,5.47 9.25,5.81 8.56,5.81 8.56,6.16 8.22,6.16 8.22,6.5 6.16,6.5 6.16,6.84 5.47,6.84 5.47,7.19 4.78,7.19 4.78,7.53 4.44,7.53 4.44,8.22 4.09,8.22 4.09,8.91 3.75,8.91 3.75,9.25 2.72,9.25 2.72,9.59 2.38,9.59 2.38,9.94 2.03,9.94 2.03,10.28 1.69,10.28 1.69,10.62 1.34,10.62 1.34,11.66 1.0,11.66 1.0,12.34 1.34,12.34 1.34,13.03 1.69,13.03 1.69,13.72 2.03,13.72 2.03,14.06 2.38,14.06 2.38,14.41 2.72,14.41 2.72,14.75 3.41,14.75 3.41,15.09 4.09,15.09 4.09,15.78 4.44,15.78 4.44,16.47 4.78,16.47 4.78,16.81 5.47,16.81 5.47,17.16 6.16,17.16 6.16,17.5 8.22,17.5 8.22,17.84 8.56,17.84 8.56,18.19 9.25,18.19 9.25,18.53 9.94,18.53 9.94,18.88 11.31,18.88 11.31,18.53 12.34,18.53 12.34,18.88 14.06,18.88 14.06,18.53 14.75,18.53 14.75,18.19 15.44,18.19 15.44,17.5 17.84,17.5 17.84,17.16 18.53,17.16 18.53,16.81 19.22,16.81 19.22,16.47 19.56,16.47 19.56,15.78 19.91,15.78 19.91,15.09 20.59,15.09 20.59,14.75 21.28,14.75 21.28,14.41 21.62,14.41 21.62,14.06 21.97,14.06 21.97,13.72 22.31,13.72 22.31,13.03 22.66,13.03 22.66,10.97 22.31,10.97 22.31,10.28 21.97,10.28 21.97,9.94 21.62,9.94 21.62,9.59 21.28,9.59 21.28,9.25 19.91,9.25 19.91,8.22 19.56,8.22 19.56,7.88 19.22,7.88 19.22,7.53 18.88,7.53 18.88,7.19 18.53,7.19 18.53,6.84 17.84,6.84 17.84,6.5 15.78,6.5 15.78,6.16 15.44,6.16 15.44,5.81 14.75,5.81 14.75,5.47 14.06,5.47 14.06,5.12 12.69,5.12 12.69,5.47 10.97,5.47 10.97,5.12ZM11.66,8.91 12.34,8.91 12.34,9.25 13.38,9.25 13.38,9.59 13.72,9.59 13.72,9.94 14.41,9.94 14.41,10.62 14.75,10.62 14.75,11.66 15.09,11.66 15.09,12.69 14.75,12.69 14.75,13.38 14.41,13.38 14.41,14.06 14.06,14.06 14.06,14.41 13.38,14.41 13.38,14.75 12.69,14.75 12.69,15.09 10.97,15.09 10.97,14.75 10.28,14.75 10.28,14.41 9.94,14.41 9.94,14.06 9.59,14.06 9.59,13.72 9.25,13.72 9.25,13.03 8.91,13.03 8.91,11.31 9.25,11.31 9.25,10.62 9.59,10.62 9.59,9.94 9.94,9.94 9.94,9.59 10.62,9.59 10.62,9.25 11.66,9.25Z" fill-rule="evenodd"></path></svg></span>UI</button>

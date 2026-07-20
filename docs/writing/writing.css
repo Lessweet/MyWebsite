@@ -2227,29 +2227,32 @@ body.theme-dark .design-content .category-section .section-divider {
     letter-spacing: 0;                  /* 手写体本就连笔,负字距会糊在一起 */
 }
 
-/* hero 入场:animate-text / mask-reveal-up(per-line)。
-   站点运行时参数:duration 760 × 0.72 ≈ 547ms,逐行错开 90 × 0.72 ≈ 65ms,
-   位移 30px × 0.58 ≈ 17.4px,起始 6px 模糊化开,easing (0.22, 1, 0.36, 1)。
-   两行标题 + 署名当作三个 line 单元依次上浮。
+/* hero 入场:animate-text / soft-blur-in(per-character)。
+   站点运行时参数:duration 900 × 0.72 ≈ 648ms,逐字错开 25 × 0.72 ≈ 18ms,
+   位移 16px × 0.58 ≈ 9.3px,起始 12px 模糊化开,easing (0.22, 1, 0.36, 1)。
+   逐字的 span 由 index.html 里的切分脚本生成,--d 是该字的错峰延迟。
 
    闸门:默认 opacity 0,只有 html.hero-ready(loading 遮罩离场后由 index.html 的
    cleanup() 加上)才播放 —— 否则动画会在遮罩背后空放一遍,揭开时已经播完了。 */
 .hero-line { display: block; }
-.hero-line,
-.hero-byline { opacity: 0; }
-html.hero-ready .hero-line,
-html.hero-ready .hero-byline {
-    animation: hero-mask-reveal-up 547ms cubic-bezier(0.22, 1, 0.36, 1) both;
+.hero-ch {
+    display: inline-block;   /* 逐字要吃 transform,只能是 inline-block */
+    white-space: pre;        /* 空格也是一个动画单元,不能被折叠掉 */
 }
-html.hero-ready .hero-line:nth-child(2) { animation-delay: 65ms; }
-html.hero-ready .hero-byline { animation-delay: 130ms; }
-@keyframes hero-mask-reveal-up {
-    from { opacity: 0; transform: translate3d(0, 17.4px, 0); filter: blur(6px); }
+.hero-ch,
+.hero-byline { opacity: 0; }
+html.hero-ready .hero-ch,
+html.hero-ready .hero-byline {
+    animation: hero-soft-blur-in 648ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--d, 0ms);
+}
+@keyframes hero-soft-blur-in {
+    from { opacity: 0; transform: translate3d(0, 9.3px, 0); filter: blur(12px); }
     to   { opacity: 1; transform: none; filter: blur(0); }
 }
 @media (prefers-reduced-motion: reduce) {
-    .hero-line, .hero-byline { opacity: 1; }
-    html.hero-ready .hero-line,
+    .hero-ch, .hero-byline { opacity: 1; }
+    html.hero-ready .hero-ch,
     html.hero-ready .hero-byline { animation: none; }
 }
 
