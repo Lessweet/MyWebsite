@@ -11,7 +11,7 @@
       "cat": "product",
       "accent": "#2F3336",
       "collection": "Figma 观察",
-      "excerpt": "Figma Make 连上 GitHub 后，设计师直接改代码发 PR、工程师只做审核——移交流程被整个反转了，但单向同步和 beta 门槛说明信任边界还没跟上。",
+      "excerpt": "Figma Make 连上真实的 GitHub 仓库，设计师自己改代码、开分支、发 PR，最后 20% 的体验细节从画布一路带进合并的 PR；只是同步还是单向的，工程师合并了什么 Make 侧看不到，这个断点很实际。",
       "cover": "assets/figma-make-designer-pr/cover4.png"
     },
     {
