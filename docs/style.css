@@ -71,7 +71,7 @@
     --fs-caption: 14px;
 
     /* 字重 token(与字号一套,只维护这一处):正文常规 + 标题加粗一档 */
-    --fw-normal: 300;
+    --fw-normal: 400;
     --fw-bold: 500;
 }
 

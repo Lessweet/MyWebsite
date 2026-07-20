@@ -36,7 +36,7 @@
 
 | Token | 值 | 用途 |
 |---|---|---|
-| `--fw-normal` | 300 | 正文 / UI 常规 |
+| `--fw-normal` | 400 | 正文 / UI 常规 |
 | `--fw-bold` | 500 | 标题层级「加粗一档」(h1/h2/h3 + 卡片标题 `.w-title`/`.card-label` + `.article-h1`) |
 
 - 列表页(Blog/Skills)基调:`* → var(--fw-normal)`,标题层级 `→ var(--fw-bold)`(`writing.css` 顶部那条规则)。
