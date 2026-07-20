@@ -2202,7 +2202,9 @@ body.theme-dark .design-content .category-section .section-divider {
 .hero-headline {
     margin: 0;
     font-weight: 300;
-    font-size: clamp(30px, 5.4vw, 76px);
+    /* 整体比原来小一档(30/5.4vw/76 → 26/4.5vw/62):标题原先占满一屏宽,压小后
+       与下方 Feed 的字号层级更接近,hero 不再一枝独秀 */
+    font-size: clamp(26px, 4.5vw, 62px);
     line-height: 1.2;
     letter-spacing: -0.015em;
     color: rgba(255, 255, 255, 0.45);   /* 前半句「旧范式」压暗 */
@@ -2223,6 +2225,32 @@ body.theme-dark .design-content .category-section .section-divider {
     line-height: 0.8;
     vertical-align: -0.04em;
     letter-spacing: 0;                  /* 手写体本就连笔,负字距会糊在一起 */
+}
+
+/* hero 入场:animate-text / mask-reveal-up(per-line)。
+   站点运行时参数:duration 760 × 0.72 ≈ 547ms,逐行错开 90 × 0.72 ≈ 65ms,
+   位移 30px × 0.58 ≈ 17.4px,起始 6px 模糊化开,easing (0.22, 1, 0.36, 1)。
+   两行标题 + 署名当作三个 line 单元依次上浮。
+
+   闸门:默认 opacity 0,只有 html.hero-ready(loading 遮罩离场后由 index.html 的
+   cleanup() 加上)才播放 —— 否则动画会在遮罩背后空放一遍,揭开时已经播完了。 */
+.hero-line { display: block; }
+.hero-line,
+.hero-byline { opacity: 0; }
+html.hero-ready .hero-line,
+html.hero-ready .hero-byline {
+    animation: hero-mask-reveal-up 547ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+html.hero-ready .hero-line:nth-child(2) { animation-delay: 65ms; }
+html.hero-ready .hero-byline { animation-delay: 130ms; }
+@keyframes hero-mask-reveal-up {
+    from { opacity: 0; transform: translate3d(0, 17.4px, 0); filter: blur(6px); }
+    to   { opacity: 1; transform: none; filter: blur(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .hero-line, .hero-byline { opacity: 1; }
+    html.hero-ready .hero-line,
+    html.hero-ready .hero-byline { animation: none; }
 }
 
 /* 署名组:标题下方居中一行 —— 头像 + By Tongrong / UI Designer */
@@ -2269,7 +2297,7 @@ body.theme-dark .design-content .category-section .section-divider {
        342px 的可用宽里标题只占 287px,显小。这里改成跟视口线性缩放。
        系数由实测得出:第二行(Kaushan 1.2em)自然宽约 9.6×字号,减掉左右各 24px 页面内边距,
        再留一点余量 → 390px 上约 34px,320px 窄屏也不折行。下限兜底 26px。 */
-    .hero-headline { font-size: clamp(26px, calc(9.9vw - 4.8px), 40px); }
+    .hero-headline { font-size: clamp(24px, calc(8.6vw - 4px), 34px); }
 }
 
 /* ========================================

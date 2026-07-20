@@ -43,6 +43,16 @@
         }
         #page-loader .pl-num-row { display: flex; align-items: flex-end; }
         #page-loader .pl-digits { font-size: 92px; font-weight: 400; line-height: 0.82; }
+        /* 数字跳动 = animate-text 的 bottom-up-letters:每个数位一个槽位,旧字上移淡出、
+           新字从下方升起。槽位宽度由一个隐藏的「0」撑住(tabular-nums 下各数字等宽),
+           这样换字时两个字形叠在同一位置、整行不会左右晃。 */
+        #page-loader .pl-slot { position: relative; display: inline-block; }
+        #page-loader .pl-slot .pl-w { visibility: hidden; font-style: normal; }
+        #page-loader .pl-slot .pl-g {
+            position: absolute; left: 0; top: 0; width: 100%;
+            text-align: center; font-style: normal;
+            will-change: transform, opacity;
+        }
         #page-loader .pl-pct { font-size: 35px; font-weight: 400; line-height: 1; margin-left: 3px; }
         html.is-loading, html.is-loading body { overflow: hidden; }
         /* 入场闸门:loading 在场时把 Feed 按住(即使 IntersectionObserver 已加 .visible
@@ -58,7 +68,7 @@
 <!-- Kaushan Script:仅首页 hero 的强调词用它,故只在本页加载,不放进全站 style.css -->
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Kaushan+Script&amp;display=swap" rel="stylesheet"/>
-<link href="writing/writing.css?v=293" rel="stylesheet"/>
+<link href="writing/writing.css?v=294" rel="stylesheet"/>
 <!-- 提前加载,使顶部导航能在首次绘制前同步注入,避免空 header 闪烁 -->
 <script src="writing/writing.js?v=78"></script>
 </head>
@@ -79,6 +89,80 @@
             var t0 = Date.now();
             var pct = 0, sim = 0, loaded = 0, total = 0, finished = false;
             var fill, num, digits, trickle;
+            /* ── 数字动效:animate-text / bottom-up-letters ──────────────────
+               取 spec 的站点运行时参数(duration/stagger × 0.72,y 位移 × 0.58):
+               enter 288ms / 逐位错开 63ms / 从下方 26.7px 升起,easing (0.18,1,0.32,1);
+               exit 202ms / 上移 8.1px 淡出,easing (0.7,0,0.84,0);中间 micro-delay 35ms。
+               零模糊是这个效果的签名,所以只做 translate + opacity。
+               MIN_GAP:进度本身每 40ms 就会跳一次,直接跟着换字会糊成一团 —— 节流到
+               220ms 一跳(约 13 次),每次跳跃都能看完一个完整的升起动作。 */
+            var G_ENTER_DUR = 288, G_ENTER_STAG = 63, G_ENTER_Y = 26.7;
+            var G_EXIT_DUR = 202, G_EXIT_Y = -8.1, G_MICRO = 35, G_MIN_GAP = 220;
+            var G_ENTER_EASE = 'cubic-bezier(0.18, 1, 0.32, 1)';
+            var G_EXIT_EASE = 'cubic-bezier(0.7, 0, 0.84, 0)';
+            var shownText = null, lastSwap = 0;
+            var canAnimate = typeof Element !== 'undefined' && !!Element.prototype.animate;
+
+            function makeSlot() {
+                var slot = document.createElement('span');
+                slot.className = 'pl-slot';
+                var w = document.createElement('i');
+                w.className = 'pl-w';
+                w.textContent = '0';   /* 只用来撑宽度,tabular-nums 下各数字同宽 */
+                slot.appendChild(w);
+                return slot;
+            }
+            /* delay:该数位在本次跳动里的错峰量;animate=false 用于首帧直出,不做动画 */
+            function fillSlot(slot, ch, delay, animate) {
+                var old = slot.querySelector('.pl-g:not(.pl-out)');
+                if (old) {
+                    if (old.textContent === ch) return;
+                    old.className = 'pl-g pl-out';   /* 退场中的字形不再被当作当前字(定位样式保留) */
+                    if (animate) {
+                        var out = old.animate([
+                            { transform: 'translate3d(0,0,0)', opacity: 1 },
+                            { transform: 'translate3d(0,' + G_EXIT_Y + 'px,0)', opacity: 0 }
+                        ], { duration: G_EXIT_DUR, easing: G_EXIT_EASE, fill: 'forwards' });
+                        out.onfinish = function () { if (old.parentNode) old.parentNode.removeChild(old); };
+                    } else if (old.parentNode) {
+                        old.parentNode.removeChild(old);
+                    }
+                }
+                var g = document.createElement('span');
+                g.className = 'pl-g';
+                g.textContent = ch;
+                slot.appendChild(g);
+                if (!animate) return;
+                g.style.opacity = '0';
+                g.animate([
+                    { transform: 'translate3d(0,' + G_ENTER_Y + 'px,0)', opacity: 0 },
+                    { transform: 'translate3d(0,0,0)', opacity: 1 }
+                ], {
+                    duration: G_ENTER_DUR,
+                    delay: (old ? G_MICRO : 0) + delay,
+                    easing: G_ENTER_EASE,
+                    fill: 'forwards'
+                });
+            }
+            function paint(box, text, animate) {
+                while (box.children.length > text.length) box.removeChild(box.lastChild);
+                for (var i = 0; i < text.length; i++) {
+                    var slot = box.children[i];
+                    if (!slot) { slot = makeSlot(); box.appendChild(slot); }
+                    fillSlot(slot, text.charAt(i), i * G_ENTER_STAG, animate);
+                }
+            }
+            /* force:收尾的 100 必须落地,不受节流拦截 */
+            function showNumber(p, force) {
+                if (!digits || !digits.length) return;
+                var text = String(p);
+                if (text === shownText) return;
+                var now = Date.now();
+                if (!force && shownText !== null && now - lastSwap < G_MIN_GAP) return;
+                lastSwap = now;
+                shownText = text;
+                for (var i = 0; i < digits.length; i++) paint(digits[i], text, canAnimate);
+            }
             function render(p) {
                 /* 时间曲线上限:资源秒开时数字也不许一下冲到 99,
                    最多沿 MIN_MS 的缓动曲线走(先慢后匀速、近 99 再放缓) */
@@ -90,11 +174,12 @@
                 pct = p;
                 if (fill) fill.style.transform = 'translateX(' + (pct - 100) + '%)';
                 if (num && pct >= 52) num.style.color = '#fff';   /* 黑面过半,数字换白 */
-                if (digits) for (var i = 0; i < digits.length; i++) digits[i].textContent = pct;
+                showNumber(pct);
             }
             function cleanup() {
                 docEl.classList.remove('is-loading');
                 docEl.style.background = '#0a0a0a';   /* 撤掉首帧灰底,回到页面深色 */
+                docEl.classList.add('hero-ready');    /* 放闸:hero 开始 mask-reveal-up 入场 */
             }
             /* 最短展示时长:加载再快(缓存/本地),进度也要平滑扫到 100 再上滑,
                保证每次访问都有完整的 loading 过程且不生硬 */
@@ -103,7 +188,7 @@
                 p = Math.round(p);
                 if (fill) fill.style.transform = 'translateX(' + (p - 100) + '%)';
                 if (num && p >= 52) num.style.color = '#fff';
-                if (digits) for (var i = 0; i < digits.length; i++) digits[i].textContent = p;
+                showNumber(p, p >= 100);
             }
             function finish() {
                 if (finished) return;
@@ -139,6 +224,11 @@
                 fill = document.getElementById('pl-fill');
                 num = document.getElementById('pl-num');
                 digits = document.querySelectorAll('.js-digits');
+                for (var d = 0; d < digits.length; d++) {
+                    digits[d].textContent = '';
+                    paint(digits[d], '0', false);   /* 首帧的 0 直出,不做入场动画 */
+                }
+                shownText = '0';
                 var els = [].slice.call(document.querySelectorAll('iframe, img, video'));
                 total = els.length;
                 function mark() {
@@ -187,7 +277,8 @@
      右下角署名,这里是黑底上重做的一块居中排版。强调词用 Kaushan Script(见 head 的字体加载)。
      纯 HTML/CSS,不再走 iframe。上方与顶栏的间距由 body.no-banner 的 padding-top 负责。 -->
 <header class="home-hero">
-<h1 class="hero-headline">From AI-Assisted<br/>to <span class="accent">AI-Native Design.</span></h1>
+<!-- 两行各自成块:mask-reveal-up 是 per-line 效果,需要每行是独立的动画单元(原来的 <br/> 做不到) -->
+<h1 class="hero-headline"><span class="hero-line">From AI-Assisted</span><span class="hero-line">to <span class="accent">AI-Native Design.</span></span></h1>
 <div class="hero-byline">
 <span aria-label="Tongrong 头像" class="hero-avatar" role="img"><img alt="" src="writing/assets/tongrong-avatar.svg?v=2"/></span>
 <span class="hero-meta">
