@@ -97,6 +97,20 @@ if (typeof module !== 'undefined') module.exports = { GLYPHS };
 .a-ne-dd .ne-dd-a{animation:ne-dd-a 1.7s cubic-bezier(0.4,1.3,0.5,1) infinite;}
 .a-ne-dd .ne-dd-b{animation:ne-dd-b 1.7s cubic-bezier(0.4,1.3,0.5,1) infinite;}
 .a-ne-semi .ne-semi-dot{animation:ne-semi-drop 1.6s linear infinite;}
+/* ne-branch「延伸生长」：顶点冒出 → 主干向下长 → 底点落定 → 分支从主干爬到右上 → 分叉点亮 */
+.br-d1,.br-d2,.br-d3{transform-box:fill-box;transform-origin:center;}
+.a-ne-branch{animation:br-cycle 3.2s linear infinite;}
+.a-ne-branch .br-d1{animation:br-pop1 3.2s cubic-bezier(0.4,1.5,0.5,1) infinite;}
+.a-ne-branch .br-trunk{animation:br-grow-trunk 3.2s cubic-bezier(0.4,0,0.2,1) infinite;}
+.a-ne-branch .br-d2{animation:br-pop2 3.2s cubic-bezier(0.4,1.5,0.5,1) infinite;}
+.a-ne-branch .br-arc{animation:br-grow-arc 3.2s cubic-bezier(0.4,0,0.2,1) infinite;}
+.a-ne-branch .br-d3{animation:br-pop3 3.2s cubic-bezier(0.4,1.5,0.5,1) infinite;}
+@keyframes br-cycle{0%,90%{opacity:1}99%,100%{opacity:0}}
+@keyframes br-pop1{0%,3%{transform:scale(0)}10%{transform:scale(1.18)}14%,100%{transform:scale(1)}}
+@keyframes br-grow-trunk{0%,10%{stroke-dasharray:24;stroke-dashoffset:24}28%,100%{stroke-dasharray:24;stroke-dashoffset:0}}
+@keyframes br-pop2{0%,28%{transform:scale(0)}34%{transform:scale(1.18)}38%,100%{transform:scale(1)}}
+@keyframes br-grow-arc{0%,34%{stroke-dasharray:36;stroke-dashoffset:-36}52%,100%{stroke-dasharray:36;stroke-dashoffset:0}}
+@keyframes br-pop3{0%,52%{transform:scale(0)}58%{transform:scale(1.18)}62%,100%{transform:scale(1)}}
 @keyframes ne-tick90{0%,22%{transform:rotate(0deg)}55%{transform:rotate(101deg)}68%,100%{transform:rotate(90deg)}}
 @keyframes ne-tick45{0%,22%{transform:rotate(0deg)}55%{transform:rotate(52deg)}68%,100%{transform:rotate(45deg)}}
 @keyframes ne-tick60{0%,22%{transform:rotate(0deg)}55%{transform:rotate(68deg)}68%,100%{transform:rotate(60deg)}}
@@ -188,7 +202,7 @@ var ICONS={
   'ne-pause':'<rect x="18" y="15" width="11" height="34" rx="5.5" fill="@grad"/><rect x="35" y="15" width="11" height="34" rx="5.5" fill="@grad"/>',
   'ne-check':'<rect class="ne-check-a" x="15" y="15" width="16" height="16" rx="3" fill="@grad"/><rect class="ne-check-b" x="33" y="33" width="16" height="16" rx="3" fill="@grad"/>',
   'ne-arrow':'<path d="'+roundPoly([[13,26],[35,26],[35,17],[52,32],[35,47],[35,38],[13,38]],4)+'" fill="@grad"/>',
-  'ne-branch':'<g fill="@grad" stroke="@grad" stroke-width="5" stroke-linecap="round"><circle cx="21" cy="15" r="6.5" stroke="none"/><circle cx="21" cy="49" r="6.5" stroke="none"/><circle cx="43" cy="17" r="6.5" stroke="none"/><path fill="none" d="M21 21 L21 43"/><path fill="none" d="M43 23.5 L43 27 A8 8 0 0 1 35 35 L29 35 A8 8 0 0 0 21 43"/></g>',
+  'ne-branch':'<g fill="@grad" stroke="@grad" stroke-width="5" stroke-linecap="round"><circle class="br-d1" cx="21" cy="15" r="6.5" stroke="none"/><circle class="br-d2" cx="21" cy="49" r="6.5" stroke="none"/><circle class="br-d3" cx="43" cy="17" r="6.5" stroke="none"/><path class="br-trunk" fill="none" d="M21 21 L21 43"/><path class="br-arc" fill="none" d="M43 23.5 L43 27 A8 8 0 0 1 35 35 L29 35 A8 8 0 0 0 21 43"/></g>',
   'ne-github':'<path transform="translate(6.4 6.4) scale(3.2)" fill-rule="evenodd" clip-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" fill="@grad"/>',
   'ne-asterisk':'<g fill="@grad"><rect x="27.5" y="11" width="9" height="42" rx="4.5"/><rect x="27.5" y="11" width="9" height="42" rx="4.5" transform="rotate(60 32 32)"/><rect x="27.5" y="11" width="9" height="42" rx="4.5" transform="rotate(120 32 32)"/></g>',
   'ne-star8':'<path d="'+roundPoly(gearPts(32,32,8,21,9.5),1.5)+'" fill="@grad"/>',
@@ -201,7 +215,7 @@ var ICONS={
   'ne-codex':'<path d="M12 36 L12 22 Q12 12 22 12 L42 12 Q52 12 52 22 L52 42 Q52 52 42 52 L27 52 Q20 52 20 45 L20 27 Q20 20 27 20 L37 20 Q44 20 44 27 L44 36 Q44 43 37 43 L33 43 Q29 43 29 39 L29 33.5" fill="none" stroke="@grad" stroke-width="4.4" stroke-linecap="round"/>',
   'ne-github':'<g transform="translate(10 10.55) scale(2.75)"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.06-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z" fill="@grad"/></g>'
 };
-var NEON_ANIM={'ne-stack':'ne-stack','ne-disc':'ne-beat','ne-rhombus':'ne-tick90','ne-octagon':'ne-tick45','ne-triangle':'ne-jump','ne-steps':'ne-steps','ne-semi':'ne-semi','ne-quatrefoil':'ne-bloom','ne-bowtie':'ne-tick180','ne-diamond':'ne-tick90','ne-flower':'ne-bloom','ne-pause':'ne-jelly','ne-check':'ne-check','ne-arrow':'ne-dart','ne-branch':'ne-beat','ne-asterisk':'ne-tick60','ne-star8':'ne-twinkle','ne-dd':'ne-dd','ne-sunburst':'ne-spin','ne-wave':'ne-travel','ne-orbit':'ne-orbit3d','ne-ring':'ne-beat','ne-figma':'','ne-codex':'ne-tick90','ne-github':''};
+var NEON_ANIM={'ne-stack':'ne-stack','ne-disc':'ne-beat','ne-rhombus':'ne-tick90','ne-octagon':'ne-tick45','ne-triangle':'ne-jump','ne-steps':'ne-steps','ne-semi':'ne-semi','ne-quatrefoil':'ne-bloom','ne-bowtie':'ne-tick180','ne-diamond':'ne-tick90','ne-flower':'ne-bloom','ne-pause':'ne-jelly','ne-check':'ne-check','ne-arrow':'ne-dart','ne-branch':'ne-branch','ne-asterisk':'ne-tick60','ne-star8':'ne-twinkle','ne-dd':'ne-dd','ne-sunburst':'ne-spin','ne-wave':'ne-travel','ne-orbit':'ne-orbit3d','ne-ring':'ne-beat','ne-figma':'','ne-codex':'ne-tick90','ne-github':''};
 // mask 换色规则：白=显（透出 ink 色）、黑=镂空缝线。默认整形全白；叠箱=白体块+黑缝线。
 function maskShape(key,shape){
   if(key==='ne-stack')return shape.replace(/#EEC3F5/g,'#ffffff').replace(/@grad/g,'#000000');
