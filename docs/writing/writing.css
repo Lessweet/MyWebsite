@@ -2239,6 +2239,9 @@ body.theme-dark .design-content .category-section .section-divider {
     display: inline-block;   /* 逐字要吃 transform,只能是 inline-block */
     white-space: pre;        /* 空格也是一个动画单元,不能被折叠掉 */
 }
+/* 上面 body.home-v2 * 那条全局 Helvetica 会直接命中这些新生成的 span —— 直接命中打得过
+   继承,.accent 的 Kaushan 就被盖掉了。这里显式把字体还原成从父级继承。 */
+.hero-headline .hero-ch { font-family: inherit; }
 .hero-ch,
 .hero-byline { opacity: 0; }
 html.hero-ready .hero-ch,
