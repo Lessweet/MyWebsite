@@ -2373,7 +2373,7 @@ body.home-landing .home-index-row .hi-arrow svg {
     stroke-linejoin: miter;
 }
 body.home-landing .home-index-row:hover { color: rgba(0, 0, 0, 0.5); }
-body.home-landing .home-index-row:hover .hi-arrow { transform: translateX(10px); }
+/* hover 只变色,箭头不再位移(2026-07-22 用户要求) */
 
 /* 入场:per-character-rise(与分区标题同一套 pixel-point/animate-text 规范,
    复用 style.css 的 .heading-rise-mask / .heading-rise-char)—— 逐字从基线下方
