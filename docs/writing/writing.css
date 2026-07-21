@@ -1116,7 +1116,7 @@ body.reading-page .article-byline .article-eyebrow .a-tag {
 /* logo 高度与右侧 Blog/Skills/Contact 三项同走 3.4vw、桌面同样封顶 36px;
    但兜底抬到 20px(原 12px):字标是品牌,手机端不跟着文字缩到那么小,保持可读。
    仅影响 ≤~588px(3.4vw < 20)的手机端,桌面/平板与三项文字仍逐像素同步。 */
-.design-page .site-wordmark { height: 19.2px; }   /* 固定不随窗口缩放(24px 的 80%) */
+.design-page .site-wordmark { height: 19.6px; }   /* 24px 的 80% 再放大 2%(2026-07-22) */
 
 /* 顶栏三段式:左 = 分类(Writing/Design),中 = VIBEUX 字标,右 = Contact。
    左右两组 flex:1 等宽,把中间字标挤到正中。 */
