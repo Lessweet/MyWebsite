@@ -27,4 +27,4 @@
 
 # React 迁移(Vite)工具链
 node_modules/
-site/.vite/
+.vite/
