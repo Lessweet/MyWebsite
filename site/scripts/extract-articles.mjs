@@ -86,8 +86,8 @@ for (const slug of SLUGS) {
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>${title}</title>
-<link href="../favicon.png?v=17" rel="icon" type="image/png"/>
-<link href="../favicon.png?v=17" rel="shortcut icon"/>
+<link href="../favicon.png?v=18" rel="icon" type="image/png"/>
+<link href="../favicon.png?v=18" rel="shortcut icon"/>
 <link href="../apple-touch-icon.png?v=12" rel="apple-touch-icon"/>
 <link href="../style.css?v=135" rel="stylesheet"/>
 <link href="writing.css?v=372" rel="stylesheet"/>
