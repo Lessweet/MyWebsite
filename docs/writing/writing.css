@@ -1105,14 +1105,10 @@ body.reading-page .article-byline .article-eyebrow .a-tag {
 .site-title[data-wordmark="lenslab"] .site-wordmark { margin-left: 6px; }
 .site-title[data-wordmark="ctr"] .site-wordmark { margin-left: 6px; }
 
-/* Design / 阅读页:左上角 logo + VIBEUX 字标放大 */
+/* Design / 阅读页:左上角 logo + VIBEUX 字标放大。
+   logo 40px 全站统一(2026-07-22 用户要求:每个页面一致) */
 .design-page .site-title { margin: 8px 0; }
 .design-page .site-title .site-logo {
-    width: 28px;
-    height: 28px;
-}
-/* 首页:左上角 logo 放大到 40px(2026-07-22 用户要求) */
-body.home-landing .site-title .site-logo {
     width: 40px;
     height: 40px;
 }
