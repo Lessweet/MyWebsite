@@ -2690,6 +2690,9 @@ body.works-page .card:hover { --hover-scale: var(--hover-zoom); }
    结构由 archive.html 底部脚本注入(文案取自卡片下方已有的 label / date)。
    时长不跟封面放大(0.77s 进场对蒙层来说太黏,鼠标压上去要等):蒙层单独用更快的
    0.24s 淡入、0.4s 淡出,反馈即时;封面放大仍走全站 hover 缩放 token。 */
+/* hover 蒙层暂不展示(2026-07-22 用户要求):DOM 与下方全部规则保留,
+   未来想加回来删掉这一条即可。 */
+body.works-page .card-overlay { display: none; }
 body.works-page .card-overlay {
     position: absolute;
     inset: 0;
