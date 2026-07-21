@@ -1,0 +1,147 @@
+/**
+ * 文章提取生成器 —— 从 docs/writing/article-*.html(手写原版)提取:
+ *   1. .article-reading 的 innerHTML → site/src/content/fragments/<slug>.reading.html
+ *      (与旧版 switchArticle 交换的单元完全一致,含 eyebrow/h1/byline/封面/正文含内联 <style>/页脚)
+ *   2. <title> / body data-accent / data-tint → site/src/content/articleShell.ts
+ *      (data-tint 缺失时按旧版 initPageTint 的 slug 哈希预计算,结果与运行时一致)
+ *   3. site/writing/article-<slug>.html 入口 × 12(外壳模板 + 每篇的 title/accent/tint)
+ *
+ * 一次性迁移工具,重跑安全(幂等覆盖)。以后新文章:手写 fragment + articleShell + 入口,
+ * 或往 docs/writing/ 放一篇旧格式 HTML 再跑本脚本。
+ */
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const SRC = path.join(ROOT, 'docs/writing');
+const FRAG_DIR = path.join(ROOT, 'site/src/content/fragments');
+const ENTRY_DIR = path.join(ROOT, 'site/writing');
+
+const SLUGS = [
+  'app-shape-for-ai', 'figma-agent', 'figma-config-2026', 'figma-make-designer-pr',
+  'figma-make-gpt-5-6', 'figma-shader-motion', 'figma-skills', 'genie',
+  'remove-ai-taste-in-design', 'review-ai-output', 'sparkle', 'voices',
+];
+
+/* 旧版 writing.js initPageTint 的稳定哈希(输入 = 'article-<slug>',与 pathname 推导一致) */
+function autoTint(fileSlug) {
+  const SOLIDS = ['violet', 'blue', 'mint', 'peach', 'rose', 'sand'];
+  let hash = 0;
+  for (let i = 0; i < fileSlug.length; i++) hash = (hash * 31 + fileSlug.charCodeAt(i)) >>> 0;
+  return SOLIDS[hash % SOLIDS.length];
+}
+
+const esc = (s) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+
+fs.mkdirSync(FRAG_DIR, { recursive: true });
+fs.mkdirSync(ENTRY_DIR, { recursive: true });
+
+const shellMeta = {};
+const report = [];
+
+for (const slug of SLUGS) {
+  const file = path.join(SRC, `article-${slug}.html`);
+  const html = fs.readFileSync(file, 'utf8');
+
+  const title = (html.match(/<title>([\s\S]*?)<\/title>/) || [])[1];
+  if (!title) throw new Error(`${slug}: 缺 <title>`);
+
+  const bodyTag = (html.match(/<body[^>]*>/) || [])[0];
+  if (!bodyTag) throw new Error(`${slug}: 缺 <body>`);
+  const accent = (bodyTag.match(/data-accent="([^"]*)"/) || [])[1] || '';
+  let tint = (bodyTag.match(/data-tint="([^"]*)"/) || [])[1] || '';
+  let tintNote = tint ? 'html' : 'auto';
+  if (!tint) tint = autoTint(`article-${slug}`);
+  const bodyClass = (bodyTag.match(/class="([^"]*)"/) || [])[1] || '';
+
+  const open = html.indexOf('<article class="article-reading">');
+  if (open < 0) throw new Error(`${slug}: 缺 .article-reading`);
+  const innerStart = open + '<article class="article-reading">'.length;
+  const close = html.lastIndexOf('</article>');
+  if (close <= innerStart) throw new Error(`${slug}: </article> 位置异常`);
+  const inner = html.slice(innerStart, close);
+
+  fs.writeFileSync(path.join(FRAG_DIR, `${slug}.reading.html`), inner);
+  shellMeta[slug] = { title, accent, tint };
+
+  /* 结构核对信息 */
+  const scripts = [...html.matchAll(/<script[^>]*src="([^"]+)"/g)].map((m) => m[1]);
+  report.push({
+    slug,
+    bodyClass,
+    accent,
+    tint: `${tint}(${tintNote})`,
+    bytes: inner.length,
+    scripts: scripts.join(','),
+    hasPlaceholder: html.includes('header-placeholder'),
+    tocAside: html.includes('class="article-toc"'),
+  });
+
+  /* 入口 HTML(外壳与旧版逐段一致;writing.js → ../nav-boot.js,尾部 script.js → React bundle) */
+  const entry = `<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>${title}</title>
+<link href="../favicon.png?v=12" rel="icon" type="image/png"/>
+<link href="../favicon.png?v=12" rel="shortcut icon"/>
+<link href="../apple-touch-icon.png?v=12" rel="apple-touch-icon"/>
+<link href="../style.css?v=135" rel="stylesheet"/>
+<link href="writing.css?v=371" rel="stylesheet"/>
+<!-- 提前加载,使顶部导航能在首次绘制前同步注入,避免空 header 闪烁(React 迁移后的原生 boot 层) -->
+<script src="../nav-boot.js?v=1"></script>
+</head>
+<!-- 复用首页 index.html 的胶囊顶栏:home-v2 控制顶栏内边距,design-page 提供胶囊样式 -->
+<body class="writing-page home-v2 design-page reading-page" data-accent="${esc(accent)}" data-tint="${esc(tint)}">
+<!-- 顶部导航:与首页同一个组件(initSiteNav);data-base="../" 把站内链接/资源指回 docs 根目录 -->
+<header class="header home-nav" data-active="writing" data-base="../" id="site-nav"></header>
+<script>initSiteNav();</script>
+<div class="header-placeholder"></div>
+<script>
+        // 顶栏 fixed 脱流,占位块高度跟随顶栏实际高度(big VIBEUX 标题在不同断点高度不同)
+        // 同时把左侧固定目录的 top 对齐到正文顶部 = 顶栏高度 + 正文上间距(56px,见 .reading-layout)
+        (function () {
+            const READING_TOP = 104;
+            const h = document.querySelector('.header');
+            const ph = document.querySelector('.header-placeholder');
+            const set = () => {
+                if (!h) return;
+                if (ph) ph.style.height = h.offsetHeight + 'px';
+                document.documentElement.style.setProperty('--toc-top', (h.offsetHeight + READING_TOP) + 'px');
+            };
+            set();
+            window.addEventListener('resize', set);
+            window.addEventListener('load', set);
+        })();
+    </script>
+<div class="reading-layout" id="app" data-slug="${slug}"></div>
+<script src="/src/pages/article/main.tsx" type="module"></script>
+</body>
+</html>
+`;
+  fs.writeFileSync(path.join(ENTRY_DIR, `article-${slug}.html`), entry);
+}
+
+/* articleShell.ts:每篇的 <title>/accent/tint(切换文章时同步 document.title 与 body 属性) */
+let ts = '/** 由 site/scripts/extract-articles.mjs 生成 —— 每篇文章的外壳元数据(勿手改,重跑脚本更新) */\n';
+ts += 'export const ARTICLE_SHELL: Record<string, { title: string; accent: string; tint: string }> = {\n';
+for (const slug of SLUGS) {
+  const m = shellMeta[slug];
+  ts += `  ${JSON.stringify(slug)}: { title: ${JSON.stringify(m.title)}, accent: ${JSON.stringify(m.accent)}, tint: ${JSON.stringify(m.tint)} },\n`;
+}
+ts += '};\n';
+fs.writeFileSync(path.join(ROOT, 'site/src/content/articleShell.ts'), ts);
+
+/* fragments.ts:?raw 引入全部片段 */
+let fr = '/** 由 site/scripts/extract-articles.mjs 生成 —— 文章正文片段(.article-reading innerHTML,原样) */\n';
+for (const slug of SLUGS) fr += `import ${slug.replace(/-/g, '_')} from './fragments/${slug}.reading.html?raw';\n`;
+fr += '\nexport const FRAGMENTS: Record<string, string> = {\n';
+for (const slug of SLUGS) fr += `  ${JSON.stringify(slug)}: ${slug.replace(/-/g, '_')},\n`;
+fr += '};\n';
+fs.writeFileSync(path.join(ROOT, 'site/src/content/fragments.ts'), fr);
+
+console.table(report);
+console.log('done:', SLUGS.length, 'articles');
