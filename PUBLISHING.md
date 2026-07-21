@@ -14,6 +14,16 @@
 
 ---
 
+## 0. React 迁移后的变化（2026-07）
+
+主站页面已是 React(源码在 `site/`,构建产物提交在 `docs/`)。发布一篇新文章 = 三步:
+
+1. **正文片段**:`site/src/content/fragments/<slug>.reading.html` — 整段 `.article-reading` 的 innerHTML(eyebrow / h1 / byline / 封面 / 正文含内联 `<style>` / 页脚合集)。也可以先按旧格式把整页 HTML 放进 `docs/writing/article-<slug>.html`,把 slug 加进 `site/scripts/extract-articles.mjs` 与 `vite.config.ts` 的清单后跑 `node site/scripts/extract-articles.mjs` 自动提取。
+2. **注册表**:`site/src/content/articles.ts` 加一条(标题/日期/分类/accent/tint/封面/blog 卡片字段)。blog 网格、阅读器左栏、合集页脚都由它推导。
+3. **构建**:`npm run build`,把 `site/` 与 `docs/` 的变更一起提交。**忘记 build 就 push = 线上是旧页面。**
+
+本地预览用 `npm run dev`(不能再 file:// 直开主站页面);`docs/writing/articles.json` 已不再被页面读取,仅作遗留兼容保留。
+
 ## 1. 写草稿（别人看不到，自己随便改）
 
 ```bash
@@ -21,8 +31,7 @@
 git checkout main && git pull
 git checkout -b draft/文章名
 
-# 在 docs/writing/ 下新建这篇文章的 HTML，随意编辑
-# 本地直接用浏览器打开 docs/writing/xxx.html 预览即可
+# 按上面第 0 节的三步添加文章,npm run dev 预览
 ```
 
 想存档或换设备继续写，可以把草稿分支推上去（**仍然不会上线**）：

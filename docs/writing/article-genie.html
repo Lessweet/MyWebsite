@@ -5,18 +5,21 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Genie 给 AI 装了一具身体：光、物理和触感 · VibeUX</title>
-<link href="../favicon.png?v=12" rel="icon" type="image/png"/>
-<link href="../favicon.png?v=12" rel="shortcut icon"/>
+<link href="../favicon.png?v=20" rel="icon" type="image/png"/>
+<link href="../favicon.png?v=20" rel="shortcut icon"/>
 <link href="../apple-touch-icon.png?v=12" rel="apple-touch-icon"/>
 <link href="../style.css?v=135" rel="stylesheet"/>
-<link href="writing.css?v=371" rel="stylesheet"/>
-<!-- 提前加载,使顶部导航能在首次绘制前同步注入,避免空 header 闪烁(与首页一致) -->
-<script src="writing.js?v=85"></script>
+<link href="writing.css?v=394" rel="stylesheet"/>
+<!-- 提前加载,使顶部导航能在首次绘制前同步注入,避免空 header 闪烁(React 迁移后的原生 boot 层) -->
+<script src="../nav-boot.js?v=4"></script>
+  <script type="module" crossorigin src="/assets/index-JqYYXcKf.js"></script>
+  <script type="module" crossorigin src="/assets/article-content-Cys0uZ1l.js"></script>
+  <script type="module" crossorigin src="/assets/catIcons-pedugfQn.js"></script>
+  <script type="module" crossorigin src="/assets/main-Bz1AUmjH.js"></script>
 </head>
 <!-- 复用首页 index.html 的胶囊顶栏:home-v2 控制顶栏内边距,design-page 提供胶囊样式 -->
 <body class="writing-page home-v2 design-page reading-page" data-accent="#06B6D4" data-tint="mint">
-<!-- 顶部导航:与首页同一个组件(initSiteNav);data-base="../" 把站内链接/资源指回 docs 根目录。
-         返回入口 = 左侧 VIBEUX 与高亮的 Writing 胶囊,均回到 index.html#writing -->
+<!-- 顶部导航:与首页同一个组件(initSiteNav);data-base="../" 把站内链接/资源指回 docs 根目录 -->
 <header class="header home-nav" data-active="writing" data-base="../" id="site-nav"></header>
 <script>initSiteNav();</script>
 <div class="header-placeholder"></div>
@@ -37,147 +40,6 @@
             window.addEventListener('load', set);
         })();
     </script>
-<div class="reading-layout">
-<!-- ① 文章列表(JS 渲染,master–detail 左栏) -->
-<aside aria-label="文章列表" class="reader-list"></aside>
-<!-- ③ 浮动目录(JS 自动生成) -->
-<aside aria-label="目录" class="article-toc">
-<div class="article-toc-title">目录</div>
-<nav id="toc"></nav>
-</aside>
-<!-- 正文 -->
-<article class="article-reading">
-<div class="article-eyebrow article-eyebrow-top"><span class="a-tag">反聊天框</span></div>
-<h1 class="article-h1">Genie 给 AI 装了一具身体：光、物理和触感</h1>
-<div class="article-byline"><span>2026-05-30</span><span>·</span><span>阅读约 8 分钟</span></div>
-<div class="article-cover"><img alt="封面" src="assets/genie/cover.png" style="width:100%;display:block;border-radius:8px;"/></div>
-<div class="article-body"><style>
-/* article-template 样式 inline 到网站，仅作用于 .article-body 内 */
-.article-eyebrow { text-align: center; justify-content: center; }
-.article-h1 { text-align: center; }
-.article-byline { text-align: center; justify-content: center; }
-.article-body { color: #1a1a1a; line-height: 1.4; }
-.article-body p { font-size: var(--fs-body); margin: 32px 0; color: #1a1a1a; }
-.article-body strong { font-weight: 400; color: #1a1a1a; }
-.article-body .section-head { text-align: center; margin: 56px 0; }
-.article-body .section-head svg { display: block; margin: 0 auto 14px; width: 40px; height: 40px; }
-.article-body h2 { font-size: var(--fs-h2); font-weight: 400; color: #1a1a1a; line-height: 1.2; margin: 0; letter-spacing: 0; text-align: center; }
-.article-body img { width: 100%; border-radius: 6px; margin: 16px 0 6px 0; display: block; }
-.article-body .img-caption { font-size: var(--fs-caption); color: #aaa; text-align: center; margin: 0 0 18px 0; }
-.article-body .highlight { font-size: var(--fs-body); line-height: 1.4; color: #1a1a1a; margin: 32px 0; }
-.article-body .highlight strong { font-weight: 400; color: #1a1a1a; }
-</style>
-<p>大多数 AI 产品还停留在「一个聪明的聊天框」的阶段，文字进、文字出。设计师 Nelson Noa 在 Genie 这个产品上做了件少有人做的事：<strong>用光、物理和动效，给 AI 造一套全新的界面语言</strong>。</p>
-<img alt="Genie 设计语言封面" src="assets/genie/封面.png"/><div class="img-caption">Genie 设计语言封面</div>
-<div class="section-head"><svg height="40" viewBox="0 0 24 24" width="40" xmlns="http://www.w3.org/2000/svg">
-<path class="anim-lightning" d="M14 3 L5 13 L10 13 L9 21 L19 10 L14 10 L15 3 Z" fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"></path>
-</svg><h2>Genie 在做一件别人没做的事</h2></div>
-<p>Genie 是一个 AI 产品，目标是让 AI 不只是回答问题，而是变成嵌在系统里的一层「操作层」。Nelson 把这套界面语言叫做 <strong>「Grammar of AI」</strong>——AI 的界面语法。</p>
-<p>听起来有点玄，他说得很直白：现在的 AI 界面，比如 ChatGPT，<strong>本质就是一个很聪明的聊天框</strong>。你问它，它回你一大段文字。这件事没错，但它缺了点东西——<strong>缺情感，缺触感，缺一种「我感觉到 AI 在这里」的存在感</strong>。</p>
-<img alt="ChatGPT 与 Genie 的对比" src="assets/genie/ChatGPT &amp; Genie-1.gif"/><div class="img-caption">ChatGPT 与 Genie 的对比</div>
-<p>所以他想做的是：<strong>当用户要的是图片、视频、音乐、地点的时候，能不能给比一段文字更直观的东西</strong>。搜地址，就直接给一张地图。生成一张图，就让图带着「这是 AI 想出来的」那种气质冒出来。</p>
-<div class="highlight">
-Nelson 把设计师的任务概括成一句话：<strong>别再把 AI 当文字引擎用，把它当视觉引擎用</strong>。这是 Genie 整套设计语言的根。
-</div>
-<div class="section-head"><svg height="40" viewBox="0 0 24 24" width="40" xmlns="http://www.w3.org/2000/svg">
-<g class="anim-search">
-<circle cx="10" cy="10" fill="none" r="6" stroke="#1a1a1a" stroke-width="1.6"></circle>
-<path d="M14.4 14.4 L20 20" fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-width="1.8"></path>
-</g>
-</svg><h2>从熟悉的东西里找语法</h2></div>
-<p>要造一套新语言，不能凭空造。Nelson 的做法是先研究熟悉的事物。</p>
-<p><strong>Siri 出现这么多年，所有 AI 工具有一个共同点——光</strong>。你想到 AI，脑子里就会冒出彩色的、流动的、发光的东西。光几乎是 AI 在视觉上的本能联想。</p>
-<p>还有一个是 Apple 的 <strong>3D Touch</strong>。按下去，屏幕有反馈，颜色会被手指「吸」走，界面有轻微的波动。<strong>这种触觉上的存在感，正好可以借给 AI</strong>——让 AI 不再是一个被动等指令的盒子，而是一个能被「捏」、被「按」、有重量、有反应的东西。</p>
-<p>光 + 物理触感，这两件熟悉的事，就成了 Genie 设计语言的两块地基。</p>
-<div class="section-head"><svg height="40" viewBox="0 0 24 24" width="40" xmlns="http://www.w3.org/2000/svg">
-<g class="anim-brain" fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6">
-<path d="M12 5 C10.6 3.2 7.8 3.2 6.8 5 C4.6 5.2 3.2 7.2 4.3 9 C2.7 10.2 2.7 12 4.3 13.2 C3.5 15 4.8 17 7 17.2 C7.4 19 9.6 20 12 19 C14.4 20 16.6 19 17 17.2 C19.2 17 20.5 15 19.7 13.2 C21.3 12 21.3 10.2 19.7 9 C20.8 7.2 19.4 5.2 17.2 5 C16.2 3.2 13.4 3.2 12 5 Z"></path>
-<path d="M12 5 L12 19"></path>
-</g>
-</svg><h2>光：AI 思考的可视化</h2></div>
-<p>光在 Genie 里不是装饰，是<strong>用来暗示「AI 正在思考、生成、理解」的语义符号</strong>。Nelson 给了几个具体的例子。</p>
-<img alt="光线控制 案例" src="assets/genie/光线控制 1.png"/><div class="img-caption">光线控制 案例</div>
-<p><strong>AI 生成的图片，加载方式必须和普通图片不一样</strong>。普通图片就是从上到下刷出来，没什么可说的。但 AI 生成的图，得让用户一眼看出来：<strong>这是 AI 大脑思考出来的</strong>。所以它会带着光感冒出来，像有什么东西刚刚在屏幕里被想明白了。</p>
-<img alt="AI 生成图片的加载方式" src="assets/genie/光 案例2图片生成Motion.gif"/><div class="img-caption">AI 生成图片的加载方式</div>
-<p><strong>AI 学习的反馈也用光表达</strong>。Nelson 的思路是：每一次用户和 AI 对话，AI 其实都在从用户身上学东西。这件事原本是完全不可见的，发生在云端的某个推理过程里。<strong>Genie 把它做成动态岛的液态分解，伴随一圈光波溢出</strong>。然后再把这个复杂的视觉收回成一个简单的小圆点，像在说一句：<strong>「嘿，我来了，我刚学到了点新东西」</strong>。</p>
-<img alt="AI 对话交互的光波反馈" src="assets/genie/对话交互1.gif"/><div class="img-caption">AI 对话交互的光波反馈</div>
-<p><strong>InputBar 也参与到这套语言里</strong>。AI 有 MemoryContext，也就是上下文记忆，那界面就得能暗示出「我看见了、我理解了」。Genie 的 InputBar 上升的时候，会照亮周围的内容，让光在元素之间形成一种关联——<strong>输入框不是孤岛，它和屏幕上的内容是连着的</strong>。</p>
-<img alt="InputBar 与内容产生联系" src="assets/genie/光 案例3 Inputbar.gif"/><div class="img-caption">InputBar 与内容产生联系</div>
-<p>按住屏幕上的文字，颜色会被手指吸走，屏幕轻微波动，还有强烈的震动反馈。这一下你就能感觉到——<strong>内容是有重量的，是可以被捏起来的</strong>。</p>
-<img alt="按压文字的光与触感反馈" src="assets/genie/光 案例1 按压文字.gif"/><div class="img-caption">按压文字的光与触感反馈</div>
-<div class="section-head"><svg height="40" viewBox="0 0 24 24" width="40" xmlns="http://www.w3.org/2000/svg">
-<g fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6">
-<path d="M7 3 L17 3"></path>
-<path d="M7 21 L17 21"></path>
-<path d="M8 3 C8 8 10.4 9.8 12 12 C13.6 9.8 16 8 16 3"></path>
-<path d="M8 21 C8 16 10.4 14.2 12 12 C13.6 14.2 16 16 16 21"></path>
-</g>
-<path class="anim-hourglass-top" d="M9.2 6.4 C10.8 7.4 13.2 7.4 14.8 6.4 L12 10.3 Z" fill="#1a1a1a"></path>
-<path class="anim-hourglass-stream" d="M12 10.8 L12 15.1" fill="none" pathlength="1" stroke="#1a1a1a" stroke-linecap="round" stroke-width="1.4"></path>
-<path class="anim-hourglass-bottom" d="M9.4 18.1 C10.8 16.8 13.2 16.8 14.6 18.1 Z" fill="#1a1a1a"></path>
-</svg><h2>物理：让内容真的「掉下来」</h2></div>
-<p>光解决的是「AI 在想什么」，物理解决的是「AI 把东西给你」的那一刻。</p>
-<p><strong>场景切换被做成了一种「传送门」的感觉</strong>。Genie 会持续在后台为用户筛选内容，生成一组建议场景——音乐、地点、电影等。用户左右滑动，<strong>像在科幻片里穿过一个个传送门</strong>，快速从一个建议跳到另一个。这个动效不是为了酷，而是想传达：AI 在背景里一直帮你过滤世界的信息。</p>
-<img alt="场景切换的传送门感" src="assets/genie/点击 右上角.gif"/><div class="img-caption">场景切换的传送门感</div>
-<p><strong>从后台唤醒的方式也带物理感</strong>。Genie 不是直接淡入出现，而是<strong>像有一个真实的物体掉落在屏幕上</strong>，伴随涟漪扩散开来。那一瞬间你真的能感觉到这个元素的重量飞过来。</p>
-<img alt="从后台唤醒的物理掉落" src="assets/genie/测试机 从后台唤醒.gif"/><div class="img-caption">从后台唤醒的物理掉落</div>
-<p>卡片也参与进来。<strong>卡片下拉会形变，横滑的时候下面的内容也跟着动</strong>。这背后是真的在跑物理仿真，每一片内容都像被赋予了质量和弹性。</p>
-<img alt="卡片的物理形变" src="assets/genie/卡片下拉变形.gif"/><div class="img-caption">卡片的物理形变</div>
-<p>动态岛在多个功能里被反复用到——相机、通知，都会从那里召唤出来。Nelson 的意图很清楚：<strong>Genie 不想只做一个 App，它想做一个嵌在系统里的层</strong>，能从手机的其他部分学到东西、长出反应。</p>
-<img alt="动态岛的多场景召唤" src="assets/genie/加载.gif"/><div class="img-caption">动态岛的多场景召唤</div>
-<div class="section-head"><svg height="40" viewBox="0 0 24 24" width="40" xmlns="http://www.w3.org/2000/svg">
-<path class="anim-eye-shape" d="M3.5 12 C5.7 7.8 8.6 6 12 6 C15.4 6 18.3 7.8 20.5 12 C18.3 16.2 15.4 18 12 18 C8.6 18 5.7 16.2 3.5 12 Z" fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"></path>
-<circle class="anim-eye-pupil" cx="12" cy="12" fill="none" r="2.2" stroke="#1a1a1a" stroke-width="1.6"></circle>
-</svg><h2>触感：把界面变成一块可以「捏」的表面</h2></div>
-<p>光和物理之上还有一层，是 Nelson 反复强调的——<strong>把整个 UI 当成一个可触摸的表面来设计</strong>。</p>
-<p>界面会对手指的按压、滑动产生波纹、吸附、弹性这些反馈，再配合光感和震动，让用户<strong>感觉自己是在「捏」内容，而不是点按钮</strong>。轻按或者双击内容，会触发液体般的形变、光波和物理反馈，代表喜欢、分享这类操作。动态岛会随之轻微位移，暗示它不只是个状态条，更像系统操作层的一部分。</p>
-<div class="highlight">
-这套体验合起来，是一种很难用文字描述的东西——<strong>界面有了「触感」，AI 有了「身体」</strong>。
-</div>
-<div class="section-head"><svg height="40" viewBox="0 0 24 24" width="40" xmlns="http://www.w3.org/2000/svg">
-<g fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6">
-<rect height="16" rx="3" width="18" x="3" y="4"></rect>
-<path d="M3 8 L21 8"></path>
-<path d="M7 12 L10 14 L7 16"></path>
-<path d="M12.5 16 L17 16"></path>
-</g>
-<g fill="#1a1a1a">
-<circle cx="6.4" cy="6" r="0.7"></circle>
-<circle cx="8.8" cy="6" r="0.7"></circle>
-</g>
-</svg><h2>怎么把这些做出来</h2></div>
-<p>这种程度的视觉效果，<strong>SwiftUI 是做不动的</strong>。Nelson 团队的实现路径很硬核。</p>
-<p>视觉探索是在 <strong>After Effects 和 Houdini</strong> 这种影视级动效工具里完成的。但这些工具里跑得再漂亮，最终也要落到真机上。落到真机的标准被他们定得很狠：<strong>接近 98% 还原视频里的效果</strong>。</p>
-<img alt="参数与调试界面" src="assets/genie/参数.png"/><div class="img-caption">参数与调试界面</div>
-<p>到设备上的实现走的是 <strong>Metal、WebGL、three.js</strong> 这些底层渲染路径，核心是用 <strong>DSL shader</strong> 写出来的。Nelson 自己就是这块的熟手，他说设计师在这方面有训练，才有可能把脑子里的效果精准实现出来，而不是丢给工程师去猜。</p>
-<img alt="shader 工程实现" src="assets/genie/工程图.png"/><div class="img-caption">shader 工程实现</div>
-<p>性能是另一个硬骨头。<strong>这么多 shader 跑在手机上，普通做法分分钟把设备烤热</strong>。他们的解法很巧：<strong>把界面区域转成纹理，做一次「smart screenshot」，在底层对这张纹理做变形和特效，再映射回 SwiftUI 视图</strong>。本质上是用一张已经渲染好的图当画布，避免反复重绘整个界面层级。</p>
-<img alt="smart screenshot 的工程实现" src="assets/genie/工程图2.png"/><div class="img-caption">smart screenshot 的工程实现</div>
-<p>加上对 GPU 性能的持续调优，砍掉一切不必要的开销，最后做到了<strong>手机不发烫</strong>——这件事在做过 shader 的人眼里，是真正的功夫。</p>
-<div class="section-head"><svg height="40" viewBox="0 0 24 24" width="40" xmlns="http://www.w3.org/2000/svg">
-<g class="anim-bell">
-<path d="M12 3.8 C8 3.8 6.2 6.5 6.2 10.5 C6.2 13 5.5 15 4.4 16.3 C3.9 16.9 4.2 17.5 5 17.5 L19 17.5 C19.8 17.5 20.1 16.9 19.6 16.3 C18.5 15 17.8 13 17.8 10.5 C17.8 6.5 16 3.8 12 3.8 Z" fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"></path>
-<path class="anim-bell-clapper" d="M10 19.2 C10 20.4 10.8 21.2 12 21.2 C13.2 21.2 14 20.4 14 19.2" fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"></path>
-</g>
-</svg><h2>强动效只用在关键时刻</h2></div>
-<p>看到这里很容易误会：是不是 Genie 全屏都在动？</p>
-<p>不是。Nelson 专门强调过一句话：<strong>「不能做成 Flash 2.0」</strong>。这些强烈的动画只在关键时刻出现——AI 学到新东西、生成新内容、场景切换、按压反馈这些重要时刻。大部分时间，界面仍然保持简洁实用。</p>
-<div class="highlight">
-<strong>视觉隐喻是来服务功能的，不是来挡路的</strong>。这一条是这套设计语言能不变成炫技的根本。
-</div>
-<p>Nelson 对极致动效还有一层判断。他认为<strong>这种对细节的「过度投入」是一种长期资产</strong>——用户即使说不出原理，也能感受到产品里的用心和品质。他拿日式设计、做寿司、高定服装来做类比：<strong>那种对工艺的执着，是会被人感知到的，哪怕讲不清为什么</strong>。</p>
-<div class="section-head"><svg height="40" viewBox="0 0 24 24" width="40" xmlns="http://www.w3.org/2000/svg">
-<path class="anim-bookmark" d="M7 4 L17 4 L17 21 L12 17 L7 21 Z" fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"></path>
-</svg><h2>这套语言给 AI 设计的启示</h2></div>
-<p>Genie 这件事如果只看动效，会觉得很漂亮。但放回 AI 产品设计的语境里看，它在做一件更底层的事——<strong>为「AI 是什么」找一种视觉上的表达</strong>。</p>
-<p>聊天框时代的 AI，存在感全靠文字。文字之外，AI 是不可见的。Nelson 给出的答案是：<strong>让 AI 通过光被看到、通过物理被感觉到、通过触感被回应</strong>。当 AI 学到东西，让光告诉用户；当 AI 推内容过来，让物理告诉用户；当用户去触碰 AI 生成的内容，让界面像有生命一样回应。</p>
-<p>这件事的代价很大，需要 shader、需要 GPU 调优、需要设计师懂数学和工程。大多数团队做不到，所以大多数 AI 产品仍然是聊天框。但 Nelson 已经把这条路走通过一次了——<strong>AI 是可以有自己的界面语法的，只是它需要一个愿意亲手写 shader 的设计师</strong>。</p></div>
-<!-- 底部 -->
-<footer class="article-footer">
-<div class="same-collection"><div class="sc-title">合集 · AI 设计语言</div><a href="article-genie.html"><span class="sc-num">01</span><span>Genie 给 AI 装了一具身体：光、物理和触感</span></a></div>
-</footer>
-</article>
-</div>
-<script src="../script.js?v=27"></script>
+<div class="reading-layout" id="app" data-slug="genie"></div>
 </body>
 </html>

@@ -5,8 +5,8 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>VibeUX</title>
-<link href="favicon.png?v=15" rel="icon" type="image/png"/>
-<link href="favicon.png?v=15" rel="shortcut icon"/>
+<link href="favicon.png?v=20" rel="icon" type="image/png"/>
+<link href="favicon.png?v=20" rel="shortcut icon"/>
 <link href="apple-touch-icon.png?v=15" rel="apple-touch-icon"/>
 <!-- loading 遮罩样式放在 head 最前:首帧直接画灰底,避免外部 CSS 阻塞期间的白屏闪烁 -->
 <style>
@@ -82,6 +82,16 @@
         #page-loader .pl-pct { font-size: 24px; line-height: 1; margin-left: 3px; }
         /* 滤镜挂载点,不占布局也不可见 */
         #page-loader .pl-defs { position: absolute; width: 0; height: 0; pointer-events: none; }
+        /* loading 动态 logo(logomotion.webm,白底黑像素动画):multiply 混合把白底融进灰底,
+           只留黑色 logo;黑面扫过时随之没入黑色(有意为之 —— logo 溶进「墨面」)。
+           位于数字上方,与数字同轴居中。 */
+        #page-loader .pl-logo {
+            position: absolute; left: 50%; top: 32%;
+            width: 100px; height: 100px;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: multiply;
+            pointer-events: none;
+        }
         html.is-loading, html.is-loading body { overflow: hidden; }
         /* 入场闸门:loading 在场时把 Feed 按住(即使 IntersectionObserver 已加 .visible
            也保持隐藏);loading 上滑离场移除 is-loading 后放闸,卡片按原错峰节奏依次上移入场 */
@@ -96,9 +106,12 @@
 <!-- Kaushan Script:hero 强调词暂时改回无衬线,字体加载先注释掉,恢复手写体时一并放开
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Kaushan+Script&amp;display=swap" rel="stylesheet"/> -->
-<link href="writing/writing.css?v=371" rel="stylesheet"/>
+<link href="writing/writing.css?v=394" rel="stylesheet"/>
 <!-- 提前加载,使顶部导航能在首次绘制前同步注入,避免空 header 闪烁 -->
-<script src="writing/writing.js?v=85"></script>
+<script src="nav-boot.js?v=4"></script>
+  <script type="module" crossorigin src="/assets/index-nUuqECxW.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/index-JqYYXcKf.js">
+  <link rel="modulepreload" crossorigin href="/assets/hooks-0e_yQ1Gn.js">
 </head>
 <!-- 复用 design-page 的 pillar 布局(左侧二级导航 + 右侧分模块),Writing 与 Design 页对称 -->
 <!-- home-landing:仅首页 —— 一屏白底 landing(writing.css);blog.html 不带。
@@ -108,6 +121,10 @@
          资源就绪(或超时兜底)后淡出。样式内联,保证在外部 CSS 到达前就能正确渲染。 -->
 <div aria-hidden="true" id="page-loader">
 <div class="pl-fill" id="pl-fill"></div>
+<video class="pl-logo" autoplay loop muted playsinline aria-hidden="true">
+<source src="logomotion.webm" type="video/webm"/>
+<source src="logomotion.mp4" type="video/mp4"/>
+</video>
 <!-- 拖影用的竖向高斯模糊,一位一个(0=个位)。stdDeviation 由 JS 每帧按该位的瞬时速度改写,
          「0 N」表示只在竖直方向糊 —— 横向也糊的话数字会像失焦,不像在滚。 -->
 <svg class="pl-defs" aria-hidden="true"><defs>
@@ -378,134 +395,7 @@
         })();
     </script>
 <span id="top"></span>
-<main class="design-layout">
-<!-- 首页 hero:占原渐变 banner 的位置,但不是把旧 banner 搬回来 —— 旧的是米色底 + 左下角标题 +
-     右下角署名,这里是黑底上重做的一块居中排版。强调词暂时与正文同用无衬线(Kaushan 手写体已停用,见 head 注释)。
-     纯 HTML/CSS,不再走 iframe。上方与顶栏的间距由 body.no-banner 的 padding-top 负责。 -->
-<header class="home-hero">
-<!-- 两行各自成块:原来靠 <br/> 换行,拆成块之后逐字切分才不会把换行也当成一个字 -->
-<h1 class="hero-headline"><span class="hero-line">From AI-Assisted</span><span class="hero-line">to <span class="accent">AI-Native Design.</span></span></h1>
-<div class="hero-byline">
-<span aria-label="Tongrong 头像" class="hero-avatar" role="img"><img alt="" src="writing/assets/tongrong-avatar.svg?v=2"/></span>
-<span class="hero-meta">
-<span class="hero-by">By <b>Tongrong</b></span>
-<span class="hero-role">UI Designer</span>
-</span>
-</div>
-</header>
-<script>
-        /* hero 逐字切分:soft-blur-in 是 per-character 效果,每个字符(含空格)是一个动画单元。
-           递归走文本节点,原有的 .accent 等元素结构原样保留,只把里面的文字换成逐字 span;
-           --d 记该字的错峰延迟(18ms/字),署名排在全部字之后。动画本身在 writing.css。 */
-        (function () {
-            var h = document.querySelector('.hero-headline');
-            if (!h) return;
-            var i = 0, STEP = 18;
-            /* 拆字时按「词」包一层 .hero-word(white-space: nowrap):
-               逐字 span 是 inline-block,任意字符间都可能被折行,小屏会出现
-               「AI-Nati / ve」这种词中断开;包词后折行只发生在词与词之间。 */
-            function chSpan(ch) {
-                var s = document.createElement('span');
-                /* 空格单元加 hero-sp:CSS 把它还原成普通行内空格,折行处可被吞掉,
-                   否则 inline-block+pre 的空格会渲染在新行行首、把下个词顶出缩进 */
-                s.className = /\s/.test(ch) ? 'hero-ch hero-sp' : 'hero-ch';
-                s.textContent = ch;
-                s.style.setProperty('--d', (i++ * STEP) + 'ms');
-                return s;
-            }
-            (function walk(node) {
-                [].slice.call(node.childNodes).forEach(function (n) {
-                    if (n.nodeType === 3) {
-                        var frag = document.createDocumentFragment();
-                        (n.textContent.match(/\s+|\S+/g) || []).forEach(function (tok) {
-                            if (/\s/.test(tok)) {
-                                tok.split('').forEach(function (ch) { frag.appendChild(chSpan(ch)); });
-                            } else {
-                                var w = document.createElement('span');
-                                w.className = 'hero-word';
-                                tok.split('').forEach(function (ch) { w.appendChild(chSpan(ch)); });
-                                frag.appendChild(w);
-                            }
-                        });
-                        node.replaceChild(frag, n);
-                    } else if (n.nodeType === 1) {
-                        walk(n);
-                    }
-                });
-            })(h);
-            var by = document.querySelector('.hero-byline');
-            if (by) by.style.setProperty('--d', (i * STEP + 120) + 'ms');
-        })();
-    </script>
-<!-- 首页索引:Blog / Archive / Contact 三行大字导航(大字 + 细分割线 + 箭头的 index 形式),
-     替代原文章网格 —— 文章列表看 blog.html。顶栏此页只留左上角 logo(writing.css 隐藏其余项)。 -->
-<nav class="home-index" aria-label="站内入口">
-<a class="home-index-row" href="blog.html"><span class="hi-label">Blog</span><span class="hi-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.5 12 H20.5 M13.5 5 L20.5 12 L13.5 19"/></svg></span></a>
-<a class="home-index-row" href="archive.html"><span class="hi-label">Archive</span><span class="hi-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.5 12 H20.5 M13.5 5 L20.5 12 L13.5 19"/></svg></span></a>
-<a class="home-index-row" href="mailto:chentongrong1@gmail.com"><span class="hi-label">Contact</span><span class="hi-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.5 12 H20.5 M13.5 5 L20.5 12 L13.5 19"/></svg></span></a>
-</nav>
-<script>
-        /* 底部索引行:per-character-rise 拆字(pixel-point/animate-text 规范,复用
-           style.css 的 heading-rise-mask / heading-rise-char)。每行基础延迟接在
-           headline 逐字之后(620ms 起、行间 120ms),行内 35ms/字;箭头作为该行
-           最后一个字符同批升起。显现闸门 = html.hero-ready(CSS 侧触发)。 */
-        (function () {
-            var rows = document.querySelectorAll('.home-index-row');
-            var BASE = 620, ROW_STEP = 120, CHAR_STEP = 35;
-            [].slice.call(rows).forEach(function (row, r) {
-                var base = BASE + r * ROW_STEP;
-                var i = 0;
-                row.classList.add('heading-rise');   /* 启用 style.css 的 mask/char 初始态 */
-                row.style.setProperty('--row-d', base + 'ms');
-                function split(el) {
-                    var text = el.textContent;
-                    el.setAttribute('aria-label', text);
-                    el.textContent = '';
-                    var mask = document.createElement('span');
-                    mask.className = 'heading-rise-mask';
-                    mask.setAttribute('aria-hidden', 'true');
-                    text.split('').forEach(function (ch) {
-                        var s = document.createElement('span');
-                        s.className = 'heading-rise-char';
-                        s.textContent = ch;
-                        s.style.setProperty('--d', (base + (i++) * CHAR_STEP) + 'ms');
-                        mask.appendChild(s);
-                    });
-                    el.appendChild(mask);
-                }
-                /* 箭头是 SVG(直角样式),没有文本可拆:整体包成一个「字符」,
-                   排在该行文字之后同批升起 */
-                function wrap(el) {
-                    var mask = document.createElement('span');
-                    mask.className = 'heading-rise-mask';
-                    mask.setAttribute('aria-hidden', 'true');
-                    var s = document.createElement('span');
-                    s.className = 'heading-rise-char';
-                    s.style.setProperty('--d', (base + (i++) * CHAR_STEP) + 'ms');
-                    while (el.firstChild) s.appendChild(el.firstChild);
-                    mask.appendChild(s);
-                    el.appendChild(mask);
-                }
-                var label = row.querySelector('.hi-label');
-                var arrow = row.querySelector('.hi-arrow');
-                if (label) split(label);
-                if (arrow) wrap(arrow);
-            });
+<main class="design-layout" id="app"></main>
 
-            /* 入场收尾后给 html 挂 entrance-done:分割线的 1.05s + 逐行延迟只服务入场,
-               常驻会拖慢之后的主题切换(边框色要等快 2s 才变)。收尾后 CSS 把过渡换快速档。 */
-            var markDone = function () {
-                setTimeout(function () {
-                    document.documentElement.classList.add('entrance-done');
-                }, 2200);   /* ≥ 最后一行延迟 860ms + 过渡 1.05s,留余量 */
-            };
-            if (document.documentElement.classList.contains('hero-ready')) markDone();
-            else new MutationObserver(function (m, o) {
-                if (document.documentElement.classList.contains('hero-ready')) { o.disconnect(); markDone(); }
-            }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-        })();
-    </script>
-</main>
-<script src="script.js?v=33"></script>
 </body>
 </html>

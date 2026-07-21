@@ -24,3 +24,7 @@
 # 转正 = markdown frontmatter 里 draft 改 false + 重新渲染 + 把这两行删掉。
 /docs/writing/article-voices.html
 /docs/writing/assets/voices/
+
+# React 迁移(Vite)工具链
+node_modules/
+site/.vite/

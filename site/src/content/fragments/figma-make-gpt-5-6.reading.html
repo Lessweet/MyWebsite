@@ -1,0 +1,471 @@
+
+<div class="article-eyebrow article-eyebrow-top"><span class="a-tag">AI 设计工作流</span></div>
+<h1 class="article-h1">设计师的新习惯<br/>给 AI 模型分工</h1>
+<div class="article-byline"><span>2026-07-11</span><span>阅读约 6 分钟</span></div>
+<div class="article-cover"><iframe loading="lazy" src="assets/figma-make-gpt-5-6/cover3.html"></iframe></div>
+<div class="article-body"><style>
+/* article-template 样式 inline 到网站，仅作用于 .article-body 内 */
+.article-eyebrow { text-align: center; justify-content: center; }
+.article-eyebrow .a-tag { font-weight: 400; }
+.article-h1 { text-align: center; }
+.article-byline { text-align: center; justify-content: center; }
+.article-body { color: #1a1a1a; line-height: 1.4; }
+.article-body p { font-size: var(--fs-body); font-weight: 300; margin: 40px 0; color: #1a1a1a; }
+.article-body strong { font-weight: 400; color: #5F82F5; }
+.article-body .list-dot { font-weight: 600; margin-right: 4px; color: #1a1a1a; }
+.article-body .section-head { text-align: center; margin: 56px 0; }
+/* 图标居中：svg display:block + margin auto，别改回 vertical-align/line-height/padding（微信按基线对齐会贴底、border-box 下 padding 挤小图标）。跟 template.html 保持一致。详见记忆 wechat-icon-vertical-center。 */
+.article-body .icon-badge { display: inline-block; width: 56px; height: 56px; border-radius: 14px; background: rgba(102, 102, 102, 0.08); margin-bottom: 14px; }
+.article-body .section-head svg { display: block; width: 36px; height: 36px; margin: 10px auto; overflow: visible; }
+.article-body h2 { font-size: var(--fs-h2); font-weight: 400; color: #1a1a1a; line-height: 1.2; margin: 0; letter-spacing: 0; text-align: center; }
+.article-body img { width: 100%; margin: 16px 0 0 0; display: block; }
+.article-body .img-caption { font-size: var(--fs-caption); color: #aaa; text-align: center; margin: 4px 0 18px 0; line-height: 1.4; }
+.article-body .img-ph { display: flex; align-items: center; justify-content: center; text-align: center; min-height: 160px; margin: 24px 0; padding: 28px 20px; border: 1px dashed #d6d6de; border-radius: 12px; background: repeating-linear-gradient(45deg, #fafafb, #fafafb 10px, #f3f3f6 10px, #f3f3f6 20px); }
+.article-body .img-ph .img-ph-cap { font-size: var(--fs-caption); color: #9a9aa6; line-height: 1.5; max-width: 80%; }
+.article-body .highlight { font-size: var(--fs-body); font-weight: 300; line-height: 1.4; color: #1a1a1a; margin: 40px 0; }
+.article-body .highlight strong { font-weight: 400; color: #5F82F5; }
+
+/* outlined 图标动画 CSS（自动从 design-gallery 抽取，不要手改） */
+/* 时长/延迟变量（在 design-gallery 基础上整体提速 ~40%，文章里看着更精神） */
+.section-head {
+  --dur-1-5: 0.9s; --dur-1-8: 1.1s; --dur-2-1: 1.2s; --dur-2-2: 1.3s;
+  --dur-2-3: 1.4s; --dur-2-4: 1.4s; --dur-2-5: 1.5s; --dur-2-6: 1.6s;
+  --dur-2-8: 1.7s; --dur-4-0: 2.4s; --dur-5-0: 3s;
+  --delay-150: 100ms; --delay-300: 180ms; --delay-600: 360ms;
+}
+/* 通用 transform-box */
+.section-head svg [class*="anim-"],
+.section-head svg .favorite-star,
+.section-head svg .favorite-rays {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.section-head svg .anim-viewBox {
+  transform-box: view-box;
+  transform-origin: center;
+}
+
+/* ---- 各图标动画规则 ---- */
+.section-head svg .anim-doc-line {
+    animation: doc-line-write var(--dur-2-8) ease-in-out infinite;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+.section-head svg .anim-doc-line-2 { animation-delay: var(--delay-300); }
+.section-head svg .anim-doc-line-3 { animation-delay: var(--delay-600); }
+.section-head svg .anim-user-head { animation: user-head var(--dur-2-3) ease-out infinite; }
+.section-head svg .anim-user-shoulders { animation: user-shoulders var(--dur-2-3) ease-out infinite; }
+.section-head svg .anim-gear { animation: gear-turn var(--dur-2-8) cubic-bezier(0.25, 0.8, 0.2, 1) infinite; transform-box: view-box; transform-origin: 12px 12px; }
+.section-head svg .anim-search { animation: search-scan var(--dur-4-0) cubic-bezier(0.16, 0.9, 0.2, 1) infinite; transform-box: view-box; transform-origin: center; }
+.section-head svg .anim-cart-burst {
+    animation: cart-burst var(--dur-2-5) ease-out infinite;
+    opacity: 0;
+  }
+.section-head svg .anim-cart-burst-1 { --tx: -5px; --ty: -9px; }
+.section-head svg .anim-cart-burst-2 { --tx: -1px; --ty: -11px; animation-delay: var(--delay-150); }
+.section-head svg .anim-cart-burst-3 { --tx: 3px; --ty: -10px; animation-delay: var(--delay-300); }
+.section-head svg .anim-cart-burst-4 { --tx: 6px; --ty: -8px; animation-delay: var(--delay-300); }
+.section-head svg .anim-clap-hand { animation: clap-hand var(--dur-1-8) ease-in-out infinite; transform-box: view-box; transform-origin: 9px 14px; }
+.section-head svg .anim-clap-lines { animation: clap-lines var(--dur-1-8) ease-out infinite; transform-box: view-box; transform-origin: center; }
+.section-head svg .anim-music-note {
+    animation: music-float var(--dur-2-8) ease-in-out infinite;
+    opacity: 0;
+    transform-box: view-box;
+    transform-origin: center;
+  }
+.section-head svg .anim-music-base {
+    animation: music-tilt var(--dur-2-8) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 12px 14px;
+  }
+.section-head svg .anim-music-note-2 { animation-delay: calc(var(--dur-2-8) / 2); }
+.section-head svg .anim-lightning {
+    animation: lightning-flash var(--dur-2-4) ease-in-out infinite;
+  }
+.section-head svg .anim-pencil { animation: pencil-write var(--dur-5-0) ease-in-out infinite; transform-box: view-box; transform-origin: 13px 12px; }
+.section-head svg .anim-pencil-trace {
+    animation: pencil-trace var(--dur-5-0) ease-in-out infinite;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+.section-head svg .anim-eye-shape { animation: eye-blink var(--dur-2-8) ease-in-out infinite; transform-box: view-box; transform-origin: 12px 12px; }
+.section-head svg .anim-eye-pupil { animation: eye-pupil-blink var(--dur-2-8) ease-in-out infinite; transform-box: view-box; transform-origin: center; }
+.section-head svg .anim-bell { animation: bell-rattle var(--dur-5-0) cubic-bezier(0.3, 0.7, 0.2, 1) infinite; transform-box: view-box; transform-origin: 12px 4px; }
+.section-head svg .anim-bell-clapper { animation: bell-clapper var(--dur-5-0) linear infinite; transform-box: view-box; transform-origin: 12px 17px; }
+.section-head svg .anim-ide-cursor { animation: ide-blink var(--dur-1-5) step-end infinite; }
+.section-head svg .anim-pin-ripple {
+    animation: pin-ripple var(--dur-2-5) ease-out infinite;
+    opacity: 0;
+  }
+.section-head svg .anim-pin-ripple-2 { animation-delay: calc(var(--dur-2-5) / 3); }
+.section-head svg .anim-pin-ripple-3 { animation-delay: calc(var(--dur-2-5) * 2 / 3); }
+.section-head svg .anim-brain {
+    animation: brain-pulse var(--dur-2-2) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 12px 12px;
+  }
+.section-head svg .anim-ai-spark {
+    animation: ai-twinkle var(--dur-2-2) ease-in-out infinite;
+  }
+.section-head svg .anim-ai-spark-small {
+    animation-delay: calc(var(--dur-2-2) / 2);
+  }
+.section-head svg .anim-cursor {
+    animation: cursor-nudge var(--dur-2-2) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 10px 12px;
+  }
+.section-head svg .anim-cursor-click {
+    animation: cursor-click var(--dur-2-2) ease-out infinite;
+    opacity: 0;
+    transform-box: view-box;
+    transform-origin: 6px 5px;
+  }
+.section-head svg .anim-cursor-spark {
+    animation: ai-twinkle var(--dur-2-2) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 18px 6px;
+  }
+.section-head svg .anim-hourglass-top {
+    animation: hourglass-top var(--dur-2-8) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 12px 8px;
+  }
+.section-head svg .anim-hourglass-stream {
+    animation: hourglass-stream var(--dur-2-8) ease-in-out infinite;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+.section-head svg .anim-hourglass-bottom {
+    animation: hourglass-bottom var(--dur-2-8) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 12px 18px;
+  }
+.section-head svg .anim-shape-cycle {
+    transform-box: view-box;
+    transform-origin: 12px 12px;
+  }
+.section-head svg .anim-home { animation: home-settle var(--dur-2-4) ease-out infinite; }
+.section-head svg .anim-lock-shackle { animation: lock-shackle var(--dur-2-6) ease-in-out infinite; transform-box: view-box; transform-origin: 12px 12px; }
+.section-head svg .anim-lock-dot { animation: lock-dot var(--dur-2-6) ease-out infinite; }
+.section-head svg .anim-message-dot-1 { animation: typing-dot var(--dur-1-5) ease-in-out infinite 0ms; }
+.section-head svg .anim-message-dot-2 { animation: typing-dot var(--dur-1-5) ease-in-out infinite var(--delay-150); }
+.section-head svg .anim-message-dot-3 { animation: typing-dot var(--dur-1-5) ease-in-out infinite var(--delay-300); }
+.section-head svg .anim-heart { animation: heart-flutter var(--dur-2-8) cubic-bezier(0.2, 0.85, 0.25, 1) infinite; transform-box: view-box; transform-origin: 12px 12px; }
+.section-head svg .favorite-star { animation: favorite-pop var(--dur-2-2) cubic-bezier(0.2, 0.85, 0.25, 1) infinite; }
+.section-head svg .favorite-rays { animation: favorite-rays var(--dur-2-2) ease-out infinite; transform-box: view-box; transform-origin: center; }
+.section-head svg .anim-gift-lid { animation: gift-lid var(--dur-2-8) ease-in-out infinite; transform-box: view-box; transform-origin: 12px 8px; }
+.section-head svg .anim-gift-particle {
+    animation: gift-particle var(--dur-2-8) ease-out infinite;
+    opacity: 0;
+    transform-box: view-box;
+    transform-origin: center;
+  }
+.section-head svg .anim-gift-particle-1 { --tx: -5px; --ty: -9px; }
+.section-head svg .anim-gift-particle-2 { --tx: 4px; --ty: -10px; animation-delay: var(--delay-150); }
+.section-head svg .anim-gift-particle-3 { --tx: -8px; --ty: -6px; animation-delay: var(--delay-300); }
+.section-head svg .anim-gift-particle-4 { --tx: 7px; --ty: -7px; animation-delay: var(--delay-300); }
+.section-head svg .anim-gift-particle-5 { --tx: -2px; --ty: -11px; animation-delay: var(--delay-600); }
+.section-head svg .anim-gift-particle-6 { --tx: 6px; --ty: -5px; animation-delay: var(--delay-600); }
+/* 以下两条此前未接入(class 存在但没有匹配规则,design-gallery 里同样是孤儿 keyframe)。
+   现补上选择器,和 icons-outlined/*.svg 里新加的 SMIL 保持一致。 */
+.section-head svg .anim-bookmark { animation: bookmark-tuck var(--dur-2-4) ease-in-out infinite; }
+.section-head svg .anim-clock-minute { animation: clock-hand 3s linear infinite; transform-box: view-box; transform-origin: 12px 12px; }
+
+/* ---- keyframes ---- */
+@keyframes ai-twinkle {
+    0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+    50% { opacity: 0.35; transform: scale(0.6) rotate(25deg); }
+  }
+@keyframes bell-clapper {
+    0%, 8%, 84%, 100% { transform: rotate(0deg); }
+    20% { transform: rotate(13deg); }
+    36% { transform: rotate(-9deg); }
+    52% { transform: rotate(6deg); }
+    68% { transform: rotate(-3deg); }
+  }
+@keyframes bell-rattle {
+    0%, 8%, 84%, 100% { transform: rotate(0deg); }
+    20% { transform: rotate(-11deg); }
+    36% { transform: rotate(8deg); }
+    52% { transform: rotate(-5deg); }
+    68% { transform: rotate(3deg); }
+  }
+@keyframes bookmark-tuck {
+    0%, 100% { transform: translateY(0); }
+    42% { transform: translateY(2px); }
+    72% { transform: translateY(-1px); }
+  }
+@keyframes brain-pulse {
+    0%, 100% { transform: scale(1); }
+    22% { transform: scale(1.06); }
+    44% { transform: scale(0.98); }
+    62% { transform: scale(1.06); }
+    82% { transform: scale(0.98); }
+  }
+@keyframes calendar-page {
+    0%, 100% { transform: translateY(0); }
+    45% { transform: translateY(1.2px); }
+  }
+@keyframes calendar-tabs {
+    0%, 100% { transform: translateY(0); }
+    35% { transform: translateY(-1.8px); }
+  }
+@keyframes cart-burst {
+    0%, 14% { opacity: 0; transform: translate(0, 0) scale(0.4) rotate(0deg); }
+    28% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+    72% { opacity: 0.85; transform: translate(var(--tx), var(--ty)) scale(1) rotate(18deg); }
+    100% { opacity: 0; transform: translate(calc(var(--tx) * 1.25), calc(var(--ty) * 1.2)) scale(0.7) rotate(30deg); }
+  }
+@keyframes cart-roll {
+    0%, 100% { transform: translateX(0); }
+    42% { transform: translateX(3px); }
+    75% { transform: translateX(-1px); }
+  }
+@keyframes clap-hand {
+    0%, 100% { transform: translateX(-1.5px) rotate(-7deg); }
+    24%, 50% { transform: translateX(1px) rotate(3deg); }
+    70% { transform: translateX(-0.6px) rotate(-3deg); }
+  }
+@keyframes clap-lines {
+    0%, 14%, 72%, 100% { opacity: 0; transform: scale(0.88); }
+    26%, 48% { opacity: 1; transform: scale(1); }
+    58% { opacity: 0.45; transform: scale(1.08); }
+  }
+@keyframes clock-hand {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+@keyframes cursor-click {
+    0%, 34% { opacity: 0; transform: scale(0.45); }
+    46% { opacity: 0.85; transform: scale(0.78); }
+    74%, 100% { opacity: 0; transform: scale(1.55); }
+  }
+@keyframes cursor-nudge {
+    0%, 100% { transform: translate(0, 0); }
+    42% { transform: translate(1px, -1px); }
+    66% { transform: translate(0.35px, -0.35px); }
+  }
+@keyframes doc-line-write {
+    0%, 12% {
+      opacity: 0;
+      stroke-dashoffset: 1;
+    }
+    42%, 76% {
+      opacity: 1;
+      stroke-dashoffset: 0;
+    }
+    100% {
+      opacity: 0;
+      stroke-dashoffset: 0;
+    }
+  }
+@keyframes eye-blink {
+    0%, 44%, 58%, 70%, 100% { transform: scaleY(1); }
+    50%, 64% { transform: scaleY(0.08); }
+  }
+@keyframes eye-pupil-blink {
+    0%, 44%, 58%, 70%, 100% { opacity: 1; transform: scaleY(1); }
+    50%, 64% { opacity: 0; transform: scaleY(0.08); }
+  }
+@keyframes favorite-pop {
+    0%   { transform: scale(1); }
+    20%  { transform: scale(0.72); }
+    46%  { transform: scale(1.2); }
+    72%  { transform: scale(0.94); }
+    100% { transform: scale(1); }
+  }
+@keyframes favorite-rays {
+    0%   { opacity: 0; transform: scale(0.58) rotate(0deg); }
+    18%  { opacity: 0; transform: scale(0.62) rotate(0deg); }
+    34%  { opacity: 1; }
+    76%  { opacity: 0.75; }
+    100% { opacity: 0; transform: scale(1.28) rotate(10deg); }
+  }
+@keyframes gear-turn {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(90deg); }
+  }
+@keyframes gift-box {
+    0%, 100% { transform: scaleY(1); }
+    42% { transform: scaleY(0.96); }
+  }
+@keyframes gift-lid {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    42% { transform: translateY(-3px) rotate(-4deg); }
+    70% { transform: translateY(-1px) rotate(2deg); }
+  }
+@keyframes gift-particle {
+    0%, 18% { opacity: 0; transform: translate(0, 3px) scale(0.62) rotate(0deg); }
+    32% { opacity: 1; transform: translate(0, 0) scale(1) rotate(8deg); }
+    72% { opacity: 0.9; transform: translate(var(--tx), var(--ty)) scale(1.05) rotate(18deg); }
+    100% { opacity: 0; transform: translate(calc(var(--tx) * 1.2), calc(var(--ty) * 1.25)) scale(0.78) rotate(28deg); }
+  }
+@keyframes heart-flutter {
+    0%, 10%, 68%, 100% { transform: scale(1) rotate(0deg); }
+    16% { transform: scale(0.94) rotate(-1.5deg); }
+    23% { transform: scale(1.18) rotate(1.5deg); }
+    31% { transform: scale(0.98) rotate(0deg); }
+    42% { transform: scale(1.1) rotate(-0.8deg); }
+    54% { transform: scale(1.01) rotate(0.4deg); }
+  }
+@keyframes home-settle {
+    0%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-2px); }
+    70% { transform: translateY(1px); }
+  }
+@keyframes hourglass-bottom {
+    0%, 100% { opacity: 0.68; transform: scaleX(0.72); }
+    60% { opacity: 1; transform: scaleX(1.08); }
+  }
+@keyframes hourglass-stream {
+    0%, 14% { opacity: 0; stroke-dashoffset: 1; }
+    30% { opacity: 1; }
+    68% { opacity: 1; stroke-dashoffset: 0; }
+    100% { opacity: 0; stroke-dashoffset: -1; }
+  }
+@keyframes hourglass-top {
+    0%, 100% { opacity: 0.95; transform: scaleY(1); }
+    54% { opacity: 0.5; transform: scaleY(0.64); }
+    78% { opacity: 0.9; transform: scaleY(0.86); }
+  }
+@keyframes ide-blink {
+    0%, 49% { opacity: 1; }
+    50%, 99% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+@keyframes lightning-flash {
+    0%, 100% { opacity: 0.92; transform: scale(1); }
+    42% { opacity: 1; transform: scale(1.08); }
+    72% { opacity: 0.78; transform: scale(0.98); }
+  }
+@keyframes lightning-pulse {
+    0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+    36% { transform: translateY(-1px) rotate(-3deg) scale(1.04); }
+    64% { transform: translateY(0.6px) rotate(2deg) scale(0.98); }
+  }
+@keyframes lock-dot {
+    0%, 100% { transform: scale(1); }
+    45% { transform: scale(1.35); }
+  }
+@keyframes lock-shackle {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    36% { transform: translateY(-2px) rotate(-9deg); }
+    72% { transform: translateY(0) rotate(0deg); }
+  }
+@keyframes music-float {
+    0% { opacity: 0; transform: translate(0, 3px) scale(0.82) rotate(-5deg); }
+    18% { opacity: 1; }
+    68% { opacity: 1; transform: translate(0.8px, -4px) scale(1) rotate(6deg); }
+    100% { opacity: 0; transform: translate(-0.5px, -7px) scale(0.86) rotate(-8deg); }
+  }
+@keyframes music-tilt {
+    0%, 100% { transform: rotate(0deg) translateY(0); }
+    34% { transform: rotate(-5deg) translateY(-0.8px); }
+    68% { transform: rotate(4deg) translateY(0.5px); }
+  }
+@keyframes pencil-trace {
+    0%, 14% {
+      opacity: 0;
+      stroke-dashoffset: 1;
+    }
+    46% {
+      opacity: 1;
+      stroke-dashoffset: 0;
+    }
+    72% {
+      opacity: 1;
+      stroke-dashoffset: 0;
+    }
+    100% {
+      opacity: 0;
+      stroke-dashoffset: 0;
+    }
+  }
+@keyframes pencil-write {
+    0%, 100% { transform: translate(-0.8px, -0.8px) rotate(-4deg); }
+    18% { transform: translate(1.4px, -2.4px) rotate(-1deg); }
+    36% { transform: translate(3.8px, -0.5px) rotate(3deg); }
+    56% { transform: translate(6.4px, -2.2px) rotate(1deg); }
+    76% { transform: translate(9px, -0.7px) rotate(4deg); }
+    88% { transform: translate(4.2px, -1.5px) rotate(-1deg); }
+  }
+@keyframes pin-drop {
+    0% { transform: translateY(-6px); opacity: 0; }
+    55% { transform: translateY(1px); opacity: 1; }
+    75% { transform: translateY(-1px); }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+@keyframes pin-ripple {
+    0% { opacity: 0; transform: scale(0.45); }
+    20% { opacity: 0.9; }
+    100% { opacity: 0; transform: scale(1.8); }
+  }
+@keyframes search-scan {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    10% { transform: translate(-4.2px, 0.4px) rotate(-10deg); }
+    18% { transform: translate(-1.1px, -0.2px) rotate(-2deg); }
+    30% { transform: translate(0.6px, -3.8px) rotate(7deg); }
+    39% { transform: translate(1.6px, -1px) rotate(2deg); }
+    52% { transform: translate(3px, 3.4px) rotate(9deg); }
+    62% { transform: translate(0.8px, 1px) rotate(2deg); }
+    78% { transform: translate(-0.7px, 0.2px) rotate(-1deg); }
+  }
+@keyframes search-sway {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    25% { transform: translateX(-1.4px) rotate(-7deg); }
+    55% { transform: translateX(1.4px) rotate(7deg); }
+    78% { transform: translateX(-0.5px) rotate(-3deg); }
+  }
+@keyframes typing-dot {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 1; }
+    38% { transform: translateY(-2px) scale(1.18); opacity: 0.75; }
+  }
+@keyframes user-head {
+    0%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-2px); }
+  }
+@keyframes user-shoulders {
+    0%, 100% { transform: scaleX(1); }
+    45% { transform: scaleX(1.08); }
+  }
+@keyframes wheel-pulse {
+    0%, 100% { transform: scale(1); }
+    42% { transform: scale(1.2); }
+  }
+</style>
+<p>一个新 AI Model 发布，“世界又被改变了”，作为设计师又感觉到危机感，然后开始玩这个 AI Model，了解新模型的优点和局限性，慢慢适应加入工作流。几周后、几个月后，这个循环重复开始。</p>
+<div class="section-head"><span class="icon-badge" style="background: transparent;"><svg height="56" viewBox="0 0 48 48" width="56" xmlns="http://www.w3.org/2000/svg"><rect fill="#5F82F5" fill-opacity="0.08" height="48" rx="13" width="48"></rect><g fill="none" stroke="#5F82F5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" transform="translate(9.6 9.6) scale(1.2)"><path d="M9 3.5 V7.5"></path><path d="M15 3.5 V7.5"></path><path d="M7.5 7.5 H16.5 C17.05 7.5 17.5 7.95 17.5 8.5 V10.5 C17.5 13.54 15.04 16 12 16 C8.96 16 6.5 13.54 6.5 10.5 V8.5 C6.5 7.95 6.95 7.5 7.5 7.5 Z"></path><path d="M12 16 V20.5"></path></g></svg></span><h2 style="color: #5F82F5;">新模型做一遍旧任务<br/>感知 AI 能力提升</h2></div>
+<p>我最近处于 Fable 5 阶段。对于 Claude 模型，官方定义用途是：Fable 5 定位是处理最困难且长时间运行任务，Opus 4.8 定位是处理日常复杂任务，Sonnet 5 定位是日常任务；所以我在 IDE 中分配的工作任务是：Fable 用于复杂设计效果的实现，Opus 用于常规设计的实现，Sonnet 用于收集素材、整理 PPT、推送 GitHub 这些辅助管理类任务。有时候忘记切模型，不小心用 Fable 做低阶任务类似 PPT（感觉浪费了），一下子能感受到 Fable 的生成质量和速度都秒杀了；有时也会刻意切换这三个模型来处理复杂设计任务，就是想比较一下生成效果质量的差别。</p>
+<img alt="Claude 官方模型定位，以及我在 IDE 里的分工：Opus 常规设计，Fable 复杂设计效果，Sonnet 干素材 / PPT / GitHub 的辅助活" src="assets/figma-make-gpt-5-6/claude-models.png"/>
+<p>浅试了最新模型 GPT-5.6 与新版 Codex。GPT-5.6 卖点之一是“设计能力和审美的跃升”，我就从生成 PPT 入手，在 Codex 模式下选了 5.6 Terra（我是 Go 套餐，没有 Sol），就输入一句 Prompt：“帮我收集 Cursor Perplexity 这种风格的 Logo，生成 PPT。” Prompt 中没有写风格偏向，主要是想测一测新模型会怎么设计。</p>
+<img alt="Codex 的模型选择面板：5.6 分 Terra 和 Luna 两个型号，5.5、5.4 也还在列表里" src="assets/figma-make-gpt-5-6/chatgpt-56-models.png"/>
+<p>首次生成的 PPT 设计感确实增强了很多，有点惊艳。PPT 的内容是极简、未来感 Logo 资料，所以 PPT 也是从这个定位生成了简约的排版风格。而且重点是每一页的排版都不一样，有上下布局、左右布局、不同的网格布局；整体很丰富、工作量不小，导致一次 Token 全用完了。我之前用 5.5 也生成过几套 PPT，首次生成的排版都是一样的：左文、右图，相对单一。<strong>同样的任务交给新 Model 再做一遍，可以感知到 AI 生成质量的进步。</strong></p>
+<img alt="同类任务前后两代模型的首轮结果：5.5 每页都是左文右图，5.6 每页排版都不一样" src="assets/figma-make-gpt-5-6/ppt-55-vs-56.png"/>
+<div class="section-head"><span class="icon-badge" style="background: transparent;"><svg height="56" viewBox="0 0 48 48" width="56" xmlns="http://www.w3.org/2000/svg"><rect fill="#5F82F5" fill-opacity="0.08" height="48" rx="13" width="48"></rect><g fill="none" stroke="#5F82F5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" transform="translate(9.6 9.6) scale(1.2)"><rect height="15" rx="2.5" width="18" x="3" y="4.5"></rect><path d="M7 9 L10.5 12 L7 15"></path><path d="M12.5 15.5 H17"></path></g></svg></span><h2 style="color: #5F82F5;">主力在 IDE<br/>Codex 辅助</h2></div>
+<p><span class="list-dot" style="font-weight:600;margin-right:4px;color:#5F82F5;">•</span><strong style="font-weight:600">IDE 对各种格式更包容</strong>。我大多数 vibe coding 是在 IDE（cursor）内，好处是学一套工具、方便引用各种 AI 模型，可以无限探索复杂设计、用 Browser 快速看效果，都在一个工具里。Codex 这类 chat 式 AI 工具的聊天框有很大的限制：对于多个图片、多个文件，prompt 写起来太费劲了。</p>
+<p>比如我在终端输入框内 prompt 会这么写：把图 1 的这个样式 xxxx，同时把文件下的某个素材替换进图 2...图3XXX... 图N，可以拖进各种格式的文件，本质是文字、图、文件都是以 token 结构输入；而在 CodeX 的输入框中，图在上方，文字在下方，描述起来就不顺畅了。</p>
+<img alt="同一类图文指令的两种写法：IDE 终端里一条写完，Codex 里图文分家" src="assets/figma-make-gpt-5-6/ide-vs-codex-input.png"/>
+<p>不过 Codex 对于知识搜集、生成 PPT/Excel 还是很好用的。因为 IDE 不支持这类格式的查看。</p>
+<p>ChatGPT 和 Codex 合并后，我体验到了更难用的 AI 产品。</p>
+<p>合并之前，我一般用 ChatGPT 问知识、搜集资料，所以我一直充的是 Go 套餐，倒也没有触发过 Token 限制；后面这类任务我也直接转用 Codex 了，Codex 对于知识类任务的优势是可以生成 PPT 这类格式，但是那时只能查看 PPT，不能编辑（是的，当时我很震惊）。5.6 更新合并后，Codex 模式现在可以编辑 PPT 了，操作也是指哪改哪。</p>
+<p>合并之后，整个体验最难以忍受的是：<strong>ChatGPT 独立模式是建的项目文件夹怎么也找不到。</strong> 本来觉得聊天窗口可以帮助我在进行 Codex 任务时，随时聊天式地解答问题，这种需求也真实被满足了；但是，聊天不基于项目文件夹了，实行的是一个随聊随走的体验模式，这推翻了之前养成的行为习惯。之前建立项目是手动的、文件夹命名是精心维护的；另外，项目制的价值在于它会基于整个项目的 Context，帮我提供更准确的回复，也省 Token。</p>
+<img alt="合并后的新聊天窗口：聊天不再基于项目文件夹，列表里只剩自动命名的对话" src="assets/figma-make-gpt-5-6/merge-tradeoff.png"/>
+<p>即使现在 ChatGPT 手机端仍然可以从项目文件夹发起聊天，在电脑端的窗口也只通过自动生成的聊天名称来筛选，损失了上层信息。</p>
+<div class="section-head"><span class="icon-badge" style="background: transparent;"><svg height="56" viewBox="0 0 48 48" width="56" xmlns="http://www.w3.org/2000/svg"><rect fill="#5F82F5" fill-opacity="0.08" height="48" rx="13" width="48"></rect><g fill="none" stroke="#5F82F5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" transform="translate(9.6 9.6) scale(1.2)"><path d="M9.5 9.5 L20.3 13.7 L15.9 15.8 L13.8 20.3 Z"></path><path d="M7 2.8 V4.9"></path><path d="M2.8 7 H4.9"></path><path d="M4 4 L5.4 5.4"></path></g></svg></span><h2 style="color: #5F82F5;">Figma Make 验证了 ChatGPT-5.6<br/>首轮生成质量提升</h2></div>
+<p>这次 ChatGPT-5.6 发布后，Figma Make 第一时间支持了，Figma 通过几个内测案例，得出结论是：首轮产出的质量和速度都有所提升了。从干净的 UI 到响应式布局到高保真交互，可以快速获得高质量的原型。</p>
+<p>第一个案例是<strong>从零生成股票追踪平台，首轮生成视觉效果很到位</strong>。Prompt 要求「Financial-Gothic 美学、黑底配琥珀色或霓虹橙文字的高密度数据布局」，一次 Prompt 出来的是完整的交互 Dashboard，还自己加上了键盘快捷键和搜索。首轮耗时 53 秒，已经挺快了。</p>
+<p>过程中 GPT-5.6 遇到问题时不会停止，而是进行调查并自我修复。比如 GPT-5.6 识别出了空白后自己修复了。</p>
+<img alt="股票追踪 Dashboard：一条 Prompt 生成黑底 Financial-Gothic 风格，快捷键和搜索是自己加的" src="assets/figma-make-gpt-5-6/stock-dashboard.png"/>
+<p>第二个案例是<strong>基于已有设计，构建音乐播放器，首轮生成复刻到位</strong>。复制现成的 Figma Design 内的 UI 画板文件，到 Make 模式下的 Chat 中粘贴并输入提示词：变成能交互的音频播放器，播放器控件都要能用」。生成的结果保留了原设计的布局、视觉层级、间距和比例，控件全部正常，Hero 图上还加了一层动画波形，交互效果也很好。按官方说法是：保留了布局、视觉层级、间距和比例。</p>
+<img alt="音乐播放器：基于现有 Figma 设计构建，布局层级间距不跑偏，控件可用" src="assets/figma-make-gpt-5-6/music-player.png"/>
+<p>在 Figma Make 中和 AI 协作最耗的就是来回迭代：描述问题、等重新生成、再验证，每一轮都是 Token 和时间。设计师的真实场景是画布上已经有一套设计，模型要在这个基础上往前做，而且不能跑偏。模型自愈、Token 效率可以解决设计场景下的繁重工作。</p>
+<p style="display:flex; align-items:center; margin:40px 0;"><span style="flex:1 1 auto;height:1px;background:#5F82F5;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" fill="#5F82F5" r="4.3"></circle></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#5F82F5" points="8,3.50 4.10,10.25 11.90,10.25"></polygon></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#5F82F5" points="8,3.20 9.18,6.38 12.57,6.52 9.90,8.62 10.82,11.88 8,10.00 5.18,11.88 6.10,8.62 3.44,6.52 6.82,6.38"></polygon></svg><span style="flex:1 1 auto;height:1px;background:#5F82F5;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span></p>
+<p>Figma CEO Dylan 最近经常发表言论表达“对未来设计更有信心”的观点，在鼓励设计师们也能有同样的自信：</p>
+<div class="quote-card" style="width:100%; margin:32px auto; text-align:left;"><div style="height:0; font-size:0; line-height:0;"><span style="float:left; width:10px; height:10px; margin-top:-5px; background:#5F82F5; font-size:0; line-height:0;">​</span><span style="float:right; width:10px; height:10px; margin-top:-5px; background:#5F82F5; font-size:0; line-height:0;">​</span></div><div style="background:#FAF9F7; border:1px solid #1A1C1E; padding:22px 26px 24px; margin:0 5px;"><div style="font-family:Georgia,'Songti SC',serif; font-size:46px; font-weight:700; line-height:1; height:26px; margin-bottom:12px; color:#1A1C1E;">“</div><p class="quote-p" style="margin:0; font-size:12px; font-weight:300; line-height:1.85; color:#1A1C1E;">越来越多的设计进入世界，注意力经济是真实的，因此创造力/设计/观点就是你脱颖而出的方式。你的品牌、营销、产品设计、愉悦时刻和整体客户旅程必须出色。</p><div style="height:14px; font-size:0; line-height:0;">​</div><p class="quote-p" style="margin:0; font-size:12px; font-weight:300; line-height:1.85; color:#1A1C1E;">而你必须探索相当长的时间才能想出一些精彩的东西。设计过程输入的东西不仅是传统办公室工作且容易产出的内容，阅读文档、与同事交谈、研究等。输入也可能包括在公园散步、前一天晚上做的有趣梦、通勤时在收音机上听到的好听歌曲、1800 年代的画作或其他各种文化/情感输入。</p><div style="height:14px; font-size:0; line-height:0;">​</div><p class="quote-p" style="margin:0; font-size:12px; font-weight:300; line-height:1.85; color:#1A1C1E;">现在是时候更加大胆，承担更多创意风险，加倍投入设计的力量了。
+</p></div><div style="height:0; font-size:0; line-height:0;"><span style="float:left; width:10px; height:10px; margin-top:-5px; background:#5F82F5; font-size:0; line-height:0;">​</span><span style="float:right; width:10px; height:10px; margin-top:-5px; background:#5F82F5; font-size:0; line-height:0;">​</span></div><div style="clear:both; height:0; font-size:0; line-height:0;">​</div></div>
+<p style="color:#aaa; font-size:var(--fs-caption); text-align:center; margin:24px 0;">本文素材来自 Figma 官方博客 GPT-5.6 is now available in Figma Make，以及我自己在 Codex / ChatGPT 新版里的实测截图与使用体验。</p></div>
+<!-- 底部 -->
+<footer class="article-footer">
+<div class="same-collection"><div class="sc-title">合集 · Figma 观察</div><a href="article-figma-config-2026.html"><span class="sc-num">01</span><span>设计师被 AI 替代之前，Figma 用一整套新功能抬高设计师上限</span></a><a href="article-figma-shader-motion.html"><span class="sc-num">02</span><span>在设计系统里，Figma Shader 和 Motion ，正从效果变成可复用元素</span></a><a href="article-figma-make-gpt-5-6.html"><span class="sc-num">03</span><span>设计师的新习惯，给 AI 模型分工</span></a><a href="article-figma-make-designer-pr.html"><span class="sc-num">04</span><span>AI native 设计师的交付物，不只设计稿，还有 GitHub PR</span></a></div>
+</footer>
