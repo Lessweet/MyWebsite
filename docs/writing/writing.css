@@ -1442,6 +1442,10 @@ body .home-nav .nav-cats .nav-cat.active {
         transform: translateY(12px);
         transition: opacity 0.56s var(--ease), transform 0.56s var(--ease);
     }
+    /* 全屏菜单不做当前页高亮(2026-07-22 用户要求):active 与其余项同色 ——
+       桌面顶栏的 active 规则(0,5,1 / 0,6,1)会打进面板,这里用更满的选择器压掉 */
+    .home-v2 .header.home-nav .nav-collapse .nav-cats .nav-cat.active { color: #1a1a1a; }
+    .home-v2 .header.home-nav .nav-collapse .nav-cats .nav-cat.active:hover { color: rgba(0, 0, 0, 0.5); }
     /* 全屏菜单三项 hover:变色不位移,与首页索引行同规范(2026-07-22) */
     .home-v2 .header.home-nav .nav-collapse .nav-cat:hover,
     .home-v2 .header.home-nav .nav-collapse .header-connect:hover { color: rgba(0, 0, 0, 0.5); }
@@ -2225,6 +2229,9 @@ body.theme-dark .design-content .category-section .section-divider {
     }
     body.menu-dark .header.home-nav .nav-collapse .nav-cat:hover,
     body.menu-dark .header.home-nav .nav-collapse .header-connect:hover { color: rgba(255, 255, 255, 0.6); }
+    /* 深色面板同理:active 不高亮(压过 theme-dark 顶栏 active 反白),hover 仍提亮 */
+    body.menu-dark .header.home-nav .nav-collapse .nav-cats .nav-cat.active { color: rgba(255, 255, 255, 0.3); }
+    body.menu-dark .header.home-nav .nav-collapse .nav-cats .nav-cat.active:hover { color: rgba(255, 255, 255, 0.6); }
     /* 展开后 X 与字标压在黑模态上,必须反白。只在 .nav-open 时 ——
        Cases 是白底页,未展开时反白会让汉堡 / 字标直接消失在白底 banner 里。
        (首页由 body.no-banner.theme-dark .site-wordmark 常驻反白,这条对它只是同值重复。) */
@@ -2770,7 +2777,7 @@ body.works-page.theme-dark .icon-preview-frame { filter: invert(1); }
 /* 卡片下方的标题与日期(2026-07-22 用户要求放回:每个作品下显示作品名和时间)。
    宫格是无缝拼贴(gap 0),信息条用自身上下留白隔开上下两行卡片。
    白底下文字走 style.css 默认配色(label = --gray-900 / date = #969696)。 */
-body.works-page .card-info { padding: 14px 4px 28px; }
+body.works-page .card-info { padding: 8px 4px 28px; }   /* 封面与文字间距收紧 14 → 8(2026-07-22) */
 /* 标题/时间样式与 Blog 卡一致(2026-07-22):左对齐;meta 行同 .w-meta(gap 10/基线对齐);
    日期与 tag 用默认字体 14px #969696(去掉等宽与「•」分隔) */
 body.works-page .card-title-row { justify-content: flex-start; }
