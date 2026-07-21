@@ -1440,6 +1440,9 @@ body .home-nav .nav-cats .nav-cat.active {
         transform: translateY(12px);
         transition: opacity 0.56s var(--ease), transform 0.56s var(--ease);
     }
+    /* 全屏菜单三项 hover:变色不位移,与首页索引行同规范(2026-07-22) */
+    .home-v2 .header.home-nav .nav-collapse .nav-cat:hover,
+    .home-v2 .header.home-nav .nav-collapse .header-connect:hover { color: rgba(0, 0, 0, 0.5); }
     /* 行内的直角箭头(writing.js 注入,桌面端由下方规则隐藏):同 icon 规范 */
     .home-v2 .header.home-nav .nav-collapse .nav-cat .nav-arrow,
     .home-v2 .header.home-nav .nav-collapse .header-connect .nav-arrow { display: block; }
@@ -2161,6 +2164,12 @@ body.design-page.no-banner.theme-dark:not(.writing-page) .header.home-nav { back
 body.no-banner.theme-dark .header.home-nav .nav-bg { display: none; }
 /* 字标是黑色 SVG,黑底上会消失 —— 整体反相为白 */
 body.no-banner.theme-dark .site-wordmark { filter: invert(1); }
+/* 导航 logo:去背景内联 SVG(2026-07-22),图形 currentColor 随主题:
+   浅色 = 字标同色 #101114;深色/深色全屏菜单 = 反白(条件与 .site-wordmark invert 一致) */
+svg.site-logo { box-shadow: none; border-radius: 0; color: #101114; }
+/* 去背景后图形顶满盒子显得偏大,尺寸回收到 26px(2026-07-22) */
+.design-page .site-title svg.site-logo { width: 26px; height: 26px; }
+body.no-banner.theme-dark svg.site-logo { color: #fff; }
 /* 顶栏三项(Blog / Cases / Contact):未选中 30% 白,选中 100% 白 —— 与浅色版的 30% 黑 / 纯黑对称。
    未选中态必须写满 .nav-cats .nav-cat(4 类 + body = 0,4,1),才压得过前面
    .design-page .home-nav .nav-cats .nav-cat(0,4,0)的 30% 黑 —— 否则 Cases 会是黑字贴黑底、整个消失 */
@@ -2209,13 +2218,18 @@ body.theme-dark .design-content .category-section .section-divider {
     body.menu-dark .header.home-nav .nav-collapse .nav-cat,
     body.menu-dark .header.home-nav .nav-collapse .header-connect {
         color: rgba(255, 255, 255, 0.3);
+        /* 行分割线随主题反白(2026-07-22:黑模态上 rgba(0,0,0,.2) 几乎不可见) */
+        border-top-color: rgba(255, 255, 255, 0.2);
     }
     body.menu-dark .header.home-nav .nav-collapse .nav-cat.active { color: #fff; }
+    body.menu-dark .header.home-nav .nav-collapse .nav-cat:hover,
+    body.menu-dark .header.home-nav .nav-collapse .header-connect:hover { color: rgba(255, 255, 255, 0.6); }
     /* 展开后 X 与字标压在黑模态上,必须反白。只在 .nav-open 时 ——
        Cases 是白底页,未展开时反白会让汉堡 / 字标直接消失在白底 banner 里。
        (首页由 body.no-banner.theme-dark .site-wordmark 常驻反白,这条对它只是同值重复。) */
     body.menu-dark .header.home-nav.nav-open .nav-toggle span { background: #fff; }
     body.menu-dark .header.home-nav.nav-open .site-wordmark { filter: invert(1); }
+    body.menu-dark .header.home-nav.nav-open svg.site-logo { color: #fff; }
 
     /* —— 页面本身是黑底才需要的(.theme-dark) —— */
     /* 未展开时的汉堡:黑底页上要反白(Cases 白底页不走这条,保持深色) */
@@ -2547,7 +2561,7 @@ html.hero-ready .hero-role { animation-delay: calc(var(--d, 0ms) + 180ms); }
 body.blog-page .page-title,
 body.works-page .page-title {
     margin: 0 0 40px;
-    font-size: var(--fs-h1, 36px);
+    font-size: var(--fs-h2, 32px);   /* h1 档改 h2 档(2026-07-22 用户要求) */
     color: #181818;
 }
 body.works-page .page-title { grid-column: 1 / -1; }
@@ -2570,7 +2584,8 @@ body.works-page.theme-dark .page-title { color: #fff; }
 body.works-page .design-layout {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0;
+    /* 列距与 Blog 页 .category-grid 相同(2026-07-22);行距 0,纵向节奏由 card-info 留白负责 */
+    gap: 0 clamp(8px, 1.67vw, 16px);
 }
 body.works-page .design-content,
 body.works-page .category-section,
@@ -2587,10 +2602,17 @@ body.works-page .section-divider { display: none; }
    高度用 100% 而不是 auto:iframe 是替换元素,height:auto 时网格的 stretch 对它无效,
    会退回 iframe 的固有高度 150px(第一版就是这么塌的)。100% 解析成整个网格区域的高度,
    于是 banner 底边永远和右侧作品卡(卡片 + 下方标题)齐平,不会漏缝。 */
-body.works-page .design-banner-frame {
+body.works-page .banner-card {
     grid-column: span 2;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+body.works-page .banner-card .design-banner-frame {
     width: 100%;
-    height: 100%;
+    flex: 1;
+    min-height: 0;
+    height: auto;   /* 高度由 flex 分配:封面区与邻卡封面对齐,信息条在下 */
     margin: 0;
 }
 
@@ -2607,7 +2629,8 @@ body.works-page .design-banner-frame {
    垂直居中,截掉上下也能看到完整 logo。 */
 @media (max-width: 600px) {
     body.works-page .design-layout { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    body.works-page .design-banner-frame { grid-column: 1 / -1; height: auto; aspect-ratio: 2 / 1; }
+    body.works-page .banner-card { grid-column: 1 / -1; }
+    body.works-page .banner-card .design-banner-frame { flex: none; height: auto; aspect-ratio: 2 / 1; }
 }
 
 /* 宫格间距归零 —— 现在只需压 .design-layout 这一个网格。
@@ -2741,7 +2764,14 @@ body.works-page.theme-dark .icon-preview-frame { filter: invert(1); }
 /* 卡片下方的标题与日期(2026-07-22 用户要求放回:每个作品下显示作品名和时间)。
    宫格是无缝拼贴(gap 0),信息条用自身上下留白隔开上下两行卡片。
    白底下文字走 style.css 默认配色(label = --gray-900 / date = #969696)。 */
-body.works-page .card-info { padding: 12px 4px 24px; }
+body.works-page .card-info { padding: 14px 4px 28px; }
+/* 标题/时间样式与 Blog 卡一致(2026-07-22):左对齐;meta 行同 .w-meta(gap 10/基线对齐);
+   日期与 tag 用默认字体 14px #969696(去掉等宽与「•」分隔) */
+body.works-page .card-title-row { justify-content: flex-start; }
+body.works-page .card-meta { justify-content: flex-start; gap: 10px; align-items: baseline; }
+body.works-page .card-date,
+body.works-page .card-meta .card-tag { font-family: inherit; font-size: var(--fs-caption); color: #969696; }
+body.works-page .card-meta .card-tag::after { content: none; }
 
 /* Icon 预览卡:页面转浅色后不再反相 —— icon-studio/preview-*.html 本身透明底 +
    #181818 深色线稿,落在上面的灰底卡上直接可读(深色版时期这里曾 invert(1) 反白)。 */

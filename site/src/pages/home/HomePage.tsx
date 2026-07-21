@@ -58,6 +58,29 @@ export default function HomePage() {
   useHeaderAlwaysVisible();
   useScrollProgress();
 
+  /* 刷新/同会话回访:hero-ready 可能在 React 挂载前已就位,内容以最终态首绘、
+     入场动画被跳过。摘掉重加让入场每次刷新都重播(2026-07-22 用户要求)。
+     关键:索引行字符走 transition,--d(620ms+)的延迟是双向的 —— 直接摘类后
+     隐藏态要等延迟才生效,2 帧后加回类等于什么都没发生。所以摘类时临时
+     transition:none + 强制回流,让隐藏态立即落地,再恢复过渡、重加闸门。
+     hero 字符走 animation(重加类自动从头播),不受影响。 */
+  useEffect(() => {
+    const docEl = document.documentElement;
+    if (!docEl.classList.contains('hero-ready')) return;
+    docEl.classList.remove('hero-ready');
+    docEl.classList.remove('entrance-done'); // 行分割线也按首载节奏重播
+    const els = Array.from(
+      document.querySelectorAll<HTMLElement>('.heading-rise-char, .home-index-row'),
+    );
+    els.forEach((el) => (el.style.transition = 'none'));
+    void document.body.offsetWidth; // 强制回流:隐藏态立即生效
+    const r1 = requestAnimationFrame(() => {
+      els.forEach((el) => (el.style.transition = ''));
+      requestAnimationFrame(() => docEl.classList.add('hero-ready'));
+    });
+    return () => cancelAnimationFrame(r1);
+  }, []);
+
   /* 入场收尾 2200ms 后给 html 挂 entrance-done(过渡换快速档);
      闸门 = html.hero-ready(loader 收尾/跳过时由入口脚本添加) */
   useEffect(() => {

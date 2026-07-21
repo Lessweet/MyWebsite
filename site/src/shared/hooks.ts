@@ -289,3 +289,53 @@ export function useDynamicScale() {
     };
   }, []);
 }
+
+/* ── Blog 滚动拖影(2026-07-22 新增交互):滚动时卡片按视口位置错峰位移,
+   越靠下的卡响应越滞后、被「拖」得越开;停止滚动后依次弹回原位。
+   位移写在 card-wrapper 的子元素上(封面链接 + 信息条),不碰 wrapper 本身 ——
+   入场动画(.visible 过渡)的 transform 在 wrapper 上,互不覆盖。 */
+export function useScrollLag() {
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const wrappers = Array.from(
+      document.querySelectorAll<HTMLElement>('#writing-all .card-wrapper'),
+    );
+    if (!wrappers.length) return;
+    const parts = wrappers.map((w) => Array.from(w.children) as HTMLElement[]);
+    let prev = window.scrollY;
+    let smooth = 0;
+    let raf = 0;
+    let cleared = true;
+    const K = 0.9; // 位移系数
+    const MAX = 56; // 单卡最大拖开距离
+    const tick = () => {
+      const y = window.scrollY;
+      const d = y - prev;
+      prev = y;
+      smooth += (d - smooth) * 0.18; // 平滑滚动速度 → 拖影量
+      if (Math.abs(smooth) < 0.05) {
+        smooth = 0;
+        if (!cleared) {
+          parts.forEach((els) => els.forEach((el) => (el.style.transform = '')));
+          cleared = true;
+        }
+      } else {
+        cleared = false;
+        const vh = window.innerHeight || 1;
+        wrappers.forEach((w, i) => {
+          const top = w.getBoundingClientRect().top;
+          /* 视口位置系数 0.35~1.35:越靠下的卡位移越大(「下面的先下移」) */
+          const factor = 0.35 + Math.min(1, Math.max(0, top / vh));
+          const ty = Math.max(-MAX, Math.min(MAX, smooth * K * factor));
+          parts[i].forEach((el) => (el.style.transform = `translateY(${ty}px)`));
+        });
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(raf);
+      parts.forEach((els) => els.forEach((el) => (el.style.transform = '')));
+    };
+  }, []);
+}

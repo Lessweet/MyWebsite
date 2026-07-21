@@ -11,6 +11,7 @@ import {
   useScrollProgress,
   usePillarEntrance,
   useHeaderAlwaysVisible,
+  useScrollLag,
 } from '../../shared/hooks';
 
 type Filter = 'all' | 'ui' | 'product';
@@ -33,6 +34,7 @@ export default function BlogPage() {
   useStickyMenu();
   useScrollProgress();
   usePillarEntrance();
+  useScrollLag();
 
   useEffect(() => {
     let r2: number;
