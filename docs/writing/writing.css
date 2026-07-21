@@ -2779,7 +2779,7 @@ body.works-page.theme-dark .icon-preview-frame { filter: invert(1); }
 /* 卡片下方的标题与日期(2026-07-22 用户要求放回:每个作品下显示作品名和时间)。
    宫格是无缝拼贴(gap 0),信息条用自身上下留白隔开上下两行卡片。
    白底下文字走 style.css 默认配色(label = --gray-900 / date = #969696)。 */
-body.works-page .card-info { padding: 8px 4px 28px; }   /* 封面与文字间距收紧 14 → 8(2026-07-22) */
+body.works-page .card-info { padding: 4px 4px 28px; }   /* 封面与文字间距再减半 8 → 4(2026-07-22) */
 /* 标题/时间样式与 Blog 卡一致(2026-07-22):左对齐;meta 行同 .w-meta(gap 10/基线对齐);
    日期与 tag 用默认字体 14px #969696(去掉等宽与「•」分隔) */
 /* 作品卡标题字号用正文档 --fs-p(2026-07-22 用户要求,由 h3 档 20px 降为 18px) */
