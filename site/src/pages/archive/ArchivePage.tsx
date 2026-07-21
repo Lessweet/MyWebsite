@@ -1,0 +1,312 @@
+/**
+ * Archive 页(docs/archive.html 的 React 版)。四个分区 + 16 张作品卡逐节点转录;
+ * hover 蒙层(card-overlay)与区头拆字直接在 JSX 渲染(替代旧版运行时注入,产物 DOM 一致);
+ * icon 模态用 portal 挂到 body(保持旧版 DOM 位置:模态是 main 的兄弟节点)。
+ */
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import LikeButton from '../../shared/LikeButton';
+import HeadingRise from '../../shared/HeadingRise';
+import { PIXEL_PATHS } from './pixelIcons';
+import {
+  useStickyMenu,
+  useScrollProgress,
+  useNavSolidOnScroll,
+  useNavSpy,
+  usePillarEntrance,
+  useCoverFade,
+  useDynamicScale,
+  useSmoothScrollAnchors,
+  useHeaderAlwaysVisible,
+} from '../../shared/hooks';
+
+const PixelIcon = ({ d }: { d: string }) => (
+  <span className="menu-icon">
+    <svg viewBox="0 0 24 24">
+      <path fillRule="evenodd" d={d} />
+    </svg>
+  </span>
+);
+
+const HeadingIcon = ({ d }: { d: string }) => (
+  <span className="heading-icon">
+    <svg viewBox="0 0 24 24">
+      <path fillRule="evenodd" d={d} />
+    </svg>
+  </span>
+);
+
+/* hover 蒙层:文案与卡下方 card-label/card-date 同源(注册在卡数据里,一处修改) */
+const Overlay = ({ title, date }: { title: string; date: string }) => (
+  <div className="card-overlay" aria-hidden="true">
+    <span className="co-title">{title}</span>
+    <span className="co-date">{date}</span>
+  </div>
+);
+
+/* 视频作品卡(card-tall 系列):cardClass 区分 video-full / gray-outline / scaled 变体 */
+function VideoCard(props: {
+  delay: number;
+  group: string;
+  category: string;
+  cardClass: string;
+  src: string;
+  label: string;
+  likeId: string;
+  tag: string;
+  date: string;
+  iphone?: boolean;
+  dynamicScale?: { contentHeight: number; contentType?: string };
+}) {
+  const p = props;
+  return (
+    <div className="card-wrapper" data-delay={p.delay} data-group={p.group} data-category={p.category}>
+      <article
+        className={p.cardClass}
+        data-content-height={p.dynamicScale?.contentHeight}
+        data-content-type={p.dynamicScale?.contentType}
+      >
+        <div className="card-visual">
+          {p.iphone ? (
+            <div className="iphone-frame">
+              <div className="iphone-notch"></div>
+              <div className="iphone-screen">
+                <video className="iphone-video" autoPlay loop muted playsInline>
+                  <source src={p.src} type="video/mp4" />
+                </video>
+              </div>
+            </div>
+          ) : (
+            <video className="card-video" autoPlay loop muted playsInline>
+              <source src={p.src} type="video/mp4" />
+            </video>
+          )}
+        </div>
+        <Overlay title={p.label} date={p.date} />
+      </article>
+      <div className="card-info">
+        <div className="card-title-row">
+          <span className="card-label">{p.label}</span>
+          <LikeButton id={p.likeId} />
+        </div>
+        <div className="card-meta">
+          <span className="card-tag">{p.tag}</span>
+          <span className="card-date">{p.date}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function ArchivePage() {
+  const [modalSrc, setModalSrc] = useState<string | null>(null);
+
+  useHeaderAlwaysVisible();
+  useStickyMenu();
+  useScrollProgress();
+  useNavSolidOnScroll();
+  useNavSpy();
+  usePillarEntrance();
+  useCoverFade();
+  useDynamicScale();
+  useSmoothScrollAnchors();
+
+  /* icon 模态:Esc 关闭 + body.modal-open 锁滚动(移植 archive.html 内联脚本) */
+  useEffect(() => {
+    document.body.classList.toggle('modal-open', modalSrc !== null);
+    if (modalSrc === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setModalSrc(null);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [modalSrc]);
+
+  const openModal = (e: React.MouseEvent, src: string) => {
+    e.preventDefault();
+    setModalSrc(src);
+  };
+
+  return (
+    <>
+      <h1 className="page-title">Archive.</h1>
+      {/* VIBEDESIGN banner:置于顶部做 hero,三套样式轮播 */}
+      <iframe src="design-banner.html?v=25" className="design-banner-frame" title="VIBEDESIGN" scrolling="no"></iframe>
+      <aside className="design-menu" aria-label="Design 分类">
+        <a href="#ai-native-design" className="nav-cat"><PixelIcon d={PIXEL_PATHS.ICON_SKILL} />Icon Skill</a>
+        <a href="#cat-aigc" className="nav-cat"><PixelIcon d={PIXEL_PATHS.AIGC} />AIGC</a>
+        <a href="#cat-motion" className="nav-cat"><PixelIcon d={PIXEL_PATHS.MOTION} />Visual Motion</a>
+        <a href="#cat-ux" className="nav-cat"><PixelIcon d={PIXEL_PATHS.UX} />Visual UX</a>
+      </aside>
+      <div className="design-content">
+        <section className="category-section home-section" id="ai-native-design">
+          <div className="section-divider">
+            <HeadingRise text="Icon Skill" icon={<HeadingIcon d={PIXEL_PATHS.ICON_SKILL} />} />
+          </div>
+          <div className="category-grid">
+            {/* Outlined Icon — 封面卡(内页前 9 个图标动效预览),点击看全部 */}
+            <div className="card-wrapper" data-delay="100">
+              <a
+                href="icon-studio/outlined.html"
+                data-modal-src="icon-studio/outlined.html?modal=1&v=2"
+                className="card foundation-card icon-cover"
+                onClick={(e) => openModal(e, 'icon-studio/outlined.html?modal=1&v=2')}
+              >
+                <iframe src="icon-studio/preview-outlined.html?v=4" className="icon-preview-frame" title="Outlined Icon 预览" scrolling="no" tabIndex={-1}></iframe>
+                <Overlay title="Outlined Icon" date="2026-05-20" />
+              </a>
+              <div className="card-info">
+                <div className="card-title-row"><span className="card-label">Outlined Icon</span></div>
+                <div className="card-meta"><span className="card-date">2026-05-20</span></div>
+              </div>
+            </div>
+            {/* Pixel Icon — 封面卡(内页前 9 个图标动效预览),点击看全部 */}
+            <div className="card-wrapper" data-delay="150">
+              <a
+                href="icon-studio/pixel.html"
+                data-modal-src="icon-studio/pixel.html?modal=1&v=2"
+                className="card foundation-card icon-cover"
+                onClick={(e) => openModal(e, 'icon-studio/pixel.html?modal=1&v=2')}
+              >
+                <iframe src="icon-studio/preview-pixel.html?v=4" className="icon-preview-frame" title="Pixel Icon 预览" scrolling="no" tabIndex={-1}></iframe>
+                <Overlay title="Pixel Icon" date="2026-05-20" />
+              </a>
+              <div className="card-info">
+                <div className="card-title-row"><span className="card-label">Pixel Icon</span></div>
+                <div className="card-meta"><span className="card-date">2026-05-20</span></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* AI 生成作品(从 Visual Motion 拎出的动态海报) */}
+        <section className="category-section" id="cat-aigc" data-category="ai-generated">
+          <div className="section-divider">
+            <HeadingRise text="AIGC" icon={<HeadingIcon d={PIXEL_PATHS.AIGC} />} />
+          </div>
+          <div className="category-grid">
+            {/* AI Poster 轮播:四张动态海报叠成一摞,实现在 poster-stack.html;demo 底色中性灰 #E2E2E2,卡底同色无缝 */}
+            <div className="card-wrapper" data-delay="50" data-group="co-creation" data-category="motion-posters">
+              <article className="card card-full-demo" style={{ background: '#E2E2E2' }}>
+                <div className="card-iframe-container">
+                  <iframe src="poster-stack.html?v=4" className="card-iframe" frameBorder="0" title="AI Poster 轮播" scrolling="no" tabIndex={-1}></iframe>
+                </div>
+                <Overlay title="AI Poster" date="2026-05-06" />
+              </article>
+              <div className="card-info">
+                <div className="card-title-row">
+                  <span className="card-label">AI Poster</span>
+                  <LikeButton id="10" />
+                </div>
+                <div className="card-meta">
+                  <span className="card-tag">Jimeng AI</span>
+                  <span className="card-date">2026-05-06</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Visual Motion */}
+        <section className="category-section" id="cat-motion" data-group="co-creation" data-category="motion-posters">
+          <div className="section-divider">
+            <HeadingRise text="Visual Motion" icon={<HeadingIcon d={PIXEL_PATHS.MOTION} />} />
+          </div>
+          <div className="category-grid">
+            {/* AI Assistant Motion */}
+            <div className="card-wrapper" data-delay="250" data-group="co-creation" data-category="motion-posters">
+              <article className="card card-full-demo">
+                <div className="card-iframe-container">
+                  <iframe src="ai-assistant-motion/index.html?v=2" className="card-iframe" frameBorder="0" allowFullScreen></iframe>
+                </div>
+                <Overlay title="AI Assistant Motion" date="2026-03-16" />
+              </article>
+              <div className="card-info">
+                <div className="card-title-row">
+                  <span className="card-label">AI Assistant Motion</span>
+                  <LikeButton id="9" />
+                </div>
+                <div className="card-meta">
+                  <span className="card-tag">Claude Code</span>
+                  <span className="card-date">2026-03-16</span>
+                </div>
+              </div>
+            </div>
+            <VideoCard delay={300} group="co-creation" category="motion-posters" cardClass="card card-tall card-video-full card-gray-outline" src="voicer_compressed.mp4" label="Voicer" likeId="14" tag="Adobe After Effects" date="2025-06-14" />
+            <VideoCard delay={350} group="co-creation" category="motion-posters" cardClass="card card-tall card-video-full card-gray-outline" src="voicer_card_compressed.mp4" label="Voicer Card" likeId="17" tag="Adobe After Effects" date="2025-06-14" />
+            <VideoCard delay={400} group="co-creation" category="motion-posters" cardClass="card card-tall card-video-full card-gray-outline" src="voicer_search_bar_compressed.mp4" label="Voicer Search Bar" likeId="15" tag="Adobe After Effects" date="2025-06-14" />
+            <VideoCard delay={450} group="co-creation" category="motion-posters" cardClass="card card-tall card-video-full card-gray-outline" src="voicer_loading_compressed.mp4" label="Voicer Loading" likeId="16" tag="Adobe After Effects" date="2025-06-14" />
+          </div>
+        </section>
+
+        {/* VisualUX (AI Native Design) — merged from former AI Product UX + 3D Visuals */}
+        <section className="category-section" id="cat-ux" data-group="native" data-category="visualux">
+          <div className="section-divider">
+            <HeadingRise text="Visual UX" icon={<HeadingIcon d={PIXEL_PATHS.UX} />} />
+          </div>
+          <div className="category-grid">
+            {/* Eye Tracking */}
+            <div className="card-wrapper" data-delay="50" data-group="native" data-category="visualux">
+              <article className="card card-full-demo card-dynamic-scale" data-content-height="812">
+                <div className="card-iframe-container">
+                  <iframe src="multi-scene-character-demo/multi-scene-character-demo.html" className="card-iframe" frameBorder="0" allowFullScreen></iframe>
+                </div>
+                <Overlay title="Eye Tracking" date="2026-01-08" />
+              </article>
+              <div className="card-info">
+                <div className="card-title-row">
+                  <span className="card-label">Eye Tracking</span>
+                  <LikeButton id="3" />
+                </div>
+                <div className="card-meta">
+                  <span className="card-tag">Claude Code</span>
+                  <span className="card-date">2026-01-08</span>
+                </div>
+              </div>
+            </div>
+            {/* Voice Particles */}
+            <div className="card-wrapper" data-delay="100" data-group="native" data-category="visualux">
+              <article className="card card-full-demo card-dynamic-scale" data-content-height="812" data-target-ratio="1">
+                <div className="card-iframe-container">
+                  <iframe src="voice-particles/index.html" className="card-iframe" frameBorder="0" allowFullScreen></iframe>
+                </div>
+                <Overlay title="Voice Particles" date="2026-01-05" />
+              </article>
+              <div className="card-info">
+                <div className="card-title-row">
+                  <span className="card-label">Voice Particles</span>
+                  <LikeButton id="4" />
+                </div>
+                <div className="card-meta">
+                  <span className="card-tag">Gemini 3 Pro</span>
+                  <span className="card-date">2026-01-05</span>
+                </div>
+              </div>
+            </div>
+            <VideoCard delay={150} group="native" category="visualux" cardClass="card card-tall card-video-full" src="Metal_compressed.mp4" label="3D Rotation Effect" likeId="1" tag="Claude Code" date="2026-01-15" />
+            <VideoCard delay={200} group="native" category="visualux" cardClass="card card-tall card-video-full" src="3DCardGlass_compressed.mp4" label="3D Rotation Effect" likeId="2" tag="Claude Code" date="2026-01-10" />
+            <VideoCard delay={250} group="native" category="visualux" cardClass="card card-tall card-dynamic-scale" src="3DSphere-particle_compressed.mp4" label="3D Sphere" likeId="5" tag="Claude Code" date="2026-01-03" iphone dynamicScale={{ contentHeight: 844, contentType: 'iphone' }} />
+            <VideoCard delay={300} group="native" category="visualux" cardClass="card card-tall card-scaled-up" src="3DBallsIPhone_compressed.mp4" label="Glass Balls" likeId="6" tag="Claude Code" date="2025-12-28" />
+            <VideoCard delay={350} group="native" category="visualux" cardClass="card card-tall card-video-full card-video-scaled-down" src="3DSphere_compressed.mp4" label="Gesture Interaction" likeId="7" tag="Claude Code" date="2025-12-20" />
+            <VideoCard delay={400} group="native" category="visualux" cardClass="card card-tall card-video-full card-video-scaled-down" src="3DCards_compressed.mp4" label="Gyroscope" likeId="8" tag="Claude Code" date="2025-12-15" />
+          </div>
+        </section>
+      </div>
+
+      {/* Icon Library 模态层:portal 到 body,保持旧版「main 的兄弟节点」DOM 位置 */}
+      {createPortal(
+        <div className={'icon-modal' + (modalSrc ? ' show' : '')} id="iconModal" aria-hidden={modalSrc ? 'false' : 'true'}>
+          <div className="icon-modal-backdrop" data-modal-close onClick={() => setModalSrc(null)}></div>
+          <div className="icon-modal-dialog" role="dialog" aria-modal="true" aria-label="Icon Library">
+            <button className="icon-modal-close" type="button" aria-label="关闭" data-modal-close onClick={() => setModalSrc(null)}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6 L18 18 M18 6 L6 18"/></svg>
+            </button>
+            {/* 关闭时 src 回 about:blank,卸载内容停止动画(与旧版一致) */}
+            <iframe className="icon-modal-frame" id="iconModalFrame" title="Icon Library" src={modalSrc ?? 'about:blank'}></iframe>
+          </div>
+        </div>,
+        document.body,
+      )}
+    </>
+  );
+}
