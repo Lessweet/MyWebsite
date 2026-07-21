@@ -86,13 +86,13 @@ for (const slug of SLUGS) {
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>${title}</title>
-<link href="../favicon.png?v=12" rel="icon" type="image/png"/>
-<link href="../favicon.png?v=12" rel="shortcut icon"/>
+<link href="../favicon.png?v=17" rel="icon" type="image/png"/>
+<link href="../favicon.png?v=17" rel="shortcut icon"/>
 <link href="../apple-touch-icon.png?v=12" rel="apple-touch-icon"/>
 <link href="../style.css?v=135" rel="stylesheet"/>
 <link href="writing.css?v=372" rel="stylesheet"/>
 <!-- 提前加载,使顶部导航能在首次绘制前同步注入,避免空 header 闪烁(React 迁移后的原生 boot 层) -->
-<script src="../nav-boot.js?v=1"></script>
+<script src="../nav-boot.js?v=2"></script>
 </head>
 <!-- 复用首页 index.html 的胶囊顶栏:home-v2 控制顶栏内边距,design-page 提供胶囊样式 -->
 <body class="writing-page home-v2 design-page reading-page" data-accent="${esc(accent)}" data-tint="${esc(tint)}">

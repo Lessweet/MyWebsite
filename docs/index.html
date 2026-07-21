@@ -5,8 +5,8 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>VibeUX</title>
-<link href="favicon.png?v=15" rel="icon" type="image/png"/>
-<link href="favicon.png?v=15" rel="shortcut icon"/>
+<link href="favicon.png?v=17" rel="icon" type="image/png"/>
+<link href="favicon.png?v=17" rel="shortcut icon"/>
 <link href="apple-touch-icon.png?v=15" rel="apple-touch-icon"/>
 <!-- loading 遮罩样式放在 head 最前:首帧直接画灰底,避免外部 CSS 阻塞期间的白屏闪烁 -->
 <style>
@@ -82,6 +82,16 @@
         #page-loader .pl-pct { font-size: 24px; line-height: 1; margin-left: 3px; }
         /* 滤镜挂载点,不占布局也不可见 */
         #page-loader .pl-defs { position: absolute; width: 0; height: 0; pointer-events: none; }
+        /* loading 动态 logo(logomotion.webm,白底黑像素动画):multiply 混合把白底融进灰底,
+           只留黑色 logo;黑面扫过时随之没入黑色(有意为之 —— logo 溶进「墨面」)。
+           位于数字上方,与数字同轴居中。 */
+        #page-loader .pl-logo {
+            position: absolute; left: 50%; top: 32%;
+            width: 100px; height: 100px;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: multiply;
+            pointer-events: none;
+        }
         html.is-loading, html.is-loading body { overflow: hidden; }
         /* 入场闸门:loading 在场时把 Feed 按住(即使 IntersectionObserver 已加 .visible
            也保持隐藏);loading 上滑离场移除 is-loading 后放闸,卡片按原错峰节奏依次上移入场 */
@@ -98,7 +108,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Kaushan+Script&amp;display=swap" rel="stylesheet"/> -->
 <link href="writing/writing.css?v=372" rel="stylesheet"/>
 <!-- 提前加载,使顶部导航能在首次绘制前同步注入,避免空 header 闪烁 -->
-<script src="nav-boot.js?v=1"></script>
+<script src="nav-boot.js?v=2"></script>
   <script type="module" crossorigin src="/assets/index-CI6wd_Jp.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index-JqYYXcKf.js">
   <link rel="modulepreload" crossorigin href="/assets/hooks-CkT-6w2Z.js">
@@ -111,6 +121,10 @@
          资源就绪(或超时兜底)后淡出。样式内联,保证在外部 CSS 到达前就能正确渲染。 -->
 <div aria-hidden="true" id="page-loader">
 <div class="pl-fill" id="pl-fill"></div>
+<video class="pl-logo" autoplay loop muted playsinline aria-hidden="true">
+<source src="logomotion.webm" type="video/webm"/>
+<source src="logomotion.mp4" type="video/mp4"/>
+</video>
 <!-- 拖影用的竖向高斯模糊,一位一个(0=个位)。stdDeviation 由 JS 每帧按该位的瞬时速度改写,
          「0 N」表示只在竖直方向糊 —— 横向也糊的话数字会像失焦,不像在滚。 -->
 <svg class="pl-defs" aria-hidden="true"><defs>
