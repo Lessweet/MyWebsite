@@ -1103,6 +1103,7 @@ body.reading-page .article-byline .article-eyebrow .a-tag {
    VIBEUX 等其它字标不加。data-wordmark 由 JS 的 WORDMARK 常量写入,换字标自动切换。 */
 .site-title[data-wordmark="lens"] .site-wordmark { margin-left: 6px; }
 .site-title[data-wordmark="lenslab"] .site-wordmark { margin-left: 6px; }
+.site-title[data-wordmark="ctr"] .site-wordmark { margin-left: 6px; }
 
 /* Design / 阅读页:左上角 logo + VIBEUX 字标放大 */
 .design-page .site-title { margin: 8px 0; }
@@ -1189,8 +1190,6 @@ body.reading-page .article-byline .article-eyebrow .a-tag {
    的直接 flex 子项,上面 order / flex-grow 布局完全不受影响。汉堡按钮桌面隐藏。 */
 .home-nav .nav-collapse { display: contents; }
 .home-nav .nav-toggle { display: none; }
-/* 全屏菜单底部标语:仅手机端模态内出现;桌面(nav-collapse:contents)下会成为顶栏 flex 项,隐藏 */
-.home-nav .nav-modal-footer { display: none; }
 
 /* Design 页:右上角三项 (Writing / Design / Contact) 字号与二级分类 tab 一致 */
 .design-page .home-nav .nav-cat,
@@ -1342,8 +1341,8 @@ body .home-nav .nav-cats .nav-cat.active {
         display: flex;
         flex-direction: column;
         justify-content: center;
-        align-items: center;        /* 三条线在按钮区域内水平居中 */
-        gap: 4px;
+        align-items: center;        /* 横线在按钮区域内水平居中 */
+        gap: 6px;                   /* 两条线的间距(原三条线 4px) */
         width: 40px;
         height: 40px;
         margin-left: auto;          /* 按钮整体仍靠顶栏最右 */
@@ -1356,15 +1355,16 @@ body .home-nav .nav-cats .nav-cat.active {
     .home-v2 .header.home-nav .nav-toggle span {
         display: block;
         width: 22px;
-        height: 2px;
+        height: var(--icon-stroke, 1.5px);   /* icon 规范:描边 1.5px(style.css token) */
         background: #000;
-        border-radius: 2px;
+        border-radius: 0;                    /* icon 规范:方头直角,不用圆头 */
         transition: transform 0.35s var(--ease), opacity 0.28s var(--ease);
     }
-    /* 展开态:三线变叉 */
-    .home-v2 .header.home-nav.nav-open .nav-toggle span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
-    .home-v2 .header.home-nav.nav-open .nav-toggle span:nth-child(2) { opacity: 0; }
-    .home-v2 .header.home-nav.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+    /* 汉堡改两条线(2026-07-21):中线常隐(markup 仍是三条,兼容旧结构),
+       开合动画由上下两条完成 —— 各向中心移半个间距(4px)后旋转成叉 */
+    .home-v2 .header.home-nav .nav-toggle span:nth-child(2) { display: none; }
+    .home-v2 .header.home-nav.nav-open .nav-toggle span:nth-child(1) { transform: translateY(4px) rotate(45deg); }
+    .home-v2 .header.home-nav.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-4px) rotate(-45deg); }
 
     /* 折叠容器:始终参与布局,用 opacity/visibility/transform 做开合动画(不用 display 切换,
        否则无法过渡)。展开时铺满全屏的浅米色模态,三项从上往下、左对齐。 */
@@ -1379,9 +1379,10 @@ body .home-nav .nav-cats .nav-cat.active {
         flex-direction: column;
         align-items: flex-start;
         gap: 36px;                      /* 三项统一行距(见下方 display:contents) */
-        padding: 200px 24px 40px;       /* 顶部留出顶栏 + 更大留白,菜单整体下移 */
-        /* 最初的浅奶油色,单色纯底(去掉双色渐变与流动动画) */
-        background: #F9F7F1;
+        /* 顶部留白 = 顶栏高度 + 三页统一的 --nav-content-gap,与页面内容起点同规范;
+           底色复用 --site-bg —— 首页/三页背景改 token 时,全屏菜单自动跟着变 */
+        padding: calc(var(--design-menu-top, 76px) + var(--nav-content-gap)) 24px 40px;
+        background: var(--site-bg, #f9f9f9);
         z-index: 0;                     /* 低于 logo(1)与汉堡 X(2),其余区域铺满全屏 */
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
@@ -1413,16 +1414,22 @@ body .home-nav .nav-cats .nav-cat.active {
         display: contents;
     }
 
-    /* 三项:字号 56px、细字重、实色深灰、左对齐;入场逐项上移淡入。
-       font-weight 用 !important 压过 index.html 的全局 body.design-page * { font-weight:400!important } */
+    /* 三项:与首页索引行完全同一套版式 —— 上分割线 + 左标签 + 右直角箭头,
+       字号/字重/间距全部同 token(--index-label-size / --fw-normal / 7px 0 56px),
+       维护一套样式。入场仍是逐项上移淡入。 */
     .home-v2 .header.home-nav .nav-collapse .nav-cat,
     .home-v2 .header.home-nav .nav-collapse .header-connect {
-        width: auto;
-        justify-content: flex-start;
+        width: 100%;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 7px 0 56px;
+        border-top: 1px solid rgba(0, 0, 0, 0.2);
         text-align: left;
-        font-size: 72px;
-        line-height: 1;
-        font-weight: var(--fw-thin, 300) !important;
+        font-size: var(--index-label-size) !important;   /* 与首页索引行同一 token;!important 压掉桌面 clamp/fs-body 档 */
+        line-height: 1.15;
+        font-weight: var(--fw-normal, 400) !important;
         color: #1a1a1a;
         -webkit-tap-highlight-color: transparent;  /* 去掉点击瞬间的蓝色高亮 */
         -webkit-user-select: none;                  /* iOS Safari 需带前缀 */
@@ -1431,6 +1438,22 @@ body .home-nav .nav-cats .nav-cat.active {
         transform: translateY(12px);
         transition: opacity 0.56s var(--ease), transform 0.56s var(--ease);
     }
+    /* 行内的直角箭头(writing.js 注入,桌面端由下方规则隐藏):同 icon 规范 */
+    .home-v2 .header.home-nav .nav-collapse .nav-cat .nav-arrow,
+    .home-v2 .header.home-nav .nav-collapse .header-connect .nav-arrow { display: block; }
+    .home-v2 .header.home-nav .nav-collapse .nav-arrow svg {
+        display: block;
+        width: 1em;
+        height: 1em;
+        stroke: currentColor;
+        stroke-width: var(--icon-stroke, 1.5px);
+        fill: none;
+        stroke-linecap: butt;
+        stroke-linejoin: miter;
+    }
+    .home-v2 .header.home-nav .nav-collapse .nav-arrow svg * { vector-effect: non-scaling-stroke; }
+    /* Contact 行首的邮件图标在行版式里不出现(标签 + 箭头两端对齐) */
+    .home-v2 .header.home-nav .nav-collapse .header-connect .mail-icon { display: none; }
     .home-v2 .header.home-nav.nav-open .nav-collapse .nav-cat,
     .home-v2 .header.home-nav.nav-open .nav-collapse .header-connect {
         opacity: 1;
@@ -1440,43 +1463,12 @@ body .home-nav .nav-cats .nav-cat.active {
        body.design-page:not(.reading-page) * { font-weight:400!important } 会直接命中该 span,
        使其比 Blog/Skills 粗。这里显式把 span 也压到 300,三项字重一致。 */
     .home-v2 .header.home-nav .nav-collapse .header-connect .connect-label {
-        font-weight: var(--fw-thin, 300) !important;
+        font-weight: var(--fw-normal, 400) !important;
     }
     /* 展开时三项逐个错开入场 */
     .home-v2 .header.home-nav.nav-open .nav-collapse .nav-cats .nav-cat:nth-child(1) { transition-delay: 0.112s; }
     .home-v2 .header.home-nav.nav-open .nav-collapse .nav-cats .nav-cat:nth-child(2) { transition-delay: 0.196s; }
     .home-v2 .header.home-nav.nav-open .nav-collapse .header-connect { transition-delay: 0.28s; }
-
-    /* 模态底部:细分割线 + 一行(描述贴左、版权贴右),margin-top:auto 推到底部以平衡上方的大字导航 */
-    .home-v2 .header.home-nav .nav-collapse .nav-modal-footer {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;   /* 描述左、版权右 */
-        gap: 16px;
-        width: 100%;
-        margin-top: auto;
-        margin-bottom: 120px;             /* 从底部整体上移 120px */
-        padding-top: 22px;
-        border-top: 1px solid #000;
-        opacity: 0;
-        transform: translateY(12px);
-        transition: opacity 0.56s var(--ease), transform 0.56s var(--ease);
-    }
-    .home-v2 .header.home-nav.nav-open .nav-collapse .nav-modal-footer {
-        opacity: 1;
-        transform: none;
-        transition-delay: 0.364s;       /* 在三项之后出现 */
-    }
-    /* 分割线下两行(描述 + 版权):字号、颜色统一,均不加粗。 */
-    .home-v2 .header.home-nav .nav-collapse .nav-modal-desc,
-    .home-v2 .header.home-nav .nav-collapse .nav-modal-copy {
-        line-height: 1.4;
-        white-space: nowrap;
-        -webkit-user-select: none;
-        user-select: none;
-        font-size: var(--fs-p);          /* 18px,两行一致 */
-        color: rgba(0, 0, 0, 0.92);     /* 颜色一致 */
-    }
 
     /* 手机端顶栏背景保持透明(让通栏 banner 透出),不出现白底。
        排除文章详情页(reading-page):其顶栏沿用桌面端的不透明 page-tint 背景,
@@ -1669,8 +1661,9 @@ body.home-v2 .header-placeholder { height: 76px; }
 .home-v2 .icon-preview-frame { border-radius: 12px !important; }
 .article-cover { border-radius: 6px !important; }
 
-/* 首页(index.html)网格列表封面单独加大圆角到 24px;archive.html 不含 .writing-card,文章详情页 .article-cover 不受影响 */
-.home-v2 .writing-card { border-radius: 12px !important; }
+/* Blog 列表封面改直角(2026-07-21,原 12px 圆角);archive.html 不含 .writing-card,
+   文章详情页 .article-cover 不受影响 */
+.home-v2 .writing-card { border-radius: 0 !important; }
 
 /* AI-Native Design 基础三卡:Pixel Banner 作品 + 两个 icon 封面 */
 #ai-native-design .foundation-card { border-radius: 12px !important; }
@@ -2074,6 +2067,9 @@ body.reading-page .header.home-nav::after {
     display: none;
 }
 
+/* 四张动态海报已合并为一张堆叠轮播卡(poster-stack.html,#E2E2E2 展台),
+   海报的漂移 / 轮播 / 投影都在 demo 页内实现,这里不再需要逐卡样式。 */
+
 /* ========================================
    深色主题 —— 每个 class 各管一件事,可自由组合,谁都不带就是原来的浅色版:
 
@@ -2100,6 +2096,42 @@ body.reading-page .header.home-nav::after {
     /* 卡片默认底色:比页面底色亮一档,给卡片一个边界(作品填满卡面时看不到它)。
        只作兜底 —— 内容自带底色的卡(浅灰 mockup、icon 卡)在下方各自覆盖。 */
     --card-bg: #1A1A1A;
+
+    /* ==== 首页 / Blog / Archive 三页共享规范(2026-07-21 定)====
+       1. 背景色必须一致:全走 --site-bg,改这一处三页同步,禁止某页单独改值;
+       2. 顶栏下留白必须一致:全走 --nav-content-gap,同样只改这一处。 */
+    --site-bg: var(--gray-50, #f9f9f9);
+    --nav-content-gap: 240px;
+    /* 首页索引行与手机端全屏菜单三项共用的字号(2026-07-21):两处必须一致。
+       当前 = --fs-h2(24px,style.css 字号 scale) */
+    --index-label-size: var(--fs-h2, 24px);
+}
+/* 三页统一背景 + 统一顶栏下留白(home-landing 的 min-height 同步用该 gap 扣减)。
+   选择器带上 .home-v2 提一档特异性(0,3,1):文件后面的 body.no-banner .design-layout
+   (0,2,1,+32px)才压不过来 —— 之前特异性同级、后者靠顺序赢,240px 一直没生效。 */
+body.home-v2.home-landing,
+body.home-v2.blog-page,
+body.home-v2.works-page { background: var(--site-bg); }
+body.home-v2.home-landing .design-layout,
+body.home-v2.blog-page .design-layout,
+body.home-v2.works-page .design-layout {
+    padding-top: calc(var(--design-menu-top, 76px) + var(--nav-content-gap));
+}
+/* 顶栏:三页浅色主题下不用旧版流沙渐变(nav-bg iframe),实底 = --site-bg 与页面无缝;
+   渐变层直接隐藏(深色主题本来就由 no-banner.theme-dark 规则隐藏 + 黑底)。 */
+body.home-v2.home-landing .header.home-nav .nav-bg,
+body.home-v2.blog-page .header.home-nav .nav-bg,
+body.home-v2.works-page .header.home-nav .nav-bg { display: none; }
+body.home-v2.home-landing:not(.theme-dark) .header.home-nav,
+body.home-v2.blog-page:not(.theme-dark) .header.home-nav,
+body.home-v2.works-page:not(.theme-dark) .header.home-nav { background: var(--site-bg); }
+/* 主题切换必须整页同帧完成:去掉顶栏的 background 0.35s 过渡(那是旧版「滚动淡入白底」
+   用的,三页顶栏已是常驻实底)—— 页面瞬切、顶栏慢 0.35s 就是「分割感」的来源。
+   保留基础的 transform / box-shadow 过渡(顶栏上滑隐藏仍要动画)。 */
+body.home-v2.home-landing .header.home-nav,
+body.home-v2.blog-page .header.home-nav,
+body.home-v2.works-page .header.home-nav {
+    transition: transform 1.12s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 1.12s ease;
 }
 body.home-v2.theme-dark { background: var(--page-bg); }
 
@@ -2163,13 +2195,6 @@ body.theme-dark .design-content .category-section .section-divider {
 @media (max-width: 600px) {
     /* —— 全屏菜单模态(.menu-dark:首页 + Cases) —— */
     body.menu-dark .header.home-nav .nav-collapse { background: var(--page-bg); }
-    body.menu-dark .header.home-nav .nav-collapse .nav-modal-desc,
-    body.menu-dark .header.home-nav .nav-collapse .nav-modal-copy {
-        color: rgba(255, 255, 255, 0.92);
-    }
-    /* 必须带上 .nav-collapse 凑满 5 个 class + body,否则压不过上面
-       白底菜单基础规则(0,5,0)里的 border-top:#000,暗色菜单会显示错误的黑线 */
-    body.menu-dark .header.home-nav .nav-collapse .nav-modal-footer { border-top-color: rgba(255, 255, 255, 0.08); }
     /* 模态里的 Blog / Cases / Contact 三项反白。必须连 .nav-collapse 一起写满 ——
        上面 .home-v2 .header.home-nav .nav-collapse .nav-cat/.header-connect(0,5,0)
        给三项写死了 #1a1a1a(那是白底菜单的深灰),不写满就压不过,Contact 会黑进背景里。
@@ -2202,12 +2227,183 @@ body.theme-dark .design-content .category-section .section-divider {
     text-align: center;
     padding: 40px 0 88px;
 }
+/* ============ 首页 landing(body.home-landing,仅 index.html) ============
+   整页只有一屏:hero(左对齐)垂直居中吃掉剩余高度,下方是 Blog/Archive/Contact
+   三行大字索引(大字 + 细分割线 + 箭头),文章网格已移除(列表在 blog.html)。 */
+/* 一屏限制已取消(2026-07-21):240px 顶部留白下强行压一屏会把署名与索引行挤死,
+   改为自然流式 —— hero 在上、索引行随后,页面可滚动。 */
+body.home-landing .home-hero {
+    align-items: flex-start;   /* hero 左对齐,与顶栏 logo 同一左缘 */
+    text-align: left;
+    padding: 0 0 180px;        /* 署名 → 第一条分割线的呼吸(120 → 180) */
+}
+body.home-landing .hero-byline { justify-content: flex-start; }
 
-/* 标题:--fw-thin 细体 + 紧字距,居中、黑底反白。
+/* 首页白色样式(2026-07-21):body 已摘掉 theme-dark / menu-dark,这里把 hero 与索引行
+   的白字体系整体翻成深色系 —— 层级关系不变(前半句压灰、强调词最深)。 */
+/* 背景不在此单独定义 —— 走三页统一的 --site-bg(见「三页共享规范」) */
+body.home-landing .hero-headline { color: rgba(0, 0, 0, 0.4); }
+body.home-landing .hero-headline .accent { color: #181818; }
+body.home-landing .hero-by { color: rgba(0, 0, 0, 0.5); }
+body.home-landing .hero-by b { color: #181818; }
+body.home-landing .hero-role { color: rgba(0, 0, 0, 0.5); }
+/* landing 版 hero 标题加大一档:原 clamp(26, 4.5vw, 62) 是给「hero + 网格」页用的,
+   landing 里标题是绝对主角(桌面封顶 92) */
+body.home-landing .hero-headline { font-size: clamp(32px, 6.5vw, 92px); }
+/* 小屏:6.5vw 撞到 32px 下限显小,改为跟视口更陡的缩放(390px 上约 41px);
+   系数以首行「From AI-Assisted」不折行为准 */
+@media (max-width: 600px) {
+    body.home-landing .hero-headline { font-size: clamp(36px, 10.5vw, 48px); }
+}
+
+/* 顶栏只留左上角 logo:分类项 / Contact / 手机端汉堡全部隐藏 */
+body.home-landing .home-nav .nav-cats,
+body.home-landing .home-nav .header-right,
+body.home-landing .home-nav .nav-toggle { display: none !important; }
+
+/* 右上角深/浅色切换按钮(writing.js 注入,首页 / Blog / Archive 三页):裸图标,颜色随主题。
+   design-page 顶栏子项按 order 排(logo=2),按钮必须给更大的 order 才能排到
+   最右 —— 默认 order:0 会落到最左、还把 logo 挤到右边。 */
+body.home-landing .home-nav .theme-toggle,
+body.blog-page .home-nav .theme-toggle,
+body.works-page .home-nav .theme-toggle {
+    order: 4;
+    margin-left: auto;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: rgba(0, 0, 0, 0.55);
+    position: relative;
+    z-index: 2;
+    transition: color 0.28s ease;
+}
+body.home-landing .home-nav .theme-toggle:hover,
+body.blog-page .home-nav .theme-toggle:hover,
+body.works-page .home-nav .theme-toggle:hover { color: #181818; }
+body.home-landing .home-nav .theme-toggle svg,
+body.blog-page .home-nav .theme-toggle svg,
+body.works-page .home-nav .theme-toggle svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    stroke-width: var(--icon-stroke, 1.5px);   /* icon 规范 */
+    fill: none;
+    stroke-linecap: butt;                       /* icon 规范:方头 */
+    stroke-linejoin: miter;
+}
+/* icon 规范:锁定屏幕上的描边像素值 —— 否则 24 viewBox 缩放渲染时 1.5px 会跟着缩放 */
+body.home-landing .home-nav .theme-toggle svg *,
+body.blog-page .home-nav .theme-toggle svg *,
+body.works-page .home-nav .theme-toggle svg *,
+body.home-landing .home-index-row .hi-arrow svg * { vector-effect: non-scaling-stroke; }
+body.home-landing.theme-dark .home-nav .theme-toggle,
+body.blog-page.theme-dark .home-nav .theme-toggle,
+body.works-page.theme-dark .home-nav .theme-toggle { color: rgba(255, 255, 255, 0.55); }
+body.home-landing.theme-dark .home-nav .theme-toggle:hover,
+body.blog-page.theme-dark .home-nav .theme-toggle:hover,
+body.works-page.theme-dark .home-nav .theme-toggle:hover { color: #fff; }
+
+/* 手机端(汉堡可见的 Blog / Archive):太阳靠 margin-left:auto 顶右,汉堡不再自带 auto,
+   两个 auto 会把太阳挤到中间。两按钮都带内边距(太阳 36px 盒装 20px 图标、汉堡 40px 盒),
+   视觉间距 = 结构 gap + 两侧内边距;负 margin 把结构 gap 收到 4px,
+   视觉上图标之间约 20px(用户以红框标定的量) */
+@media (max-width: 600px) {
+    /* 特异性必须 ≥ 基础规则 .home-v2 .header.home-nav .nav-toggle(0,4,0)的
+       margin-left:auto,否则负 margin 不生效 */
+    body.home-v2.blog-page .header.home-nav .nav-toggle,
+    body.home-v2.works-page .header.home-nav .nav-toggle { margin-left: -35px; }   /* 视觉间距 ~5px */
+}
+
+/* ---- 首页深色主题适配:landing 的浅色是默认,这里给 theme-dark 的反相 ---- */
+body.home-landing.theme-dark .hero-headline { color: rgba(255, 255, 255, 0.45); }
+body.home-landing.theme-dark .hero-headline .accent { color: #fff; }
+body.home-landing.theme-dark .hero-by { color: rgba(255, 255, 255, 0.5); }
+body.home-landing.theme-dark .hero-by b { color: #fff; }
+body.home-landing.theme-dark .hero-role { color: rgba(255, 255, 255, 0.5); }
+body.home-landing.theme-dark .home-index-row { color: #fff; }
+body.home-landing.theme-dark .home-index-row:hover { color: rgba(255, 255, 255, 0.6); }
+html.hero-ready body.home-landing.theme-dark .home-index-row { border-top-color: rgba(255, 255, 255, 0.22); }
+@media (prefers-reduced-motion: reduce) {
+    body.home-landing.theme-dark .home-index-row { border-top-color: rgba(255, 255, 255, 0.22); }
+}
+
+/* 三行大字索引:细分割线 + 左标签 + 右箭头,行内留白压出「目录」的排版感 */
+body.home-landing .home-index {
+    flex: 0 0 auto;
+    width: 100%;
+    padding-bottom: 40px;
+}
+body.home-landing .home-index-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 9px 0 56px;   /* 分割线 → 标签的间距(原 18,减半) */
+    border-top: 1px solid rgba(0, 0, 0, 0.2);
+    color: #181818;
+    text-decoration: none;
+    font-size: var(--index-label-size);   /* 与手机端全屏菜单三项同一 token */
+    line-height: 1.15;
+}
+/* 三行大字字重:--fw-normal(regular 400)。保留这条高特异性规则作为唯一调节点
+   (全局 * 规则本来就是 --fw-normal,但经它显式声明,以后换档只改这里) */
+body.design-page:not(.reading-page).home-landing .home-index-row,
+body.design-page:not(.reading-page).home-landing .home-index-row * {
+    font-weight: var(--fw-normal, 400) !important;
+}
+body.home-landing .home-index-row .hi-arrow {
+    transition: transform var(--hover-zoom-in, 0.77s) var(--ease-soft);
+}
+/* 箭头:直角样式的内联 SVG(方头 butt + 尖角 miter),取代字体渲染的圆头「→」;
+   随行内字号缩放,颜色跟 currentColor */
+body.home-landing .home-index-row .hi-arrow svg {
+    display: block;
+    width: 1em;
+    height: 1em;
+    stroke: currentColor;
+    stroke-width: var(--icon-stroke, 1.5px);   /* icon 规范 */
+    fill: none;
+    stroke-linecap: butt;
+    stroke-linejoin: miter;
+}
+body.home-landing .home-index-row:hover { color: rgba(0, 0, 0, 0.5); }
+body.home-landing .home-index-row:hover .hi-arrow { transform: translateX(10px); }
+
+/* 入场:per-character-rise(与分区标题同一套 pixel-point/animate-text 规范,
+   复用 style.css 的 .heading-rise-mask / .heading-rise-char)—— 逐字从基线下方
+   升起,行间 120ms 错峰、行内 35ms/字,接在 headline 逐字动画之后(620ms 起);
+   箭头作为该行最后一个字符同批升起,分割线随该行同延迟淡入。
+   拆字脚本在 index.html,显现闸门 = html.hero-ready。 */
+body.home-landing .home-index-row {
+    border-top-color: transparent;
+    transition: border-top-color 1.05s var(--ease-soft) var(--row-d, 0s);
+}
+html.hero-ready body.home-landing .home-index-row { border-top-color: rgba(0, 0, 0, 0.2); }
+/* 入场结束后(index.html 挂 entrance-done):分割线过渡换快速档 ——
+   1.05s + 逐行延迟只属于入场,常驻会拖慢主题切换时的边框变色 */
+html.entrance-done body.home-landing .home-index-row { transition: border-top-color 0.24s ease; }
+html.hero-ready body.home-landing .home-index-row .heading-rise-char {
+    transform: translateY(0);
+    opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+    body.home-landing .home-index-row { border-top-color: rgba(0, 0, 0, 0.2); transition: none; }
+}
+@media (max-width: 600px) {
+    body.home-landing .home-index-row { padding: 7px 0 56px; }   /* 行下留白加大(36 → 56,与桌面一致) */
+}
+
+/* 标题:--fw-normal 常规字重 + 紧字距。
    text-wrap: balance 让两行更均衡,避免末行只剩一个词。 */
 .hero-headline {
     margin: 0;
-    font-weight: var(--fw-thin, 300);
+    font-weight: var(--fw-normal, 400);
     /* 整体比原来小一档(30/5.4vw/76 → 26/4.5vw/62):标题原先占满一屏宽,压小后
        与下方 Feed 的字号层级更接近,hero 不再一枝独秀 */
     font-size: clamp(26px, 4.5vw, 62px);
@@ -2217,12 +2413,12 @@ body.theme-dark .design-content .category-section .section-divider {
     text-wrap: balance;
 }
 /* 文件顶部的全局规则会强行改写字重:h1 被 :is(h1,…) 压成 --fw-bold,逐字 span
-   (.hero-ch)被 * 那条压成 --fw-normal。这里用更高特异性 + !important 把 h1 和
-   它的所有后代统一拉到 --fw-thin,index(逐字切分)与 blog(纯文本)两页一致。
+   (.hero-ch)被 * 那条压成别的档。这里用更高特异性 + !important 把 h1 和它的
+   所有后代统一到 --fw-normal(regular),这是 hero 字重的唯一调节点。
    只放字重,别的属性留在上面的基础规则里,避免高特异性连带压过手机端媒体查询的字号覆盖。 */
 body.design-page:not(.reading-page) .hero-headline,
 body.design-page:not(.reading-page) .hero-headline * {
-    font-weight: var(--fw-thin, 300) !important;
+    font-weight: var(--fw-normal, 400) !important;
 }
 /* 强调词:暂时停用 Kaushan Script 手写体,与前半句同一套无衬线,只靠纯白与前半句的
    灰(0.45)拉开层级。恢复手写体时从 git 历史找回这条规则的 Kaushan 版本
@@ -2240,6 +2436,10 @@ body.design-page:not(.reading-page) .hero-headline * {
    闸门:默认 opacity 0,只有 html.hero-ready(loading 遮罩离场后由 index.html 的
    cleanup() 加上)才播放 —— 否则动画会在遮罩背后空放一遍,揭开时已经播完了。 */
 .hero-line { display: block; }
+/* 词容器:词内逐字 span 不许被拆开折行,折行只发生在词间(index.html 拆字脚本生成) */
+.hero-word { display: inline-block; white-space: nowrap; }
+/* 空格单元:普通行内空格,折行处允许被吞掉 —— 否则新行行首会多出一个空格缩进 */
+.hero-ch.hero-sp { display: inline; white-space: normal; }
 .hero-ch {
     display: inline-block;   /* 逐字要吃 transform,只能是 inline-block */
     white-space: pre;        /* 空格也是一个动画单元,不能被折叠掉 */
@@ -2331,10 +2531,26 @@ html.hero-ready .hero-role { animation-delay: calc(var(--d, 0ms) + 180ms); }
    反白会连首页的文章卡片一起改掉。加类是这里唯一能把两页分开的手段。
    ======================================== */
 
-/* 顶栏下间距:与首页顶栏→标题的空白对齐 —— 首页是 no-banner 的 32px 呼吸
-   + .home-hero 自身 40px padding-top,共 72px。banner 顶边落在与首页 hero
-   标题区相同的位置。 */
-body.works-page .design-layout { padding-top: calc(var(--design-menu-top, 76px) + 72px); }
+/* 顶栏下间距与背景:首页 / Blog / Archive 三页统一,规则收在上方
+   「三页共享规范」处(--nav-content-gap / --site-bg),此处不再单独定义。 */
+
+/* 页面标题(2026-07-21):Blog 页「Blog.」/ Archive 页「Archive.」共用同一条样式,
+   字号走 --fs-h1;字重由全局 h1 规则给 --fw-bold,不单独写。
+   works-page 的 .design-layout 是 4 列网格,标题需通栏占满一行。 */
+body.blog-page .page-title,
+body.works-page .page-title {
+    margin: 0 0 40px;
+    font-size: var(--fs-h1, 36px);
+    color: #181818;
+}
+body.works-page .page-title { grid-column: 1 / -1; }
+/* 标题字重 regular:全局 :is(h1,…) 规则会压成 --fw-bold !important,这里更高特异性拉回 */
+body.design-page:not(.reading-page).blog-page .page-title,
+body.design-page:not(.reading-page).works-page .page-title {
+    font-weight: var(--fw-normal, 400) !important;
+}
+body.blog-page.theme-dark .page-title,
+body.works-page.theme-dark .page-title { color: #fff; }
 
 /* banner 与全部作品拼成一个连续的 3 列网格。
    原结构:banner 与 4 个 .category-section 在 .design-layout 里平级,每个 section 各自
@@ -2379,11 +2595,12 @@ body.works-page .design-banner-frame {
 /* 小屏(≤600px):统一网格从 3 列改 2 列(否则每张卡只有约 130px,挤成一团),
    banner 独占整行。
    桌面端 banner 靠同行右侧那张作品卡撑出行高;移动端它独占一行、没有同行卡片,
-   height:100% 会塌回 iframe 固有高度(150px)。所以这里给一个固定高度 —— banner 内部
-   stage 是 min-height:440 且 logo 垂直居中,iframe 只露中间 260px 也能看到完整 logo。 */
+   height:100% 会塌回 iframe 固有高度(150px)。高度用 aspect-ratio 2/1 —— banner
+   横跨 2 列,2:1 的高度正好等于单列方形卡的边长,全页卡片同高;banner 内部 logo
+   垂直居中,截掉上下也能看到完整 logo。 */
 @media (max-width: 600px) {
     body.works-page .design-layout { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    body.works-page .design-banner-frame { grid-column: 1 / -1; height: 260px; }
+    body.works-page .design-banner-frame { grid-column: 1 / -1; height: auto; aspect-ratio: 2 / 1; }
 }
 
 /* 宫格间距归零 —— 现在只需压 .design-layout 这一个网格。
@@ -2505,24 +2722,22 @@ body.works-page .card:has(source[src*="3DCardGlass"]) { background: #E3E3E5; }
    与球体呼应。源名匹配 3DSphere-particle,别撞上 Gesture 的 3DSphere_compressed。 */
 body.works-page .card:has(source[src*="3DSphere-particle"]) { background: #16E816; }
 
-/* 两张 icon 卡:深灰底(取代之前的亮绿/粉纯色底),两张不共用同一个色值 ——
-   Outlined 深一档 #1F1F1F,Pixel 亮一档 #2D2D2D,与页面背景 #0a0a0a、
-   banner 的 #161616 一起拉出层次,相邻两卡也能看出分界。
-   深色图标靠下方 .icon-preview-frame 的整体 invert 反成浅色线稿,不再单独取消。 */
-body.works-page .foundation-card.icon-cover:has(iframe[src*="preview-outlined"]) { background: #1F1F1F; }
-body.works-page .foundation-card.icon-cover:has(iframe[src*="preview-pixel"]) { background: #2D2D2D; }
+/* 两张 icon 卡:浅色主题灰底 + 黑图标(默认),深色主题深灰底 + 反相白图标。
+   两张不共用同一个色值,与页面底拉出层次、相邻两卡能看出分界。
+   图标素材本身是 #181818 深色线稿,深色主题下靠 invert(1) 反白。 */
+body.works-page .foundation-card.icon-cover:has(iframe[src*="preview-outlined"]) { background: var(--gray-200, #e5e5ea); }
+body.works-page .foundation-card.icon-cover:has(iframe[src*="preview-pixel"]) { background: var(--gray-300, #d1d1d6); }
+body.works-page.theme-dark .foundation-card.icon-cover:has(iframe[src*="preview-outlined"]) { background: #1F1F1F; }
+body.works-page.theme-dark .foundation-card.icon-cover:has(iframe[src*="preview-pixel"]) { background: #2D2D2D; }
+body.works-page.theme-dark .icon-preview-frame { filter: invert(1); }
 
 /* 卡片下方的标题与日期先隐藏。
    隐藏它才真正「拼在一起」:这段文字原本夹在行与行之间,横向拼死了、纵向却被文字隔开。
    下面那几条文字配色规则暂时失效,但保留 —— 想放回来时删掉这一条即可。 */
 body.works-page .card-info { display: none; }
 
-/* Icon 预览卡:icon-studio/preview-*.html 的 html 与 body 都是透明的(底色本来由宿主
-   卡片提供),图标是 #181818 的深色线稿 —— 卡片跟着页面转黑后图标直接融进背景。
-   iframe 是独立文档,外面改不到里面的图标色;好在它透明且图标是单色,整体反相即可:
-   透明区仍透明,#181818 反成浅色线稿。与顶栏字标反白是同一招
-   (body.no-banner.theme-dark .site-wordmark)。 */
-body.works-page .icon-preview-frame { filter: invert(1); }
+/* Icon 预览卡:页面转浅色后不再反相 —— icon-studio/preview-*.html 本身透明底 +
+   #181818 深色线稿,落在上面的灰底卡上直接可读(深色版时期这里曾 invert(1) 反白)。 */
 
 /* 卡片文字与分组标题反白 */
 body.works-page .section-divider h2 { color: #fff; }

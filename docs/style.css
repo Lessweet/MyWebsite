@@ -76,6 +76,19 @@
     --fw-thin: 300;
     --fw-normal: 400;
     --fw-bold: 500;
+
+    /* ============================================================
+       UI icon 设计规范(2026-07-21 定,未来新增 icon 一律遵守):
+       1. 描边粗细统一走 --icon-stroke(1.5px),禁止在 icon 上写死数值;
+          现有成员:汉堡(两条线)/ 关闭 X / 主题切换(太阳)/ 索引行箭头。
+       2. 线帽方头(stroke-linecap: butt)、转角尖角(stroke-linejoin: miter)
+          —— 全套直角风格,与索引行箭头一致,不用圆头。
+       3. SVG 统一 24×24 viewBox,stroke: currentColor、fill: none,
+          颜色永远跟随所在文字色,深浅主题自动适配。
+       4. SVG 内元素加 vector-effect: non-scaling-stroke,保证无论渲染尺寸
+          多大,屏幕上的描边始终是 1.5px(否则会随 viewBox 缩放)。
+       ============================================================ */
+    --icon-stroke: 1.5px;
 }
 
 html {
