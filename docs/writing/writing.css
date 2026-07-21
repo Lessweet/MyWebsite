@@ -1102,13 +1102,13 @@ body.reading-page .article-byline .article-eyebrow .a-tag {
 /* Design / 阅读页:左上角 logo + VIBEUX 字标放大 */
 .design-page .site-title { margin: 8px 0; }
 .design-page .site-title .site-logo {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
 }
 /* logo 高度与右侧 Blog/Skills/Contact 三项同走 3.4vw、桌面同样封顶 36px;
    但兜底抬到 20px(原 12px):字标是品牌,手机端不跟着文字缩到那么小,保持可读。
    仅影响 ≤~588px(3.4vw < 20)的手机端,桌面/平板与三项文字仍逐像素同步。 */
-.design-page .site-wordmark { height: 28.5px; }   /* 38px × 75%,固定不随窗口缩放 */
+.design-page .site-wordmark { height: 24px; }   /* 固定不随窗口缩放 */
 
 /* 顶栏三段式:左 = 分类(Writing/Design),中 = VIBEUX 字标,右 = Contact。
    左右两组 flex:1 等宽,把中间字标挤到正中。 */
@@ -1216,8 +1216,8 @@ body.reading-page .article-byline .article-eyebrow .a-tag {
 
 /* pillar 页(Writing + Design)共用顶栏:Writing/Design + 邮箱联系方式 全部靠右,统一胶囊样式
    导航 HTML 由 writing.js 的 initSiteNav() 生成,本就是同一个组件;这里只统一外观 */
-.design-page .home-nav { gap: 36px; }                /* 右侧三项成簇间距(nav-cats 组 ↔ Contact) */
-.design-page .home-nav .nav-cats { gap: 36px; }      /* Blog ↔ Cases 间距 */
+.design-page .home-nav { gap: 56px; }                /* 右侧三项成簇间距(nav-cats 组 ↔ Contact) */
+.design-page .home-nav .nav-cats { gap: 56px; }      /* Blog ↔ Cases 间距 */
 .design-page .home-nav .nav-cat,
 .design-page .home-nav .header-connect {
     padding: 7px 18px;
@@ -1261,13 +1261,13 @@ body .home-nav .header-connect {
     padding: 0;                  /* 文字本身不加左右内边距 */
     letter-spacing: 0;           /* 不加字间距 */
 }
-/* >560px(汉堡断点以上)全程:顶栏 3 个 tab 固定为 h3(24px),不随窗口缩小跳变;≤560 进汉堡 */
+/* >560px(汉堡断点以上)全程:顶栏 3 个 tab 固定为 body 字号,不随窗口缩小跳变;≤560 进汉堡 */
 @media (min-width: 561px) {
     body.design-page .home-nav .nav-cat,
     body.design-page .home-nav .header-connect,
     body .home-nav .nav-cat,
     body .home-nav .header-connect {
-        font-size: var(--fs-h3);
+        font-size: var(--fs-body);
     }
 }
 /* 选中(当前页)= 100% 不透明,且不加粗。
@@ -2091,7 +2091,7 @@ body.reading-page .header.home-nav::after {
    放在 :root 而不是 .theme-dark 上 —— 手机端黑菜单(.menu-dark)可能挂在白底页上,
    取不到定义在 .theme-dark 上的值。改深色底只动这一行。 */
 :root {
-    --page-bg: #0F0F0F;
+    --page-bg: var(--black-fullscreen);   /* #0a0a0a,全屏式背景黑统一走 style.css 的 token */
     /* 卡片默认底色:比页面底色亮一档,给卡片一个边界(作品填满卡面时看不到它)。
        只作兜底 —— 内容自带底色的卡(浅灰 mockup、icon 卡)在下方各自覆盖。 */
     --card-bg: #1A1A1A;
@@ -2244,20 +2244,31 @@ body.theme-dark .design-content .category-section .section-divider {
    继承,.accent 的 Kaushan 就被盖掉了。这里显式把字体还原成从父级继承。 */
 .hero-headline .hero-ch { font-family: inherit; }
 .hero-ch,
-.hero-byline { opacity: 0; }
+.hero-avatar,
+.hero-by,
+.hero-role { opacity: 0; }
 html.hero-ready .hero-ch,
-html.hero-ready .hero-byline {
+html.hero-ready .hero-avatar,
+html.hero-ready .hero-by,
+html.hero-ready .hero-role {
     animation: hero-soft-blur-in 648ms cubic-bezier(0.22, 1, 0.36, 1) both;
     animation-delay: var(--d, 0ms);
 }
+/* 署名不再整块入场:头像、By Tongrong、UI Designer 三个单元在整组延迟(--d,
+   由 index.html 切分脚本写在 .hero-byline 上、子元素继承)基础上再逐个错峰,
+   每个都走同一条 hero-soft-blur-in,复刻 headline 逐字化开的节奏 */
+html.hero-ready .hero-by   { animation-delay: calc(var(--d, 0ms) + 90ms); }
+html.hero-ready .hero-role { animation-delay: calc(var(--d, 0ms) + 180ms); }
 @keyframes hero-soft-blur-in {
     from { opacity: 0; transform: translate3d(0, 9.3px, 0); filter: blur(12px); }
     to   { opacity: 1; transform: none; filter: blur(0); }
 }
 @media (prefers-reduced-motion: reduce) {
-    .hero-ch, .hero-byline { opacity: 1; }
+    .hero-ch, .hero-avatar, .hero-by, .hero-role { opacity: 1; }
     html.hero-ready .hero-ch,
-    html.hero-ready .hero-byline { animation: none; }
+    html.hero-ready .hero-avatar,
+    html.hero-ready .hero-by,
+    html.hero-ready .hero-role { animation: none; }
 }
 
 /* 署名组:标题下方居中一行 —— 头像 + By Tongrong / UI Designer */
