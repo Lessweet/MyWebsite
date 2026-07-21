@@ -18,7 +18,7 @@ function initSiteNav() {
     // 供 CSS 区分不同字标的细节(例如 LENS 需要与左侧 favicon 多留一点间距,VIBEUX 不需要)。
     const WORDMARK = 'ctr';   // 'ctr' | 'lenslab' | 'lens' | 'vibeux'
     const WORDMARKS = {
-        ctr:     { src: 'logo-ctr.svg?v=1', alt: 'CTR' },
+        ctr:     { src: 'logo-ctr.svg?v=2', alt: 'TR' },
         lenslab: { src: 'logo-lenslab.svg?v=6', alt: 'LENSLAB' },
         lens:    { src: 'logo-lens-spiral.png?v=1', alt: 'LENS' },
         vibeux:  { src: 'logo-wordmark.png?v=2',    alt: 'VIBEUX' },

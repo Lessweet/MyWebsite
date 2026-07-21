@@ -2223,7 +2223,6 @@ body.theme-dark .design-content .category-section .section-divider {
         /* 行分割线随主题反白(2026-07-22:黑模态上 rgba(0,0,0,.2) 几乎不可见) */
         border-top-color: rgba(255, 255, 255, 0.2);
     }
-    body.menu-dark .header.home-nav .nav-collapse .nav-cat.active { color: #fff; }
     body.menu-dark .header.home-nav .nav-collapse .nav-cat:hover,
     body.menu-dark .header.home-nav .nav-collapse .header-connect:hover { color: rgba(255, 255, 255, 0.6); }
     /* 展开后 X 与字标压在黑模态上,必须反白。只在 .nav-open 时 ——
