@@ -131,7 +131,7 @@ export default function ArchivePage() {
     <>
       <h1 className="page-title">Archive</h1>
       {/* VIBEDESIGN banner:置于顶部做 hero,三套样式轮播 */}
-      <iframe src="design-banner.html?v=25" className="design-banner-frame" title="VIBEDESIGN" scrolling="no"></iframe>
+      <iframe src="design-banner.html?v=26" className="design-banner-frame" title="VIBEDESIGN" scrolling="no"></iframe>
       <aside className="design-menu" aria-label="Design 分类">
         <a href="#ai-native-design" className="nav-cat"><PixelIcon d={PIXEL_PATHS.ICON_SKILL} />Icon Skill</a>
         <a href="#cat-aigc" className="nav-cat"><PixelIcon d={PIXEL_PATHS.AIGC} />AIGC</a>

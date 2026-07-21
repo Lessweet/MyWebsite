@@ -1107,12 +1107,12 @@ body.reading-page .article-byline .article-eyebrow .a-tag {
 
 /* Design / 阅读页:左上角 logo + 字标。全站统一,2026-07-22 整体缩小到 80%
    (logo 40→32px、字标 24→19.2px、间距 10→8px / ctr 字标额外间距 6→5px 同比例) */
-.design-page .site-title { margin: 8px 0; gap: 8px; }
+.design-page .site-title { margin: 8px 0; gap: 4px; }   /* logo-字标间距减半(2026-07-22) */
 .design-page .site-title .site-logo {
     width: 32px;
     height: 32px;
 }
-.design-page .site-title[data-wordmark="ctr"] .site-wordmark { margin-left: 5px; }
+.design-page .site-title[data-wordmark="ctr"] .site-wordmark { margin-left: 2px; }
 /* logo 高度与右侧 Blog/Skills/Contact 三项同走 3.4vw、桌面同样封顶 36px;
    但兜底抬到 20px(原 12px):字标是品牌,手机端不跟着文字缩到那么小,保持可读。
    仅影响 ≤~588px(3.4vw < 20)的手机端,桌面/平板与三项文字仍逐像素同步。 */
@@ -2738,19 +2738,15 @@ body.works-page.theme-dark .foundation-card.icon-cover:has(iframe[src*="preview-
 body.works-page.theme-dark .foundation-card.icon-cover:has(iframe[src*="preview-pixel"]) { background: #2D2D2D; }
 body.works-page.theme-dark .icon-preview-frame { filter: invert(1); }
 
-/* 卡片下方的标题与日期先隐藏。
-   隐藏它才真正「拼在一起」:这段文字原本夹在行与行之间,横向拼死了、纵向却被文字隔开。
-   下面那几条文字配色规则暂时失效,但保留 —— 想放回来时删掉这一条即可。 */
-body.works-page .card-info { display: none; }
+/* 卡片下方的标题与日期(2026-07-22 用户要求放回:每个作品下显示作品名和时间)。
+   宫格是无缝拼贴(gap 0),信息条用自身上下留白隔开上下两行卡片。
+   白底下文字走 style.css 默认配色(label = --gray-900 / date = #969696)。 */
+body.works-page .card-info { padding: 12px 4px 24px; }
 
 /* Icon 预览卡:页面转浅色后不再反相 —— icon-studio/preview-*.html 本身透明底 +
    #181818 深色线稿,落在上面的灰底卡上直接可读(深色版时期这里曾 invert(1) 反白)。 */
 
-/* 卡片文字与分组标题反白 */
-body.works-page .section-divider h2 { color: #fff; }
-body.works-page .card-label { color: #fff; }
-body.works-page .card-date,
-body.works-page .card-meta .card-tag { color: rgba(255, 255, 255, 0.4); }
-body.works-page .card-wrapper:hover .card-label { color: rgba(255, 255, 255, 0.6); }
-body.works-page .card-wrapper:hover .card-date,
-body.works-page .card-wrapper:hover .card-meta .card-tag { color: rgba(255, 255, 255, 0.3); }
+/* 深色主题:卡片文字反白(白底默认配色在黑底上不可读) */
+body.works-page.theme-dark .card-label { color: #fff; }
+body.works-page.theme-dark .card-date,
+body.works-page.theme-dark .card-meta .card-tag { color: rgba(255, 255, 255, 0.4); }
