@@ -14,7 +14,9 @@
 
 :root {
     --white: #ffffff;
-    --black: #1d1d1f;
+    /* 全屏式深色背景专用黑(页面底色 / loading 遮罩推进面等全屏场景);
+       文字、元素级的黑用 --gray-900,两者不要混用 */
+    --black-fullscreen: #0a0a0a;
     --gray-900: #1d1d1f;
     --gray-700: #48484a;
     --gray-600: #636366;
@@ -100,7 +102,7 @@ a {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 24px max(20px, calc((100% - 1040px) / 2));
+    padding: 16px max(20px, calc((100% - 1040px) / 2));
     gap: 64px 24px;
     flex-wrap: wrap;
     position: fixed;
@@ -1219,7 +1221,7 @@ a {
    Screen: Glass Balls
    ======================================== */
 .screen-balls {
-    background: #0a0a0a;
+    background: var(--black-fullscreen);
     position: relative;
 }
 
@@ -1435,7 +1437,7 @@ a {
    Screen: Gesture
    ======================================== */
 .screen-gesture {
-    background: #0a0a0a;
+    background: var(--black-fullscreen);
     display: flex;
     align-items: center;
     justify-content: center;
