@@ -133,7 +133,7 @@ export default function ArchivePage() {
       {/* VIBEDESIGN banner:置于顶部做 hero,三套样式轮播。
           与作品卡同构(card-wrapper + card-info):下方显示名称与时间(2026-07-22) */}
       <div className="card-wrapper banner-card">
-        <iframe src="design-banner.html?v=26" className="design-banner-frame" title="VIBEDESIGN" scrolling="no"></iframe>
+        <iframe src="design-banner.html?v=27" className="design-banner-frame" title="VIBEDESIGN" scrolling="no"></iframe>
         <div className="card-info">
           <div className="card-title-row"><span className="card-label">VIBEDESIGN</span></div>
           <div className="card-meta"><span className="card-tag">Claude Code</span><span className="card-date">2026-05-26</span></div>

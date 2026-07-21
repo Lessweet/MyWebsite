@@ -2624,6 +2624,8 @@ body.works-page .banner-card .design-banner-frame {
     min-height: 0;
     height: auto;   /* 高度由 flex 分配:封面区与邻卡封面对齐,信息条在下 */
     margin: 0;
+    border: 0.5px solid var(--gray-100, #f2f2f7);   /* 纯黑卡一圈细描边(2026-07-22) */
+    box-sizing: border-box;
 }
 
 /* 中屏(≤900px):4 列回 3 列,避免每张卡窄于 200px */
