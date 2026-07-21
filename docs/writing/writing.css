@@ -2108,6 +2108,11 @@ body.reading-page .header.home-nav::after {
        当前 = --fs-h2(24px,style.css 字号 scale) */
     --index-label-size: var(--fs-h2, 24px);
 }
+/* 手机端(≤600px):顶栏下留白收紧(240 → 96px)。桌面大留白在小屏上比例失衡
+   (2026-07-22 用户圈出首页此间距)。仍走同一 token,三页同步。 */
+@media (max-width: 600px) {
+    :root { --nav-content-gap: 96px; }
+}
 /* 三页统一背景 + 统一顶栏下留白(home-landing 的 min-height 同步用该 gap 扣减)。
    选择器带上 .home-v2 提一档特异性(0,3,1):文件后面的 body.no-banner .design-layout
    (0,2,1,+32px)才压不过来 —— 之前特异性同级、后者靠顺序赢,240px 一直没生效。 */
