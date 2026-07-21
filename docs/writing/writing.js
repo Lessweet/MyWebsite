@@ -106,7 +106,7 @@ function initSiteNav() {
     // 阅读页(article)与 writing/index 顶栏维持现状,不注入。
     const bd = document.body.classList;
     // 字标 → 首页入口(index,带 loading;目录形式是规范地址);
-    // 「Blog」标签 → blog.html(无 loading 的 Feed 页),Cases⇄Blog 切换不重播 loading。
+    // 「Blog」标签 → blog.html(无 loading 的 Feed 页),Archive⇄Blog 切换不重播 loading。
     const LOGO_HOME = base || './';
     const HOME = base + 'blog.html';
     const wantNavBg = bd.contains('design-page') && !bd.contains('writing-page') && !bd.contains('reading-page');
@@ -127,7 +127,7 @@ function initSiteNav() {
         '<div class="nav-collapse" id="nav-collapse">' +
             '<nav class="nav-cats" aria-label="分类">' +
                 '<a href="' + HOME + '" class="' + a('writing') + '">' + I(pencil) + 'Blog</a>' +
-                '<a href="' + base + 'cases.html" class="' + a('design') + '">' + I(design) + 'Cases</a>' +
+                '<a href="' + base + 'archive.html" class="' + a('design') + '">' + I(design) + 'Archive</a>' +
             '</nav>' +
             '<div class="header-right">' +
                 '<a href="mailto:chentongrong1@gmail.com" class="header-connect" title="chentongrong1@gmail.com" aria-label="Contact">' +

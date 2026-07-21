@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archive · VibeUX</title>
+    <link rel="icon" type="image/png" href="favicon.png?v=12">
+    <link rel="shortcut icon" href="favicon.png?v=12">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=12">
+    <link rel="stylesheet" href="style.css?v=134">
+    <link rel="stylesheet" href="writing/writing.css?v=322">
+    <!-- 提前加载,使顶部导航能在首次绘制前同步注入,避免空 header 闪烁 -->
+    <script src="writing/writing.js?v=80"></script>
+</head>
+<body class="home-v2 design-page theme-dark no-banner menu-hidden menu-dark works-page">
+    <header class="header home-nav" id="site-nav" data-active="design"></header>
+    <script>
+        initSiteNav();
+        /* 首屏同步设定 --design-menu-top = 顶栏实际高度,避免刷新时内容「上跳」 */
+        (function () {
+            var h = document.getElementById('site-nav');
+            if (h) document.documentElement.style.setProperty('--design-menu-top', h.offsetHeight + 'px');
+        })();
+    </script>
+    <main class="design-layout">
+        <!-- VIBEDESIGN banner:置于顶部做 hero,三套样式轮播 -->
+        <iframe src="design-banner.html?v=23" class="design-banner-frame" title="VIBEDESIGN" scrolling="no"></iframe>
+        <aside class="design-menu" aria-label="Design 分类">
+            <a href="#ai-native-design" class="nav-cat"><span class="menu-icon"><svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12.38,0.75 12.0,0.75 12.0,1.5 11.62,1.5 11.62,3.38 11.25,3.38 11.25,4.5 10.88,4.5 10.88,5.25 10.5,5.25 10.5,6.0 10.12,6.0 10.12,6.75 9.75,6.75 9.75,7.12 9.38,7.12 9.38,7.88 9.0,7.88 9.0,8.25 8.62,8.25 8.62,8.62 9.38,8.62 9.38,8.25 10.5,8.25 10.5,7.88 13.5,7.88 13.5,8.25 15.0,8.25 15.0,8.62 15.38,8.62 15.38,7.88 15.0,7.88 15.0,7.5 14.62,7.5 14.62,7.12 14.25,7.12 14.25,6.38 13.88,6.38 13.88,5.62 13.5,5.62 13.5,4.88 13.12,4.88 13.12,3.75 12.75,3.75 12.75,2.62 12.38,2.62ZM8.25,9.0 7.88,9.0 7.88,9.38 7.12,9.38 7.12,9.75 6.38,9.75 6.38,10.12 5.62,10.12 5.62,10.5 4.88,10.5 4.88,10.88 4.12,10.88 4.12,11.25 2.62,11.25 2.62,11.62 0.38,11.62 0.38,12.38 2.62,12.38 2.62,12.75 3.75,12.75 3.75,13.12 4.88,13.12 4.88,13.5 5.62,13.5 5.62,13.88 6.38,13.88 6.38,14.25 7.12,14.25 7.12,14.62 7.5,14.62 7.5,15.0 8.25,15.0 8.25,14.25 7.88,14.25 7.88,13.12 7.5,13.12 7.5,11.25 7.88,11.25 7.88,9.75 8.25,9.75ZM15.75,9.0 15.75,9.38 16.12,9.38 16.12,10.12 16.5,10.12 16.5,13.88 16.12,13.88 16.12,14.62 15.75,14.62 15.75,15.38 16.12,15.38 16.12,15.0 16.5,15.0 16.5,14.62 17.25,14.62 17.25,14.25 17.62,14.25 17.62,13.88 18.38,13.88 18.38,13.5 19.5,13.5 19.5,13.12 20.25,13.12 20.25,12.75 21.75,12.75 21.75,12.38 24.0,12.38 24.0,12.0 23.62,12.0 23.62,11.62 21.38,11.62 21.38,11.25 20.25,11.25 20.25,10.88 19.12,10.88 19.12,10.5 18.38,10.5 18.38,10.12 17.62,10.12 17.62,9.75 16.88,9.75 16.88,9.38 16.5,9.38 16.5,9.0ZM9.0,15.38 8.62,15.38 8.62,15.75 9.0,15.75ZM9.0,15.75 9.0,16.12 9.38,16.12 9.38,16.88 9.75,16.88 9.75,17.25 10.12,17.25 10.12,18.0 10.5,18.0 10.5,18.75 10.88,18.75 10.88,19.5 11.25,19.5 11.25,20.62 11.62,20.62 11.62,22.88 12.0,22.88 12.0,23.25 12.38,23.25 12.38,21.38 12.75,21.38 12.75,20.25 13.12,20.25 13.12,19.12 13.5,19.12 13.5,18.38 13.88,18.38 13.88,17.62 14.25,17.62 14.25,17.25 14.62,17.25 14.62,16.5 15.0,16.5 15.0,16.12 15.38,16.12 15.38,15.38 15.0,15.38 15.0,15.75 14.25,15.75 14.25,16.12 10.12,16.12 10.12,15.75Z"/></svg></span>Icon Skill</a>
+            <a href="#cat-aigc" class="nav-cat"><span class="menu-icon"><svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12.0,1.12 11.62,1.12 11.62,1.5 11.25,1.5 11.25,2.25 10.88,2.25 10.88,2.62 10.5,2.62 10.5,3.0 10.12,3.0 10.12,3.75 9.75,3.75 9.75,4.12 9.38,4.12 9.38,4.5 9.0,4.5 9.0,4.88 8.62,4.88 8.62,5.25 8.25,5.25 8.25,6.0 7.88,6.0 7.88,6.38 7.5,6.38 7.5,6.75 7.12,6.75 7.12,7.12 6.38,7.12 6.38,7.5 6.0,7.5 6.0,7.88 5.62,7.88 5.62,8.25 5.25,8.25 5.25,8.62 4.88,8.62 4.88,9.0 4.12,9.0 4.12,9.38 3.75,9.38 3.75,9.75 3.0,9.75 3.0,10.12 2.62,10.12 2.62,10.5 1.88,10.5 1.88,10.88 1.12,10.88 1.12,11.25 0.0,11.25 0.0,11.62 3.0,11.62 3.0,12.0 4.88,12.0 4.88,12.38 6.38,12.38 6.38,12.75 7.12,12.75 7.12,13.12 7.88,13.12 7.88,13.5 9.0,13.5 9.0,13.12 9.38,13.12 9.38,12.38 9.75,12.38 9.75,11.62 10.12,11.62 10.12,11.25 10.5,11.25 10.5,10.88 10.88,10.88 10.88,10.5 11.25,10.5 11.25,10.12 11.62,10.12 11.62,9.75 12.38,9.75 12.38,9.38 13.5,9.38 13.5,9.0 13.88,9.0 13.88,8.25 13.5,8.25 13.5,7.5 13.12,7.5 13.12,6.75 12.75,6.75 12.75,5.62 12.38,5.62 12.38,3.38 12.0,3.38ZM15.38,10.5 15.38,10.88 15.0,10.88 15.0,11.62 14.62,11.62 14.62,12.38 14.25,12.38 14.25,12.75 13.88,12.75 13.88,13.12 13.5,13.12 13.5,13.5 13.12,13.5 13.12,13.88 12.38,13.88 12.38,14.25 12.0,14.25 12.0,14.62 11.25,14.62 11.25,15.0 10.5,15.0 10.5,15.38 10.12,15.38 10.12,15.75 10.5,15.75 10.5,16.12 10.88,16.12 10.88,16.88 11.25,16.88 11.25,18.0 11.62,18.0 11.62,19.5 12.0,19.5 12.0,23.25 12.38,23.25 12.38,22.88 12.75,22.88 12.75,22.12 13.12,22.12 13.12,21.38 13.5,21.38 13.5,21.0 13.88,21.0 13.88,20.62 14.25,20.62 14.25,19.88 14.62,19.88 14.62,19.5 15.0,19.5 15.0,19.12 15.38,19.12 15.38,18.75 15.75,18.75 15.75,18.38 16.12,18.38 16.12,18.0 16.5,18.0 16.5,17.62 16.88,17.62 16.88,17.25 17.25,17.25 17.25,16.88 17.62,16.88 17.62,16.5 18.0,16.5 18.0,16.12 18.38,16.12 18.38,15.75 18.75,15.75 18.75,15.38 19.5,15.38 19.5,15.0 19.88,15.0 19.88,14.62 20.25,14.62 20.25,14.25 21.0,14.25 21.0,13.88 21.75,13.88 21.75,13.5 22.12,13.5 22.12,13.12 22.88,13.12 22.88,12.75 23.62,12.75 23.62,12.38 22.12,12.38 22.12,12.0 19.5,12.0 19.5,11.62 18.38,11.62 18.38,11.25 17.25,11.25 17.25,10.88 16.5,10.88 16.5,10.5Z"/></svg></span>AIGC</a>
+            <a href="#cat-motion" class="nav-cat"><span class="menu-icon"><svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="M13.88,1.88 13.5,1.88 13.5,10.12 13.88,10.12 13.88,10.5 14.25,10.5 14.25,10.88 23.62,10.88 23.62,10.5 22.12,10.5 22.12,10.12 21.38,10.12 21.38,9.75 20.62,9.75 20.62,9.38 19.88,9.38 19.88,9.0 19.12,9.0 19.12,8.62 18.75,8.62 18.75,8.25 18.0,8.25 18.0,7.88 17.62,7.88 17.62,7.5 17.25,7.5 17.25,7.12 16.88,7.12 16.88,6.75 16.5,6.75 16.5,6.38 16.12,6.38 16.12,6.0 15.75,6.0 15.75,5.62 15.38,5.62 15.38,4.88 15.0,4.88 15.0,4.5 14.62,4.5 14.62,3.75 14.25,3.75 14.25,3.0 13.88,3.0ZM10.88,3.0 10.5,3.0 10.5,4.12 10.12,4.12 10.12,4.88 9.75,4.88 9.75,5.62 9.38,5.62 9.38,6.38 9.0,6.38 9.0,6.75 8.62,6.75 8.62,7.5 8.25,7.5 8.25,7.88 7.88,7.88 7.88,8.25 7.5,8.25 7.5,8.62 7.12,8.62 7.12,9.0 6.75,9.0 6.75,9.38 6.38,9.38 6.38,9.75 5.62,9.75 5.62,10.12 4.88,10.12 4.88,10.5 4.12,10.5 4.12,11.25 4.88,11.25 4.88,10.88 10.12,10.88 10.12,10.5 10.5,10.5 10.5,10.12 10.88,10.12ZM0.38,13.12 0.38,13.88 2.25,13.88 2.25,14.25 3.0,14.25 3.0,14.62 4.12,14.62 4.12,15.0 4.5,15.0 4.5,15.38 5.25,15.38 5.25,15.75 6.0,15.75 6.0,16.12 6.38,16.12 6.38,16.5 6.75,16.5 6.75,16.88 7.12,16.88 7.12,17.25 7.5,17.25 7.5,17.62 7.88,17.62 7.88,18.0 8.25,18.0 8.25,18.38 8.62,18.38 8.62,18.75 9.0,18.75 9.0,19.5 9.38,19.5 9.38,20.25 9.75,20.25 9.75,21.0 10.12,21.0 10.12,22.12 10.88,22.12 10.88,15.38 10.5,15.38 10.5,14.25 10.12,14.25 10.12,13.88 9.75,13.88 9.75,13.5 9.0,13.5 9.0,13.12ZM14.62,13.12 14.62,13.5 13.88,13.5 13.88,13.88 13.5,13.88 13.5,14.25 13.12,14.25 13.12,21.0 13.5,21.0 13.5,20.25 13.88,20.25 13.88,19.12 14.25,19.12 14.25,18.38 14.62,18.38 14.62,18.0 15.0,18.0 15.0,17.25 15.38,17.25 15.38,16.88 15.75,16.88 15.75,16.5 16.12,16.5 16.12,16.12 16.5,16.12 16.5,15.75 16.88,15.75 16.88,15.38 17.25,15.38 17.25,15.0 17.62,15.0 17.62,14.62 18.38,14.62 18.38,14.25 18.75,14.25 18.75,13.88 19.5,13.88 19.5,13.5 19.88,13.5 19.88,13.12Z"/></svg></span>Visual Motion</a>
+            <a href="#cat-ux" class="nav-cat"><span class="menu-icon"><svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="M5.75,3.56 5.75,10.12 2.31,10.12 2.31,10.44 2.0,10.44 2.0,14.19 12.62,14.19 12.62,20.44 22.0,20.44 22.0,10.44 21.69,10.44 21.69,10.12 19.5,10.12 19.5,10.44 17.94,10.44 17.94,10.75 17.0,10.75 17.0,11.06 16.06,11.06 16.06,11.38 15.44,11.38 15.44,11.69 15.12,11.69 15.12,12.0 14.5,12.0 14.5,12.31 14.19,12.31 14.19,12.62 13.88,12.62 13.88,12.94 13.56,12.94 13.56,13.25 13.25,13.25 13.25,13.56 12.94,13.56 12.94,13.88 12.62,13.88 12.62,3.56ZM2.0,14.81 2.0,20.44 11.38,20.44 11.38,19.81 11.06,19.81 11.06,19.19 10.75,19.19 10.75,18.88 10.44,18.88 10.44,18.25 10.12,18.25 10.12,17.94 9.81,17.94 9.81,17.62 9.5,17.62 9.5,17.31 9.19,17.31 9.19,17.0 8.88,17.0 8.88,16.69 8.25,16.69 8.25,16.38 7.94,16.38 7.94,16.06 7.31,16.06 7.31,15.75 6.69,15.75 6.69,15.44 6.06,15.44 6.06,15.12 4.81,15.12 4.81,14.81Z"/></svg></span>Visual UX</a>
+        </aside>
+        <div class="design-content">
+<section class="category-section home-section" id="ai-native-design">
+                    <div class="section-divider">
+                        <h2 data-rise-init="1"><span class="heading-icon"><svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12.38,0.75 12.0,0.75 12.0,1.5 11.62,1.5 11.62,3.38 11.25,3.38 11.25,4.5 10.88,4.5 10.88,5.25 10.5,5.25 10.5,6.0 10.12,6.0 10.12,6.75 9.75,6.75 9.75,7.12 9.38,7.12 9.38,7.88 9.0,7.88 9.0,8.25 8.62,8.25 8.62,8.62 9.38,8.62 9.38,8.25 10.5,8.25 10.5,7.88 13.5,7.88 13.5,8.25 15.0,8.25 15.0,8.62 15.38,8.62 15.38,7.88 15.0,7.88 15.0,7.5 14.62,7.5 14.62,7.12 14.25,7.12 14.25,6.38 13.88,6.38 13.88,5.62 13.5,5.62 13.5,4.88 13.12,4.88 13.12,3.75 12.75,3.75 12.75,2.62 12.38,2.62ZM8.25,9.0 7.88,9.0 7.88,9.38 7.12,9.38 7.12,9.75 6.38,9.75 6.38,10.12 5.62,10.12 5.62,10.5 4.88,10.5 4.88,10.88 4.12,10.88 4.12,11.25 2.62,11.25 2.62,11.62 0.38,11.62 0.38,12.38 2.62,12.38 2.62,12.75 3.75,12.75 3.75,13.12 4.88,13.12 4.88,13.5 5.62,13.5 5.62,13.88 6.38,13.88 6.38,14.25 7.12,14.25 7.12,14.62 7.5,14.62 7.5,15.0 8.25,15.0 8.25,14.25 7.88,14.25 7.88,13.12 7.5,13.12 7.5,11.25 7.88,11.25 7.88,9.75 8.25,9.75ZM15.75,9.0 15.75,9.38 16.12,9.38 16.12,10.12 16.5,10.12 16.5,13.88 16.12,13.88 16.12,14.62 15.75,14.62 15.75,15.38 16.12,15.38 16.12,15.0 16.5,15.0 16.5,14.62 17.25,14.62 17.25,14.25 17.62,14.25 17.62,13.88 18.38,13.88 18.38,13.5 19.5,13.5 19.5,13.12 20.25,13.12 20.25,12.75 21.75,12.75 21.75,12.38 24.0,12.38 24.0,12.0 23.62,12.0 23.62,11.62 21.38,11.62 21.38,11.25 20.25,11.25 20.25,10.88 19.12,10.88 19.12,10.5 18.38,10.5 18.38,10.12 17.62,10.12 17.62,9.75 16.88,9.75 16.88,9.38 16.5,9.38 16.5,9.0ZM9.0,15.38 8.62,15.38 8.62,15.75 9.0,15.75ZM9.0,15.75 9.0,16.12 9.38,16.12 9.38,16.88 9.75,16.88 9.75,17.25 10.12,17.25 10.12,18.0 10.5,18.0 10.5,18.75 10.88,18.75 10.88,19.5 11.25,19.5 11.25,20.62 11.62,20.62 11.62,22.88 12.0,22.88 12.0,23.25 12.38,23.25 12.38,21.38 12.75,21.38 12.75,20.25 13.12,20.25 13.12,19.12 13.5,19.12 13.5,18.38 13.88,18.38 13.88,17.62 14.25,17.62 14.25,17.25 14.62,17.25 14.62,16.5 15.0,16.5 15.0,16.12 15.38,16.12 15.38,15.38 15.0,15.38 15.0,15.75 14.25,15.75 14.25,16.12 10.12,16.12 10.12,15.75Z"/></svg></span>Icon Skill</h2>
+                    </div>
+                    <div class="category-grid">
+
+                        <!-- Outlined Icon — 封面卡(内页前 9 个图标动效预览),点击看全部 -->
+                        <div class="card-wrapper" data-delay="100">
+                            <a href="icon-studio/outlined.html" data-modal-src="icon-studio/outlined.html?modal=1&v=2" class="card foundation-card icon-cover">
+                                <iframe src="icon-studio/preview-outlined.html?v=4" class="icon-preview-frame" title="Outlined Icon 预览" scrolling="no" tabindex="-1"></iframe>
+                            </a>
+                            <div class="card-info">
+                                <div class="card-title-row"><span class="card-label">Outlined Icon</span></div>
+                                <div class="card-meta"><span class="card-date">2026-05-20</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Pixel Icon — 封面卡(内页前 9 个图标动效预览),点击看全部 -->
+                        <div class="card-wrapper" data-delay="150">
+                            <a href="icon-studio/pixel.html" data-modal-src="icon-studio/pixel.html?modal=1&v=2" class="card foundation-card icon-cover">
+                                <iframe src="icon-studio/preview-pixel.html?v=4" class="icon-preview-frame" title="Pixel Icon 预览" scrolling="no" tabindex="-1"></iframe>
+                            </a>
+                            <div class="card-info">
+                                <div class="card-title-row"><span class="card-label">Pixel Icon</span></div>
+                                <div class="card-meta"><span class="card-date">2026-05-20</span></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+            <!-- ================================
+                 AI 生成作品(从 Visual Motion 拎出的动态海报)
+                 ================================ -->
+            <section class="category-section" id="cat-aigc" data-category="ai-generated">
+                <div class="section-divider">
+                    <h2 data-rise-init="1"><span class="heading-icon"><svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12.0,1.12 11.62,1.12 11.62,1.5 11.25,1.5 11.25,2.25 10.88,2.25 10.88,2.62 10.5,2.62 10.5,3.0 10.12,3.0 10.12,3.75 9.75,3.75 9.75,4.12 9.38,4.12 9.38,4.5 9.0,4.5 9.0,4.88 8.62,4.88 8.62,5.25 8.25,5.25 8.25,6.0 7.88,6.0 7.88,6.38 7.5,6.38 7.5,6.75 7.12,6.75 7.12,7.12 6.38,7.12 6.38,7.5 6.0,7.5 6.0,7.88 5.62,7.88 5.62,8.25 5.25,8.25 5.25,8.62 4.88,8.62 4.88,9.0 4.12,9.0 4.12,9.38 3.75,9.38 3.75,9.75 3.0,9.75 3.0,10.12 2.62,10.12 2.62,10.5 1.88,10.5 1.88,10.88 1.12,10.88 1.12,11.25 0.0,11.25 0.0,11.62 3.0,11.62 3.0,12.0 4.88,12.0 4.88,12.38 6.38,12.38 6.38,12.75 7.12,12.75 7.12,13.12 7.88,13.12 7.88,13.5 9.0,13.5 9.0,13.12 9.38,13.12 9.38,12.38 9.75,12.38 9.75,11.62 10.12,11.62 10.12,11.25 10.5,11.25 10.5,10.88 10.88,10.88 10.88,10.5 11.25,10.5 11.25,10.12 11.62,10.12 11.62,9.75 12.38,9.75 12.38,9.38 13.5,9.38 13.5,9.0 13.88,9.0 13.88,8.25 13.5,8.25 13.5,7.5 13.12,7.5 13.12,6.75 12.75,6.75 12.75,5.62 12.38,5.62 12.38,3.38 12.0,3.38ZM15.38,10.5 15.38,10.88 15.0,10.88 15.0,11.62 14.62,11.62 14.62,12.38 14.25,12.38 14.25,12.75 13.88,12.75 13.88,13.12 13.5,13.12 13.5,13.5 13.12,13.5 13.12,13.88 12.38,13.88 12.38,14.25 12.0,14.25 12.0,14.62 11.25,14.62 11.25,15.0 10.5,15.0 10.5,15.38 10.12,15.38 10.12,15.75 10.5,15.75 10.5,16.12 10.88,16.12 10.88,16.88 11.25,16.88 11.25,18.0 11.62,18.0 11.62,19.5 12.0,19.5 12.0,23.25 12.38,23.25 12.38,22.88 12.75,22.88 12.75,22.12 13.12,22.12 13.12,21.38 13.5,21.38 13.5,21.0 13.88,21.0 13.88,20.62 14.25,20.62 14.25,19.88 14.62,19.88 14.62,19.5 15.0,19.5 15.0,19.12 15.38,19.12 15.38,18.75 15.75,18.75 15.75,18.38 16.12,18.38 16.12,18.0 16.5,18.0 16.5,17.62 16.88,17.62 16.88,17.25 17.25,17.25 17.25,16.88 17.62,16.88 17.62,16.5 18.0,16.5 18.0,16.12 18.38,16.12 18.38,15.75 18.75,15.75 18.75,15.38 19.5,15.38 19.5,15.0 19.88,15.0 19.88,14.62 20.25,14.62 20.25,14.25 21.0,14.25 21.0,13.88 21.75,13.88 21.75,13.5 22.12,13.5 22.12,13.12 22.88,13.12 22.88,12.75 23.62,12.75 23.62,12.38 22.12,12.38 22.12,12.0 19.5,12.0 19.5,11.62 18.38,11.62 18.38,11.25 17.25,11.25 17.25,10.88 16.5,10.88 16.5,10.5Z"/></svg></span>AIGC</h2>
+                </div>
+                <div class="category-grid">
+
+                    <!-- Project: Dynamic Poster 4 -->
+                    <div class="card-wrapper" data-delay="50" data-group="co-creation" data-category="motion-posters">
+                        <article class="card card-tall card-video-full card-video-contained" style="--motion-poster-bg: url('动态海报/立体未来感/4-poster.jpg'); --poster-color: #347a74;">
+                            <div class="card-visual">
+                                <video class="card-video" autoplay loop muted playsinline>
+                                    <source src="动态海报/立体未来感/4.mp4" type="video/mp4">
+                                </video>
+                            </div>
+                        </article>
+                        <div class="card-info">
+                            <div class="card-title-row">
+                                <span class="card-label">AI Poster</span>
+                                <button class="card-like" data-id="13">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                    </svg>
+                                    <span class="like-count">0</span>
+                                </button>
+                            </div>
+                            <div class="card-meta">
+                                <span class="card-tag">Jimeng AI</span>
+                                <span class="card-date">2026-05-06</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project: Dynamic Poster 1 -->
+                    <div class="card-wrapper" data-delay="100" data-group="co-creation" data-category="motion-posters">
+                        <article class="card card-tall card-video-full card-video-contained" style="--motion-poster-bg: url('动态海报/立体未来感/1-poster.jpg'); --poster-color: #223199;">
+                            <div class="card-visual">
+                                <video class="card-video" autoplay loop muted playsinline>
+                                    <source src="动态海报/立体未来感/1.mp4" type="video/mp4">
+                                </video>
+                            </div>
+                        </article>
+                        <div class="card-info">
+                            <div class="card-title-row">
+                                <span class="card-label">AI Poster</span>
+                                <button class="card-like" data-id="10">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                    </svg>
+                                    <span class="like-count">0</span>
+                                </button>
+                            </div>
+                            <div class="card-meta">
+                                <span class="card-tag">Jimeng AI</span>
+                                <span class="card-date">2026-05-05</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project: Dynamic Poster 2 -->
+                    <div class="card-wrapper" data-delay="150" data-group="co-creation" data-category="motion-posters">
+                        <article class="card card-tall card-video-full card-video-contained" style="--motion-poster-bg: url('动态海报/立体未来感/2-poster.jpg'); --poster-color: #152782;">
+                            <div class="card-visual">
+                                <video class="card-video" autoplay loop muted playsinline>
+                                    <source src="动态海报/立体未来感/2.mp4" type="video/mp4">
+                                </video>
+                            </div>
+                        </article>
+                        <div class="card-info">
+                            <div class="card-title-row">
+                                <span class="card-label">AI Poster</span>
+                                <button class="card-like" data-id="11">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                    </svg>
+                                    <span class="like-count">0</span>
+                                </button>
+                            </div>
+                            <div class="card-meta">
+                                <span class="card-tag">Jimeng AI</span>
+                                <span class="card-date">2026-05-05</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project: Dynamic Poster 3 -->
+                    <div class="card-wrapper" data-delay="200" data-group="co-creation" data-category="motion-posters">
+                        <article class="card card-tall card-video-full card-video-contained" style="--motion-poster-bg: url('动态海报/立体未来感/3-poster.jpg'); --poster-color: #5B21B6;">
+                            <div class="card-visual">
+                                <video class="card-video" autoplay loop muted playsinline>
+                                    <source src="动态海报/立体未来感/3.mp4" type="video/mp4">
+                                </video>
+                            </div>
+                        </article>
+                        <div class="card-info">
+                            <div class="card-title-row">
+                                <span class="card-label">AI Poster</span>
+                                <button class="card-like" data-id="12">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                    </svg>
+                                    <span class="like-count">0</span>
+                                </button>
+                            </div>
+                            <div class="card-meta">
+                                <span class="card-tag">Jimeng AI</span>
+                                <span class="card-date">2026-05-05</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ================================
+                 Visual Motion
+                 ================================ -->
+            <section class="category-section" id="cat-motion" data-group="co-creation" data-category="motion-posters">
+                <div class="section-divider">
+                    <h2 data-rise-init="1"><span class="heading-icon"><svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="M13.88,1.88 13.5,1.88 13.5,10.12 13.88,10.12 13.88,10.5 14.25,10.5 14.25,10.88 23.62,10.88 23.62,10.5 22.12,10.5 22.12,10.12 21.38,10.12 21.38,9.75 20.62,9.75 20.62,9.38 19.88,9.38 19.88,9.0 19.12,9.0 19.12,8.62 18.75,8.62 18.75,8.25 18.0,8.25 18.0,7.88 17.62,7.88 17.62,7.5 17.25,7.5 17.25,7.12 16.88,7.12 16.88,6.75 16.5,6.75 16.5,6.38 16.12,6.38 16.12,6.0 15.75,6.0 15.75,5.62 15.38,5.62 15.38,4.88 15.0,4.88 15.0,4.5 14.62,4.5 14.62,3.75 14.25,3.75 14.25,3.0 13.88,3.0ZM10.88,3.0 10.5,3.0 10.5,4.12 10.12,4.12 10.12,4.88 9.75,4.88 9.75,5.62 9.38,5.62 9.38,6.38 9.0,6.38 9.0,6.75 8.62,6.75 8.62,7.5 8.25,7.5 8.25,7.88 7.88,7.88 7.88,8.25 7.5,8.25 7.5,8.62 7.12,8.62 7.12,9.0 6.75,9.0 6.75,9.38 6.38,9.38 6.38,9.75 5.62,9.75 5.62,10.12 4.88,10.12 4.88,10.5 4.12,10.5 4.12,11.25 4.88,11.25 4.88,10.88 10.12,10.88 10.12,10.5 10.5,10.5 10.5,10.12 10.88,10.12ZM0.38,13.12 0.38,13.88 2.25,13.88 2.25,14.25 3.0,14.25 3.0,14.62 4.12,14.62 4.12,15.0 4.5,15.0 4.5,15.38 5.25,15.38 5.25,15.75 6.0,15.75 6.0,16.12 6.38,16.12 6.38,16.5 6.75,16.5 6.75,16.88 7.12,16.88 7.12,17.25 7.5,17.25 7.5,17.62 7.88,17.62 7.88,18.0 8.25,18.0 8.25,18.38 8.62,18.38 8.62,18.75 9.0,18.75 9.0,19.5 9.38,19.5 9.38,20.25 9.75,20.25 9.75,21.0 10.12,21.0 10.12,22.12 10.88,22.12 10.88,15.38 10.5,15.38 10.5,14.25 10.12,14.25 10.12,13.88 9.75,13.88 9.75,13.5 9.0,13.5 9.0,13.12ZM14.62,13.12 14.62,13.5 13.88,13.5 13.88,13.88 13.5,13.88 13.5,14.25 13.12,14.25 13.12,21.0 13.5,21.0 13.5,20.25 13.88,20.25 13.88,19.12 14.25,19.12 14.25,18.38 14.62,18.38 14.62,18.0 15.0,18.0 15.0,17.25 15.38,17.25 15.38,16.88 15.75,16.88 15.75,16.5 16.12,16.5 16.12,16.12 16.5,16.12 16.5,15.75 16.88,15.75 16.88,15.38 17.25,15.38 17.25,15.0 17.62,15.0 17.62,14.62 18.38,14.62 18.38,14.25 18.75,14.25 18.75,13.88 19.5,13.88 19.5,13.5 19.88,13.5 19.88,13.12Z"/></svg></span>Visual Motion</h2>
+                </div>
+                <div class="category-grid">
+
+                    <!-- Project: AI Assistant Motion -->
+                    <div class="card-wrapper" data-delay="250" data-group="co-creation" data-category="motion-posters">
+                        <article class="card card-full-demo">
+                            <div class="card-iframe-container">
+                                <iframe src="ai-assistant-motion/index.html?v=2" class="card-iframe" frameborder="0" allowfullscreen></iframe>
+                            </div>
+                        </article>
+                        <div class="card-info">
+                            <div class="card-title-row">
+                                <span class="card-label">AI Assistant Motion</span>
+                                <button class="card-like" data-id="9">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                    </svg>
+                                    <span class="like-count">0</span>
+                                </button>
+                            </div>
+                            <div class="card-meta">
+                                <span class="card-tag">Claude Code</span>
+                                <span class="card-date">2026-03-16</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project: Voicer (moved into Motion Posters) -->
+                    <div class="card-wrapper" data-delay="300" data-group="co-creation" data-category="motion-posters">
+                        <article class="card card-tall card-video-full card-gray-outline">
+                            <div class="card-visual">
+                                <video class="card-video" autoplay loop muted playsinline>
+                                    <source src="voicer_compressed.mp4" type="video/mp4">
+                                </video>
+                            </div>
+                        </article>
+                        <div class="card-info">
+                            <div class="card-title-row">
+                                <span class="card-label">Voicer</span>
+                                <button class="card-like" data-id="14">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                    </svg>
+                                    <span class="like-count">0</span>
+                                </button>
+                            </div>
+                            <div class="card-meta">
+                                <span class="card-tag">Adobe After Effects</span>
+                                <span class="card-date">2025-06-14</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project: Voicer Card -->
+                    <div class="card-wrapper" data-delay="350" data-group="co-creation" data-category="motion-posters">
+                        <article class="card card-tall card-video-full card-gray-outline">
+                            <div class="card-visual">
+                                <video class="card-video" autoplay loop muted playsinline>
+                                    <source src="voicer_card_compressed.mp4" type="video/mp4">
+                                </video>
+                            </div>
+                        </article>
+                        <div class="card-info">
+                            <div class="card-title-row">
+                                <span class="card-label">Voicer Card</span>
+                                <button class="card-like" data-id="17">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                    </svg>
+                                    <span class="like-count">0</span>
+                                </button>
+                            </div>
+                            <div class="card-meta">
+                                <span class="card-tag">Adobe After Effects</span>
+                                <span class="card-date">2025-06-14</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project: Voicer Search Bar -->
+                    <div class="card-wrapper" data-delay="400" data-group="co-creation" data-category="motion-posters">
+                        <article class="card card-tall card-video-full card-gray-outline">
+                            <div class="card-visual">
+                                <video class="card-video" autoplay loop muted playsinline>
+                                    <source src="voicer_search_bar_compressed.mp4" type="video/mp4">
+                                </video>
+                            </div>
+                        </article>
+                        <div class="card-info">
+                            <div class="card-title-row">
+                                <span class="card-label">Voicer Search Bar</span>
+                                <button class="card-like" data-id="15">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                    </svg>
+                                    <span class="like-count">0</span>
+                                </button>
+                            </div>
+                            <div class="card-meta">
+                                <span class="card-tag">Adobe After Effects</span>
+                                <span class="card-date">2025-06-14</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project: Voicer Loading -->
+                    <div class="card-wrapper" data-delay="450" data-group="co-creation" data-category="motion-posters">
+                        <article class="card card-tall card-video-full card-gray-outline">
+                            <div class="card-visual">
+                                <video class="card-video" autoplay loop muted playsinline>
+                                    <source src="voicer_loading_compressed.mp4" type="video/mp4">
+                                </video>
+                            </div>
+                        </article>
+                        <div class="card-info">
+                            <div class="card-title-row">
+                                <span class="card-label">Voicer Loading</span>
+                                <button class="card-like" data-id="16">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                    </svg>
+                                    <span class="like-count">0</span>
+                                </button>
+                            </div>
+                            <div class="card-meta">
+                                <span class="card-tag">Adobe After Effects</span>
+                                <span class="card-date">2025-06-14</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ================================
+                 VisualUX (AI Native Design)
+                 Merged from former AI Product UX + 3D Visuals
+                 ================================ -->
+            <section class="category-section" id="cat-ux" data-group="native" data-category="visualux">
+                <div class="section-divider">
+                    <h2 data-rise-init="1"><span class="heading-icon"><svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="M5.75,3.56 5.75,10.12 2.31,10.12 2.31,10.44 2.0,10.44 2.0,14.19 12.62,14.19 12.62,20.44 22.0,20.44 22.0,10.44 21.69,10.44 21.69,10.12 19.5,10.12 19.5,10.44 17.94,10.44 17.94,10.75 17.0,10.75 17.0,11.06 16.06,11.06 16.06,11.38 15.44,11.38 15.44,11.69 15.12,11.69 15.12,12.0 14.5,12.0 14.5,12.31 14.19,12.31 14.19,12.62 13.88,12.62 13.88,12.94 13.56,12.94 13.56,13.25 13.25,13.25 13.25,13.56 12.94,13.56 12.94,13.88 12.62,13.88 12.62,3.56ZM2.0,14.81 2.0,20.44 11.38,20.44 11.38,19.81 11.06,19.81 11.06,19.19 10.75,19.19 10.75,18.88 10.44,18.88 10.44,18.25 10.12,18.25 10.12,17.94 9.81,17.94 9.81,17.62 9.5,17.62 9.5,17.31 9.19,17.31 9.19,17.0 8.88,17.0 8.88,16.69 8.25,16.69 8.25,16.38 7.94,16.38 7.94,16.06 7.31,16.06 7.31,15.75 6.69,15.75 6.69,15.44 6.06,15.44 6.06,15.12 4.81,15.12 4.81,14.81Z"/></svg></span>Visual UX</h2>
+                </div>
+                <div class="category-grid">
+
+                    <!-- Project: Eye Tracking -->
+                    <div class="card-wrapper" data-delay="50" data-group="native" data-category="visualux">
+                        <article class="card card-full-demo card-dynamic-scale" data-content-height="812">
+                            <div class="card-iframe-container">
+                                <iframe src="multi-scene-character-demo/multi-scene-character-demo.html" class="card-iframe" frameborder="0" allowfullscreen></iframe>
+                            </div>
+                        </article>
+                        <div class="card-info">
+                            <div class="card-title-row">
+                                <span class="card-label">Eye Tracking</span>
+                                <button class="card-like" data-id="3">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                    </svg>
+                                    <span class="like-count">0</span>
+                                </button>
+                            </div>
+                            <div class="card-meta">
+                                <span class="card-tag">Claude Code</span>
+                                <span class="card-date">2026-01-08</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project: Voice Particles -->
+                    <div class="card-wrapper" data-delay="100" data-group="native" data-category="visualux">
+                        <article class="card card-full-demo card-dynamic-scale" data-content-height="812" data-target-ratio="1">
+                            <div class="card-iframe-container">
+                                <iframe src="voice-particles/index.html" class="card-iframe" frameborder="0" allowfullscreen></iframe>
+                            </div>
+                        </article>
+                        <div class="card-info">
+                            <div class="card-title-row">
+                                <span class="card-label">Voice Particles</span>
+                                <button class="card-like" data-id="4">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                    </svg>
+                                    <span class="like-count">0</span>
+                                </button>
+                            </div>
+                            <div class="card-meta">
+                                <span class="card-tag">Gemini 3 Pro</span>
+                                <span class="card-date">2026-01-05</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project: 3D Rotation -->
+                    <div class="card-wrapper" data-delay="150" data-group="native" data-category="visualux">
+                        <article class="card card-tall card-video-full">
+                            <div class="card-visual">
+                                <video class="card-video" autoplay loop muted playsinline>
+                                    <source src="Metal_compressed.mp4" type="video/mp4">
+                                </video>
+                            </div>
+                        </article>
+                        <div class="card-info">
+                            <div class="card-title-row">
+                                <span class="card-label">3D Rotation Effect</span>
+                                <button class="card-like" data-id="1">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                    </svg>
+                                    <span class="like-count">0</span>
+                                </button>
+                            </div>
+                            <div class="card-meta">
+                                <span class="card-tag">Claude Code</span>
+                                <span class="card-date">2026-01-15</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project: 3D Card Glass -->
+                    <div class="card-wrapper" data-delay="200" data-group="native" data-category="visualux">
+                        <article class="card card-tall card-video-full">
+                            <div class="card-visual">
+                                <video class="card-video" autoplay loop muted playsinline>
+                                    <source src="3DCardGlass_compressed.mp4" type="video/mp4">
+                                </video>
+                            </div>
+                        </article>
+                        <div class="card-info">
+                            <div class="card-title-row">
+                                <span class="card-label">3D Rotation Effect</span>
+                                <button class="card-like" data-id="2">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                    </svg>
+                                    <span class="like-count">0</span>
+                                </button>
+                            </div>
+                            <div class="card-meta">
+                                <span class="card-tag">Claude Code</span>
+                                <span class="card-date">2026-01-10</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project: 3D Sphere -->
+                    <div class="card-wrapper" data-delay="250" data-group="native" data-category="visualux">
+                        <article class="card card-tall card-dynamic-scale" data-content-height="844" data-content-type="iphone">
+                            <div class="card-visual">
+                                <div class="iphone-frame">
+                                    <div class="iphone-notch"></div>
+                                    <div class="iphone-screen">
+                                        <video class="iphone-video" autoplay loop muted playsinline>
+                                            <source src="3DSphere-particle_compressed.mp4" type="video/mp4">
+                                        </video>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                        <div class="card-info">
+                            <div class="card-title-row">
+                                <span class="card-label">3D Sphere</span>
+                                <button class="card-like" data-id="5">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                    </svg>
+                                    <span class="like-count">0</span>
+                                </button>
+                            </div>
+                            <div class="card-meta">
+                                <span class="card-tag">Claude Code</span>
+                                <span class="card-date">2026-01-03</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project: Glass Balls -->
+                    <div class="card-wrapper" data-delay="300" data-group="native" data-category="visualux">
+                        <article class="card card-tall card-scaled-up">
+                            <div class="card-visual">
+                                <video class="card-video" autoplay loop muted playsinline>
+                                    <source src="3DBallsIPhone_compressed.mp4" type="video/mp4">
+                                </video>
+                            </div>
+                        </article>
+                        <div class="card-info">
+                            <div class="card-title-row">
+                                <span class="card-label">Glass Balls</span>
+                                <button class="card-like" data-id="6">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                    </svg>
+                                    <span class="like-count">0</span>
+                                </button>
+                            </div>
+                            <div class="card-meta">
+                                <span class="card-tag">Claude Code</span>
+                                <span class="card-date">2025-12-28</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project: Gesture Interaction -->
+                    <div class="card-wrapper" data-delay="350" data-group="native" data-category="visualux">
+                        <article class="card card-tall card-video-full card-video-scaled-down">
+                            <div class="card-visual">
+                                <video class="card-video" autoplay loop muted playsinline>
+                                    <source src="3DSphere_compressed.mp4" type="video/mp4">
+                                </video>
+                            </div>
+                        </article>
+                        <div class="card-info">
+                            <div class="card-title-row">
+                                <span class="card-label">Gesture Interaction</span>
+                                <button class="card-like" data-id="7">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                    </svg>
+                                    <span class="like-count">0</span>
+                                </button>
+                            </div>
+                            <div class="card-meta">
+                                <span class="card-tag">Claude Code</span>
+                                <span class="card-date">2025-12-20</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project: Gyroscope -->
+                    <div class="card-wrapper" data-delay="400" data-group="native" data-category="visualux">
+                        <article class="card card-tall card-video-full card-video-scaled-down">
+                            <div class="card-visual">
+                                <video class="card-video" autoplay loop muted playsinline>
+                                    <source src="3DCards_compressed.mp4" type="video/mp4">
+                                </video>
+                            </div>
+                        </article>
+                        <div class="card-info">
+                            <div class="card-title-row">
+                                <span class="card-label">Gyroscope</span>
+                                <button class="card-like" data-id="8">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                    </svg>
+                                    <span class="like-count">0</span>
+                                </button>
+                            </div>
+                            <div class="card-meta">
+                                <span class="card-tag">Claude Code</span>
+                                <span class="card-date">2025-12-15</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Icon Library 模态层:点击 AI-Native Design 封面在当前页打开,不跳转二级页 -->
+    <div class="icon-modal" id="iconModal" aria-hidden="true">
+        <div class="icon-modal-backdrop" data-modal-close></div>
+        <div class="icon-modal-dialog" role="dialog" aria-modal="true" aria-label="Icon Library">
+            <button class="icon-modal-close" type="button" aria-label="关闭" data-modal-close>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6 L18 18 M18 6 L6 18"/></svg>
+            </button>
+            <iframe class="icon-modal-frame" id="iconModalFrame" title="Icon Library" src="about:blank"></iframe>
+        </div>
+    </div>
+
+    <script src="script.js?v=27"></script>
+    <script>
+    /* 作品卡 hover 蒙层:封面上盖一层暗色蒙层,中间显示项目名 + 时间。
+       文案不重复写在 HTML 里,直接从卡片下方已有的 .card-label / .card-date 取,
+       改标题或日期只需改一处。 */
+    (function () {
+        document.querySelectorAll('.card-wrapper').forEach((wrap) => {
+            const card = wrap.querySelector('.card');
+            if (!card || card.querySelector('.card-overlay')) return;
+            const title = wrap.querySelector('.card-label')?.textContent.trim() || '';
+            const date = wrap.querySelector('.card-date')?.textContent.trim() || '';
+            if (!title && !date) return;
+
+            const ov = document.createElement('div');
+            ov.className = 'card-overlay';
+            ov.setAttribute('aria-hidden', 'true');   // 信息在卡下方已有,不重复播报
+            ov.innerHTML =
+                '<span class="co-title"></span><span class="co-date"></span>';
+            ov.querySelector('.co-title').textContent = title;
+            ov.querySelector('.co-date').textContent = date;
+            card.appendChild(ov);
+        });
+    })();
+    </script>
+    <script>
+    (function () {
+        const modal = document.getElementById('iconModal');
+        const frame = document.getElementById('iconModalFrame');
+        if (!modal || !frame) return;
+
+        const open = (src) => {
+            frame.src = src;
+            modal.classList.add('show');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
+        };
+        const close = () => {
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('modal-open');
+            frame.src = 'about:blank';   // 卸载内容,停止动画
+        };
+
+        document.querySelectorAll('.icon-cover[data-modal-src]').forEach((el) => {
+            el.addEventListener('click', (e) => {
+                const src = el.getAttribute('data-modal-src');
+                if (!src) return;
+                e.preventDefault();
+                open(src);
+            });
+        });
+
+        modal.querySelectorAll('[data-modal-close]').forEach((el) => {
+            el.addEventListener('click', close);
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('show')) close();
+        });
+    })();
+    </script>
+</body>
+</html>

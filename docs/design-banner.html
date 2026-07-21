@@ -15,7 +15,8 @@
     --text-dim: #969696;
     --brand: #000000;
     --brand-soft: rgba(0, 0, 0, 0.08);
-    --brand-banner-bg: #C3C0FA;
+    /* 黑白配色:比宿主页面背景 #0a0a0a 亮一档,banner 边界可辨 */
+    --brand-banner-bg: #161616;
     --dur-1-5: 1.5s;
     --dur-1-8: 1.8s;
     --dur-2-1: 2.1s;
@@ -66,7 +67,7 @@
   }
 
   /* 卡片模式(?style=ascii|block|dots):锁定单一样式静态展示,占满 iframe 并垂直居中,
-     供 cases.html 的三张叠卡引用;普通模式(无参数)行为不变。 */
+     供 archive.html 的三张叠卡引用;普通模式(无参数)行为不变。 */
   body.card-mode main { width: 100%; padding: 0; }
   body.card-mode .brand-banner-shell { margin: 0; height: 100vh; }
   body.card-mode .brand-banner { min-height: 100vh; padding: 0 12px; cursor: default; }
@@ -1475,11 +1476,11 @@
         ambient: pick(['*', '\\']),
         densityByDist: { 1: 0.28, 2: 0.28 },
         ambientDensity: 0.015,
-        backgroundColor: '#C3C0FA',
+        backgroundColor: '#161616',
         lineHeight: '0.65',
         letterSpacing: '0',
-        letterColor: () => '#6D28D9',
-        decorationColor: () => '#6D28D9',
+        letterColor: () => '#FFFFFF',
+        decorationColor: () => '#FFFFFF',
       },
       {
         id: 'block',
@@ -1489,11 +1490,11 @@
         ambient: pick(['▀', '▄']),
         densityByDist: { 1: 0.18, 2: 0.18 },
         ambientDensity: 0.012,
-        backgroundColor: '#90E5B4',
+        backgroundColor: '#161616',
         lineHeight: '0.65',
         letterSpacing: '0',
-        letterColor: () => '#5B69E4',
-        decorationColor: () => '#5B69E4',
+        letterColor: () => '#FFFFFF',
+        decorationColor: () => '#FFFFFF',
       },
       {
         id: 'dots',
@@ -1505,19 +1506,20 @@
         ambient: pick(['•', '•', '•', '•', '✦', '✦', '✦', '▪', '▪', '▴', '▴']),
         densityByDist: {},
         ambientDensity: 0.038,
-        backgroundColor: '#E8FA4F',
+        backgroundColor: '#161616',
         lineHeight: '0.65',
         letterSpacing: '0',
-        letterColor: () => '#1867C9',
-        decorationColor: () => '#1867C9',
+        letterColor: () => '#FFFFFF',
+        decorationColor: () => '#FFFFFF',
       },
     ];
     // 切换节奏:三套样式等速轮播,每套停留 1 秒
     const FAST_MS = 1000;
     const HOLD_MS = 1000;
-    const PARTICLE_TOP = { r: 255, g: 38, b: 132 };
-    const PARTICLE_MID = { r: 255, g: 116, b: 176 };
-    const PARTICLE_BOTTOM = { r: 155, g: 72, b: 244 };
+    /* 粒子也归入黑白配色:白 → 浅灰 → 中灰 的单色渐变 */
+    const PARTICLE_TOP = { r: 255, g: 255, b: 255 };
+    const PARTICLE_MID = { r: 200, g: 200, b: 200 };
+    const PARTICLE_BOTTOM = { r: 140, g: 140, b: 140 };
     let particles = [];
     let particleWidth = 0;
     let particleHeight = 0;
@@ -1976,7 +1978,7 @@
       }
       grid.dataset.styleId = style.id;
       if (bannerShell) {
-        bannerShell.style.setProperty('--brand-banner-bg', style.backgroundColor || '#C3C0FA');
+        bannerShell.style.setProperty('--brand-banner-bg', style.backgroundColor || '#161616');
       }
       grid.replaceChildren(build(style));
       originsDirty = true;
