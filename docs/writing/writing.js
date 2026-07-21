@@ -118,7 +118,7 @@ function initSiteNav() {
     nav.innerHTML =
         navBg +
         '<div class="header-left">' +
-            '<a href="' + LOGO_HOME + '" class="site-title" data-wordmark="' + WORDMARK + '" aria-label="' + wm.alt + '"><img src="' + base + 'favicon.png?v=19" class="site-logo" alt=""><img src="' + base + wm.src + '" class="site-wordmark" alt="' + wm.alt + '"></a>' +
+            '<a href="' + LOGO_HOME + '" class="site-title" data-wordmark="' + WORDMARK + '" aria-label="' + wm.alt + '"><img src="' + base + 'favicon.png?v=20" class="site-logo" alt=""><img src="' + base + wm.src + '" class="site-wordmark" alt="' + wm.alt + '"></a>' +
         '</div>' +
         // 手机端汉堡按钮:桌面隐藏,≤600px 显示;点击展开 .nav-collapse 下拉
         '<button type="button" class="nav-toggle" aria-label="菜单" aria-expanded="false" aria-controls="nav-collapse">' +
