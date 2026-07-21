@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Poster Stack</title>
+<style>
+  /* 四张动态海报的堆叠轮播,motion 复刻 globe09 参考片:
+     一摞海报慢速漂移,front 位每 2.6s 换一张,循环轮播。
+     底色中性灰 #E2E2E2,与宿主卡片同色,海报浮在展台上。 */
+  html, body {
+    margin: 0;
+    height: 100%;
+    /* 中性灰展台(参考片同款 #E2E2E2,无色偏),海报浮在灰面上 */
+    background: #E2E2E2;
+    overflow: hidden;
+  }
+  .stage { position: relative; width: 100%; height: 100%; }
+
+  /* 槽位由 JS 写入 --x/--y/--h/--z;位置与尺寸走同一条慢缓动,
+     换位时像参考片那样「整摞重新洗一次」 */
+  .poster {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    height: var(--h);
+    z-index: var(--z);
+    transform: translate(-50%, -50%);
+    transition:
+      left 1.45s cubic-bezier(0.33, 0, 0.15, 1),
+      top 1.45s cubic-bezier(0.33, 0, 0.15, 1),
+      height 1.45s cubic-bezier(0.33, 0, 0.15, 1);
+  }
+  /* 换位间隙的持续微漂移:每张周期不同,错开呼吸 */
+  .drift {
+    height: 100%;
+    animation: drift var(--dd, 10s) ease-in-out infinite alternate;
+  }
+  @keyframes drift {
+    from { transform: translate(-4px, -3px); }
+    to   { transform: translate(4px, 3px); }
+  }
+  /* 与站内海报卡同一套裁切:834/980 + 底对齐,裁掉顶部水印 */
+  .crop {
+    height: 100%;
+    aspect-ratio: 834 / 980;
+    overflow: hidden;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+  }
+  .crop video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center bottom;
+    display: block;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .poster { transition: none; }
+    .drift { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="poster"><div class="drift" style="--dd: 9s"><div class="crop"><video src="动态海报/立体未来感/1.mp4" autoplay loop muted playsinline></video></div></div></div>
+  <div class="poster"><div class="drift" style="--dd: 12s"><div class="crop"><video src="动态海报/立体未来感/2.mp4" autoplay loop muted playsinline></video></div></div></div>
+  <div class="poster"><div class="drift" style="--dd: 10.5s"><div class="crop"><video src="动态海报/立体未来感/3.mp4" autoplay loop muted playsinline></video></div></div></div>
+  <div class="poster"><div class="drift" style="--dd: 13.5s"><div class="crop"><video src="动态海报/立体未来感/4.mp4" autoplay loop muted playsinline></video></div></div></div>
+</div>
+<script>
+  /* 四个槽位(参照 globe09 参考片的构图):front 居中偏左、右后、左上后、右下露角。
+     每 2.6s 全体顺移一个槽位 → front 轮播;z-index 在换位中点(700ms)再切,
+     让上浮的海报从缝里钻出来而不是瞬间盖顶。 */
+  const SLOTS = [
+    { x: '47%', y: '55%', h: '62%', z: 40 },   // front
+    { x: '68%', y: '45%', h: '58%', z: 30 },   // 右后
+    { x: '38%', y: '33%', h: '52%', z: 20 },   // 左上后
+    { x: '66%', y: '74%', h: '46%', z: 10 },   // 右下露角
+  ];
+  const posters = Array.from(document.querySelectorAll('.poster'));
+  let step = 0;
+  const apply = (instant) => {
+    posters.forEach((el, i) => {
+      const s = SLOTS[(i + step) % SLOTS.length];
+      el.style.setProperty('--x', s.x);
+      el.style.setProperty('--y', s.y);
+      el.style.setProperty('--h', s.h);
+      if (instant) el.style.setProperty('--z', s.z);
+      else setTimeout(() => el.style.setProperty('--z', s.z), 700);
+    });
+  };
+  apply(true);
+  setInterval(() => { step = (step + 1) % SLOTS.length; apply(false); }, 2600);
+</script>
+</body>
+</html>

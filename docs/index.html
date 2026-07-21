@@ -10,7 +10,9 @@
 <link href="apple-touch-icon.png?v=15" rel="apple-touch-icon"/>
 <!-- loading 遮罩样式放在 head 最前:首帧直接画灰底,避免外部 CSS 阻塞期间的白屏闪烁 -->
 <style>
-        html { background: #F7F7F4; }
+        /* 首帧底色 = 页面背景 --gray-50:三处(这里 / loader 底 / cleanup 兜底)必须同值,
+           否则 loading 上滑离场时底部会漏出一条异色(之前的淡米色残留就是 #F7F7F4 ≠ 页面底) */
+        html { background: #f9f9f9; }
         /* 进度数字用 DIN 细体:开源 D-DIN(SIL OFL)base64 内嵌 ——
            零网络请求、file:// 本地预览不受 CORS 限制,首帧即 DIN 字形 */
         @font-face {
@@ -20,7 +22,7 @@
         }
         #page-loader {
             position: fixed; inset: 0; z-index: 9999;
-            background: #F7F7F4;
+            background: #f9f9f9;   /* = --gray-50(--site-bg),与页面底同值(见上方首帧底色注释) */
             overflow: hidden;
             transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
         }
@@ -90,16 +92,18 @@
             transition: none !important;
         }
     </style>
-<link href="style.css?v=134" rel="stylesheet"/>
+<link href="style.css?v=135" rel="stylesheet"/>
 <!-- Kaushan Script:hero 强调词暂时改回无衬线,字体加载先注释掉,恢复手写体时一并放开
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Kaushan+Script&amp;display=swap" rel="stylesheet"/> -->
-<link href="writing/writing.css?v=322" rel="stylesheet"/>
+<link href="writing/writing.css?v=371" rel="stylesheet"/>
 <!-- 提前加载,使顶部导航能在首次绘制前同步注入,避免空 header 闪烁 -->
-<script src="writing/writing.js?v=80"></script>
+<script src="writing/writing.js?v=85"></script>
 </head>
 <!-- 复用 design-page 的 pillar 布局(左侧二级导航 + 右侧分模块),Writing 与 Design 页对称 -->
-<body class="home-v2 design-page theme-dark no-banner menu-hidden menu-dark">
+<!-- home-landing:仅首页 —— 一屏白底 landing(writing.css);blog.html 不带。
+     theme-dark / menu-dark 已摘除:首页改白色样式(2026-07-21)。 -->
+<body class="home-v2 design-page no-banner menu-hidden home-landing">
 <!-- 首屏 loading 遮罩:页面 iframe/图片/视频多、首载慢,先用黑屏+进度条盖住空状态,
          资源就绪(或超时兜底)后淡出。样式内联,保证在外部 CSS 到达前就能正确渲染。 -->
 <div aria-hidden="true" id="page-loader">
@@ -118,6 +122,24 @@
            收尾条件:window load / 全部资源就绪 / 8s 超时兜底,三者先到先算,补到 100% 后淡出。 */
         (function () {
             var docEl = document.documentElement;
+            /* 只有本次会话「首次进入」才播 loading:同会话内刷新 / 从 Blog、Archive
+               返回都直接进页面。标记放 sessionStorage —— 关掉标签页、下次新会话
+               再来仍会看到完整 loading。取不到 sessionStorage(隐私模式)则照常播。 */
+            try {
+                if (sessionStorage.getItem('seen-loading')) {
+                    var early = document.getElementById('page-loader');
+                    if (early) early.remove();
+                    docEl.style.background = document.body.classList.contains('theme-dark') ? '#0a0a0a' : '#f9f9f9';
+                    /* 放闸前先让初始态(隐藏)真正绘制一帧 —— 双 rAF 跨过首次绘制。
+                       hero-ready 若在首绘前就挂上,索引行的 transition 没有状态变化,
+                       会直接以最终态渲染、入场动画被跳过;hero 逐字与索引行都要照常播。 */
+                    requestAnimationFrame(function () {
+                        requestAnimationFrame(function () { docEl.classList.add('hero-ready'); });
+                    });
+                    return;
+                }
+                sessionStorage.setItem('seen-loading', '1');
+            } catch (e) {}
             docEl.classList.add('is-loading');
             var t0 = Date.now();
             var pct = 0, sim = 0, loaded = 0, total = 0, finished = false;
@@ -245,7 +267,9 @@
             }
             function cleanup() {
                 docEl.classList.remove('is-loading');
-                docEl.style.background = '#0a0a0a';   /* 撤掉首帧灰底,回到页面深色(= --black-fullscreen) */
+                docEl.style.background = document.body.classList.contains('theme-dark')
+                    ? '#0a0a0a'    /* 深色主题:兜底 = --page-bg */
+                    : '#f9f9f9';   /* 浅色主题:兜底 = --site-bg(--gray-50),防离场残色 */
                 docEl.classList.add('hero-ready');    /* 放闸:hero 开始 mask-reveal-up 入场 */
             }
             /* 最短展示时长:加载再快(缓存/本地),进度也要平滑扫到 100 再上滑,
@@ -345,6 +369,7 @@
 <header class="header home-nav" data-active="writing" id="site-nav"></header>
 <script>
         initSiteNav();
+        applySiteTheme();   /* 首绘前应用记忆的深/浅色主题(writing.js) */
         /* 首屏同步设定 --design-menu-top = 顶栏实际高度,避免刷新时内容用兜底值 72px
            先渲染、随后 JS 改成真实值导致的「上跳」 */
         (function () {
@@ -376,16 +401,31 @@
             var h = document.querySelector('.hero-headline');
             if (!h) return;
             var i = 0, STEP = 18;
+            /* 拆字时按「词」包一层 .hero-word(white-space: nowrap):
+               逐字 span 是 inline-block,任意字符间都可能被折行,小屏会出现
+               「AI-Nati / ve」这种词中断开;包词后折行只发生在词与词之间。 */
+            function chSpan(ch) {
+                var s = document.createElement('span');
+                /* 空格单元加 hero-sp:CSS 把它还原成普通行内空格,折行处可被吞掉,
+                   否则 inline-block+pre 的空格会渲染在新行行首、把下个词顶出缩进 */
+                s.className = /\s/.test(ch) ? 'hero-ch hero-sp' : 'hero-ch';
+                s.textContent = ch;
+                s.style.setProperty('--d', (i++ * STEP) + 'ms');
+                return s;
+            }
             (function walk(node) {
                 [].slice.call(node.childNodes).forEach(function (n) {
                     if (n.nodeType === 3) {
                         var frag = document.createDocumentFragment();
-                        n.textContent.split('').forEach(function (ch) {
-                            var s = document.createElement('span');
-                            s.className = 'hero-ch';
-                            s.textContent = ch;
-                            s.style.setProperty('--d', (i++ * STEP) + 'ms');
-                            frag.appendChild(s);
+                        (n.textContent.match(/\s+|\S+/g) || []).forEach(function (tok) {
+                            if (/\s/.test(tok)) {
+                                tok.split('').forEach(function (ch) { frag.appendChild(chSpan(ch)); });
+                            } else {
+                                var w = document.createElement('span');
+                                w.className = 'hero-word';
+                                tok.split('').forEach(function (ch) { w.appendChild(chSpan(ch)); });
+                                frag.appendChild(w);
+                            }
                         });
                         node.replaceChild(frag, n);
                     } else if (n.nodeType === 1) {
@@ -397,21 +437,74 @@
             if (by) by.style.setProperty('--d', (i * STEP + 120) + 'ms');
         })();
     </script>
-<aside aria-label="Writing 分类" class="design-menu">
-<button class="nav-cat active" data-filter="all" type="button"><span class="menu-icon"><svg viewbox="0 0 24 24"><path d="M4.25,4.12 4.25,4.38 4.0,4.38 4.0,11.38 11.25,11.38 11.25,4.38 11.0,4.38 11.0,4.12ZM15.5,4.12 15.5,4.38 14.75,4.38 14.75,4.62 14.25,4.62 14.25,4.88 14.0,4.88 14.0,5.12 13.75,5.12 13.75,5.38 13.5,5.38 13.5,5.62 13.25,5.62 13.25,5.88 13.0,5.88 13.0,6.38 12.75,6.38 12.75,7.62 12.5,7.62 12.5,8.12 12.75,8.12 12.75,9.12 13.0,9.12 13.0,9.62 13.25,9.62 13.25,10.12 13.5,10.12 13.5,10.38 13.75,10.38 13.75,10.62 14.25,10.62 14.25,10.88 14.5,10.88 14.5,11.12 15.0,11.12 15.0,11.38 17.5,11.38 17.5,11.12 18.0,11.12 18.0,10.88 18.5,10.88 18.5,10.62 18.75,10.62 18.75,10.38 19.0,10.38 19.0,10.12 19.25,10.12 19.25,9.88 19.5,9.88 19.5,9.38 19.75,9.38 19.75,8.88 20.0,8.88 20.0,6.62 19.75,6.62 19.75,6.12 19.5,6.12 19.5,5.62 19.25,5.62 19.25,5.38 19.0,5.38 19.0,5.12 18.75,5.12 18.75,4.88 18.25,4.88 18.25,4.62 17.75,4.62 17.75,4.38 17.25,4.38 17.25,4.12ZM5.0,12.88 5.0,13.12 4.75,13.12 4.75,13.38 4.5,13.38 4.5,13.62 4.25,13.62 4.25,14.12 4.0,14.12 4.0,15.38 4.25,15.38 4.25,15.88 4.5,15.88 4.5,16.12 5.0,16.12 5.0,16.38 4.75,16.38 4.75,16.62 4.5,16.62 4.5,16.88 4.25,16.88 4.25,17.38 4.0,17.38 4.0,18.62 4.25,18.62 4.25,19.12 4.5,19.12 4.5,19.38 4.75,19.38 4.75,19.62 5.25,19.62 5.25,19.88 6.5,19.88 6.5,19.62 7.0,19.62 7.0,19.38 7.25,19.38 7.25,19.12 8.0,19.12 8.0,19.38 8.25,19.38 8.25,19.62 8.75,19.62 8.75,19.88 9.75,19.88 9.75,19.62 10.25,19.62 10.25,19.38 10.75,19.38 10.75,18.88 11.0,18.88 11.0,18.38 11.25,18.38 11.25,17.38 11.0,17.38 11.0,16.88 10.75,16.88 10.75,16.62 10.5,16.62 10.5,16.38 10.25,16.38 10.25,16.12 10.5,16.12 10.5,15.88 10.75,15.88 10.75,15.62 11.0,15.62 11.0,15.12 11.25,15.12 11.25,14.12 11.0,14.12 11.0,13.62 10.75,13.62 10.75,13.38 10.5,13.38 10.5,13.12 10.25,13.12 10.25,12.88 8.5,12.88 8.5,13.12 8.0,13.12 8.0,13.38 7.75,13.38 7.75,13.62 7.5,13.62 7.5,13.38 7.25,13.38 7.25,13.12 6.75,13.12 6.75,12.88ZM19.5,12.88 19.5,13.12 19.0,13.12 19.0,13.38 18.5,13.38 18.5,13.62 18.0,13.62 18.0,13.88 17.75,13.88 17.75,14.12 17.25,14.12 17.25,14.38 17.0,14.38 17.0,14.62 16.75,14.62 16.75,14.88 16.25,14.88 16.25,15.12 16.0,15.12 16.0,15.38 15.75,15.38 15.75,15.62 15.5,15.62 15.5,15.88 15.25,15.88 15.25,16.12 15.0,16.12 15.0,16.38 14.75,16.38 14.75,16.62 14.5,16.62 14.5,16.88 14.25,16.88 14.25,17.12 14.0,17.12 14.0,17.62 13.75,17.62 13.75,17.88 13.5,17.88 13.5,18.38 13.25,18.38 13.25,18.88 13.0,18.88 13.0,19.38 12.75,19.38 12.75,19.62 13.0,19.62 13.0,19.88 19.75,19.88 19.75,19.62 20.0,19.62 20.0,12.88Z" fill-rule="evenodd"></path></svg></span>All</button>
-<button class="nav-cat" data-filter="ui" type="button"><span class="menu-icon"><svg viewbox="0 0 24 24"><path d="M10.28,5.12 10.28,5.47 9.25,5.47 9.25,5.81 8.56,5.81 8.56,6.16 8.22,6.16 8.22,6.5 6.16,6.5 6.16,6.84 5.47,6.84 5.47,7.19 4.78,7.19 4.78,7.53 4.44,7.53 4.44,8.22 4.09,8.22 4.09,8.91 3.75,8.91 3.75,9.25 2.72,9.25 2.72,9.59 2.38,9.59 2.38,9.94 2.03,9.94 2.03,10.28 1.69,10.28 1.69,10.62 1.34,10.62 1.34,11.66 1.0,11.66 1.0,12.34 1.34,12.34 1.34,13.03 1.69,13.03 1.69,13.72 2.03,13.72 2.03,14.06 2.38,14.06 2.38,14.41 2.72,14.41 2.72,14.75 3.41,14.75 3.41,15.09 4.09,15.09 4.09,15.78 4.44,15.78 4.44,16.47 4.78,16.47 4.78,16.81 5.47,16.81 5.47,17.16 6.16,17.16 6.16,17.5 8.22,17.5 8.22,17.84 8.56,17.84 8.56,18.19 9.25,18.19 9.25,18.53 9.94,18.53 9.94,18.88 11.31,18.88 11.31,18.53 12.34,18.53 12.34,18.88 14.06,18.88 14.06,18.53 14.75,18.53 14.75,18.19 15.44,18.19 15.44,17.5 17.84,17.5 17.84,17.16 18.53,17.16 18.53,16.81 19.22,16.81 19.22,16.47 19.56,16.47 19.56,15.78 19.91,15.78 19.91,15.09 20.59,15.09 20.59,14.75 21.28,14.75 21.28,14.41 21.62,14.41 21.62,14.06 21.97,14.06 21.97,13.72 22.31,13.72 22.31,13.03 22.66,13.03 22.66,10.97 22.31,10.97 22.31,10.28 21.97,10.28 21.97,9.94 21.62,9.94 21.62,9.59 21.28,9.59 21.28,9.25 19.91,9.25 19.91,8.22 19.56,8.22 19.56,7.88 19.22,7.88 19.22,7.53 18.88,7.53 18.88,7.19 18.53,7.19 18.53,6.84 17.84,6.84 17.84,6.5 15.78,6.5 15.78,6.16 15.44,6.16 15.44,5.81 14.75,5.81 14.75,5.47 14.06,5.47 14.06,5.12 12.69,5.12 12.69,5.47 10.97,5.47 10.97,5.12ZM11.66,8.91 12.34,8.91 12.34,9.25 13.38,9.25 13.38,9.59 13.72,9.59 13.72,9.94 14.41,9.94 14.41,10.62 14.75,10.62 14.75,11.66 15.09,11.66 15.09,12.69 14.75,12.69 14.75,13.38 14.41,13.38 14.41,14.06 14.06,14.06 14.06,14.41 13.38,14.41 13.38,14.75 12.69,14.75 12.69,15.09 10.97,15.09 10.97,14.75 10.28,14.75 10.28,14.41 9.94,14.41 9.94,14.06 9.59,14.06 9.59,13.72 9.25,13.72 9.25,13.03 8.91,13.03 8.91,11.31 9.25,11.31 9.25,10.62 9.59,10.62 9.59,9.94 9.94,9.94 9.94,9.59 10.62,9.59 10.62,9.25 11.66,9.25Z" fill-rule="evenodd"></path></svg></span>UI</button>
-<button class="nav-cat" data-filter="product" type="button"><span class="menu-icon"><svg viewbox="0 0 24 24"><path d="M5.12,4.0 5.12,16.0 5.62,16.0 5.62,15.75 6.62,15.75 6.62,16.0 6.88,16.0 6.88,19.75 7.12,19.75 7.12,20.0 9.12,20.0 9.12,16.0 10.88,16.0 10.88,15.75 11.12,15.75 11.12,14.0 12.62,14.0 12.62,15.75 12.88,15.75 12.88,16.0 14.62,16.0 14.62,17.75 14.88,17.75 14.88,18.0 16.62,18.0 16.62,20.0 18.88,20.0 18.88,17.75 17.38,17.75 17.38,17.5 17.12,17.5 17.12,15.75 15.38,15.75 15.38,13.75 15.12,13.75 15.12,13.5 13.62,13.5 13.62,11.75 18.88,11.75 18.88,9.75 16.88,9.75 16.88,8.5 16.62,8.5 16.62,7.75 12.88,7.75 12.88,6.0 12.12,6.0 12.12,5.75 9.38,5.75 9.38,4.0Z" fill-rule="evenodd"></path></svg></span>Product</button>
-</aside>
-<div class="design-content">
-<!-- ================================
-                 Writing 列表:单一网格,左栏门类作筛选;「全部」按发布时间从新到旧
-                 data-cat: ui | product   data-date: 用于「全部」排序
-                 ================================ -->
-<section class="category-section" id="writing-all">
-<div class="category-grid"><div class="card-wrapper" data-cat="product" data-date="2026-07-19" data-delay="450" data-slug="figma-make-designer-pr"><a class="writing-card" href="writing/article-figma-make-designer-pr.html"><iframe loading="lazy" src="writing/assets/figma-make-designer-pr/cover4.html" style="width:100%;height:100%;border:0;display:block;pointer-events:none;"></iframe></a><div class="card-info writing-info"><div class="w-title">AI native 设计师的交付物，不只设计稿，还有 GitHub PR</div><div class="w-excerpt">设计师直接交付，在 AI native 团队已经是常态：Figma Make 连上真实仓库改细节、发 PR，Slack 里 Claude Tag 几分钟挂出草稿 PR；不要求设计师变成工程师，判断力花在各自擅长处，从画布一路带进合并的 PR。</div><div class="w-meta"><div class="w-tags"><span class="a-tag">设计协作</span></div><div class="w-date">2026-07-19</div></div></div></div><div class="card-wrapper" data-cat="ui" data-date="2026-07-16" data-delay="400" data-slug="remove-ai-taste-in-design"><a class="writing-card" href="writing/article-remove-ai-taste-in-design.html"><iframe loading="lazy" src="writing/assets/remove-ai-taste-in-design/cover4.html" style="width:100%;height:100%;border:0;display:block;pointer-events:none;"></iframe></a><div class="card-info writing-info"><div class="w-title">看不出 AI 味的 AI 设计方式</div><div class="w-excerpt">AI 能实现 shader，但生成的默认值不代表想要的效果。设计师的品味得通过参数、mood board、甚至刻意零 AI 的手绘，一层层加进去。</div><div class="w-meta"><div class="w-tags"><span class="a-tag">刻意零 AI</span></div><div class="w-date">2026-07-16</div></div></div></div><div class="card-wrapper" data-cat="product" data-date="2026-07-11" data-delay="350" data-slug="figma-make-gpt-5-6"><a class="writing-card" href="writing/article-figma-make-gpt-5-6.html"><iframe loading="lazy" src="writing/assets/figma-make-gpt-5-6/cover3.html" style="width:100%;height:100%;border:0;display:block;pointer-events:none;"></iframe></a><div class="card-info writing-info"><div class="w-title">设计师的新习惯，给 AI 模型分工</div><div class="w-excerpt">Fable 做复杂设计，Opus 做常规实现，Sonnet 干辅助活；新模型发布就拿旧任务再做一遍，感知质量的进步，再决定要不要换进工作流。</div><div class="w-meta"><div class="w-tags"><span class="a-tag">AI 设计工作流</span></div><div class="w-date">2026-07-11</div></div></div></div><div class="card-wrapper" data-cat="ui" data-date="2026-07-05" data-delay="300" data-slug="review-ai-output"><a class="writing-card" href="writing/article-review-ai-output.html"><iframe loading="lazy" src="writing/assets/review-ai-output/cover.html" style="width:100%;height:100%;border:0;display:block;pointer-events:none;"></iframe></a><div class="card-info writing-info"><div class="w-title">设计师的新工作，审查 AI 产物</div><div class="w-excerpt">AI 生成的半成品完成度越来越高，设计师的活儿正从「从零创作」变成「审查与打磨」——怎么在 AI 产物上继续投入，直到做出无法被反驳的东西。</div><div class="w-meta"><div class="w-tags"><span class="a-tag">AI 辅助工作流</span></div><div class="w-date">2026-07-05</div></div></div></div><div class="card-wrapper" data-cat="ui" data-date="2026-07-05" data-delay="250" data-slug="figma-skills"><a class="writing-card" href="writing/article-figma-skills.html"><iframe loading="lazy" src="writing/assets/figma-skills/cover2.1.html" style="width:100%;height:100%;border:0;display:block;pointer-events:none;"></iframe></a><div class="card-info writing-info"><div class="w-title">设计师的新资产，是 Skills</div><div class="w-excerpt">第一次接触 Skills 是在 vibe coding 里攒图标系列；这回在 Figma 里拿一个小需求上手，再看官方 blog 的团队协作案例。设计系统管零件，Skills 管规矩。</div><div class="w-meta"><div class="w-tags"><span class="a-tag">Agent 协作</span></div><div class="w-date">2026-07-05</div></div></div></div><div class="card-wrapper" data-cat="ui" data-date="2026-07-01" data-delay="200" data-slug="figma-shader-motion"><a class="writing-card" href="writing/article-figma-shader-motion.html"><video autoplay="" loop="" muted="" playsinline="" poster="writing/assets/figma-shader-motion/cover.webp" src="writing/assets/figma-shader-motion/cover_anim.mp4?v=2" style="width:100%;height:100%;object-fit:cover;display:block;"></video></a><div class="card-info writing-info"><div class="w-title">在设计系统里，Figma Shader 和 Motion ，正从效果变成可复用元素</div><div class="w-excerpt">不开 AE 和 C4D，我在 Figma 里用官方预设做了几张 shader 视觉图和动图；Motion 比 AE 轻，更有用的是能把一段动效做成组件、复用到整套图标上。Figma Shader 和 Motion，正在被当成组件和变量那样对待，从「加在最后」变成「一开始就在画布上」。</div><div class="w-meta"><div class="w-tags"><span class="a-tag">参数化材质</span></div><div class="w-date">2026-07-01</div></div></div></div><div class="card-wrapper" data-cat="product" data-date="2026-06-26" data-delay="150" data-slug="figma-config-2026"><a class="writing-card" href="writing/article-figma-config-2026.html"><iframe loading="lazy" src="writing/assets/figma-config-2026/cover.html" style="width:100%;height:100%;border:0;display:block;pointer-events:none;"></iframe></a><div class="card-info writing-info"><div class="w-title">设计师被 AI 替代之前，Figma 用一整套新功能抬高设计师上限</div><div class="w-excerpt">AI 拉低了设计的下限，却没抬高上限。Config 2026 的生成式插件、Agent、代码图层、Motion，都在放大设计表达。以不受限制的方式设计，是一种持续的创作力。</div><div class="w-meta"><div class="w-tags"><span class="a-tag">AI 设计工作流</span></div><div class="w-date">2026-06-26</div></div></div></div><div class="card-wrapper" data-cat="product" data-date="2026-06-25" data-delay="100" data-slug="app-shape-for-ai"><a class="writing-card" href="writing/article-app-shape-for-ai.html"><iframe loading="lazy" src="writing/assets/app-shape-for-ai/cover_v9.html" style="width:100%;height:100%;border:0;display:block;pointer-events:none;"></iframe></a><div class="card-info writing-info"><div class="w-title">SiriAI 设计</div><div class="w-excerpt">WWDC26 上 Apple 把 App 接入 Siri 的逻辑整个反转——不再让开发者写话术，而是让 App 把自己暴露成 AI 读得懂的结构。设计师要交付的，多了一份给机器看的设计稿。</div><div class="w-meta"><div class="w-tags"><span class="a-tag">即将发布</span></div><div class="w-date">2026-06-25</div></div></div></div><div class="card-wrapper" data-cat="ui" data-date="2026-05-24" data-delay="50" data-slug="sparkle"><a class="writing-card" href="writing/article-sparkle.html"><iframe loading="lazy" src="writing/assets/sparkle/cover.html" style="width:100%;height:100%;border:0;display:block;pointer-events:none;"></iframe></a><div class="card-info writing-info"><div class="w-title">AI 符号被秒懂，是调用了成熟的用户心智模型</div><div class="w-excerpt">那颗四角星 ✦ 不是被发明的，是被借来的——AI 入口设计的真相，是调用用户脑子里早就成熟的心智模型；而越成熟的 AI，越不需要被标出来。</div><div class="w-meta"><div class="w-tags"><span class="a-tag">认知设计</span></div><div class="w-date">2026-05-24</div></div></div></div>
-</div>
-</section>
-</div>
+<!-- 首页索引:Blog / Archive / Contact 三行大字导航(大字 + 细分割线 + 箭头的 index 形式),
+     替代原文章网格 —— 文章列表看 blog.html。顶栏此页只留左上角 logo(writing.css 隐藏其余项)。 -->
+<nav class="home-index" aria-label="站内入口">
+<a class="home-index-row" href="blog.html"><span class="hi-label">Blog</span><span class="hi-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.5 12 H20.5 M13.5 5 L20.5 12 L13.5 19"/></svg></span></a>
+<a class="home-index-row" href="archive.html"><span class="hi-label">Archive</span><span class="hi-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.5 12 H20.5 M13.5 5 L20.5 12 L13.5 19"/></svg></span></a>
+<a class="home-index-row" href="mailto:chentongrong1@gmail.com"><span class="hi-label">Contact</span><span class="hi-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.5 12 H20.5 M13.5 5 L20.5 12 L13.5 19"/></svg></span></a>
+</nav>
+<script>
+        /* 底部索引行:per-character-rise 拆字(pixel-point/animate-text 规范,复用
+           style.css 的 heading-rise-mask / heading-rise-char)。每行基础延迟接在
+           headline 逐字之后(620ms 起、行间 120ms),行内 35ms/字;箭头作为该行
+           最后一个字符同批升起。显现闸门 = html.hero-ready(CSS 侧触发)。 */
+        (function () {
+            var rows = document.querySelectorAll('.home-index-row');
+            var BASE = 620, ROW_STEP = 120, CHAR_STEP = 35;
+            [].slice.call(rows).forEach(function (row, r) {
+                var base = BASE + r * ROW_STEP;
+                var i = 0;
+                row.classList.add('heading-rise');   /* 启用 style.css 的 mask/char 初始态 */
+                row.style.setProperty('--row-d', base + 'ms');
+                function split(el) {
+                    var text = el.textContent;
+                    el.setAttribute('aria-label', text);
+                    el.textContent = '';
+                    var mask = document.createElement('span');
+                    mask.className = 'heading-rise-mask';
+                    mask.setAttribute('aria-hidden', 'true');
+                    text.split('').forEach(function (ch) {
+                        var s = document.createElement('span');
+                        s.className = 'heading-rise-char';
+                        s.textContent = ch;
+                        s.style.setProperty('--d', (base + (i++) * CHAR_STEP) + 'ms');
+                        mask.appendChild(s);
+                    });
+                    el.appendChild(mask);
+                }
+                /* 箭头是 SVG(直角样式),没有文本可拆:整体包成一个「字符」,
+                   排在该行文字之后同批升起 */
+                function wrap(el) {
+                    var mask = document.createElement('span');
+                    mask.className = 'heading-rise-mask';
+                    mask.setAttribute('aria-hidden', 'true');
+                    var s = document.createElement('span');
+                    s.className = 'heading-rise-char';
+                    s.style.setProperty('--d', (base + (i++) * CHAR_STEP) + 'ms');
+                    while (el.firstChild) s.appendChild(el.firstChild);
+                    mask.appendChild(s);
+                    el.appendChild(mask);
+                }
+                var label = row.querySelector('.hi-label');
+                var arrow = row.querySelector('.hi-arrow');
+                if (label) split(label);
+                if (arrow) wrap(arrow);
+            });
+
+            /* 入场收尾后给 html 挂 entrance-done:分割线的 1.05s + 逐行延迟只服务入场,
+               常驻会拖慢之后的主题切换(边框色要等快 2s 才变)。收尾后 CSS 把过渡换快速档。 */
+            var markDone = function () {
+                setTimeout(function () {
+                    document.documentElement.classList.add('entrance-done');
+                }, 2200);   /* ≥ 最后一行延迟 860ms + 过渡 1.05s,留余量 */
+            };
+            if (document.documentElement.classList.contains('hero-ready')) markDone();
+            else new MutationObserver(function (m, o) {
+                if (document.documentElement.classList.contains('hero-ready')) { o.disconnect(); markDone(); }
+            }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+        })();
+    </script>
 </main>
 <script src="script.js?v=33"></script>
 </body>
