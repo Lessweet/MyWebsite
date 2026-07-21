@@ -49,10 +49,10 @@ export default function BlogPage() {
     <>
       <h1
         className={'page-title heading-rise' + (titleIn ? ' heading-rise-in' : '')}
-        aria-label="Blog."
+        aria-label="Blog"
       >
         <span className="heading-rise-mask" aria-hidden="true">
-          {'Blog.'.split('').map((ch, i) => (
+          {'Blog'.split('').map((ch, i) => (
             <span
               key={i}
               className="heading-rise-char"

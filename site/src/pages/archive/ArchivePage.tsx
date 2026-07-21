@@ -129,7 +129,7 @@ export default function ArchivePage() {
 
   return (
     <>
-      <h1 className="page-title">Archive.</h1>
+      <h1 className="page-title">Archive</h1>
       {/* VIBEDESIGN banner:置于顶部做 hero,三套样式轮播 */}
       <iframe src="design-banner.html?v=25" className="design-banner-frame" title="VIBEDESIGN" scrolling="no"></iframe>
       <aside className="design-menu" aria-label="Design 分类">
