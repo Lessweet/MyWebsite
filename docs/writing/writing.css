@@ -2564,7 +2564,7 @@ html.hero-ready .hero-role { animation-delay: calc(var(--d, 0ms) + 180ms); }
 body.blog-page .page-title,
 body.works-page .page-title {
     margin: 0 0 40px;
-    font-size: var(--fs-h2, 32px);   /* h1 档改 h2 档(2026-07-22 用户要求) */
+    font-size: var(--fs-h3, 20px);   /* 再降一档:h2 → h3(2026-07-22 用户要求) */
     color: #181818;
 }
 body.works-page .page-title { grid-column: 1 / -1; }
