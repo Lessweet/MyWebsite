@@ -1351,8 +1351,8 @@ body .home-nav .nav-cats .nav-cat.active {
         justify-content: center;
         align-items: center;        /* 横线在按钮区域内水平居中 */
         gap: 6px;                   /* 两条线的间距(原三条线 4px) */
-        width: 40px;
-        height: 40px;
+        width: 36px;
+        height: 36px;
         margin-left: auto;          /* 按钮整体仍靠顶栏最右 */
         padding: 9px 0;             /* 左右内边距对称,横线居中 */
         border: none;
@@ -2360,8 +2360,8 @@ body.blog-page .home-nav .theme-toggle,
 body.works-page .home-nav .theme-toggle {
     order: 4;
     margin-left: auto;
-    width: 36px;
-    height: 36px;
+    width: 32px;   /* 圆底后 36 略大,收到 32(2026-07-22) */
+    height: 32px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -2405,7 +2405,7 @@ body.blog-page.theme-dark .home-nav .theme-toggle,
 body.works-page.theme-dark .home-nav .theme-toggle { background: #1A1A1A; }
 @media (max-width: 600px) {
     /* 手机端两圆同尺寸(40px);汉堡同样圆底 */
-    .home-v2 .header.home-nav .theme-toggle { width: 40px; height: 40px; }
+    .home-v2 .header.home-nav .theme-toggle { width: 36px; height: 36px; }   /* 手机两圆 36px(2026-07-22) */
     .home-v2 .header.home-nav .nav-toggle { background: #fff; border-radius: 50%; }
     body.no-banner.theme-dark .header.home-nav .nav-toggle,
     body.menu-dark .header.home-nav.nav-open .nav-toggle { background: #1A1A1A; }
