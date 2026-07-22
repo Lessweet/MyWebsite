@@ -23,13 +23,13 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: 'product', label: 'Product' },
 ];
 
-/* 大封面卡最多展示数:之后的文章改用列表式条目(2026-07-22 用户方案)。
-   ⚠️ 预览阈值暂设 6(当前仅 9 篇,10 看不到列表效果);定稿改回 10。 */
-const BIG_COVERS = 6;
+const BIG_COVERS = 12;
 
 export default function BlogPage() {
   const [filter, setFilter] = useState<Filter>('all');
   const cards = blogCards();
+  /* 大封面区展示前 12 篇(2026-07-22 用户定稿),其后进列表区;
+     文章按日期倒序,最新永远在大封面区最前 */
   const bigCards = cards.slice(0, BIG_COVERS);
   const listCards = cards.slice(BIG_COVERS);
 
