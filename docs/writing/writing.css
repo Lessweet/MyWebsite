@@ -2333,6 +2333,14 @@ body.home-landing .home-nav .theme-toggle svg *,
 body.blog-page .home-nav .theme-toggle svg *,
 body.works-page .home-nav .theme-toggle svg *,
 body.home-landing .home-index-row .hi-arrow svg * { vector-effect: non-scaling-stroke; }
+/* 右上角主题按钮:图标「可视」右缘对齐内容右缘 —— 按钮热区 36px、图标 20px,
+   视觉边缘比盒子缩进 (36-20)/2 = 8px,负 margin 补回(2026-07-22 用户对齐要求)。
+   仅桌面:手机端最右是汉堡按钮,另行考虑。 */
+@media (min-width: 601px) {
+    body.home-landing .home-nav .theme-toggle,
+    body.blog-page .home-nav .theme-toggle,
+    body.works-page .home-nav .theme-toggle { margin-right: -8px; }
+}
 /* 主题切换按钮双 icon:浅色显示太阳,深色显示月亮(2026-07-22) */
 .home-nav .theme-toggle .tt-moon { display: none; }
 body.theme-dark .home-nav .theme-toggle .tt-sun { display: none; }

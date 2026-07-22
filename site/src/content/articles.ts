@@ -46,7 +46,10 @@ export const ARTICLES: ArticleMeta[] = [
     excerpt:
       '设计师直接交付，在 AI native 团队已经是常态：Figma Make 连上真实仓库改细节、发 PR，Slack 里 Claude Tag 几分钟挂出草稿 PR；不要求设计师变成工程师，判断力花在各自擅长处，从画布一路带进合并的 PR。',
     listCover: 'assets/figma-make-designer-pr/cover4.png',
-    inBlogGrid: false, // 与今天的 blog.html 一致:最新一篇不在网格里(内容决策,迁移不"修复")
+    inBlogGrid: true, // 2026-07-22 用户要求上线到 blog 网格(迁移时曾按旧站缺席状态复刻)
+    blogTag: '设计协作',
+    blogDelay: 450,
+    blogCover: { type: 'iframe', src: 'writing/assets/figma-make-designer-pr/cover4.html' },
   },
   {
     slug: 'remove-ai-taste-in-design',
