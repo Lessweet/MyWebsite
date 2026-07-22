@@ -1337,10 +1337,8 @@ body .home-nav .nav-cats .nav-cat.active {
     /* 清掉顶栏的 transform(原本用于上滑隐藏,已停用):transform 会让内部 position:fixed
        的模态以顶栏为包含块而非视口,导致模态高度被顶栏撑不开、只露第一项。清掉后模态铺满整屏。 */
     .home-v2 .header.home-nav { transform: none; }
-    /* 小屏顶栏随滚动隐藏(2026-07-22):不能用 transform(上面刚清掉 —— 会把全屏菜单
-       的包含块变成顶栏),改用 top 位移;.header-hidden 由 useHideNavOnScrollMobile 切换 */
-    .home-v2 .header.home-nav { top: 0; transition: top 0.45s var(--ease); }
-    .home-v2 .header.home-nav.header-hidden { top: -96px; }
+    /* 小屏顶栏「跟手」推出/推回(2026-07-22):useHideNavOnScrollMobile 按滚动量
+       1:1 写 top(不能用 transform —— 会把全屏菜单的包含块变成顶栏),无过渡、跟随滚动 */
 
     /* 汉堡按钮:三条黑色横线 */
     .home-v2 .header.home-nav .nav-toggle {

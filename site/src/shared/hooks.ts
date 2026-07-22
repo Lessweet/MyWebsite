@@ -340,35 +340,40 @@ export function useScrollLag() {
   }, []);
 }
 
-/* ── 小屏顶栏随滚动隐藏/出现(2026-07-22 新增):下滑收起、上滑滑出。
-   复用 style.css 既有的 .header-hidden(translateY(-100%) + 1.12s 缓动);
-   仅 ≤600px 生效,全屏菜单展开时不收起,接近页顶时始终显示。 */
+/* ── 小屏顶栏跟随滚动推出/推回(2026-07-22,1:1 跟手):向下滚多少就把顶栏
+   推出去多少(封顶 = 顶栏高度),向上滚立刻按滚动量推回来 —— 是「跟随」而非
+   阈值触发动画。用 top 位移(手机端顶栏 transform 被清空以保全屏菜单包含块,
+   不能用 translateY);仅 ≤600px 生效,菜单展开时复位。 */
 export function useHideNavOnScrollMobile() {
   useEffect(() => {
     const header = document.querySelector('.header.home-nav') as HTMLElement | null;
     if (!header) return;
     const mq = window.matchMedia('(max-width: 600px)');
     let lastY = window.scrollY;
-    const THRESHOLD = 6; // 抖动死区
+    let offset = 0;
+    const apply = () => {
+      header.style.top = offset > 0 ? `-${Math.round(offset)}px` : '';
+    };
     const onScroll = () => {
       const y = window.scrollY;
+      const d = y - lastY;
+      lastY = y;
       if (!mq.matches || header.classList.contains('nav-open')) {
-        header.classList.remove('header-hidden');
-        lastY = y;
+        offset = 0;
+        apply();
         return;
       }
-      const d = y - lastY;
-      if (Math.abs(d) < THRESHOLD) return;
-      if (y < 80 || d < 0) header.classList.remove('header-hidden');
-      else header.classList.add('header-hidden');
-      lastY = y;
+      const H = header.offsetHeight + 8; // 完全推出(留一点余量盖住阴影)
+      offset = Math.max(0, Math.min(H, offset + d));
+      if (y <= 0) offset = 0; // 橡皮筋回弹兜底
+      apply();
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
     return () => {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
-      header.classList.remove('header-hidden');
+      header.style.top = '';
     };
   }, []);
 }
