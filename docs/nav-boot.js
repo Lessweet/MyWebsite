@@ -108,14 +108,17 @@ function setSiteTheme(dark) {
     document.documentElement.style.background = dark ? '#0a0a0a' : '#f9f9f9';
 }
 function applySiteTheme() {
+    /* 2026-07-22 改为会话级记忆:每次新会话强制浅色,切换只在当前会话内保持。
+       顺带清掉旧版遗留的 localStorage 跨会话记忆(老访客不再被锁在深色)。 */
     try {
-        if (localStorage.getItem('site-theme') === 'dark') setSiteTheme(true);
-    } catch (e) { /* 隐私模式等取不到 localStorage 时静默,维持浅色 */ }
+        localStorage.removeItem('site-theme');
+        if (sessionStorage.getItem('site-theme') === 'dark') setSiteTheme(true);
+    } catch (e) { /* 隐私模式等取不到 storage 时静默,维持浅色 */ }
 }
 function toggleSiteTheme() {
     var dark = !document.body.classList.contains('theme-dark');
     setSiteTheme(dark);
-    try { localStorage.setItem('site-theme', dark ? 'dark' : 'light'); } catch (e) {}
+    try { sessionStorage.setItem('site-theme', dark ? 'dark' : 'light'); } catch (e) {}
 }
 
 /* 手机端顶栏汉堡菜单:点击 .nav-toggle 展开/收起 .nav-collapse 下拉;点击面板外或选项后收起 */
