@@ -339,3 +339,58 @@ export function useScrollLag() {
     };
   }, []);
 }
+
+/* ── Smart Sticky Header(复刻旧站 2fa5094 版实现,2026-07-22 恢复):
+   下滑过 100px(累计 10px 阈值)收起,上滑(累计 10px)出现,页顶强制显示。
+   动画 = .header-hidden + 1.12s 柔和缓动(原版观感)。原版全宽生效,此处一致;
+   桌面走 style.css 的 transform 滑出,手机端 transform 被清空(保全屏菜单包含块)、
+   由 writing.css 的 top 位移实现同曲线滑出。 */
+export function useHideNavOnScrollMobile() {
+  useEffect(() => {
+    const header = document.querySelector('.header.home-nav') as HTMLElement | null;
+    if (!header) return;
+    header.classList.remove('header-hidden'); // 加载时必可见
+    const mq = window.matchMedia('(max-width: 600px)');
+    let lastScrollY = window.scrollY;
+    let scrollDelta = 0;
+    const onScroll = () => {
+      const currentScrollY = window.scrollY;
+      const scrollDiff = currentScrollY - lastScrollY;
+      scrollDelta += scrollDiff;
+      if (header.classList.contains('nav-open')) {
+        header.classList.remove('header-hidden');
+        scrollDelta = 0;
+        lastScrollY = currentScrollY;
+        return;
+      }
+      /* 手机端(≤600):order.design 手感 —— 方向一变立即响应(4px 死区),
+         过了顶栏高度就可收起;桌面:沿用旧站 Smart Sticky(10px 累计、100px 起始) */
+      const threshold = mq.matches ? 4 : 10;
+      const hideAfter = mq.matches ? 80 : 100;
+      if (scrollDiff > 0 && currentScrollY > hideAfter) {
+        if (scrollDelta > threshold) {
+          header.classList.add('header-hidden');
+          scrollDelta = 0;
+        }
+      } else if (scrollDiff < 0) {
+        if (scrollDelta < -threshold) {
+          header.classList.remove('header-hidden');
+          scrollDelta = 0;
+        }
+      }
+      if (currentScrollY <= 10) {
+        header.classList.remove('header-hidden');
+        scrollDelta = 0;
+      }
+      lastScrollY = currentScrollY;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      header.classList.remove('header-hidden');
+      header.style.top = '';
+    };
+  }, []);
+}

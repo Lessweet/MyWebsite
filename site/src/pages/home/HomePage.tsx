@@ -6,7 +6,7 @@
  */
 import { useEffect } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
-import { useScrollProgress, useHeaderAlwaysVisible } from '../../shared/hooks';
+import { useScrollProgress, useHeaderAlwaysVisible, useHideNavOnScrollMobile } from '../../shared/hooks';
 
 const HERO_STEP = 18;
 
@@ -57,6 +57,7 @@ const ARROW = (
 export default function HomePage() {
   useHeaderAlwaysVisible();
   useScrollProgress();
+  useHideNavOnScrollMobile();
 
   /* 刷新/同会话回访:hero-ready 可能在 React 挂载前已就位,内容以最终态首绘、
      入场动画被跳过。摘掉重加让入场每次刷新都重播(2026-07-22 用户要求)。
