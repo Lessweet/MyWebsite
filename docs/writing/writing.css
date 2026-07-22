@@ -2165,6 +2165,11 @@ body.reading-page .header.home-nav::after {
 @media (max-width: 600px) {
     :root { --nav-content-gap: 96px; }
 }
+/* 首页例外:顶栏下留白(2026-07-22 用户两轮减半,桌面 60 / 手机 24;Blog/Archive 仍用共享值) */
+body.home-v2.home-landing { --nav-content-gap: 60px; }
+@media (max-width: 600px) {
+    body.home-v2.home-landing { --nav-content-gap: 24px; }
+}
 /* 三页统一背景 + 统一顶栏下留白(home-landing 的 min-height 同步用该 gap 扣减)。
    选择器带上 .home-v2 提一档特异性(0,3,1):文件后面的 body.no-banner .design-layout
    (0,2,1,+32px)才压不过来 —— 之前特异性同级、后者靠顺序赢,240px 一直没生效。 */
@@ -2447,7 +2452,9 @@ body.home-landing.theme-dark .hero-by { color: rgba(255, 255, 255, 0.5); }
 body.home-landing.theme-dark .hero-by b { color: #fff; }
 body.home-landing.theme-dark .hero-role { color: rgba(255, 255, 255, 0.5); }
 body.home-landing.theme-dark .home-index-row { color: #fff; }
-body.home-landing.theme-dark .home-index-row:hover { color: rgba(255, 255, 255, 0.6); }
+@media (hover: hover) {
+    body.home-landing.theme-dark .home-index-row:hover { color: rgba(255, 255, 255, 0.6); }
+}
 html.hero-ready body.home-landing.theme-dark .home-index-row { border-top-color: rgba(255, 255, 255, 0.22); }
 @media (prefers-reduced-motion: reduce) {
     body.home-landing.theme-dark .home-index-row { border-top-color: rgba(255, 255, 255, 0.22); }
@@ -2492,7 +2499,10 @@ body.home-landing .home-index-row .hi-arrow svg {
     stroke-linecap: butt;
     stroke-linejoin: miter;
 }
-body.home-landing .home-index-row:hover { color: var(--gray-500); }   /* 与 blog 卡 hover 同灰(2026-07-22) */
+/* hover 仅真悬停设备:触屏 tap 会粘住 :hover 导致颜色不恢复(2026-07-22 修复) */
+@media (hover: hover) {
+    body.home-landing .home-index-row:hover { color: var(--gray-500); }   /* 与 blog 卡 hover 同灰 */
+}
 /* hover 只变色,箭头不再位移(2026-07-22 用户要求) */
 
 /* 入场:per-character-rise(与分区标题同一套 pixel-point/animate-text 规范,
@@ -2662,7 +2672,7 @@ html.hero-ready .hero-role { animation-delay: calc(var(--d, 0ms) + 180ms); }
 body.blog-page .page-title,
 body.works-page .page-title {
     margin: 0 0 40px;
-    font-size: var(--fs-h3, 20px);   /* 定档 h3(2026-07-22 用户最终选择) */
+    font-size: var(--fs-h1, 48px);   /* 定档 h1(2026-07-22 用户最终选择) */
     color: #181818;
 }
 body.works-page .page-title { grid-column: 1 / -1; }
