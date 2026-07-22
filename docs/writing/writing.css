@@ -2183,7 +2183,14 @@ body.no-banner.theme-dark .home-nav .nav-cats .nav-cat,
 body.no-banner.theme-dark .home-nav .header-connect { color: rgba(255, 255, 255, 0.3); }
 body.no-banner.theme-dark .home-nav .nav-cats .nav-cat:hover,
 body.no-banner.theme-dark .home-nav .header-connect:hover { color: rgba(255, 255, 255, 0.6); }
-body.no-banner.theme-dark .home-nav .nav-cats .nav-cat.active { color: #fff; }
+/* 顶栏不做当前页高亮(2026-07-22 用户要求):active 与其余项同色,仅 hover 提亮。
+   浅色压过前面 (0,5,1) 的 active=#000,深色直接给统一值 */
+body.design-page .home-nav .nav-cats .nav-cat.active { color: rgba(0, 0, 0, 0.3); }
+body.design-page .home-nav .nav-cats .nav-cat.active:hover { color: rgba(0, 0, 0, 0.6); }
+body.no-banner.theme-dark .home-nav .nav-cats .nav-cat,
+body.no-banner.theme-dark .home-nav .nav-cats .nav-cat.active { color: rgba(255, 255, 255, 0.3); }
+body.no-banner.theme-dark .home-nav .nav-cats .nav-cat:hover,
+body.no-banner.theme-dark .home-nav .nav-cats .nav-cat.active:hover { color: rgba(255, 255, 255, 0.6); }
 
 /* 卡片封面下方文字块。封面本身是各自独立的 iframe/video 文档,保持原样 —— 亮色封面浮在黑底上即预期效果 */
 body.theme-dark .writing-info .w-title { color: #fff; }
