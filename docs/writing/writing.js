@@ -114,7 +114,7 @@ function initSiteNav() {
     const navBg = wantNavBg
         ? '<iframe class="nav-bg" src="' + base + 'writing-banner.html?v=10&bare=1" title="" aria-hidden="true" tabindex="-1" scrolling="no"></iframe>'
         : '';
-    var NAV_ARROW = '<span class="nav-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.5 12 H20.5 M13.5 5 L20.5 12 L13.5 19"/></svg></span>';
+    var NAV_ARROW = '<span class="nav-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5.3 18.7 L18 6 M8.1 6 H18 V15.9"/></svg></span>';
     nav.innerHTML =
         navBg +
         '<div class="header-left">' +
