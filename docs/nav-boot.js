@@ -39,7 +39,7 @@ function initSiteNav() {
     /* 全屏菜单 per-character-rise 拆字(与首页索引行同规范,2026-07-22):
        桌面共用同一份 DOM,拆字 span 在桌面无样式、正常渲染;
        rise 隐藏/升起样式仅在 ≤600px 菜单态生效(writing.css)。 */
-    var ARROW_SVG = '<svg viewBox="0 0 24 24"><path d="M2.5 12 H20.5 M13.5 5 L20.5 12 L13.5 19"/></svg>';
+    var ARROW_SVG = '<svg viewBox="0 0 24 24"><path d="M5.3 18.7 L18 6 M8.1 6 H18 V15.9"/></svg>';
     var riseText = function (text, base) {
         var out = '<span class="heading-rise-mask" aria-hidden="true">';
         for (var k = 0; k < text.length; k++) out += '<span class="heading-rise-char" style="--d:' + (base + k * 35) + 'ms">' + text[k] + '</span>';

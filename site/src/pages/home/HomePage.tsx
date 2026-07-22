@@ -50,7 +50,7 @@ const CHAR_STEP = 35;
 
 const ARROW = (
   <svg viewBox="0 0 24 24">
-    <path d="M2.5 12 H20.5 M13.5 5 L20.5 12 L13.5 19" />
+    <path d="M5.3 18.7 L18 6 M8.1 6 H18 V15.9" />
   </svg>
 );
 
