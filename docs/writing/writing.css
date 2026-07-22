@@ -2771,23 +2771,28 @@ body.blog-page .blog-list {
 @media (max-width: 800px) {
     body.blog-page .blog-list { grid-template-columns: 1fr; }
 }
-/* 分割线只在行与行之间(2026-07-22):首行条目不带顶线 ——
-   桌面两列去前 2 条,≤800px 单列时只去第 1 条 */
+/* 分割线只在行与行之间,且左缘与文字组对齐(2026-07-22 用户标注):
+   跳过缩略图宽度(112 + 16 间距 = 128px);首行条目不带线,≤800px 单列只免第 1 条 */
 body.blog-page .blog-list .blog-list-item {
-    border-top: 1px solid rgba(0, 0, 0, 0.12);
+    position: relative;
     padding-top: 20px;
 }
-body.blog-page .blog-list .blog-list-item:nth-child(-n+2) { border-top: none; padding-top: 0; }
-@media (max-width: 800px) {
-    body.blog-page .blog-list .blog-list-item:nth-child(2) {
-        border-top: 1px solid rgba(0, 0, 0, 0.12);
-        padding-top: 20px;
-    }
+body.blog-page .blog-list .blog-list-item::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 128px;
+    right: 0;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.12);
 }
-body.blog-page.theme-dark .blog-list .blog-list-item { border-top-color: rgba(255, 255, 255, 0.12); }
+body.blog-page .blog-list .blog-list-item:nth-child(-n+2) { padding-top: 0; }
+body.blog-page .blog-list .blog-list-item:nth-child(-n+2)::before { content: none; }
 @media (max-width: 800px) {
-    body.blog-page.theme-dark .blog-list .blog-list-item:nth-child(2) { border-top-color: rgba(255, 255, 255, 0.12); }
+    body.blog-page .blog-list .blog-list-item:nth-child(2) { padding-top: 20px; }
+    body.blog-page .blog-list .blog-list-item:nth-child(2)::before { content: ""; }
 }
+body.blog-page.theme-dark .blog-list .blog-list-item::before { background: rgba(255, 255, 255, 0.12); }
 body.blog-page .blog-list-item a {
     display: flex;
     gap: 16px;
@@ -2843,6 +2848,9 @@ body.blog-page .bl-date { font-size: var(--fs-caption, 14px); color: #969696; tr
     body.blog-page .blog-list-item a:hover .bl-title { color: var(--gray-500); }
     body.blog-page .blog-list-item a:hover .bl-excerpt,
     body.blog-page .blog-list-item a:hover .bl-date { color: var(--gray-300); }
+    /* 深色主题:hover 同样是「变淡」——用更低的白透明度,不能用浅色灰(会变亮) */
+    body.blog-page.theme-dark .blog-list-item a:hover .bl-excerpt,
+    body.blog-page.theme-dark .blog-list-item a:hover .bl-date { color: rgba(255, 255, 255, 0.35); }
 }
 /* 深色主题 */
 body.blog-page.theme-dark .bl-title { color: #fff; }
