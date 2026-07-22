@@ -1364,12 +1364,12 @@ body .home-nav .nav-cats .nav-cat.active {
         display: block;
         width: 18px;                         /* 22 → 18:圆底内与太阳光学尺寸平衡(2026-07-22) */
         height: var(--icon-stroke, 1.5px);   /* icon 规范:描边 1.5px(style.css token) */
-        background: rgba(0, 0, 0, 0.55);     /* 与太阳按钮完全同色;交叉叠亮只在 X 态,由下方规则切不透明 */
+        background: #737373;                 /* 与太阳按钮同一不透明等效色(2026-07-22) */
         border-radius: 0;                    /* icon 规范:方头直角,不用圆头 */
         transition: transform 0.35s var(--ease), opacity 0.28s var(--ease), background-color 0.28s ease;
     }
     /* X 态(两线交叉):切不透明等效色,避免半透明重叠叠亮 */
-    .home-v2 .header.home-nav.nav-open .nav-toggle span { background: rgb(112, 112, 112); }
+    .home-v2 .header.home-nav.nav-open .nav-toggle span { background: #737373; }
     /* hover 与太阳按钮一致:提为实色 */
     .home-v2 .header.home-nav .nav-toggle:hover span { background: #181818; }
     /* 汉堡改两条线(2026-07-21):中线常隐(markup 仍是三条,兼容旧结构),
@@ -2295,14 +2295,14 @@ body.theme-dark .design-content .category-section .section-divider {
     /* 展开后 X 与字标压在黑模态上,必须反白。只在 .nav-open 时 ——
        Cases 是白底页,未展开时反白会让汉堡 / 字标直接消失在白底 banner 里。
        (首页由 body.no-banner.theme-dark .site-wordmark 常驻反白,这条对它只是同值重复。) */
-    body.menu-dark .header.home-nav.nav-open .nav-toggle span { background: rgb(145, 145, 145); }
+    body.menu-dark .header.home-nav.nav-open .nav-toggle span { background: rgb(152, 152, 152); }
     body.menu-dark .header.home-nav.nav-open .nav-toggle:hover span { background: #fff; }
     body.menu-dark .header.home-nav.nav-open .site-wordmark { filter: invert(1); }
     body.menu-dark .header.home-nav.nav-open svg.site-logo { color: #fff; }
 
     /* —— 页面本身是黑底才需要的(.theme-dark) —— */
     /* 未展开时的汉堡:黑底页上要反白(Cases 白底页不走这条,保持深色) */
-    body.no-banner.theme-dark .header.home-nav .nav-toggle span { background: rgba(255, 255, 255, 0.55); }
+    body.no-banner.theme-dark .header.home-nav .nav-toggle span { background: rgb(152, 152, 152); }
     body.no-banner.theme-dark .header.home-nav .nav-toggle:hover span { background: #fff; }
     /* 手机端上面有条 body.home-v2:not(.reading-page) 的 transparent !important,得压回来 */
     body.home-v2.no-banner.theme-dark:not(.reading-page) .header.home-nav { background: var(--page-bg) !important; }
@@ -2369,7 +2369,7 @@ body.works-page .home-nav .theme-toggle {
     border: none;
     background: transparent;
     cursor: pointer;
-    color: rgba(0, 0, 0, 0.55);
+    color: #737373;   /* 55% 黑在白圆上的不透明等效色:全套图标统一(2026-07-22) */
     position: relative;
     z-index: 2;
     transition: color 0.28s ease;
@@ -2424,7 +2424,7 @@ body.theme-dark .home-nav .theme-toggle .tt-sun { display: none; }
 body.theme-dark .home-nav .theme-toggle .tt-moon { display: block; }
 body.home-landing.theme-dark .home-nav .theme-toggle,
 body.blog-page.theme-dark .home-nav .theme-toggle,
-body.works-page.theme-dark .home-nav .theme-toggle { color: rgba(255, 255, 255, 0.55); }
+body.works-page.theme-dark .home-nav .theme-toggle { color: rgb(152, 152, 152); }   /* 55% 白在 #1A1A1A 圆上的等效色 */
 body.home-landing.theme-dark .home-nav .theme-toggle:hover,
 body.blog-page.theme-dark .home-nav .theme-toggle:hover,
 body.works-page.theme-dark .home-nav .theme-toggle:hover { color: #fff; }
