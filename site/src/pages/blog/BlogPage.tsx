@@ -23,9 +23,15 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: 'product', label: 'Product' },
 ];
 
+/* 大封面卡最多展示数:之后的文章改用列表式条目(2026-07-22 用户方案)。
+   ⚠️ 预览阈值暂设 6(当前仅 9 篇,10 看不到列表效果);定稿改回 10。 */
+const BIG_COVERS = 6;
+
 export default function BlogPage() {
   const [filter, setFilter] = useState<Filter>('all');
   const cards = blogCards();
+  const bigCards = cards.slice(0, BIG_COVERS);
+  const listCards = cards.slice(BIG_COVERS);
 
   useHeaderAlwaysVisible();
   useStickyMenu();
@@ -54,7 +60,7 @@ export default function BlogPage() {
       <div className="design-content">
         <section className="category-section" id="writing-all">
           <div className="category-grid">
-            {cards.map((a) => (
+            {bigCards.map((a) => (
               <div
                 key={a.slug}
                 className="card-wrapper"
@@ -107,6 +113,32 @@ export default function BlogPage() {
               </div>
             ))}
           </div>
+          {/* 列表式条目(第 BIG_COVERS 张之后):左 1:1 方形封面缩略图 + 右标题/简介/时间 */}
+          {listCards.length > 0 && (
+            <div className="blog-list">
+              {listCards.map((a) => (
+                <div
+                  key={a.slug}
+                  className="card-wrapper blog-list-item"
+                  data-cat={a.cat}
+                  data-date={a.date}
+                  data-slug={a.slug}
+                  hidden={!(filter === 'all' || a.cat === filter)}
+                >
+                  <a href={`writing/${a.file}`}>
+                    <span className="bl-thumb">
+                      <img src={`writing/${a.listCover}`} alt="" loading="lazy" />
+                    </span>
+                    <span className="bl-text">
+                      <h3 className="bl-title">{a.title}</h3>
+                      <p className="bl-excerpt">{a.excerpt}</p>
+                      <span className="bl-date">{a.date}</span>
+                    </span>
+                  </a>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
       </div>
     </>

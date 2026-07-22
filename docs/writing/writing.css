@@ -2760,6 +2760,58 @@ body.works-page .banner-card .design-banner-frame {
     body.works-page .banner-card .design-banner-frame { flex: none; height: auto; aspect-ratio: 2 / 1; }
 }
 
+/* ── Blog 列表式条目(2026-07-22):大封面只展示前 N 张,其后改列表 ——
+   左 1:1 方形封面缩略图 + 右标题/简介/时间;桌面两列,≤800px 一列 */
+body.blog-page .blog-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 40px clamp(16px, 2.5vw, 32px);
+    margin-top: 48px;
+}
+@media (max-width: 800px) {
+    body.blog-page .blog-list { grid-template-columns: 1fr; }
+}
+body.blog-page .blog-list-item a {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    text-decoration: none;
+}
+body.blog-page .bl-thumb {
+    width: 112px;
+    aspect-ratio: 1 / 1;
+    flex: 0 0 auto;
+    overflow: hidden;
+}
+body.blog-page .bl-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+body.blog-page .bl-text { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+body.blog-page .bl-title {
+    margin: 0;
+    font-size: var(--fs-p, 18px);
+    font-weight: 600;
+    color: var(--gray-900);
+    line-height: 1.4;
+    transition: color 0.42s ease;
+}
+body.blog-page .bl-excerpt {
+    margin: 0;
+    font-size: var(--fs-caption, 14px);
+    color: var(--gray-600);
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+body.blog-page .bl-date { font-size: var(--fs-caption, 14px); color: #969696; }
+@media (hover: hover) {
+    body.blog-page .blog-list-item a:hover .bl-title { color: var(--gray-500); }
+}
+/* 深色主题 */
+body.blog-page.theme-dark .bl-title { color: #fff; }
+body.blog-page.theme-dark .bl-excerpt { color: rgba(255, 255, 255, 0.55); }
+body.blog-page.theme-dark .bl-date { color: rgba(255, 255, 255, 0.4); }
+
 /* 宫格间距归零 —— 现在只需压 .design-layout 这一个网格。
    .category-grid 已被上面设成 display:contents(盒子取消),它自己的 gap 连同
    style.css 与两个窄屏断点里的 gap 一并失效,不必再逐条覆盖。 */
