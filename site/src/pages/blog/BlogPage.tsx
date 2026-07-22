@@ -2,7 +2,7 @@
  * Blog 页(docs/blog.html 的 React 版)。DOM 结构与旧页逐类名一致;
  * 筛选逻辑 = writing.js initWritingFilter 的状态化移植(卡片日期倒序、hidden 显隐)。
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { blogCards } from '../../content/articles';
 import { CatIcon } from '../../shared/catIcons';
 import PageTitle from '../../shared/PageTitle';
@@ -23,15 +23,29 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: 'product', label: 'Product' },
 ];
 
-const BIG_COVERS = 12;
+/* 大封面数响应式(2026-07-22 定稿):桌面 12,小屏/手机(≤800px)6 */
+const BIG_COVERS_DESKTOP = 12;
+const BIG_COVERS_MOBILE = 6;
+const SMALL_MQ = '(max-width: 800px)';
 
 export default function BlogPage() {
   const [filter, setFilter] = useState<Filter>('all');
   const cards = blogCards();
-  /* 大封面区展示前 12 篇(2026-07-22 用户定稿),其后进列表区;
+  /* 大封面区展示前 N 篇(桌面 12/小屏 6),其后进列表区;
      文章按日期倒序,最新永远在大封面区最前 */
-  const bigCards = cards.slice(0, BIG_COVERS);
-  const listCards = cards.slice(BIG_COVERS);
+  const [bigCount, setBigCount] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia(SMALL_MQ).matches
+      ? BIG_COVERS_MOBILE
+      : BIG_COVERS_DESKTOP,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia(SMALL_MQ);
+    const update = () => setBigCount(mq.matches ? BIG_COVERS_MOBILE : BIG_COVERS_DESKTOP);
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+  const bigCards = cards.slice(0, bigCount);
+  const listCards = cards.slice(bigCount);
 
   useHeaderAlwaysVisible();
   useStickyMenu();
