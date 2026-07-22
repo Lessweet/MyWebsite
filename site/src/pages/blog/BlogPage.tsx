@@ -2,7 +2,7 @@
  * Blog 页(docs/blog.html 的 React 版)。DOM 结构与旧页逐类名一致;
  * 筛选逻辑 = writing.js initWritingFilter 的状态化移植(卡片日期倒序、hidden 显隐)。
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { blogCards } from '../../content/articles';
 import { CatIcon } from '../../shared/catIcons';
 import PageTitle from '../../shared/PageTitle';
@@ -23,14 +23,34 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: 'product', label: 'Product' },
 ];
 
+/* 大封面数响应式(2026-07-22 定稿):桌面 12,小屏/手机(≤800px)6 */
+const BIG_COVERS_DESKTOP = 12;
+const BIG_COVERS_MOBILE = 6;
+const SMALL_MQ = '(max-width: 800px)';
+
 export default function BlogPage() {
   const [filter, setFilter] = useState<Filter>('all');
   const cards = blogCards();
+  /* 大封面区展示前 N 篇(桌面 12/小屏 6),其后进列表区;
+     文章按日期倒序,最新永远在大封面区最前 */
+  const [bigCount, setBigCount] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia(SMALL_MQ).matches
+      ? BIG_COVERS_MOBILE
+      : BIG_COVERS_DESKTOP,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia(SMALL_MQ);
+    const update = () => setBigCount(mq.matches ? BIG_COVERS_MOBILE : BIG_COVERS_DESKTOP);
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+  const bigCards = cards.slice(0, bigCount);
+  const listCards = cards.slice(bigCount);
 
   useHeaderAlwaysVisible();
   useStickyMenu();
   useScrollProgress();
-  usePillarEntrance();
+  usePillarEntrance([bigCount]); // 断点切换(N 变化)后列表项是新节点,入场系统需重新绑定
   useHideNavOnScrollMobile();
   useScrollLag();
 
@@ -54,7 +74,7 @@ export default function BlogPage() {
       <div className="design-content">
         <section className="category-section" id="writing-all">
           <div className="category-grid">
-            {cards.map((a) => (
+            {bigCards.map((a) => (
               <div
                 key={a.slug}
                 className="card-wrapper"
@@ -107,6 +127,32 @@ export default function BlogPage() {
               </div>
             ))}
           </div>
+          {/* 列表式条目(第 BIG_COVERS 张之后):左 1:1 方形封面缩略图 + 右标题/简介/时间 */}
+          {listCards.length > 0 && (
+            <div className="blog-list">
+              {listCards.map((a) => (
+                <div
+                  key={a.slug}
+                  className="card-wrapper blog-list-item"
+                  data-cat={a.cat}
+                  data-date={a.date}
+                  data-slug={a.slug}
+                  hidden={!(filter === 'all' || a.cat === filter)}
+                >
+                  <a href={`writing/${a.file}`}>
+                    <span className="bl-thumb">
+                      <img src={`writing/${a.listCover}`} alt="" loading="lazy" />
+                    </span>
+                    <span className="bl-text">
+                      <h3 className="bl-title">{a.title}</h3>
+                      <p className="bl-excerpt">{a.excerpt}</p>
+                      <span className="bl-date">{a.date}</span>
+                    </span>
+                  </a>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
       </div>
     </>

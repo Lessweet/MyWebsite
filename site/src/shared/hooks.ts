@@ -144,7 +144,7 @@ export function useCoverFade() {
    支柱页加载入场:菜单 / banner / 标题 / 卡片按垂直位置分「片」级联淡入。
    常量与原实现一致:STAGGER=110 / ROW_TOL=28 / COL_STAGGER=180;
    双 rAF 跨过首次绘制;首页 loading 遮罩(html.is-loading)在场时等其摘除再开始。 */
-export function usePillarEntrance() {
+export function usePillarEntrance(deps: unknown[] = []) {
   useEffect(() => {
     const targets = Array.from(
       document.querySelectorAll<HTMLElement>(
@@ -164,11 +164,33 @@ export function usePillarEntrance() {
     const STAGGER = 110;
     const ROW_TOL = 28;
     const COL_STAGGER = 180;
+    /* 波次方向跟随滚动方向(2026-07-22):下滑批次从上往下,上滑批次从下往上
+       (贴近已可见内容的那排先出现,显现沿滚动方向推进) */
+    let scrollDir: 1 | -1 = 1;
+    let lastY = window.scrollY;
+    const onDirScroll = () => {
+      const y = window.scrollY;
+      if (y !== lastY) scrollDir = y > lastY ? 1 : -1;
+      lastY = y;
+    };
+    window.addEventListener('scroll', onDirScroll, { passive: true });
     const timers: number[] = [];
     let observer: IntersectionObserver | null = null;
+    let resetObserver: IntersectionObserver | null = null;
     let mo: MutationObserver | null = null;
 
     const revealByRow = (els: HTMLElement[]) => {
+      /* 轨迹随滚动方向:上滑进入 → 隐藏态切到上方(-22px),显现时向下落;
+         切换在显现前瞬时完成(禁过渡 + 强制回流),不会被看到 */
+      const fromAbove = scrollDir < 0;
+      els.forEach((el) => {
+        if (el.classList.contains('enter-from-above') !== fromAbove) {
+          el.style.transition = 'none';
+          el.classList.toggle('enter-from-above', fromAbove);
+          void el.offsetWidth;
+          el.style.transition = '';
+        }
+      });
       const sorted = els
         .slice()
         .sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
@@ -180,6 +202,7 @@ export function usePillarEntrance() {
         lastTop = top;
         rows[rows.length - 1].push(el);
       });
+      if (scrollDir < 0) rows.reverse(); // 上滑:从下往上依次显现
       rows.forEach((row, step) => {
         const rowDelay = step * STAGGER;
         const ordered = row
@@ -202,18 +225,37 @@ export function usePillarEntrance() {
           });
           revealByRow(inView);
 
+          /* 2026-07-22 改为可重播:进入视口按行错峰显现;完全离开视口后复位,
+             再次进入(上滑回来同样)重新依次入场 */
           observer = new IntersectionObserver(
             (entries) => {
               const hits = entries
                 .filter((e) => e.isIntersecting)
-                .map((e) => e.target as HTMLElement);
-              hits.forEach((el) => observer!.unobserve(el));
+                .map((e) => e.target as HTMLElement)
+                .filter((el) => !el.dataset.entered);
               if (hits.length) revealByRow(hits);
             },
             { root: null, rootMargin: '0px 0px -50px 0px', threshold: 0.1 },
           );
+          resetObserver = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((e) => {
+                if (e.isIntersecting) return;
+                const el = e.target as HTMLElement;
+                if (!el.dataset.entered) return;
+                /* 复位瞬时完成(临时禁过渡),避免快速滑回时撞见半程反向动画 */
+                el.style.transition = 'none';
+                el.classList.remove('visible', 'heading-rise-in');
+                delete el.dataset.entered;
+                void el.offsetWidth;
+                el.style.transition = '';
+              });
+            },
+            { threshold: 0 },
+          );
           targets.forEach((el) => {
-            if (!el.dataset.entered) observer!.observe(el);
+            observer!.observe(el);
+            resetObserver!.observe(el);
           });
         }),
       );
@@ -232,10 +274,13 @@ export function usePillarEntrance() {
 
     return () => {
       timers.forEach(clearTimeout);
+      window.removeEventListener('scroll', onDirScroll);
       observer?.disconnect();
+      resetObserver?.disconnect();
       mo?.disconnect();
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
 }
 
 /* ── script.js: 顶部平滑滚动 IIFE(a[href^="#"] → scrollIntoView smooth) ──

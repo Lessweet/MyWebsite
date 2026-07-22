@@ -306,6 +306,12 @@ body.design-page:not(.reading-page) :is(h1, h2, h3, .w-title, .card-label) { fon
     opacity: 1;
     transform: translateY(0);
 }
+/* 上滑进入的卡片轨迹反向(2026-07-22):隐藏态在上方,显现时「从上往下」落入
+   (类由入场系统按滚动方向添加;.visible 后回到 0 不受影响) */
+.card-wrapper.enter-from-above:not(.visible) { transform: translateY(-22px); }
+.design-page .design-menu.enter-from-above:not(.visible),
+.design-page .design-banner-frame.enter-from-above:not(.visible) { transform: translateY(-22px); }
+
 /* 顶部 banner 入场与网格卡片同一套上滑:22px 上移 + 2.8s 慢淡入 + 1s 快收尾位移
    (参数对齐 style.css 的 .card-wrapper;此前这里只做淡入、去掉了位移,现恢复) */
 .design-page .design-banner-frame {
@@ -2759,6 +2765,103 @@ body.works-page .banner-card .design-banner-frame {
     body.works-page .banner-card { grid-column: 1 / -1; }
     body.works-page .banner-card .design-banner-frame { flex: none; height: auto; aspect-ratio: 2 / 1; }
 }
+
+/* ── Blog 列表式条目(2026-07-22):大封面只展示前 N 张,其后改列表 ——
+   左 1:1 方形封面缩略图 + 右标题/简介/时间;桌面两列,≤800px 一列 */
+body.blog-page .blog-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 40px clamp(16px, 2.5vw, 32px);
+    margin-top: 48px;
+}
+@media (max-width: 800px) {
+    body.blog-page .blog-list { grid-template-columns: 1fr; }
+}
+/* 分割线只在行与行之间,且左缘与文字组对齐(2026-07-22 用户标注):
+   跳过缩略图宽度(112 + 16 间距 = 128px);首行条目不带线,≤800px 单列只免第 1 条 */
+body.blog-page .blog-list .blog-list-item {
+    position: relative;
+    padding-top: 20px;
+}
+body.blog-page .blog-list .blog-list-item::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 128px;
+    right: 0;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.12);
+}
+body.blog-page .blog-list .blog-list-item:nth-child(-n+2) { padding-top: 0; }
+body.blog-page .blog-list .blog-list-item:nth-child(-n+2)::before { content: none; }
+@media (max-width: 800px) {
+    body.blog-page .blog-list .blog-list-item:nth-child(2) { padding-top: 20px; }
+    body.blog-page .blog-list .blog-list-item:nth-child(2)::before { content: ""; }
+}
+body.blog-page.theme-dark .blog-list .blog-list-item::before { background: rgba(255, 255, 255, 0.12); }
+body.blog-page .blog-list-item a {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    text-decoration: none;
+}
+body.blog-page .bl-thumb {
+    width: 112px;
+    aspect-ratio: 1 / 1;
+    flex: 0 0 auto;
+    overflow: hidden;
+}
+body.blog-page .bl-thumb img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    /* hover 缩放与大卡封面同一套全站 token(1.08 / 0.77s 入 / 1.54s 出 / ease-soft) */
+    transform: scale(1);
+    transform-origin: center center;
+    transition: transform var(--hover-zoom-out) var(--ease-soft);
+    will-change: transform;
+}
+@media (hover: hover) {
+    body.blog-page .blog-list-item a:hover .bl-thumb img {
+        transform: scale(var(--hover-zoom));
+        transition: transform var(--hover-zoom-in) var(--ease-soft);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    body.blog-page .bl-thumb img { transition: none; }
+    body.blog-page .blog-list-item a:hover .bl-thumb img { transform: none; }
+}
+body.blog-page .bl-text { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+body.blog-page .bl-title {
+    margin: 0 0 4px;   /* 标题与简介间距在 gap 6px 基础上再 +4(2026-07-22) */
+    font-size: var(--fs-p, 18px);
+    font-weight: 600;
+    color: var(--gray-900);
+    line-height: 1.4;
+    transition: color 0.42s ease;
+}
+body.blog-page .bl-excerpt {
+    margin: 0;
+    font-size: var(--fs-caption, 14px);
+    color: var(--gray-600);
+    line-height: 1.6;
+    transition: color 0.42s ease;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+body.blog-page .bl-date { font-size: var(--fs-caption, 14px); color: #969696; transition: color 0.42s ease; }
+@media (hover: hover) {
+    body.blog-page .blog-list-item a:hover .bl-title { color: var(--gray-500); }
+    body.blog-page .blog-list-item a:hover .bl-excerpt,
+    body.blog-page .blog-list-item a:hover .bl-date { color: var(--gray-300); }
+    /* 深色主题:hover 同样是「变淡」——用更低的白透明度,不能用浅色灰(会变亮) */
+    body.blog-page.theme-dark .blog-list-item a:hover .bl-excerpt,
+    body.blog-page.theme-dark .blog-list-item a:hover .bl-date { color: rgba(255, 255, 255, 0.35); }
+}
+/* 深色主题 */
+body.blog-page.theme-dark .bl-title { color: #fff; }
+body.blog-page.theme-dark .bl-excerpt { color: rgba(255, 255, 255, 0.55); }
+body.blog-page.theme-dark .bl-date { color: rgba(255, 255, 255, 0.4); }
 
 /* 宫格间距归零 —— 现在只需压 .design-layout 这一个网格。
    .category-grid 已被上面设成 display:contents(盒子取消),它自己的 gap 连同
