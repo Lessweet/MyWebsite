@@ -350,9 +350,9 @@ export function useHideNavOnScrollMobile() {
     const header = document.querySelector('.header.home-nav') as HTMLElement | null;
     if (!header) return;
     header.classList.remove('header-hidden'); // 加载时必可见
+    const mq = window.matchMedia('(max-width: 600px)');
     let lastScrollY = window.scrollY;
     let scrollDelta = 0;
-    const scrollThreshold = 10;
     const onScroll = () => {
       const currentScrollY = window.scrollY;
       const scrollDiff = currentScrollY - lastScrollY;
@@ -363,13 +363,17 @@ export function useHideNavOnScrollMobile() {
         lastScrollY = currentScrollY;
         return;
       }
-      if (scrollDiff > 0 && currentScrollY > 100) {
-        if (scrollDelta > scrollThreshold) {
+      /* 手机端(≤600):order.design 手感 —— 方向一变立即响应(4px 死区),
+         过了顶栏高度就可收起;桌面:沿用旧站 Smart Sticky(10px 累计、100px 起始) */
+      const threshold = mq.matches ? 4 : 10;
+      const hideAfter = mq.matches ? 80 : 100;
+      if (scrollDiff > 0 && currentScrollY > hideAfter) {
+        if (scrollDelta > threshold) {
           header.classList.add('header-hidden');
           scrollDelta = 0;
         }
       } else if (scrollDiff < 0) {
-        if (scrollDelta < -scrollThreshold) {
+        if (scrollDelta < -threshold) {
           header.classList.remove('header-hidden');
           scrollDelta = 0;
         }

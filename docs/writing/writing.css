@@ -1337,10 +1337,10 @@ body .home-nav .nav-cats .nav-cat.active {
     /* 清掉顶栏的 transform(原本用于上滑隐藏,已停用):transform 会让内部 position:fixed
        的模态以顶栏为包含块而非视口,导致模态高度被顶栏撑不开、只露第一项。清掉后模态铺满整屏。 */
     .home-v2 .header.home-nav { transform: none; }
-    /* 小屏 Smart Sticky Header(2026-07-22 恢复旧站交互):下滑收起、上滑出现。
-       不能用 transform(会把全屏菜单的包含块变成顶栏),用 top 滑出,
-       缓动曲线与 style.css 原 transform 版完全一致(1.12s soft) */
-    .home-v2 .header.home-nav { top: 0; transition: top 1.12s cubic-bezier(0.22, 1, 0.36, 1); }
+    /* 小屏顶栏滑出(2026-07-22,参考 order.design):0.4s ease-in-out,
+       方向切换立即响应(JS 4px 死区)。不能用 transform(会把全屏菜单的
+       包含块变成顶栏),用 top 滑出。桌面仍走 style.css 的 1.12s transform 版。 */
+    .home-v2 .header.home-nav { top: 0; transition: top 0.4s ease-in-out; }
     .home-v2 .header.home-nav.header-hidden { top: -96px; }
 
     /* 汉堡按钮:三条黑色横线 */
@@ -1363,7 +1363,7 @@ body .home-nav .nav-cats .nav-cat.active {
         display: block;
         width: 22px;
         height: var(--icon-stroke, 1.5px);   /* icon 规范:描边 1.5px(style.css token) */
-        background: rgba(0, 0, 0, 0.55);     /* 与太阳按钮同色(2026-07-22) */
+        background: rgb(112, 112, 112);     /* 与太阳按钮同亮度的不透明等效色(半透明双线交叉会叠亮,2026-07-22) */
         border-radius: 0;                    /* icon 规范:方头直角,不用圆头 */
         transition: transform 0.35s var(--ease), opacity 0.28s var(--ease), background-color 0.28s ease;
     }
@@ -1520,7 +1520,9 @@ body .home-nav .nav-cats .nav-cat.active {
     /* 手机端顶栏背景保持透明(让通栏 banner 透出),不出现白底。
        排除文章详情页(reading-page):其顶栏沿用桌面端的不透明 page-tint 背景,
        上滑时遮住正文、不透出后面内容。 */
-    body.home-v2:not(.reading-page) .header.home-nav { background: transparent !important; }
+    /* 顶栏带实底(2026-07-22:滑出/滑回动画要有背景,不再透明)——深浅主题各自取页面底色 */
+    body.home-v2:not(.reading-page):not(.theme-dark) .header.home-nav { background: var(--site-bg, #f9f9f9) !important; }
+    body.home-v2:not(.reading-page).theme-dark .header.home-nav { background: var(--page-bg, #0a0a0a) !important; }
 }
 
 /* 模态展开时锁定页面滚动(任意断点生效) */
@@ -2185,6 +2187,13 @@ body.home-v2.blog-page .header.home-nav,
 body.home-v2.works-page .header.home-nav {
     transition: transform 1.12s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 1.12s ease;
 }
+/* 小屏:顶栏滑出走 top(0.4s ease-in-out,参考 order.design)。
+   上面那条(0,4,1)会覆写 transition,这里同特异性、后到先得再覆盖回来 */
+@media (max-width: 600px) {
+    body.home-v2.home-landing .header.home-nav,
+    body.home-v2.blog-page .header.home-nav,
+    body.home-v2.works-page .header.home-nav { transition: top 0.4s ease-in-out; }
+}
 body.home-v2.theme-dark { background: var(--page-bg); }
 
 /* 二级分类菜单:由 .menu-hidden 单独控制 —— 想恢复展示,删掉 body 上的 menu-hidden 即可,不影响配色 */
@@ -2266,30 +2275,29 @@ body.theme-dark .design-content .category-section .section-divider {
        (.nav-cat 曾侥幸躲过,只因它的反白选择器多带了 .nav-cats 凑到 0,5,1 —— 别依赖这个。) */
     body.menu-dark .header.home-nav .nav-collapse .nav-cat,
     body.menu-dark .header.home-nav .nav-collapse .header-connect {
-        color: rgba(255, 255, 255, 0.3);
-
+        color: rgba(255, 255, 255, 0.5);   /* 提亮(2026-07-22:0.3 太暗) */
     }
     body.menu-dark .header.home-nav .nav-collapse .nav-cat:hover,
-    body.menu-dark .header.home-nav .nav-collapse .header-connect:hover { color: rgba(255, 255, 255, 0.6); }
+    body.menu-dark .header.home-nav .nav-collapse .header-connect:hover { color: rgba(255, 255, 255, 0.85); }
     /* 深色菜单分割线:展开时从透明淡入到 20% 白(rise 入场同节奏) */
     body.menu-dark .header.home-nav .nav-collapse .nav-cat,
     body.menu-dark .header.home-nav .nav-collapse .header-connect { border-top-color: transparent; }
     body.menu-dark .header.home-nav.nav-open .nav-collapse .nav-cat,
     body.menu-dark .header.home-nav.nav-open .nav-collapse .header-connect { border-top-color: rgba(255, 255, 255, 0.2); }
     /* 深色面板同理:active 不高亮(压过 theme-dark 顶栏 active 反白),hover 仍提亮 */
-    body.menu-dark .header.home-nav .nav-collapse .nav-cats .nav-cat.active { color: rgba(255, 255, 255, 0.3); }
-    body.menu-dark .header.home-nav .nav-collapse .nav-cats .nav-cat.active:hover { color: rgba(255, 255, 255, 0.6); }
+    body.menu-dark .header.home-nav .nav-collapse .nav-cats .nav-cat.active { color: rgba(255, 255, 255, 0.5); }
+    body.menu-dark .header.home-nav .nav-collapse .nav-cats .nav-cat.active:hover { color: rgba(255, 255, 255, 0.85); }
     /* 展开后 X 与字标压在黑模态上,必须反白。只在 .nav-open 时 ——
        Cases 是白底页,未展开时反白会让汉堡 / 字标直接消失在白底 banner 里。
        (首页由 body.no-banner.theme-dark .site-wordmark 常驻反白,这条对它只是同值重复。) */
-    body.menu-dark .header.home-nav.nav-open .nav-toggle span { background: rgba(255, 255, 255, 0.55); }
+    body.menu-dark .header.home-nav.nav-open .nav-toggle span { background: rgb(145, 145, 145); }
     body.menu-dark .header.home-nav.nav-open .nav-toggle:hover span { background: #fff; }
     body.menu-dark .header.home-nav.nav-open .site-wordmark { filter: invert(1); }
     body.menu-dark .header.home-nav.nav-open svg.site-logo { color: #fff; }
 
     /* —— 页面本身是黑底才需要的(.theme-dark) —— */
     /* 未展开时的汉堡:黑底页上要反白(Cases 白底页不走这条,保持深色) */
-    body.no-banner.theme-dark .header.home-nav .nav-toggle span { background: rgba(255, 255, 255, 0.55); }
+    body.no-banner.theme-dark .header.home-nav .nav-toggle span { background: rgb(145, 145, 145); }
     body.no-banner.theme-dark .header.home-nav .nav-toggle:hover span { background: #fff; }
     /* 手机端上面有条 body.home-v2:not(.reading-page) 的 transparent !important,得压回来 */
     body.home-v2.no-banner.theme-dark:not(.reading-page) .header.home-nav { background: var(--page-bg) !important; }
@@ -2389,6 +2397,14 @@ body.home-landing .home-index-row .hi-arrow svg * { vector-effect: non-scaling-s
     body.works-page .home-nav .theme-toggle { margin-right: -8px; }
 }
 /* 主题切换按钮双 icon:浅色显示太阳,深色显示月亮(2026-07-22) */
+/* 月牙两个尖角用圆头圆角(2026-07-22 用户要求,覆盖 icon 规范的 butt/miter —— 
+   月牙闭合路径的尖端太锋利) */
+body.home-landing .home-nav .theme-toggle svg.tt-moon,
+body.blog-page .home-nav .theme-toggle svg.tt-moon,
+body.works-page .home-nav .theme-toggle svg.tt-moon {
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
 .home-nav .theme-toggle .tt-moon { display: none; }
 body.theme-dark .home-nav .theme-toggle .tt-sun { display: none; }
 body.theme-dark .home-nav .theme-toggle .tt-moon { display: block; }
@@ -2407,7 +2423,7 @@ body.works-page.theme-dark .home-nav .theme-toggle:hover { color: #fff; }
     /* 特异性必须 ≥ 基础规则 .home-v2 .header.home-nav .nav-toggle(0,4,0)的
        margin-left:auto,否则负 margin 不生效 */
     body.home-v2.blog-page .header.home-nav .nav-toggle,
-    body.home-v2.works-page .header.home-nav .nav-toggle { margin-left: -54px; }   /* 视觉间距再减半 ~19px(2026-07-22) */
+    body.home-v2.works-page .header.home-nav .nav-toggle { margin-left: -46px; }   /* 视觉间距 +8px ≈ 27px(2026-07-22) */
 }
 
 /* ---- 首页深色主题适配:landing 的浅色是默认,这里给 theme-dark 的反相 ---- */
@@ -2630,7 +2646,7 @@ html.hero-ready .hero-role { animation-delay: calc(var(--d, 0ms) + 180ms); }
 body.blog-page .page-title,
 body.works-page .page-title {
     margin: 0 0 40px;
-    font-size: var(--fs-h3, 20px);   /* 再降一档:h2 → h3(2026-07-22 用户要求) */
+    font-size: var(--fs-h3, 20px);   /* 定档 h3(2026-07-22 用户最终选择) */
     color: #181818;
 }
 body.works-page .page-title { grid-column: 1 / -1; }
@@ -2683,8 +2699,22 @@ body.works-page .banner-card .design-banner-frame {
     min-height: 0;
     height: auto;   /* 高度由 flex 分配:封面区与邻卡封面对齐,信息条在下 */
     margin: 0;
-    border: 0.5px solid var(--gray-700, #48484a);   /* 纯黑卡一圈细描边(2026-07-22) */
-    box-sizing: border-box;
+}
+
+/* 手机端(≤600):卡片信息直接三行(标题 / 工具 / 日期),
+   避免窄卡上 meta 并排各自折行的破碎观感(2026-07-22 用户要求) */
+@media (max-width: 600px) {
+    /* 行距与 card-info 的 gap(4px)一致;加 .card-info 提特异性压过桌面 meta 的 gap:10px */
+    body.works-page .card-info .card-meta { flex-direction: column; align-items: flex-start; gap: 4px; }
+    body.works-page .card-meta .card-tag,
+    body.works-page .card-date { white-space: nowrap; }
+    /* 跨两格的宽卡(banner):宽度足够,工具与日期同行、日期贴最右(2026-07-22) */
+    body.works-page .banner-card .card-info .card-meta {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: baseline;
+        width: 100%;
+    }
 }
 
 /* 中屏(≤900px):4 列回 3 列,避免每张卡窄于 200px */
@@ -2757,9 +2787,8 @@ body.works-page .card:hover { --hover-scale: var(--hover-zoom); }
    结构由 archive.html 底部脚本注入(文案取自卡片下方已有的 label / date)。
    时长不跟封面放大(0.77s 进场对蒙层来说太黏,鼠标压上去要等):蒙层单独用更快的
    0.24s 淡入、0.4s 淡出,反馈即时;封面放大仍走全站 hover 缩放 token。 */
-/* hover 蒙层暂不展示(2026-07-22 用户要求):DOM 与下方全部规则保留,
-   未来想加回来删掉这一条即可。 */
-body.works-page .card-overlay { display: none; }
+/* hover 蒙层已从 React 渲染中移除(2026-07-22:信息在卡下方常显,不再需要);
+   下方蒙层样式保留,未来想加回时在卡内重新渲染 .card-overlay 即可。 */
 body.works-page .card-overlay {
     position: absolute;
     inset: 0;
@@ -2838,7 +2867,9 @@ body.works-page.theme-dark .icon-preview-frame { filter: invert(1); }
 /* 卡片下方的标题与日期(2026-07-22 用户要求放回:每个作品下显示作品名和时间)。
    宫格是无缝拼贴(gap 0),信息条用自身上下留白隔开上下两行卡片。
    白底下文字走 style.css 默认配色(label = --gray-900 / date = #969696)。 */
-body.works-page .card-info { padding: 4px 4px 28px; }   /* 封面与文字间距再减半 8 → 4(2026-07-22) */
+/* 封面-信息间距的真正来源是 .card-wrapper 的 flex gap(20px),减半(2026-07-22) */
+body.works-page .card-wrapper { gap: 10px; }
+body.works-page .card-info { padding: 2px 4px 28px; }   /* 封面与文字间距再减半 4 → 2(2026-07-22) */
 /* 标题/时间样式与 Blog 卡一致(2026-07-22):左对齐;meta 行同 .w-meta(gap 10/基线对齐);
    日期与 tag 用默认字体 14px #969696(去掉等宽与「•」分隔) */
 /* 作品卡标题字号用正文档 --fs-p(2026-07-22 用户要求,由 h3 档 20px 降为 18px) */

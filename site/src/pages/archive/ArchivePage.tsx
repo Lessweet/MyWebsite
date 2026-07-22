@@ -38,14 +38,6 @@ const HeadingIcon = ({ d }: { d: string }) => (
   </span>
 );
 
-/* hover 蒙层:文案与卡下方 card-label/card-date 同源(注册在卡数据里,一处修改) */
-const Overlay = ({ title, date }: { title: string; date: string }) => (
-  <div className="card-overlay" aria-hidden="true">
-    <span className="co-title">{title}</span>
-    <span className="co-date">{date}</span>
-  </div>
-);
-
 /* 视频作品卡(card-tall 系列):cardClass 区分 video-full / gray-outline / scaled 变体 */
 function VideoCard(props: {
   delay: number;
@@ -84,7 +76,6 @@ function VideoCard(props: {
             </video>
           )}
         </div>
-        <Overlay title={p.label} date={p.date} />
       </article>
       <div className="card-info">
         <div className="card-title-row">
@@ -136,7 +127,7 @@ export default function ArchivePage() {
       {/* VIBEDESIGN banner:置于顶部做 hero,三套样式轮播。
           与作品卡同构(card-wrapper + card-info):下方显示名称与时间(2026-07-22) */}
       <div className="card-wrapper banner-card">
-        <iframe src="design-banner.html?v=27" className="design-banner-frame" title="VIBEDESIGN" scrolling="no"></iframe>
+        <iframe src="design-banner.html?v=28" className="design-banner-frame" title="VIBEDESIGN" scrolling="no"></iframe>
         <div className="card-info">
           <div className="card-title-row"><span className="card-label">VIBEDESIGN</span></div>
           <div className="card-meta"><span className="card-tag">Claude Code</span><span className="card-date">2026-05-26</span></div>
@@ -163,7 +154,6 @@ export default function ArchivePage() {
                 onClick={(e) => openModal(e, 'icon-studio/outlined.html?modal=1&v=2')}
               >
                 <iframe src="icon-studio/preview-outlined.html?v=4" className="icon-preview-frame" title="Outlined Icon 预览" scrolling="no" tabIndex={-1}></iframe>
-                <Overlay title="Outlined Icon" date="2026-05-20" />
               </a>
               <div className="card-info">
                 <div className="card-title-row"><span className="card-label">Outlined Icon</span></div>
@@ -179,7 +169,6 @@ export default function ArchivePage() {
                 onClick={(e) => openModal(e, 'icon-studio/pixel.html?modal=1&v=2')}
               >
                 <iframe src="icon-studio/preview-pixel.html?v=4" className="icon-preview-frame" title="Pixel Icon 预览" scrolling="no" tabIndex={-1}></iframe>
-                <Overlay title="Pixel Icon" date="2026-05-20" />
               </a>
               <div className="card-info">
                 <div className="card-title-row"><span className="card-label">Pixel Icon</span></div>
@@ -201,7 +190,6 @@ export default function ArchivePage() {
                 <div className="card-iframe-container">
                   <iframe src="poster-stack.html?v=4" className="card-iframe" frameBorder="0" title="AI Poster 轮播" scrolling="no" tabIndex={-1}></iframe>
                 </div>
-                <Overlay title="AI Poster" date="2026-05-06" />
               </article>
               <div className="card-info">
                 <div className="card-title-row">
@@ -229,7 +217,6 @@ export default function ArchivePage() {
                 <div className="card-iframe-container">
                   <iframe src="ai-assistant-motion/index.html?v=2" className="card-iframe" frameBorder="0" allowFullScreen></iframe>
                 </div>
-                <Overlay title="AI Assistant Motion" date="2026-03-16" />
               </article>
               <div className="card-info">
                 <div className="card-title-row">
@@ -261,7 +248,6 @@ export default function ArchivePage() {
                 <div className="card-iframe-container">
                   <iframe src="multi-scene-character-demo/multi-scene-character-demo.html" className="card-iframe" frameBorder="0" allowFullScreen></iframe>
                 </div>
-                <Overlay title="Eye Tracking" date="2026-01-08" />
               </article>
               <div className="card-info">
                 <div className="card-title-row">
@@ -280,7 +266,6 @@ export default function ArchivePage() {
                 <div className="card-iframe-container">
                   <iframe src="voice-particles/index.html" className="card-iframe" frameBorder="0" allowFullScreen></iframe>
                 </div>
-                <Overlay title="Voice Particles" date="2026-01-05" />
               </article>
               <div className="card-info">
                 <div className="card-title-row">
