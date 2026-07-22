@@ -306,6 +306,12 @@ body.design-page:not(.reading-page) :is(h1, h2, h3, .w-title, .card-label) { fon
     opacity: 1;
     transform: translateY(0);
 }
+/* 上滑进入的卡片轨迹反向(2026-07-22):隐藏态在上方,显现时「从上往下」落入
+   (类由入场系统按滚动方向添加;.visible 后回到 0 不受影响) */
+.card-wrapper.enter-from-above:not(.visible) { transform: translateY(-22px); }
+.design-page .design-menu.enter-from-above:not(.visible),
+.design-page .design-banner-frame.enter-from-above:not(.visible) { transform: translateY(-22px); }
+
 /* 顶部 banner 入场与网格卡片同一套上滑:22px 上移 + 2.8s 慢淡入 + 1s 快收尾位移
    (参数对齐 style.css 的 .card-wrapper;此前这里只做淡入、去掉了位移,现恢复) */
 .design-page .design-banner-frame {

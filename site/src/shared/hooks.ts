@@ -180,6 +180,17 @@ export function usePillarEntrance() {
     let mo: MutationObserver | null = null;
 
     const revealByRow = (els: HTMLElement[]) => {
+      /* 轨迹随滚动方向:上滑进入 → 隐藏态切到上方(-22px),显现时向下落;
+         切换在显现前瞬时完成(禁过渡 + 强制回流),不会被看到 */
+      const fromAbove = scrollDir < 0;
+      els.forEach((el) => {
+        if (el.classList.contains('enter-from-above') !== fromAbove) {
+          el.style.transition = 'none';
+          el.classList.toggle('enter-from-above', fromAbove);
+          void el.offsetWidth;
+          el.style.transition = '';
+        }
+      });
       const sorted = els
         .slice()
         .sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);

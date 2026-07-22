@@ -23,12 +23,12 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: 'product', label: 'Product' },
 ];
 
-const BIG_COVERS = 6;
+const BIG_COVERS = 12;
 
 export default function BlogPage() {
   const [filter, setFilter] = useState<Filter>('all');
   const cards = blogCards();
-  /* 大封面区展示前 6 篇(2026-07-22 用户定稿),其后进列表区;
+  /* 大封面区展示前 12 篇(2026-07-22 用户定稿),其后进列表区;
      文章按日期倒序,最新永远在大封面区最前 */
   const bigCards = cards.slice(0, BIG_COVERS);
   const listCards = cards.slice(BIG_COVERS);
