@@ -2771,12 +2771,23 @@ body.blog-page .blog-list {
 @media (max-width: 800px) {
     body.blog-page .blog-list { grid-template-columns: 1fr; }
 }
-/* 每条列表项上方一根细分割线(2026-07-22) */
+/* 分割线只在行与行之间(2026-07-22):首行条目不带顶线 ——
+   桌面两列去前 2 条,≤800px 单列时只去第 1 条 */
 body.blog-page .blog-list .blog-list-item {
     border-top: 1px solid rgba(0, 0, 0, 0.12);
     padding-top: 20px;
 }
+body.blog-page .blog-list .blog-list-item:nth-child(-n+2) { border-top: none; padding-top: 0; }
+@media (max-width: 800px) {
+    body.blog-page .blog-list .blog-list-item:nth-child(2) {
+        border-top: 1px solid rgba(0, 0, 0, 0.12);
+        padding-top: 20px;
+    }
+}
 body.blog-page.theme-dark .blog-list .blog-list-item { border-top-color: rgba(255, 255, 255, 0.12); }
+@media (max-width: 800px) {
+    body.blog-page.theme-dark .blog-list .blog-list-item:nth-child(2) { border-top-color: rgba(255, 255, 255, 0.12); }
+}
 body.blog-page .blog-list-item a {
     display: flex;
     gap: 16px;
