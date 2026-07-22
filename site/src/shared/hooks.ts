@@ -144,7 +144,7 @@ export function useCoverFade() {
    支柱页加载入场:菜单 / banner / 标题 / 卡片按垂直位置分「片」级联淡入。
    常量与原实现一致:STAGGER=110 / ROW_TOL=28 / COL_STAGGER=180;
    双 rAF 跨过首次绘制;首页 loading 遮罩(html.is-loading)在场时等其摘除再开始。 */
-export function usePillarEntrance() {
+export function usePillarEntrance(deps: unknown[] = []) {
   useEffect(() => {
     const targets = Array.from(
       document.querySelectorAll<HTMLElement>(
@@ -279,7 +279,8 @@ export function usePillarEntrance() {
       resetObserver?.disconnect();
       mo?.disconnect();
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
 }
 
 /* ── script.js: 顶部平滑滚动 IIFE(a[href^="#"] → scrollIntoView smooth) ──

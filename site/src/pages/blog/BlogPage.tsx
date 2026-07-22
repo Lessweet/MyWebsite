@@ -50,7 +50,7 @@ export default function BlogPage() {
   useHeaderAlwaysVisible();
   useStickyMenu();
   useScrollProgress();
-  usePillarEntrance();
+  usePillarEntrance([bigCount]); // 断点切换(N 变化)后列表项是新节点,入场系统需重新绑定
   useHideNavOnScrollMobile();
   useScrollLag();
 
