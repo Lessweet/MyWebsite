@@ -1293,6 +1293,7 @@ body .home-nav .nav-cats .nav-cat.active {
     background: transparent;
     color: rgba(0, 0, 0, 0.3);
     font-weight: 400;
+    transition: color 0.42s ease;   /* hover 柔和过渡(2026-07-22) */
 }
 .design-page .home-nav .nav-cats .nav-cat:hover {
     color: rgba(0, 0, 0, 0.6);
@@ -1454,7 +1455,9 @@ body .home-nav .nav-cats .nav-cat.active {
         opacity: 1;
         transform: none;
         border-top-color: transparent;
-        transition: border-top-color 1.05s var(--ease-soft) var(--row-d, 0s);
+        transition:
+            border-top-color 1.05s var(--ease-soft) var(--row-d, 0s),
+            color 0.42s ease;   /* hover 柔和过渡(2026-07-22) */
     }
     .home-v2 .header.home-nav.nav-open .nav-collapse .nav-cat,
     .home-v2 .header.home-nav.nav-open .nav-collapse .header-connect {
@@ -2488,12 +2491,14 @@ body.home-landing .home-index-row:hover { color: rgba(0, 0, 0, 0.5); }
    拆字脚本在 index.html,显现闸门 = html.hero-ready。 */
 body.home-landing .home-index-row {
     border-top-color: transparent;
-    transition: border-top-color 1.05s var(--ease-soft) var(--row-d, 0s);
+    transition:
+        border-top-color 1.05s var(--ease-soft) var(--row-d, 0s),
+        color 0.42s ease;   /* hover 变色柔和过渡,与 blog 卡片一致(2026-07-22) */
 }
 html.hero-ready body.home-landing .home-index-row { border-top-color: rgba(0, 0, 0, 0.2); }
 /* 入场结束后(index.html 挂 entrance-done):分割线过渡换快速档 ——
    1.05s + 逐行延迟只属于入场,常驻会拖慢主题切换时的边框变色 */
-html.entrance-done body.home-landing .home-index-row { transition: border-top-color 0.24s ease; }
+html.entrance-done body.home-landing .home-index-row { transition: border-top-color 0.24s ease, color 0.42s ease; }
 html.hero-ready body.home-landing .home-index-row .heading-rise-char {
     transform: translateY(0);
     opacity: 1;
