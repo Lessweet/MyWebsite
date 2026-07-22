@@ -2285,18 +2285,18 @@ body.theme-dark .design-content .category-section .section-divider {
        (.nav-cat 曾侥幸躲过,只因它的反白选择器多带了 .nav-cats 凑到 0,5,1 —— 别依赖这个。) */
     body.menu-dark .header.home-nav .nav-collapse .nav-cat,
     body.menu-dark .header.home-nav .nav-collapse .header-connect {
-        color: rgba(255, 255, 255, 0.5);   /* 提亮(2026-07-22:0.3 太暗) */
+        color: rgba(255, 255, 255, 0.85);   /* 再提亮(2026-07-22:0.5 仍偏灰) */
     }
     body.menu-dark .header.home-nav .nav-collapse .nav-cat:hover,
-    body.menu-dark .header.home-nav .nav-collapse .header-connect:hover { color: rgba(255, 255, 255, 0.85); }
+    body.menu-dark .header.home-nav .nav-collapse .header-connect:hover { color: #fff; }
     /* 深色菜单分割线:展开时从透明淡入到 20% 白(rise 入场同节奏) */
     body.menu-dark .header.home-nav .nav-collapse .nav-cat,
     body.menu-dark .header.home-nav .nav-collapse .header-connect { border-top-color: transparent; }
     body.menu-dark .header.home-nav.nav-open .nav-collapse .nav-cat,
     body.menu-dark .header.home-nav.nav-open .nav-collapse .header-connect { border-top-color: rgba(255, 255, 255, 0.2); }
     /* 深色面板同理:active 不高亮(压过 theme-dark 顶栏 active 反白),hover 仍提亮 */
-    body.menu-dark .header.home-nav .nav-collapse .nav-cats .nav-cat.active { color: rgba(255, 255, 255, 0.5); }
-    body.menu-dark .header.home-nav .nav-collapse .nav-cats .nav-cat.active:hover { color: rgba(255, 255, 255, 0.85); }
+    body.menu-dark .header.home-nav .nav-collapse .nav-cats .nav-cat.active { color: rgba(255, 255, 255, 0.85); }
+    body.menu-dark .header.home-nav .nav-collapse .nav-cats .nav-cat.active:hover { color: #fff; }
     /* 展开后 X 与字标压在黑模态上,必须反白。只在 .nav-open 时 ——
        Cases 是白底页,未展开时反白会让汉堡 / 字标直接消失在白底 banner 里。
        (首页由 body.no-banner.theme-dark .site-wordmark 常驻反白,这条对它只是同值重复。) */
