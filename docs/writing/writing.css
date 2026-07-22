@@ -2367,7 +2367,7 @@ body.works-page.theme-dark .home-nav .theme-toggle:hover { color: #fff; }
     /* 特异性必须 ≥ 基础规则 .home-v2 .header.home-nav .nav-toggle(0,4,0)的
        margin-left:auto,否则负 margin 不生效 */
     body.home-v2.blog-page .header.home-nav .nav-toggle,
-    body.home-v2.works-page .header.home-nav .nav-toggle { margin-left: -35px; }   /* 视觉间距 ~5px */
+    body.home-v2.works-page .header.home-nav .nav-toggle { margin-left: -54px; }   /* 视觉间距再减半 ~19px(2026-07-22) */
 }
 
 /* ---- 首页深色主题适配:landing 的浅色是默认,这里给 theme-dark 的反相 ---- */

@@ -12,6 +12,7 @@ import {
   usePillarEntrance,
   useHeaderAlwaysVisible,
   useScrollLag,
+  useHideNavOnScrollMobile,
 } from '../../shared/hooks';
 
 type Filter = 'all' | 'ui' | 'product';
@@ -34,6 +35,7 @@ export default function BlogPage() {
   useStickyMenu();
   useScrollProgress();
   usePillarEntrance();
+  useHideNavOnScrollMobile();
   useScrollLag();
 
   useEffect(() => {
@@ -123,7 +125,7 @@ export default function BlogPage() {
                   )}
                 </a>
                 <div className="card-info writing-info">
-                  <div className="w-title">{a.title}</div>
+                  <h3 className="w-title">{a.title}</h3>
                   <div className="w-excerpt">{a.excerpt}</div>
                   <div className="w-meta">
                     <div className="w-tags">

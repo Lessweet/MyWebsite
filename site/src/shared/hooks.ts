@@ -339,3 +339,36 @@ export function useScrollLag() {
     };
   }, []);
 }
+
+/* ── 小屏顶栏随滚动隐藏/出现(2026-07-22 新增):下滑收起、上滑滑出。
+   复用 style.css 既有的 .header-hidden(translateY(-100%) + 1.12s 缓动);
+   仅 ≤600px 生效,全屏菜单展开时不收起,接近页顶时始终显示。 */
+export function useHideNavOnScrollMobile() {
+  useEffect(() => {
+    const header = document.querySelector('.header.home-nav') as HTMLElement | null;
+    if (!header) return;
+    const mq = window.matchMedia('(max-width: 600px)');
+    let lastY = window.scrollY;
+    const THRESHOLD = 6; // 抖动死区
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (!mq.matches || header.classList.contains('nav-open')) {
+        header.classList.remove('header-hidden');
+        lastY = y;
+        return;
+      }
+      const d = y - lastY;
+      if (Math.abs(d) < THRESHOLD) return;
+      if (y < 80 || d < 0) header.classList.remove('header-hidden');
+      else header.classList.add('header-hidden');
+      lastY = y;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      header.classList.remove('header-hidden');
+    };
+  }, []);
+}

@@ -18,6 +18,7 @@ import {
   useDynamicScale,
   useSmoothScrollAnchors,
   useHeaderAlwaysVisible,
+  useHideNavOnScrollMobile,
 } from '../../shared/hooks';
 
 const PixelIcon = ({ d }: { d: string }) => (
@@ -107,6 +108,7 @@ export default function ArchivePage() {
   useNavSolidOnScroll();
   useNavSpy();
   usePillarEntrance();
+  useHideNavOnScrollMobile();
   useCoverFade();
   useDynamicScale();
   useSmoothScrollAnchors();
