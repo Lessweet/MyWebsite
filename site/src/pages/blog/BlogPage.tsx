@@ -102,7 +102,6 @@ export default function BlogPage() {
                 </a>
                 <div className="card-info writing-info">
                   <h3 className="w-title">{a.title}</h3>
-                  <div className="w-excerpt">{a.excerpt}</div>
                   <div className="w-meta">
                     <div className="w-tags">
                       <span className="a-tag">{a.blogTag}</span>
@@ -131,7 +130,6 @@ export default function BlogPage() {
                     </span>
                     <span className="bl-text">
                       <h3 className="bl-title">{a.title}</h3>
-                      <p className="bl-excerpt">{a.excerpt}</p>
                       <span className="bl-date">{a.date}</span>
                     </span>
                   </a>

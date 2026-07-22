@@ -164,6 +164,16 @@ export function usePillarEntrance() {
     const STAGGER = 110;
     const ROW_TOL = 28;
     const COL_STAGGER = 180;
+    /* 波次方向跟随滚动方向(2026-07-22):下滑批次从上往下,上滑批次从下往上
+       (贴近已可见内容的那排先出现,显现沿滚动方向推进) */
+    let scrollDir: 1 | -1 = 1;
+    let lastY = window.scrollY;
+    const onDirScroll = () => {
+      const y = window.scrollY;
+      if (y !== lastY) scrollDir = y > lastY ? 1 : -1;
+      lastY = y;
+    };
+    window.addEventListener('scroll', onDirScroll, { passive: true });
     const timers: number[] = [];
     let observer: IntersectionObserver | null = null;
     let resetObserver: IntersectionObserver | null = null;
@@ -181,6 +191,7 @@ export function usePillarEntrance() {
         lastTop = top;
         rows[rows.length - 1].push(el);
       });
+      if (scrollDir < 0) rows.reverse(); // 上滑:从下往上依次显现
       rows.forEach((row, step) => {
         const rowDelay = step * STAGGER;
         const ordered = row
@@ -252,6 +263,7 @@ export function usePillarEntrance() {
 
     return () => {
       timers.forEach(clearTimeout);
+      window.removeEventListener('scroll', onDirScroll);
       observer?.disconnect();
       resetObserver?.disconnect();
       mo?.disconnect();
