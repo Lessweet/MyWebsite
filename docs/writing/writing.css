@@ -40,7 +40,7 @@ body.design-page:not(.reading-page) :is(h1, h2, h3, .w-title, .card-label) { fon
     font-size: 15px;
     font-weight: 500;
     color: var(--gray-400);
-    transition: color 0.28s ease;
+    transition: color 0.42s ease;   /* hover 变色缓慢过渡,与全站 hover 标准一致(2026-07-22) */
 }
 
 .pillar-link:hover { color: var(--gray-900); }
@@ -1366,7 +1366,7 @@ body .home-nav .nav-cats .nav-cat.active {
         height: var(--icon-stroke, 1.5px);   /* icon 规范:描边 1.5px(style.css token) */
         background: #737373;                 /* 与太阳按钮同一不透明等效色(2026-07-22) */
         border-radius: 0;                    /* icon 规范:方头直角,不用圆头 */
-        transition: transform 0.35s var(--ease), opacity 0.28s var(--ease), background-color 0.28s ease;
+        transition: transform 0.35s var(--ease), opacity 0.28s var(--ease), background-color 0.42s ease;   /* hover 同上 */
     }
     /* X 态(两线交叉):切不透明等效色,避免半透明重叠叠亮 */
     .home-v2 .header.home-nav.nav-open .nav-toggle span { background: #737373; }
