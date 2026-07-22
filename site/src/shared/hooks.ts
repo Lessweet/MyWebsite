@@ -340,39 +340,52 @@ export function useScrollLag() {
   }, []);
 }
 
-/* ── 小屏顶栏跟随滚动推出/推回(2026-07-22,1:1 跟手):向下滚多少就把顶栏
-   推出去多少(封顶 = 顶栏高度),向上滚立刻按滚动量推回来 —— 是「跟随」而非
-   阈值触发动画。用 top 位移(手机端顶栏 transform 被清空以保全屏菜单包含块,
-   不能用 translateY);仅 ≤600px 生效,菜单展开时复位。 */
+/* ── 小屏顶栏 Smart Sticky Header(复刻旧站 2fa5094 版实现,2026-07-22 恢复):
+   下滑过 100px(累计 10px 阈值)收起,上滑(累计 10px)出现,页顶强制显示。
+   动画 = .header-hidden + 1.12s 柔和缓动(原版观感);手机端顶栏 transform 被清空
+   (保全屏菜单包含块),滑出改走 top,曲线与原 transform 版一致。仅 ≤600px 生效。 */
 export function useHideNavOnScrollMobile() {
   useEffect(() => {
     const header = document.querySelector('.header.home-nav') as HTMLElement | null;
     if (!header) return;
     const mq = window.matchMedia('(max-width: 600px)');
-    let lastY = window.scrollY;
-    let offset = 0;
-    const apply = () => {
-      header.style.top = offset > 0 ? `-${Math.round(offset)}px` : '';
-    };
+    header.classList.remove('header-hidden'); // 加载时必可见
+    let lastScrollY = window.scrollY;
+    let scrollDelta = 0;
+    const scrollThreshold = 10;
     const onScroll = () => {
-      const y = window.scrollY;
-      const d = y - lastY;
-      lastY = y;
+      const currentScrollY = window.scrollY;
+      const scrollDiff = currentScrollY - lastScrollY;
+      scrollDelta += scrollDiff;
       if (!mq.matches || header.classList.contains('nav-open')) {
-        offset = 0;
-        apply();
+        header.classList.remove('header-hidden');
+        scrollDelta = 0;
+        lastScrollY = currentScrollY;
         return;
       }
-      const H = header.offsetHeight + 8; // 完全推出(留一点余量盖住阴影)
-      offset = Math.max(0, Math.min(H, offset + d));
-      if (y <= 0) offset = 0; // 橡皮筋回弹兜底
-      apply();
+      if (scrollDiff > 0 && currentScrollY > 100) {
+        if (scrollDelta > scrollThreshold) {
+          header.classList.add('header-hidden');
+          scrollDelta = 0;
+        }
+      } else if (scrollDiff < 0) {
+        if (scrollDelta < -scrollThreshold) {
+          header.classList.remove('header-hidden');
+          scrollDelta = 0;
+        }
+      }
+      if (currentScrollY <= 10) {
+        header.classList.remove('header-hidden');
+        scrollDelta = 0;
+      }
+      lastScrollY = currentScrollY;
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
     return () => {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
+      header.classList.remove('header-hidden');
       header.style.top = '';
     };
   }, []);

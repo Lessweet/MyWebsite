@@ -39,6 +39,12 @@ export default function BlogPage() {
   useScrollLag();
 
   useEffect(() => {
+    /* 刷新恢复滚动位置(不在页顶)时不播入场:直接以完成态渲染 ——
+       否则动画在视口外照播,用户滑回顶部会撞见「播到一半」(2026-07-22 修复) */
+    if (window.scrollY > 100) {
+      setTitleIn(true);
+      return;
+    }
     let r2: number;
     const r1 = requestAnimationFrame(() => {
       r2 = requestAnimationFrame(() => setTitleIn(true));

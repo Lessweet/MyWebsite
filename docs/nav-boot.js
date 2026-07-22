@@ -36,7 +36,18 @@ function initSiteNav() {
     const navBg = wantNavBg
         ? '<iframe class="nav-bg" src="' + base + 'writing-banner.html?v=10&bare=1" title="" aria-hidden="true" tabindex="-1" scrolling="no"></iframe>'
         : '';
-    var NAV_ARROW = '<span class="nav-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.5 12 H20.5 M13.5 5 L20.5 12 L13.5 19"/></svg></span>';
+    /* 全屏菜单 per-character-rise 拆字(与首页索引行同规范,2026-07-22):
+       桌面共用同一份 DOM,拆字 span 在桌面无样式、正常渲染;
+       rise 隐藏/升起样式仅在 ≤600px 菜单态生效(writing.css)。 */
+    var ARROW_SVG = '<svg viewBox="0 0 24 24"><path d="M2.5 12 H20.5 M13.5 5 L20.5 12 L13.5 19"/></svg>';
+    var riseText = function (text, base) {
+        var out = '<span class="heading-rise-mask" aria-hidden="true">';
+        for (var k = 0; k < text.length; k++) out += '<span class="heading-rise-char" style="--d:' + (base + k * 35) + 'ms">' + text[k] + '</span>';
+        return out + '</span>';
+    };
+    var riseArrow = function (base, n) {
+        return '<span class="nav-arrow" aria-hidden="true"><span class="heading-rise-mask"><span class="heading-rise-char" style="--d:' + (base + n * 35) + 'ms">' + ARROW_SVG + '</span></span></span>';
+    };
     nav.innerHTML =
         navBg +
         '<div class="header-left">' +
@@ -51,13 +62,13 @@ function initSiteNav() {
         '<div class="nav-collapse" id="nav-collapse">' +
             '<nav class="nav-cats" aria-label="分类">' +
                 // .nav-arrow:直角箭头(icon 规范),仅手机端全屏菜单显示(复刻首页索引行版式)
-                '<a href="' + HOME + '" class="' + a('writing') + '">' + I(pencil) + 'Blog' + NAV_ARROW + '</a>' +
-                '<a href="' + base + 'archive.html" class="' + a('design') + '">' + I(design) + 'Archive' + NAV_ARROW + '</a>' +
+                '<a href="' + HOME + '" class="' + a('writing') + '" aria-label="Blog" style="--row-d:120ms">' + I(pencil) + riseText('Blog', 120) + riseArrow(120, 4) + '</a>' +
+                '<a href="' + base + 'archive.html" class="' + a('design') + '" aria-label="Archive" style="--row-d:240ms">' + I(design) + riseText('Archive', 240) + riseArrow(240, 7) + '</a>' +
             '</nav>' +
             '<div class="header-right">' +
-                '<a href="mailto:chentongrong1@gmail.com" class="header-connect" title="chentongrong1@gmail.com" aria-label="Contact">' +
+                '<a href="mailto:chentongrong1@gmail.com" class="header-connect" title="chentongrong1@gmail.com" aria-label="Contact" style="--row-d:360ms">' +
                     '<svg class="mail-icon" viewBox="2 6.5 20 11" aria-hidden="true"><path fill-rule="evenodd" d="M3.75,6.5 3.75,6.75 3.25,6.75 3.25,7.0 3.0,7.0 3.0,7.25 3.5,7.25 3.5,7.5 3.75,7.5 3.75,7.75 4.0,7.75 4.0,8.0 4.5,8.0 4.5,8.25 4.75,8.25 4.75,8.5 5.0,8.5 5.0,8.75 5.5,8.75 5.5,9.0 5.75,9.0 5.75,9.25 6.0,9.25 6.0,9.5 6.5,9.5 6.5,9.75 6.75,9.75 6.75,10.0 7.0,10.0 7.0,10.25 7.5,10.25 7.5,10.5 7.75,10.5 7.75,10.75 8.0,10.75 8.0,11.0 8.5,11.0 8.5,11.25 8.75,11.25 8.75,11.5 9.0,11.5 9.0,11.75 9.25,11.75 9.25,12.0 9.75,12.0 9.75,12.25 10.0,12.25 10.0,12.5 10.25,12.5 10.25,12.75 10.75,12.75 10.75,13.0 11.0,13.0 11.0,13.25 11.25,13.25 11.25,13.5 11.5,13.5 11.5,13.75 12.5,13.75 12.5,13.5 12.75,13.5 12.75,13.25 13.25,13.25 13.25,13.0 13.5,13.0 13.5,12.75 13.75,12.75 13.75,12.5 14.25,12.5 14.25,12.25 14.5,12.25 14.5,12.0 14.75,12.0 14.75,11.75 15.0,11.75 15.0,11.5 15.5,11.5 15.5,11.25 15.75,11.25 15.75,11.0 16.0,11.0 16.0,10.75 16.5,10.75 16.5,10.5 16.75,10.5 16.75,10.25 17.0,10.25 17.0,10.0 17.5,10.0 17.5,9.75 17.75,9.75 17.75,9.5 18.0,9.5 18.0,9.25 18.25,9.25 18.25,9.0 18.75,9.0 18.75,8.75 19.0,8.75 19.0,8.5 19.25,8.5 19.25,8.25 19.75,8.25 19.75,8.0 20.0,8.0 20.0,7.75 20.25,7.75 20.25,7.5 20.75,7.5 20.75,7.25 21.0,7.25 21.0,7.0 20.75,7.0 20.75,6.75 20.25,6.75 20.25,6.5ZM2.0,8.5 2.0,16.75 2.25,16.75 2.25,17.0 2.5,17.0 2.5,17.25 2.75,17.25 2.75,17.5 8.0,17.5 8.0,17.25 7.5,17.25 7.5,17.0 7.25,17.0 7.25,16.75 7.0,16.75 7.0,12.25 6.75,12.25 6.75,11.75 6.5,11.75 6.5,11.5 6.25,11.5 6.25,11.25 6.0,11.25 6.0,11.0 5.5,11.0 5.5,10.75 5.25,10.75 5.25,10.5 4.75,10.5 4.75,10.25 4.5,10.25 4.5,10.0 4.25,10.0 4.25,9.75 3.75,9.75 3.75,9.5 3.5,9.5 3.5,9.25 3.0,9.25 3.0,9.0 2.75,9.0 2.75,8.75 2.5,8.75 2.5,8.5ZM21.75,8.75 21.5,8.75 21.5,9.0 21.0,9.0 21.0,9.25 20.5,9.25 20.5,9.5 20.25,9.5 20.25,9.75 20.0,9.75 20.0,10.0 19.5,10.0 19.5,10.25 19.25,10.25 19.25,10.5 19.0,10.5 19.0,10.75 18.5,10.75 18.5,11.0 18.25,11.0 18.25,11.25 17.75,11.25 17.75,11.5 17.5,11.5 17.5,11.75 17.25,11.75 17.25,12.25 17.0,12.25 17.0,16.75 16.75,16.75 16.75,17.0 16.5,17.0 16.5,17.25 16.0,17.25 16.0,17.5 21.25,17.5 21.25,17.25 21.75,17.25 21.75,16.75 22.0,16.75 22.0,9.0 21.75,9.0Z"/></svg>' +
-                    '<span class="connect-label">Contact</span>' + NAV_ARROW +
+                    '<span class="connect-label">' + riseText('Contact', 360) + '</span>' + riseArrow(360, 7) +
                 '</a>' +
             '</div>' +
         '</div>';

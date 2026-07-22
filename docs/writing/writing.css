@@ -1337,8 +1337,11 @@ body .home-nav .nav-cats .nav-cat.active {
     /* 清掉顶栏的 transform(原本用于上滑隐藏,已停用):transform 会让内部 position:fixed
        的模态以顶栏为包含块而非视口,导致模态高度被顶栏撑不开、只露第一项。清掉后模态铺满整屏。 */
     .home-v2 .header.home-nav { transform: none; }
-    /* 小屏顶栏「跟手」推出/推回(2026-07-22):useHideNavOnScrollMobile 按滚动量
-       1:1 写 top(不能用 transform —— 会把全屏菜单的包含块变成顶栏),无过渡、跟随滚动 */
+    /* 小屏 Smart Sticky Header(2026-07-22 恢复旧站交互):下滑收起、上滑出现。
+       不能用 transform(会把全屏菜单的包含块变成顶栏),用 top 滑出,
+       缓动曲线与 style.css 原 transform 版完全一致(1.12s soft) */
+    .home-v2 .header.home-nav { top: 0; transition: top 1.12s cubic-bezier(0.22, 1, 0.36, 1); }
+    .home-v2 .header.home-nav.header-hidden { top: -96px; }
 
     /* 汉堡按钮:三条黑色横线 */
     .home-v2 .header.home-nav .nav-toggle {
@@ -1444,6 +1447,41 @@ body .home-nav .nav-cats .nav-cat.active {
         transform: translateY(12px);
         transition: opacity 0.56s var(--ease), transform 0.56s var(--ease);
     }
+    /* 全屏菜单入场 = per-character-rise(与首页索引行同规范,2026-07-22):
+       行容器常显(不再整块淡入),字符从基线下升起,分割线随行延迟(--row-d)淡入 */
+    .home-v2 .header.home-nav .nav-collapse .nav-cat,
+    .home-v2 .header.home-nav .nav-collapse .header-connect {
+        opacity: 1;
+        transform: none;
+        border-top-color: transparent;
+        transition: border-top-color 1.05s var(--ease-soft) var(--row-d, 0s);
+    }
+    .home-v2 .header.home-nav.nav-open .nav-collapse .nav-cat,
+    .home-v2 .header.home-nav.nav-open .nav-collapse .header-connect {
+        border-top-color: rgba(0, 0, 0, 0.2);
+    }
+    .home-v2 .header.home-nav .nav-collapse .heading-rise-mask {
+        display: inline-flex;
+        overflow: hidden;
+        padding: 0.12em 0;
+        line-height: inherit;
+        vertical-align: top;
+    }
+    .home-v2 .header.home-nav .nav-collapse .heading-rise-char {
+        display: inline-block;
+        transform: translateY(110%);
+        opacity: 0;
+        white-space: pre;
+        transition:
+            transform 1.26s var(--ease-soft) var(--d, 0s),
+            opacity 1.05s ease-out var(--d, 0s);
+    }
+    /* 收起时立即复位(无过渡),再次展开可完整重播 */
+    .home-v2 .header.home-nav:not(.nav-open) .nav-collapse .heading-rise-char { transition: none; }
+    .home-v2 .header.home-nav.nav-open .nav-collapse .heading-rise-char {
+        transform: translateY(0);
+        opacity: 1;
+    }
     /* 全屏菜单不做当前页高亮(2026-07-22 用户要求):active 与其余项同色 ——
        桌面顶栏的 active 规则(0,5,1 / 0,6,1)会打进面板,这里用更满的选择器压掉 */
     .home-v2 .header.home-nav .nav-collapse .nav-cats .nav-cat.active { color: #1a1a1a; }
@@ -1478,10 +1516,6 @@ body .home-nav .nav-cats .nav-cat.active {
     .home-v2 .header.home-nav .nav-collapse .header-connect .connect-label {
         font-weight: var(--fw-normal, 400) !important;
     }
-    /* 展开时三项逐个错开入场 */
-    .home-v2 .header.home-nav.nav-open .nav-collapse .nav-cats .nav-cat:nth-child(1) { transition-delay: 0.112s; }
-    .home-v2 .header.home-nav.nav-open .nav-collapse .nav-cats .nav-cat:nth-child(2) { transition-delay: 0.196s; }
-    .home-v2 .header.home-nav.nav-open .nav-collapse .header-connect { transition-delay: 0.28s; }
 
     /* 手机端顶栏背景保持透明(让通栏 banner 透出),不出现白底。
        排除文章详情页(reading-page):其顶栏沿用桌面端的不透明 page-tint 背景,
@@ -2233,11 +2267,15 @@ body.theme-dark .design-content .category-section .section-divider {
     body.menu-dark .header.home-nav .nav-collapse .nav-cat,
     body.menu-dark .header.home-nav .nav-collapse .header-connect {
         color: rgba(255, 255, 255, 0.3);
-        /* 行分割线随主题反白(2026-07-22:黑模态上 rgba(0,0,0,.2) 几乎不可见) */
-        border-top-color: rgba(255, 255, 255, 0.2);
+
     }
     body.menu-dark .header.home-nav .nav-collapse .nav-cat:hover,
     body.menu-dark .header.home-nav .nav-collapse .header-connect:hover { color: rgba(255, 255, 255, 0.6); }
+    /* 深色菜单分割线:展开时从透明淡入到 20% 白(rise 入场同节奏) */
+    body.menu-dark .header.home-nav .nav-collapse .nav-cat,
+    body.menu-dark .header.home-nav .nav-collapse .header-connect { border-top-color: transparent; }
+    body.menu-dark .header.home-nav.nav-open .nav-collapse .nav-cat,
+    body.menu-dark .header.home-nav.nav-open .nav-collapse .header-connect { border-top-color: rgba(255, 255, 255, 0.2); }
     /* 深色面板同理:active 不高亮(压过 theme-dark 顶栏 active 反白),hover 仍提亮 */
     body.menu-dark .header.home-nav .nav-collapse .nav-cats .nav-cat.active { color: rgba(255, 255, 255, 0.3); }
     body.menu-dark .header.home-nav .nav-collapse .nav-cats .nav-cat.active:hover { color: rgba(255, 255, 255, 0.6); }
