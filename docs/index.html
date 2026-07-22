@@ -36,6 +36,8 @@
             transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
         }
         /* 数字排版:大数字 + 小号 % 沉底对齐(下标感) */
+        /* 进度数字暂不展示(2026-07-22 用户要求):引擎照常驱动(收尾时序不变),仅视觉隐藏 */
+        #page-loader .pl-num { visibility: hidden; }
         #page-loader .pl-num {
             position: absolute; inset: 0;
             display: flex; align-items: center; justify-content: center;
@@ -86,10 +88,12 @@
            只留黑色 logo;黑面扫过时随之没入黑色(有意为之 —— logo 溶进「墨面」)。
            位于数字上方,与数字同轴居中。 */
         #page-loader .pl-logo {
-            position: absolute; left: 50%; top: 32%;
+            position: absolute; left: 50%; top: 50%;
             width: 100px; height: 100px;
             transform: translate(-50%, -50%);
-            mix-blend-mode: multiply;
+            /* invert + difference:黑底部分融进背景,logo 在浅底呈黑、黑面扫过时呈白(随背景反色) */
+            filter: invert(1);
+            mix-blend-mode: difference;
             pointer-events: none;
         }
         html.is-loading, html.is-loading body { overflow: hidden; }
