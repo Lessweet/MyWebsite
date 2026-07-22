@@ -1296,7 +1296,7 @@ body .home-nav .nav-cats .nav-cat.active {
     transition: color 0.42s ease;   /* hover 柔和过渡(2026-07-22) */
 }
 .design-page .home-nav .nav-cats .nav-cat:hover {
-    color: rgba(0, 0, 0, 0.6);
+    color: var(--gray-500);   /* 与 blog 卡 hover 同灰(2026-07-22) */
 }
 .design-page .home-nav .nav-cats .nav-cat.active {
     color: #000;
@@ -1488,10 +1488,10 @@ body .home-nav .nav-cats .nav-cat.active {
     /* 全屏菜单不做当前页高亮(2026-07-22 用户要求):active 与其余项同色 ——
        桌面顶栏的 active 规则(0,5,1 / 0,6,1)会打进面板,这里用更满的选择器压掉 */
     .home-v2 .header.home-nav .nav-collapse .nav-cats .nav-cat.active { color: #1a1a1a; }
-    .home-v2 .header.home-nav .nav-collapse .nav-cats .nav-cat.active:hover { color: rgba(0, 0, 0, 0.5); }
+    .home-v2 .header.home-nav .nav-collapse .nav-cats .nav-cat.active:hover { color: var(--gray-500); }
     /* 全屏菜单三项 hover:变色不位移,与首页索引行同规范(2026-07-22) */
     .home-v2 .header.home-nav .nav-collapse .nav-cat:hover,
-    .home-v2 .header.home-nav .nav-collapse .header-connect:hover { color: rgba(0, 0, 0, 0.5); }
+    .home-v2 .header.home-nav .nav-collapse .header-connect:hover { color: var(--gray-500); }
     /* 行内的直角箭头(writing.js 注入,桌面端由下方规则隐藏):同 icon 规范 */
     .home-v2 .header.home-nav .nav-collapse .nav-cat .nav-arrow,
     .home-v2 .header.home-nav .nav-collapse .header-connect .nav-arrow { display: block; }
@@ -2234,7 +2234,7 @@ body.no-banner.theme-dark .home-nav .header-connect:hover { color: rgba(255, 255
 /* 顶栏不做当前页高亮(2026-07-22 用户要求):active 与其余项同色,仅 hover 提亮。
    浅色压过前面 (0,5,1) 的 active=#000,深色直接给统一值 */
 body.design-page .home-nav .nav-cats .nav-cat.active { color: rgba(0, 0, 0, 0.3); }
-body.design-page .home-nav .nav-cats .nav-cat.active:hover { color: rgba(0, 0, 0, 0.6); }
+body.design-page .home-nav .nav-cats .nav-cat.active:hover { color: var(--gray-500); }
 body.no-banner.theme-dark .home-nav .nav-cats .nav-cat,
 body.no-banner.theme-dark .home-nav .nav-cats .nav-cat.active { color: rgba(255, 255, 255, 0.3); }
 body.no-banner.theme-dark .home-nav .nav-cats .nav-cat:hover,
@@ -2481,7 +2481,7 @@ body.home-landing .home-index-row .hi-arrow svg {
     stroke-linecap: butt;
     stroke-linejoin: miter;
 }
-body.home-landing .home-index-row:hover { color: rgba(0, 0, 0, 0.5); }
+body.home-landing .home-index-row:hover { color: var(--gray-500); }   /* 与 blog 卡 hover 同灰(2026-07-22) */
 /* hover 只变色,箭头不再位移(2026-07-22 用户要求) */
 
 /* 入场:per-character-rise(与分区标题同一套 pixel-point/animate-text 规范,
