@@ -1362,12 +1362,14 @@ body .home-nav .nav-cats .nav-cat.active {
     }
     .home-v2 .header.home-nav .nav-toggle span {
         display: block;
-        width: 22px;
+        width: 18px;                         /* 22 → 18:圆底内与太阳光学尺寸平衡(2026-07-22) */
         height: var(--icon-stroke, 1.5px);   /* icon 规范:描边 1.5px(style.css token) */
-        background: rgb(112, 112, 112);     /* 与太阳按钮同亮度的不透明等效色(半透明双线交叉会叠亮,2026-07-22) */
+        background: rgba(0, 0, 0, 0.55);     /* 与太阳按钮完全同色;交叉叠亮只在 X 态,由下方规则切不透明 */
         border-radius: 0;                    /* icon 规范:方头直角,不用圆头 */
         transition: transform 0.35s var(--ease), opacity 0.28s var(--ease), background-color 0.28s ease;
     }
+    /* X 态(两线交叉):切不透明等效色,避免半透明重叠叠亮 */
+    .home-v2 .header.home-nav.nav-open .nav-toggle span { background: rgb(112, 112, 112); }
     /* hover 与太阳按钮一致:提为实色 */
     .home-v2 .header.home-nav .nav-toggle:hover span { background: #181818; }
     /* 汉堡改两条线(2026-07-21):中线常隐(markup 仍是三条,兼容旧结构),
@@ -2300,7 +2302,7 @@ body.theme-dark .design-content .category-section .section-divider {
 
     /* —— 页面本身是黑底才需要的(.theme-dark) —— */
     /* 未展开时的汉堡:黑底页上要反白(Cases 白底页不走这条,保持深色) */
-    body.no-banner.theme-dark .header.home-nav .nav-toggle span { background: rgb(145, 145, 145); }
+    body.no-banner.theme-dark .header.home-nav .nav-toggle span { background: rgba(255, 255, 255, 0.55); }
     body.no-banner.theme-dark .header.home-nav .nav-toggle:hover span { background: #fff; }
     /* 手机端上面有条 body.home-v2:not(.reading-page) 的 transparent !important,得压回来 */
     body.home-v2.no-banner.theme-dark:not(.reading-page) .header.home-nav { background: var(--page-bg) !important; }
