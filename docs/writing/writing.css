@@ -2831,7 +2831,7 @@ body.blog-page .bl-thumb img {
 }
 body.blog-page .bl-text { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
 body.blog-page .bl-title {
-    margin: 0;
+    margin: 0 0 4px;   /* 标题与简介间距在 gap 6px 基础上再 +4(2026-07-22) */
     font-size: var(--fs-p, 18px);
     font-weight: 600;
     color: var(--gray-900);
