@@ -340,15 +340,15 @@ export function useScrollLag() {
   }, []);
 }
 
-/* ── 小屏顶栏 Smart Sticky Header(复刻旧站 2fa5094 版实现,2026-07-22 恢复):
+/* ── Smart Sticky Header(复刻旧站 2fa5094 版实现,2026-07-22 恢复):
    下滑过 100px(累计 10px 阈值)收起,上滑(累计 10px)出现,页顶强制显示。
-   动画 = .header-hidden + 1.12s 柔和缓动(原版观感);手机端顶栏 transform 被清空
-   (保全屏菜单包含块),滑出改走 top,曲线与原 transform 版一致。仅 ≤600px 生效。 */
+   动画 = .header-hidden + 1.12s 柔和缓动(原版观感)。原版全宽生效,此处一致;
+   桌面走 style.css 的 transform 滑出,手机端 transform 被清空(保全屏菜单包含块)、
+   由 writing.css 的 top 位移实现同曲线滑出。 */
 export function useHideNavOnScrollMobile() {
   useEffect(() => {
     const header = document.querySelector('.header.home-nav') as HTMLElement | null;
     if (!header) return;
-    const mq = window.matchMedia('(max-width: 600px)');
     header.classList.remove('header-hidden'); // 加载时必可见
     let lastScrollY = window.scrollY;
     let scrollDelta = 0;
@@ -357,7 +357,7 @@ export function useHideNavOnScrollMobile() {
       const currentScrollY = window.scrollY;
       const scrollDiff = currentScrollY - lastScrollY;
       scrollDelta += scrollDiff;
-      if (!mq.matches || header.classList.contains('nav-open')) {
+      if (header.classList.contains('nav-open')) {
         header.classList.remove('header-hidden');
         scrollDelta = 0;
         lastScrollY = currentScrollY;

@@ -2,10 +2,10 @@
  * Blog 页(docs/blog.html 的 React 版)。DOM 结构与旧页逐类名一致;
  * 筛选逻辑 = writing.js initWritingFilter 的状态化移植(卡片日期倒序、hidden 显隐)。
  */
-import { useEffect, useState } from 'react';
-import type { CSSProperties } from 'react';
+import { useState } from 'react';
 import { blogCards } from '../../content/articles';
 import { CatIcon } from '../../shared/catIcons';
+import PageTitle from '../../shared/PageTitle';
 import {
   useStickyMenu,
   useScrollProgress,
@@ -25,10 +25,6 @@ const FILTERS: { key: Filter; label: string }[] = [
 
 export default function BlogPage() {
   const [filter, setFilter] = useState<Filter>('all');
-  /* 「Blog.」标题入场:per-character-rise(与首页索引行同一套 pixel-point 规范,
-     复用 style.css 的 heading-rise 通用样式,35ms/字)。双 rAF 先让初始隐藏态
-     绘制一帧再显现,避免跳过过渡(与站内其它入场动画同一纪律)。 */
-  const [titleIn, setTitleIn] = useState(false);
   const cards = blogCards();
 
   useHeaderAlwaysVisible();
@@ -38,41 +34,9 @@ export default function BlogPage() {
   useHideNavOnScrollMobile();
   useScrollLag();
 
-  useEffect(() => {
-    /* 刷新恢复滚动位置(不在页顶)时不播入场:直接以完成态渲染 ——
-       否则动画在视口外照播,用户滑回顶部会撞见「播到一半」(2026-07-22 修复) */
-    if (window.scrollY > 100) {
-      setTitleIn(true);
-      return;
-    }
-    let r2: number;
-    const r1 = requestAnimationFrame(() => {
-      r2 = requestAnimationFrame(() => setTitleIn(true));
-    });
-    return () => {
-      cancelAnimationFrame(r1);
-      cancelAnimationFrame(r2);
-    };
-  }, []);
-
   return (
     <>
-      <h1
-        className={'page-title heading-rise' + (titleIn ? ' heading-rise-in' : '')}
-        aria-label="Blog"
-      >
-        <span className="heading-rise-mask" aria-hidden="true">
-          {'Blog'.split('').map((ch, i) => (
-            <span
-              key={i}
-              className="heading-rise-char"
-              style={{ '--d': `${i * 35}ms` } as CSSProperties}
-            >
-              {ch}
-            </span>
-          ))}
-        </span>
-      </h1>
+      <PageTitle text="Blog" />
       <aside aria-label="Writing 分类" className="design-menu">
         {FILTERS.map((f) => (
           <button

@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import LikeButton from '../../shared/LikeButton';
 import HeadingRise from '../../shared/HeadingRise';
+import PageTitle from '../../shared/PageTitle';
 import { PIXEL_PATHS } from './pixelIcons';
 import {
   useStickyMenu,
@@ -131,7 +132,7 @@ export default function ArchivePage() {
 
   return (
     <>
-      <h1 className="page-title">Archive</h1>
+      <PageTitle text="Archive" />
       {/* VIBEDESIGN banner:置于顶部做 hero,三套样式轮播。
           与作品卡同构(card-wrapper + card-info):下方显示名称与时间(2026-07-22) */}
       <div className="card-wrapper banner-card">
