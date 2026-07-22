@@ -166,6 +166,7 @@ export function usePillarEntrance() {
     const COL_STAGGER = 180;
     const timers: number[] = [];
     let observer: IntersectionObserver | null = null;
+    let resetObserver: IntersectionObserver | null = null;
     let mo: MutationObserver | null = null;
 
     const revealByRow = (els: HTMLElement[]) => {
@@ -202,18 +203,37 @@ export function usePillarEntrance() {
           });
           revealByRow(inView);
 
+          /* 2026-07-22 改为可重播:进入视口按行错峰显现;完全离开视口后复位,
+             再次进入(上滑回来同样)重新依次入场 */
           observer = new IntersectionObserver(
             (entries) => {
               const hits = entries
                 .filter((e) => e.isIntersecting)
-                .map((e) => e.target as HTMLElement);
-              hits.forEach((el) => observer!.unobserve(el));
+                .map((e) => e.target as HTMLElement)
+                .filter((el) => !el.dataset.entered);
               if (hits.length) revealByRow(hits);
             },
             { root: null, rootMargin: '0px 0px -50px 0px', threshold: 0.1 },
           );
+          resetObserver = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((e) => {
+                if (e.isIntersecting) return;
+                const el = e.target as HTMLElement;
+                if (!el.dataset.entered) return;
+                /* 复位瞬时完成(临时禁过渡),避免快速滑回时撞见半程反向动画 */
+                el.style.transition = 'none';
+                el.classList.remove('visible', 'heading-rise-in');
+                delete el.dataset.entered;
+                void el.offsetWidth;
+                el.style.transition = '';
+              });
+            },
+            { threshold: 0 },
+          );
           targets.forEach((el) => {
-            if (!el.dataset.entered) observer!.observe(el);
+            observer!.observe(el);
+            resetObserver!.observe(el);
           });
         }),
       );
@@ -233,6 +253,7 @@ export function usePillarEntrance() {
     return () => {
       timers.forEach(clearTimeout);
       observer?.disconnect();
+      resetObserver?.disconnect();
       mo?.disconnect();
     };
   }, []);
