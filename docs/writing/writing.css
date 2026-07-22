@@ -2333,6 +2333,10 @@ body.home-landing .home-nav .theme-toggle svg *,
 body.blog-page .home-nav .theme-toggle svg *,
 body.works-page .home-nav .theme-toggle svg *,
 body.home-landing .home-index-row .hi-arrow svg * { vector-effect: non-scaling-stroke; }
+/* 主题切换按钮双 icon:浅色显示太阳,深色显示月亮(2026-07-22) */
+.home-nav .theme-toggle .tt-moon { display: none; }
+body.theme-dark .home-nav .theme-toggle .tt-sun { display: none; }
+body.theme-dark .home-nav .theme-toggle .tt-moon { display: block; }
 body.home-landing.theme-dark .home-nav .theme-toggle,
 body.blog-page.theme-dark .home-nav .theme-toggle,
 body.works-page.theme-dark .home-nav .theme-toggle { color: rgba(255, 255, 255, 0.55); }

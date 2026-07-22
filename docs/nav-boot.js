@@ -68,10 +68,14 @@ function initSiteNav() {
         tt.type = 'button';
         tt.className = 'theme-toggle';
         tt.setAttribute('aria-label', '切换深色 / 浅色模式');
+        /* 双 icon:浅色显示太阳、深色显示月亮(writing.css 按 body.theme-dark 切换显隐) */
         tt.innerHTML =
-            '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+            '<svg class="tt-sun" viewBox="0 0 24 24" aria-hidden="true">' +
                 '<circle cx="12" cy="12" r="4.6"/>' +
                 '<path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5.2 5.2l1.9 1.9M16.9 16.9l1.9 1.9M18.8 5.2l-1.9 1.9M7.1 16.9l-1.9 1.9"/>' +
+            '</svg>' +
+            '<svg class="tt-moon" viewBox="0 0 24 24" aria-hidden="true">' +
+                '<path d="M20.6 13.4A8.4 8.4 0 1 1 10.6 3.4 6.6 6.6 0 0 0 20.6 13.4z"/>' +
             '</svg>';
         tt.addEventListener('click', toggleSiteTheme);
         nav.appendChild(tt);
