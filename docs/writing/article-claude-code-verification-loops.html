@@ -14,7 +14,7 @@
 <script src="writing.js?v=85"></script>
 </head>
 <!-- 复用首页 index.html 的胶囊顶栏:home-v2 控制顶栏内边距,design-page 提供胶囊样式 -->
-<body class="writing-page home-v2 design-page reading-page" data-accent="#4FBE8C" data-tint="mint">
+<body class="writing-page home-v2 design-page reading-page" data-accent="#4771F0" data-tint="blue">
 <!-- 顶部导航:与首页同一个组件(initSiteNav);data-base="../" 把站内链接/资源指回 docs 根目录。
          返回入口 = 左侧 VIBEUX 与高亮的 Writing 胶囊,均回到 index.html#writing -->
 <header class="header home-nav" data-active="writing" data-base="../" id="site-nav"></header>
@@ -58,7 +58,7 @@
 .article-byline { text-align: center; justify-content: center; }
 .article-body { color: #1a1a1a; line-height: 1.4; }
 .article-body p { font-size: var(--fs-body); font-weight: 300; margin: 40px 0; color: #1a1a1a; }
-.article-body strong { font-weight: 400; color: #4FBE8C; }
+.article-body strong { font-weight: 400; color: #4771F0; }
 .article-body .list-dot { font-weight: 600; margin-right: 4px; color: #1a1a1a; }
 .article-body .section-head { text-align: center; margin: 56px 0; }
 /* 图标居中：svg display:block + margin auto，别改回 vertical-align/line-height/padding（微信按基线对齐会贴底、border-box 下 padding 挤小图标）。跟 template.html 保持一致。详见记忆 wechat-icon-vertical-center。 */
@@ -70,7 +70,7 @@
 .article-body .img-ph { display: flex; align-items: center; justify-content: center; text-align: center; min-height: 160px; margin: 24px 0; padding: 28px 20px; border: 1px dashed #d6d6de; border-radius: 12px; background: repeating-linear-gradient(45deg, #fafafb, #fafafb 10px, #f3f3f6 10px, #f3f3f6 20px); }
 .article-body .img-ph .img-ph-cap { font-size: var(--fs-caption); color: #9a9aa6; line-height: 1.5; max-width: 80%; }
 .article-body .highlight { font-size: var(--fs-body); font-weight: 300; line-height: 1.4; color: #1a1a1a; margin: 40px 0; }
-.article-body .highlight strong { font-weight: 400; color: #4FBE8C; }
+.article-body .highlight strong { font-weight: 400; color: #4771F0; }
 
 /* outlined 图标动画 CSS（自动从 design-gallery 抽取，不要手改） */
 /* 时长/延迟变量（在 design-gallery 基础上整体提速 ~40%，文章里看着更精神） */
@@ -500,7 +500,7 @@
 <animateTransform attributeName="transform" dur="1.9s" keyTimes="0;0.1;0.32;0.44;0.56;0.66;1" repeatCount="indefinite" type="translate" values="0 0;0 0;0 -10;0 -10;0 2;0 -0.8;0 0"></animateTransform>
 </path>
 </g>
-</g></g></svg></span><h2 style="color: #4FBE8C;">验证 Skill<br/>把检查习惯写成规矩</h2></div>
+</g></g></svg></span><h2 style="color: #4771F0;">验证 Skill<br/>把检查习惯写成规矩</h2></div>
 <p>Agentic coding 的循环是这样的：发出请求 → 收集上下文 → 执行动作 → 验证结果 → 不对就再来一轮。Claude Code 内置了一批验证能力——从 <code>/verify</code> Skill 到 Toolchain 错误捕获到 PR 级的 Code Review——但这些查的是通用规范。每次手动重复做的、跟项目绑定的检查，它不知道。</p>
 <p>博客里给的思路是：<strong>把每次实现新功能之后重复执行的手动检查记下来，用大白话写出来，就像第一天交给新队友的那份文档。</strong> 不光是定性的判断能写，确定性的死规则一样好使——「拒绝任何没有 backfill 就删除列的数据库迁移」，这种 linter 管不到但项目里必须遵守的规矩，写成 Skill 反而更合适。</p>
 <p>博客给了一个最小验证 Skill 的例子，检查日志规范的：</p>
@@ -527,12 +527,12 @@ allowed-tools: [Read, Edit, Grep]
 <rect fill="#7E6BEE" height="21" rx="8" width="21" x="29" y="29">
 <animateTransform attributeName="transform" dur="1.9s" keyTimes="0;0.15;0.4;0.6;0.85;1" repeatCount="indefinite" type="translate" values="0 0;0 0;5 5;5 5;0 0;0 0"></animateTransform>
 </rect>
-</g></g></svg></span><h2 style="color: #4FBE8C;">四种挂法<br/>从个人习惯到团队标准</h2></div>
+</g></g></svg></span><h2 style="color: #4771F0;">四种挂法<br/>从个人习惯到团队标准</h2></div>
 <p>验证 Skill 写好了，怎么挂到工作流里？博客给了四种方式，从轻到重。</p>
-<p><span class="list-dot" style="font-weight:600;margin-right:4px;color:#4FBE8C;">•</span><strong style="font-weight:600">独立调用（Standalone）</strong>，想起来手动跑一下。适合安全扫描、无障碍审计这类横切检查，不需要每次改完都跑。缺点是得自己记着调；如果发现每次都要手动跑一遍，说明该往下挪了。</p>
-<p><span class="list-dot" style="font-weight:600;margin-right:4px;color:#4FBE8C;">•</span><strong style="font-weight:600">嵌入式（Embedded）</strong>，在生成型 Skill 末尾追一句话。比如组件脚手架 Skill 的末尾加一行「创建组件文件后，对其运行 eslint，解决所有报错后再报告完成」——验证就自动成了生成流程的一部分。限制是只能改自己维护的 Skill，内置的改不了。</p>
-<p><span class="list-dot" style="font-weight:600;margin-right:4px;color:#4FBE8C;">•</span><strong style="font-weight:600">链式（Chained）</strong>，一个 Skill 跑完自动调下一个。博客提到 Anthropic 的 Claude Code 团队日常就在用这个模式：先跑 <code>/code-review</code> 找 bug，再跑 <code>/simplify</code> 清理 diff，然后 <code>/verify</code> 确认功能，最后走自定义的 <code>/design</code> Skill 检查 UI 规范——四步串成一条链，<strong>习惯变成了合约</strong>。但 token 消耗会明显增加，博客建议广泛部署前先测几轮。</p>
-<p><span class="list-dot" style="font-weight:600;margin-right:4px;color:#4FBE8C;">•</span><strong style="font-weight:600">每个 PR 上</strong>，链式验证稳定之后推到团队级——每个 PR 自动过同一套标准，不管谁提交都走同样的关卡。博客的建议是别急着推：验证流程没稳定就上到 PR 级，每次调整都是团队可见事件。</p>
+<p><span class="list-dot" style="font-weight:600;margin-right:4px;color:#4771F0;">•</span><strong style="font-weight:600">独立调用（Standalone）</strong>，想起来手动跑一下。适合安全扫描、无障碍审计这类横切检查，不需要每次改完都跑。缺点是得自己记着调；如果发现每次都要手动跑一遍，说明该往下挪了。</p>
+<p><span class="list-dot" style="font-weight:600;margin-right:4px;color:#4771F0;">•</span><strong style="font-weight:600">嵌入式（Embedded）</strong>，在生成型 Skill 末尾追一句话。比如组件脚手架 Skill 的末尾加一行「创建组件文件后，对其运行 eslint，解决所有报错后再报告完成」——验证就自动成了生成流程的一部分。限制是只能改自己维护的 Skill，内置的改不了。</p>
+<p><span class="list-dot" style="font-weight:600;margin-right:4px;color:#4771F0;">•</span><strong style="font-weight:600">链式（Chained）</strong>，一个 Skill 跑完自动调下一个。博客提到 Anthropic 的 Claude Code 团队日常就在用这个模式：先跑 <code>/code-review</code> 找 bug，再跑 <code>/simplify</code> 清理 diff，然后 <code>/verify</code> 确认功能，最后走自定义的 <code>/design</code> Skill 检查 UI 规范——四步串成一条链，<strong>习惯变成了合约</strong>。但 token 消耗会明显增加，博客建议广泛部署前先测几轮。</p>
+<p><span class="list-dot" style="font-weight:600;margin-right:4px;color:#4771F0;">•</span><strong style="font-weight:600">每个 PR 上</strong>，链式验证稳定之后推到团队级——每个 PR 自动过同一套标准，不管谁提交都走同样的关卡。博客的建议是别急着推：验证流程没稳定就上到 PR 级，每次调整都是团队可见事件。</p>
 <p>有个小细节能说明问题——Anthropic 团队链式流程里那步 <code>/design</code> Skill，查的是 UI 规范。设计标准同样能编成验证 Skill：比如组件命名有没有对齐设计系统、间距有没有跟规范走、配色有没有跑出色板——review 时人眼扫的那些检查，同样可以写成一条自动验证。</p>
 <img alt="验证 Skill 的四种挂法：越往右越自动，也越团队化" src="assets/claude-code-verification-loops/02-四种挂法.png"/>
 <div class="section-head"><span class="icon-badge" style="background: transparent;"><svg height="40" viewBox="0 0 64 64" width="40" xmlns="http://www.w3.org/2000/svg">
@@ -545,14 +545,14 @@ allowed-tools: [Read, Edit, Grep]
 <path d="M 20 15 L 44 15 C 46.21 15 46.97 16.46 45.69 18.27 L 38.31 28.73 C 37.03 30.54 37.03 33.46 38.31 35.27 L 45.69 45.73 C 46.97 47.54 46.21 49 44 49 L 20 49 C 17.79 49 17.03 47.54 18.31 45.73 L 25.69 35.27 C 26.97 33.46 26.97 30.54 25.69 28.73 L 18.31 18.27 C 17.03 16.46 17.79 15 20 15 Z" fill="#FBA6D2"></path>
 </g>
 </g>
-</g></g></svg></span><h2 style="color: #4FBE8C;">Skill 越写越多<br/>维护也是成本</h2></div>
+</g></g></svg></span><h2 style="color: #4771F0;">Skill 越写越多<br/>维护也是成本</h2></div>
 <p>编进 Skill 的检查越多，Claude 第一次交出来的结果越接近标准——因为它知道最后要过哪些关，执行时就会主动对齐。</p>
 <p>但 Skill 不是写完就完事的。链式验证跑一轮，token 消耗比单个 Skill 高出不少；Skill 本身也需要迭代，第一版写出来大概率要在新任务上试几轮、发现遗漏、再改。博客给了个具体的起步建议：<strong>挑出这周重复次数最多的那一个手动收尾步骤</strong>，先试内置的 <code>/verify</code> Skill，不够用再用大白话写一条自定义的，在新任务上跑一遍确认效果。</p>
 <p>【补充亲历：自己写验证 Skill 的一个实际场景——比如给写作流程、图标检查加过什么验证，第一版效果怎样、迭代了几轮】</p>
 <p>高频且固定的手动检查——每次都会犯的同类错误、每次都要过的格式规范——编成验证 Skill 省掉的时间实打实，值得放进日常。但标准还在变的检查、或者偶尔才做一次的审查，维护成本可能比手动跑还高，不急着编。过期的 Skill 跑出来的结果比不跑更麻烦——以为检查过了，其实查的是过时的规矩。</p>
-<p style="display:flex; align-items:center; margin:40px 0;"><span style="flex:1 1 auto;height:1px;background:#4FBE8C;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" fill="#4FBE8C" r="4.3"></circle></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#4FBE8C" points="8,3.50 4.10,10.25 11.90,10.25"></polygon></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#4FBE8C" points="8,3.20 9.18,6.38 12.57,6.52 9.90,8.62 10.82,11.88 8,10.00 5.18,11.88 6.10,8.62 3.44,6.52 6.82,6.38"></polygon></svg><span style="flex:1 1 auto;height:1px;background:#4FBE8C;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span></p>
+<p style="display:flex; align-items:center; margin:40px 0;"><span style="flex:1 1 auto;height:1px;background:#4771F0;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" fill="#4771F0" r="4.3"></circle></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#4771F0" points="8,3.50 4.10,10.25 11.90,10.25"></polygon></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#4771F0" points="8,3.20 9.18,6.38 12.57,6.52 9.90,8.62 10.82,11.88 8,10.00 5.18,11.88 6.10,8.62 3.44,6.52 6.82,6.38"></polygon></svg><span style="flex:1 1 auto;height:1px;background:#4771F0;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span></p>
 <p>Claude Code 团队的 Delba de Oliviera 在博客结尾写了一段话：那些不再需要你亲手修的部分，把你的注意力释放出来，留给了只有你能做的、没有任何 Skill 能替代的工作。</p>
-<p style="display:flex; align-items:center; margin:40px 0;"><span style="flex:1 1 auto;height:1px;background:#4FBE8C;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" fill="#4FBE8C" r="4.3"></circle></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#4FBE8C" points="8,3.50 4.10,10.25 11.90,10.25"></polygon></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#4FBE8C" points="8,3.20 9.18,6.38 12.57,6.52 9.90,8.62 10.82,11.88 8,10.00 5.18,11.88 6.10,8.62 3.44,6.52 6.82,6.38"></polygon></svg><span style="flex:1 1 auto;height:1px;background:#4FBE8C;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span></p>
+<p style="display:flex; align-items:center; margin:40px 0;"><span style="flex:1 1 auto;height:1px;background:#4771F0;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" fill="#4771F0" r="4.3"></circle></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#4771F0" points="8,3.50 4.10,10.25 11.90,10.25"></polygon></svg><svg height="15" style="display:inline-block;vertical-align:middle;margin:0 9px;flex:0 0 auto;" width="15" xmlns="http://www.w3.org/2000/svg"><polygon fill="#4771F0" points="8,3.20 9.18,6.38 12.57,6.52 9.90,8.62 10.82,11.88 8,10.00 5.18,11.88 6.10,8.62 3.44,6.52 6.82,6.38"></polygon></svg><span style="flex:1 1 auto;height:1px;background:#4771F0;opacity:0.35;font-size:0;line-height:0;overflow:hidden;"></span></p>
 <p>本文内容参考 Anthropic 官方博客 Building verification loops in Claude Code with skills。</p></div>
 <!-- 底部 -->
 <footer class="article-footer">
