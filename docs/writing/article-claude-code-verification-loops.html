@@ -481,7 +481,9 @@
     42% { transform: scale(1.2); }
   }
 </style>
-<p>用 Claude Code 生成设计的这个流程，检验环节一直省不掉。基本每次生成，总有细节不到位，每次都是差不多的“截图+修改prompt”。Anthropic 7 月 22 号发的博客正好聊了这件事，管它叫验证循环（verification loop）——每次重复做的那些检查步骤，可以编成 Skill 让 Claude 自己执行。</p>
+<p>用 coding Agent 生成设计的这个过程中，基本每次生成后，都要“截图+修改prompt”这个手动检验环节。</p>
+<p>大多数 agentic coding session 都遵循一个循环： agent 收集上下文，采取行动，验证结果，并在需要时回到循环中收集更多上下文。而 agent 无法推断的内容成为了手动检查功能的步骤。</p>
+<p>Anthropic 把这个过程叫验证循环（verification loop）——每次重复做的那些检查步骤，可以编成 Skill 让 Claude 自己执行。</p>
 <div class="section-head"><span class="icon-badge" style="background: transparent;"><svg height="40" viewBox="0 0 64 64" width="40" xmlns="http://www.w3.org/2000/svg">
 <defs><clipPath id="ne-clip-stack"><rect height="64" rx="15" width="64"></rect></clipPath></defs>
 <rect fill="#EEC3F5" height="64" rx="15" width="64"></rect>
