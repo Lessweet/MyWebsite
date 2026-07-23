@@ -481,9 +481,8 @@
     42% { transform: scale(1.2); }
   }
 </style>
-<p>用 coding Agent 生成设计的这个过程中，基本每次生成后，都要“截图+修改prompt”这个手动检验环节。</p>
-<p>大多数 agentic coding session 都遵循一个循环： agent 收集上下文，采取行动，验证结果，并在需要时回到循环中收集更多上下文。<strong>而 agent 无法推断的内容成为了手动检查功能的步骤，这些手动步骤可以转化为验证循环。</strong></p>
-<p>Anthropic 把这个过程叫验证循环（verification loop）——每次重复做的那些检查步骤，可以编成 Skill 让 Claude 自己执行。</p>
+<p>大多数 agentic coding session 都遵循一个循环： agent 收集上下文，采取行动，验证结果，并在需要时回到循环中收集更多上下文。Agent会自我验证、最终完成工作。但生成的结果不会 100% 满意，总有需要手工调整的地方。就像平时用 coding Agent 生成设计的这个过程中，基本每次生成后，都要“截图+修改prompt”这个手动检验环节，并希望下次直接遵循新加的规则。</p>
+<p>Agent 无法推断的内容成为了手动检查功能的步骤，这些手动步骤可以转化为 skill 让 Claude 自己执行。。<strong> Anthropic 把这个过程称为</strong>验证循环**（verification loop），每次重复做的那些检查步骤，可以编成 Skill 让 Claude 自己执行。</p>
 <div class="section-head"><span class="icon-badge" style="background: transparent;"><svg height="40" viewBox="0 0 64 64" width="40" xmlns="http://www.w3.org/2000/svg">
 <defs><clipPath id="ne-clip-stack"><rect height="64" rx="15" width="64"></rect></clipPath></defs>
 <rect fill="#EEC3F5" height="64" rx="15" width="64"></rect>
@@ -501,8 +500,9 @@
 <animateTransform attributeName="transform" dur="1.9s" keyTimes="0;0.1;0.32;0.44;0.56;0.66;1" repeatCount="indefinite" type="translate" values="0 0;0 0;0 -10;0 -10;0 2;0 -0.8;0 0"></animateTransform>
 </path>
 </g>
-</g></g></svg></span><h2 style="color: #C55B10;">验证 Skill<br/>把检查习惯写成规矩</h2></div>
+</g></g></svg></span><h2 style="color: #C55B10;">验证 Skill<br/>把检查习惯写成规则</h2></div>
 <p>Agentic coding 的循环是这样的：发出请求 → 收集上下文 → 执行动作 → 验证结果 → 不对就再来一轮。Claude Code 内置了一批验证能力——从 <code>/verify</code> Skill 到 Toolchain 错误捕获到 PR 级的 Code Review——但这些查的是通用规范。每次手动重复做的、跟项目绑定的检查，它不知道。</p>
+<img alt="Agent 干活的循环，验证结果是其中一步；不过就退回去重来一轮" src="assets/claude-code-verification-loops/03-agent循环-pro.png"/>
 <p>博客里给的思路是：<strong>把每次实现新功能之后重复执行的手动检查记下来，用大白话写出来，就像第一天交给新队友的那份文档。</strong> 不光是定性的判断能写，确定性的死规则一样好使——「拒绝任何没有 backfill 就删除列的数据库迁移」，这种 linter 管不到但项目里必须遵守的规矩，写成 Skill 反而更合适。</p>
 <p>博客给了一个最小验证 Skill 的例子，检查日志规范的：</p>
 <pre><code class="language-markdown"># .claude/skills/verify-log-hygiene/SKILL.md
