@@ -49,7 +49,7 @@
 <article class="article-reading">
 <h1 class="article-h1">验证循环<br/>把手动检查写进 Skill</h1>
 <div class="article-byline"><div class="article-eyebrow article-eyebrow-top"><span class="a-tag">Agent 协作</span></div><span>2026-07-23</span><span>阅读约 6 分钟</span></div>
-<div class="article-cover"><iframe loading="lazy" src="assets/claude-code-verification-loops/cover.html"></iframe></div>
+<div class="article-cover"><iframe loading="lazy" src="assets/claude-code-verification-loops/cover2.html"></iframe></div>
 <div class="article-body"><style>
 /* article-template 样式 inline 到网站，仅作用于 .article-body 内 */
 .article-eyebrow { text-align: center; justify-content: center; }
@@ -502,10 +502,8 @@
 </g>
 </g></g></svg></span><h2 style="color: #C55B10;">验证 Skill<br/>把检查习惯写成规则</h2></div>
 <p>Agentic coding 的循环是这样的：发出请求 → 收集上下文 → 执行动作 → 验证结果 → 不对就再来一轮。Claude Code 内置了一批验证能力，从 <code>/verify</code> Skill 到 Toolchain 错误捕获到 PR 级的 Code Review——但这些查的是通用规范。每次手动重复做的、跟项目绑定的检查，它不知道。</p>
-<img alt="Agent 干活的循环，验证结果是其中一步；不过就退回去重来一轮" src="assets/claude-code-verification-loops/03-agent循环-pro.png"/>
 <p>Anthropic 给的思路是：<strong>把每次实现新功能之后重复执行的手动检查记下来，用自然语言写出来。</strong> 不光是定性的判断能写，确定性的规则一样可以。</p>
-<img alt="每次手动过的检查清单，用大白话写下来就是一个验证 Skill" src="assets/claude-code-verification-loops/01-手动检查写成skill-pro.png"/>
-<p>Anthropic 给的例子是查日志规范的，我没用处，学着换成设计场景，一条最小的验证 Skill 大概这样：</p>
+<p>学着换成设计场景，一条最小的验证 Skill 大概这样：</p>
 <img alt="一条设计验证 Skill：命名对齐设计系统、间距跟规范、配色不出色板" src="assets/claude-code-verification-loops/04-设计验证skill-pro.png"/>
 <p>就用自然语言写下来，Claude 读到就知道该查什么、怎么查、查到问题怎么处理。</p>
 <div class="section-head"><span class="icon-badge" style="background: transparent;"><svg height="40" viewBox="0 0 64 64" width="40" xmlns="http://www.w3.org/2000/svg">
