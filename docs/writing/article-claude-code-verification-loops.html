@@ -482,7 +482,7 @@
   }
 </style>
 <p>大多数 agentic coding session 都遵循一个循环： agent 收集上下文，采取行动，验证结果，并在需要时回到循环中收集更多上下文。Agent会自我验证、最终完成工作。但生成的结果不会 100% 满意，总有需要手工调整的地方。就像平时用 coding Agent 生成设计的这个过程中，基本每次生成后，都要“截图+修改prompt”这个手动检验环节，并希望下次直接遵循新加的规则。</p>
-<p>Agent 无法推断的内容成为了手动检查功能的步骤，这些手动步骤可以转化为 skill 让 Claude 自己执行。。<strong> Anthropic 把这个过程称为</strong>验证循环**（verification loop），每次重复做的那些检查步骤，可以编成 Skill 让 Claude 自己执行。</p>
+<p>Agent 无法推断的内容成为了手动检查功能的步骤，这些手动步骤可以转化为 skill 让 Claude 自己执行。。<strong> Anthropic 把这个过程称为</strong>验证循环**（verification loop），检查规则一旦写进去，下一轮生成就不用重复同样的问题。</p>
 <div class="section-head"><span class="icon-badge" style="background: transparent;"><svg height="40" viewBox="0 0 64 64" width="40" xmlns="http://www.w3.org/2000/svg">
 <defs><clipPath id="ne-clip-stack"><rect height="64" rx="15" width="64"></rect></clipPath></defs>
 <rect fill="#EEC3F5" height="64" rx="15" width="64"></rect>
@@ -501,22 +501,12 @@
 </path>
 </g>
 </g></g></svg></span><h2 style="color: #C55B10;">验证 Skill<br/>把检查习惯写成规则</h2></div>
-<p>Agentic coding 的循环是这样的：发出请求 → 收集上下文 → 执行动作 → 验证结果 → 不对就再来一轮。Claude Code 内置了一批验证能力——从 <code>/verify</code> Skill 到 Toolchain 错误捕获到 PR 级的 Code Review——但这些查的是通用规范。每次手动重复做的、跟项目绑定的检查，它不知道。</p>
+<p>Agentic coding 的循环是这样的：发出请求 → 收集上下文 → 执行动作 → 验证结果 → 不对就再来一轮。Claude Code 内置了一批验证能力，从 <code>/verify</code> Skill 到 Toolchain 错误捕获到 PR 级的 Code Review——但这些查的是通用规范。每次手动重复做的、跟项目绑定的检查，它不知道。</p>
 <img alt="Agent 干活的循环，验证结果是其中一步；不过就退回去重来一轮" src="assets/claude-code-verification-loops/03-agent循环-pro.png"/>
-<p>博客里给的思路是：<strong>把每次实现新功能之后重复执行的手动检查记下来，用大白话写出来，就像第一天交给新队友的那份文档。</strong> 不光是定性的判断能写，确定性的死规则一样好使——「拒绝任何没有 backfill 就删除列的数据库迁移」，这种 linter 管不到但项目里必须遵守的规矩，写成 Skill 反而更合适。</p>
-<p>博客给了一个最小验证 Skill 的例子，检查日志规范的：</p>
-<pre><code class="language-markdown"># .claude/skills/verify-log-hygiene/SKILL.md
----
-name: verify-log-hygiene
-description: 检查错误日志包含请求 ID 且从不包含请求体。
-allowed-tools: [Read, Edit, Grep]
----
-读取当前 diff 中的错误处理路径。
-对每个错误路径上的日志调用，确认它包含请求 ID，
-且不传递请求体、headers 或任何用户提供的 payload。
-按 file:line 报告每处违规，然后修复。
-</code></pre>
-<p>就是一段白话 markdown，没有代码逻辑、没有正则。Claude 读到就知道该查什么、怎么查、查到问题怎么处理。你脑子里那套「这里应该怎样」的标准，写下来就行，不用翻译成代码。</p>
+<p>Anthropic 给的思路是：<strong>把每次实现新功能之后重复执行的手动检查记下来，用大白话写出来。</strong> 不光是定性的判断能写，确定性的规则一样可以。</p>
+<p>Anthropic 给的例子是查日志规范的。换成设计场景，一条最小的验证 Skill 大概长这样：</p>
+<img alt="一条设计验证 Skill：命名对齐设计系统、间距跟规范、配色不出色板" src="assets/claude-code-verification-loops/04-设计验证skill-pro.png"/>
+<p>自然语言写下来就行，不用翻译成代码。Claude 读到就知道该查什么、怎么查、查到问题怎么处理。</p>
 <img alt="每次手动过的检查清单，用大白话写下来就是一个验证 Skill" src="assets/claude-code-verification-loops/01-手动检查写成skill.png"/>
 <div class="section-head"><span class="icon-badge" style="background: transparent;"><svg height="40" viewBox="0 0 64 64" width="40" xmlns="http://www.w3.org/2000/svg">
 <defs><clipPath id="ne-clip-steps"><rect height="64" rx="15" width="64"></rect></clipPath></defs>
@@ -529,7 +519,7 @@ allowed-tools: [Read, Edit, Grep]
 <animateTransform attributeName="transform" dur="1.9s" keyTimes="0;0.15;0.4;0.6;0.85;1" repeatCount="indefinite" type="translate" values="0 0;0 0;5 5;5 5;0 0;0 0"></animateTransform>
 </rect>
 </g></g></svg></span><h2 style="color: #C55B10;">四种挂法<br/>从个人习惯到团队标准</h2></div>
-<p>验证 Skill 写好了，怎么挂到工作流里？博客给了四种方式，从轻到重。</p>
+<p>验证 Skill 写好了，怎么挂到工作流里？Anthropic 给了四种方式，从轻到重。</p>
 <p><span class="list-dot" style="font-weight:600;margin-right:4px;color:#C55B10;">•</span><strong style="font-weight:600">独立调用（Standalone）</strong>，想起来手动跑一下。适合安全扫描、无障碍审计这类横切检查，不需要每次改完都跑。缺点是得自己记着调；如果发现每次都要手动跑一遍，说明该往下挪了。</p>
 <p><span class="list-dot" style="font-weight:600;margin-right:4px;color:#C55B10;">•</span><strong style="font-weight:600">嵌入式（Embedded）</strong>，在生成型 Skill 末尾追一句话。比如组件脚手架 Skill 的末尾加一行「创建组件文件后，对其运行 eslint，解决所有报错后再报告完成」——验证就自动成了生成流程的一部分。限制是只能改自己维护的 Skill，内置的改不了。</p>
 <p><span class="list-dot" style="font-weight:600;margin-right:4px;color:#C55B10;">•</span><strong style="font-weight:600">链式（Chained）</strong>，一个 Skill 跑完自动调下一个。博客提到 Anthropic 的 Claude Code 团队日常就在用这个模式：先跑 <code>/code-review</code> 找 bug，再跑 <code>/simplify</code> 清理 diff，然后 <code>/verify</code> 确认功能，最后走自定义的 <code>/design</code> Skill 检查 UI 规范——四步串成一条链，<strong>习惯变成了合约</strong>。但 token 消耗会明显增加，博客建议广泛部署前先测几轮。</p>
