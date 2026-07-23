@@ -9,7 +9,7 @@
         "Agent 协作"
       ],
       "cat": "product",
-      "accent": "#4771F0",
+      "accent": "#C55B10",
       "collection": "",
       "excerpt": "Anthropic 博客提了一个概念——验证循环：每次重复做的手动检查，写成 Skill 让 Claude 自己跑。编进去的规矩越多，AI 第一次出手就越接近你要的标准。",
       "cover": "assets/claude-code-verification-loops/cover.png"
