@@ -276,7 +276,7 @@ if(CFG.static)document.body.classList.add('static');
   div.innerHTML='<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">'
     +'<defs><clipPath id="tclip"><rect width="64" height="64" rx="14.7"/></clipPath>'
     +'<mask id="cut" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64">'
-    +'<g transform="translate(32 32) scale('+(CFG.iconScale||({'ne-branch':0.85,'ne-github':0.95,'ne-loop':0.949})[CFG.icon]||1.2)+') translate(-32 -32)">'+inner+'</g></mask></defs>'
+    +'<g transform="translate(32 32) scale('+(CFG.iconScale||({'ne-branch':0.85,'ne-github':0.95,'ne-loop':0.85})[CFG.icon]||1.2)+') translate(-32 -32)">'+inner+'</g></mask></defs>'
     +'<g clip-path="url(#tclip)"><rect width="64" height="64" fill="'+CFG.ink+'" mask="url(#cut)"/></g></svg>';
   group.appendChild(div);
 })();
