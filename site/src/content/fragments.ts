@@ -1,5 +1,6 @@
 /** 由 site/scripts/extract-articles.mjs 生成 —— 文章正文片段(.article-reading innerHTML,原样) */
 import app_shape_for_ai from './fragments/app-shape-for-ai.reading.html?raw';
+import astra_three_design_tests from './fragments/astra-three-design-tests.reading.html?raw';
 import beyond_chat_edit_in_place from './fragments/beyond-chat-edit-in-place.reading.html?raw';
 import beyond_chat_prompt_to_controls from './fragments/beyond-chat-prompt-to-controls.reading.html?raw';
 import claude_code_suggested_task from './fragments/claude-code-suggested-task.reading.html?raw';
@@ -23,6 +24,7 @@ import voices from './fragments/voices.reading.html?raw';
 
 export const FRAGMENTS: Record<string, string> = {
   "app-shape-for-ai": app_shape_for_ai,
+  "astra-three-design-tests": astra_three_design_tests,
   "beyond-chat-edit-in-place": beyond_chat_edit_in_place,
   "beyond-chat-prompt-to-controls": beyond_chat_prompt_to_controls,
   "claude-code-suggested-task": claude_code_suggested_task,

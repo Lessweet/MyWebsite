@@ -1,6 +1,7 @@
 /** 由 site/scripts/extract-articles.mjs 生成 —— 每篇文章的外壳元数据(勿手改,重跑脚本更新) */
 export const ARTICLE_SHELL: Record<string, { title: string; accent: string; tint: string }> = {
   "app-shape-for-ai": { title: "SiriAI 设计 · VibeUX", accent: "#5B7FFF", tint: "blue" },
+  "astra-three-design-tests": { title: "Astra 三个设计实测，People Use 和 Computer Use 共存 · VibeUX", accent: "#1FA2FF", tint: "blue" },
   "beyond-chat-edit-in-place": { title: "AI 产品设计｜修改在内容上而不是聊天框里 · VibeUX", accent: "#B8550F", tint: "peach" },
   "beyond-chat-prompt-to-controls": { title: "AI 产品设计 ｜ 把高频微调的 Prompt 转变为可复现的参数控件 · VibeUX", accent: "#4FA02A", tint: "mint" },
   "claude-code-suggested-task": { title: "活儿干到一半，Claude Code 反过来给我派任务了 · VibeUX", accent: "#D94F2E", tint: "peach" },
