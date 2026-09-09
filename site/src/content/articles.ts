@@ -41,6 +41,25 @@ export interface ArticleMeta {
 
 export const ARTICLES: ArticleMeta[] = [
   {
+    slug: 'astra-three-design-tests',
+    file: 'article-astra-three-design-tests.html',
+    title: 'Astra 三个设计实测，People Use 和 Computer Use 共存',
+    date: '2026-09-07',
+    readTime: '9 分钟',
+    tags: ['Computer Use', 'GPT-6 Astra'],
+    cat: 'product',
+    accent: '#1FA2FF',
+    collection: '',
+    excerpt:
+      '拿 Astra 实测三个设计任务，同样是 computer use，感知完全不同：Figma 里光标在画布上忙，Blender 里光标一动不动，网页 3D 连界面都不碰。有代码接口就写代码，没接口的地方才动光标。',
+    listCover: 'assets/astra-three-design-tests/cover.png',
+    cardCover: 'assets/cards/astra-three-design-tests.webp', // CI build-card-covers 生成
+    inBlogGrid: true,
+    blogTag: 'Computer Use',
+    blogDelay: 0,
+    blogCover: { type: 'iframe', src: 'writing/assets/astra-three-design-tests/cover.html' },
+  },
+  {
     slug: 'beyond-chat-output-display',
     file: 'article-beyond-chat-output-display.html',
     title: 'AI 产品设计｜把流式输出做成可核验的组件',

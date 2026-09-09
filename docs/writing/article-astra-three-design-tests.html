@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Astra 三个设计实测，People Use 和 Computer Use 共存 · VibeUX</title>
+<link href="../favicon.png?v=12" rel="icon" type="image/png"/>
+<link href="../favicon.png?v=12" rel="shortcut icon"/>
+<link href="../apple-touch-icon.png?v=12" rel="apple-touch-icon"/>
+<link href="../style.css?v=149" rel="stylesheet"/>
+<link href="writing.css?v=455" rel="stylesheet"/>
+<!-- 提前加载,使顶部导航能在首次绘制前同步注入,避免空 header 闪烁(与首页一致) -->
+<script src="writing.js?v=86"></script>
+</head>
+<!-- 复用首页 index.html 的胶囊顶栏:home-v2 控制顶栏内边距,design-page 提供胶囊样式 -->
+<body class="writing-page home-v2 design-page reading-page" data-accent="#1FA2FF" data-tint="blue">
+<!-- 顶部导航:与首页同一个组件(initSiteNav);data-base="../" 把站内链接/资源指回 docs 根目录。
+         返回入口 = 左侧 VIBEUX 与高亮的 Writing 胶囊,均回到 index.html#writing -->
+<header class="header home-nav" data-active="writing" data-base="../" id="site-nav"></header>
+<script>initSiteNav();</script>
+<div class="header-placeholder"></div>
+<script>
+        // 顶栏 fixed 脱流,占位块高度跟随顶栏实际高度(big VIBEUX 标题在不同断点高度不同)
+        // 同时把左侧固定目录的 top 对齐到正文顶部 = 顶栏高度 + 正文上间距(56px,见 .reading-layout)
+        (function () {
+            const READING_TOP = 104;
+            const h = document.querySelector('.header');
+            const ph = document.querySelector('.header-placeholder');
+            const set = () => {
+                if (!h) return;
+                if (ph) ph.style.height = h.offsetHeight + 'px';
+                document.documentElement.style.setProperty('--toc-top', (h.offsetHeight + READING_TOP) + 'px');
+            };
+            set();
+            window.addEventListener('resize', set);
+            window.addEventListener('load', set);
+        })();
+    </script>
+<div class="reading-layout">
+<!-- ① 文章列表(JS 渲染,master–detail 左栏) -->
+<aside aria-label="文章列表" class="reader-list"></aside>
+<!-- ③ 浮动目录(JS 自动生成) -->
+<aside aria-label="目录" class="article-toc">
+<div class="article-toc-title">目录</div>
+<nav id="toc"></nav>
+</aside>
+<!-- 正文 -->
+<article class="article-reading">
+<h1 class="article-h1">Astra 三个设计实测，People Use 和 Computer Use 共存</h1>
+<div class="article-byline"><div class="article-eyebrow article-eyebrow-top"><span class="a-tag">Computer Use</span></div><span>2026-09-07</span><span>阅读约 9 分钟</span></div>
+<div class="article-cover"><iframe loading="lazy" src="assets/astra-three-design-tests/cover.html"></iframe></div>
+<div class="article-body"><style>
+/* article-template 样式 inline 到网站，仅作用于 .article-body 内 */
+.article-eyebrow { text-align: center; justify-content: center; }
+.article-eyebrow .a-tag { font-weight: 400; }
+.article-h1 { text-align: center; }
+.article-byline { text-align: center; justify-content: center; }
+.article-body { color: #1a1a1a; line-height: 1.4; }
+.article-body p { font-size: var(--fs-body); font-weight: 300; margin: 40px 0; color: #1a1a1a; }
+.article-body strong { font-weight: 400; color: #1FA2FF; }
+.article-body .list-dot { font-weight: 600; margin-right: 4px; color: #1a1a1a; }
+.article-body .section-head { text-align: center; margin: 0; }
+/* 图标居中与上下间距已全部内化进 svg 本体和 h2（全宽 svg + 内部 x=50% 钉中 + rect 底块 +
+   svg margin-top 40 + h2 margin-bottom 56，见 wrap_h2_blocks 注释）。这里不能再写
+   .section-head 的 margin 或 .section-head svg 的尺寸规则——微信编辑器会拆散 div，规则会失效或压坏布局。 */
+.article-body h2 { font-size: var(--fs-h2); font-weight: 600; color: #1a1a1a; line-height: 1.35; margin: 0 0 56px; letter-spacing: 0; text-align: center; }
+.article-body img { width: 100%; margin: 16px 0 0 0; display: block; border-radius: 8px; }
+.article-body .img-caption { font-size: 11px; font-weight: 400; color: #aaa; text-align: center; margin: 4px 0 18px 0; line-height: 1.4; }
+.article-body .img-ph { display: flex; align-items: center; justify-content: center; text-align: center; min-height: 160px; margin: 24px 0; padding: 28px 20px; border: 1px dashed #d6d6de; border-radius: 12px; background: repeating-linear-gradient(45deg, #fafafb, #fafafb 10px, #f3f3f6 10px, #f3f3f6 20px); }
+.article-body .img-ph .img-ph-cap { font-size: var(--fs-caption); color: #9a9aa6; line-height: 1.5; max-width: 80%; }
+.article-body .highlight { font-size: var(--fs-body); font-weight: 300; line-height: 1.4; color: #1a1a1a; margin: 40px 0; }
+.article-body .highlight strong { font-weight: 400; color: #1FA2FF; }
+
+/* outlined 图标动画 CSS（自动从 design-gallery 抽取，不要手改） */
+/* 时长/延迟变量（在 design-gallery 基础上整体提速 ~40%，文章里看着更精神） */
+.section-head {
+  --dur-1-5: 0.9s; --dur-1-8: 1.1s; --dur-2-1: 1.2s; --dur-2-2: 1.3s;
+  --dur-2-3: 1.4s; --dur-2-4: 1.4s; --dur-2-5: 1.5s; --dur-2-6: 1.6s;
+  --dur-2-8: 1.7s; --dur-4-0: 2.4s; --dur-5-0: 3s;
+  --delay-150: 100ms; --delay-300: 180ms; --delay-600: 360ms;
+}
+/* 通用 transform-box */
+.section-head svg [class*="anim-"],
+.section-head svg .favorite-star,
+.section-head svg .favorite-rays {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.section-head svg .anim-viewBox {
+  transform-box: view-box;
+  transform-origin: center;
+}
+
+/* ---- 各图标动画规则 ---- */
+.section-head svg .anim-doc-line {
+    animation: doc-line-write var(--dur-2-8) ease-in-out infinite;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+.section-head svg .anim-doc-line-2 { animation-delay: var(--delay-300); }
+.section-head svg .anim-doc-line-3 { animation-delay: var(--delay-600); }
+.section-head svg .anim-user-head { animation: user-head var(--dur-2-3) ease-out infinite; }
+.section-head svg .anim-user-shoulders { animation: user-shoulders var(--dur-2-3) ease-out infinite; }
+.section-head svg .anim-gear { animation: gear-turn var(--dur-2-8) cubic-bezier(0.25, 0.8, 0.2, 1) infinite; transform-box: view-box; transform-origin: 12px 12px; }
+.section-head svg .anim-search { animation: search-scan var(--dur-4-0) cubic-bezier(0.16, 0.9, 0.2, 1) infinite; transform-box: view-box; transform-origin: center; }
+.section-head svg .anim-cart-burst {
+    animation: cart-burst var(--dur-2-5) ease-out infinite;
+    opacity: 0;
+  }
+.section-head svg .anim-cart-burst-1 { --tx: -5px; --ty: -9px; }
+.section-head svg .anim-cart-burst-2 { --tx: -1px; --ty: -11px; animation-delay: var(--delay-150); }
+.section-head svg .anim-cart-burst-3 { --tx: 3px; --ty: -10px; animation-delay: var(--delay-300); }
+.section-head svg .anim-cart-burst-4 { --tx: 6px; --ty: -8px; animation-delay: var(--delay-300); }
+.section-head svg .anim-clap-hand { animation: clap-hand var(--dur-1-8) ease-in-out infinite; transform-box: view-box; transform-origin: 9px 14px; }
+.section-head svg .anim-clap-lines { animation: clap-lines var(--dur-1-8) ease-out infinite; transform-box: view-box; transform-origin: center; }
+.section-head svg .anim-music-note {
+    animation: music-float var(--dur-2-8) ease-in-out infinite;
+    opacity: 0;
+    transform-box: view-box;
+    transform-origin: center;
+  }
+.section-head svg .anim-music-base {
+    animation: music-tilt var(--dur-2-8) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 12px 14px;
+  }
+.section-head svg .anim-music-note-2 { animation-delay: calc(var(--dur-2-8) / 2); }
+.section-head svg .anim-lightning {
+    animation: lightning-flash var(--dur-2-4) ease-in-out infinite;
+  }
+.section-head svg .anim-pencil { animation: pencil-write var(--dur-5-0) ease-in-out infinite; transform-box: view-box; transform-origin: 13px 12px; }
+.section-head svg .anim-pencil-trace {
+    animation: pencil-trace var(--dur-5-0) ease-in-out infinite;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+.section-head svg .anim-eye-shape { animation: eye-blink var(--dur-2-8) ease-in-out infinite; transform-box: view-box; transform-origin: 12px 12px; }
+.section-head svg .anim-eye-pupil { animation: eye-pupil-blink var(--dur-2-8) ease-in-out infinite; transform-box: view-box; transform-origin: center; }
+.section-head svg .anim-bell { animation: bell-rattle var(--dur-5-0) cubic-bezier(0.3, 0.7, 0.2, 1) infinite; transform-box: view-box; transform-origin: 12px 4px; }
+.section-head svg .anim-bell-clapper { animation: bell-clapper var(--dur-5-0) linear infinite; transform-box: view-box; transform-origin: 12px 17px; }
+.section-head svg .anim-ide-cursor { animation: ide-blink var(--dur-1-5) step-end infinite; }
+.section-head svg .anim-pin-ripple {
+    animation: pin-ripple var(--dur-2-5) ease-out infinite;
+    opacity: 0;
+  }
+.section-head svg .anim-pin-ripple-2 { animation-delay: calc(var(--dur-2-5) / 3); }
+.section-head svg .anim-pin-ripple-3 { animation-delay: calc(var(--dur-2-5) * 2 / 3); }
+.section-head svg .anim-brain {
+    animation: brain-pulse var(--dur-2-2) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 12px 12px;
+  }
+.section-head svg .anim-ai-spark {
+    animation: ai-twinkle var(--dur-2-2) ease-in-out infinite;
+  }
+.section-head svg .anim-ai-spark-small {
+    animation-delay: calc(var(--dur-2-2) / 2);
+  }
+.section-head svg .anim-cursor {
+    animation: cursor-nudge var(--dur-2-2) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 10px 12px;
+  }
+.section-head svg .anim-cursor-click {
+    animation: cursor-click var(--dur-2-2) ease-out infinite;
+    opacity: 0;
+    transform-box: view-box;
+    transform-origin: 6px 5px;
+  }
+.section-head svg .anim-cursor-spark {
+    animation: ai-twinkle var(--dur-2-2) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 18px 6px;
+  }
+.section-head svg .anim-hourglass-top {
+    animation: hourglass-top var(--dur-2-8) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 12px 8px;
+  }
+.section-head svg .anim-hourglass-stream {
+    animation: hourglass-stream var(--dur-2-8) ease-in-out infinite;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+.section-head svg .anim-hourglass-bottom {
+    animation: hourglass-bottom var(--dur-2-8) ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 12px 18px;
+  }
+.section-head svg .anim-shape-cycle {
+    transform-box: view-box;
+    transform-origin: 12px 12px;
+  }
+.section-head svg .anim-home { animation: home-settle var(--dur-2-4) ease-out infinite; }
+.section-head svg .anim-lock-shackle { animation: lock-shackle var(--dur-2-6) ease-in-out infinite; transform-box: view-box; transform-origin: 12px 12px; }
+.section-head svg .anim-lock-dot { animation: lock-dot var(--dur-2-6) ease-out infinite; }
+.section-head svg .anim-message-dot-1 { animation: typing-dot var(--dur-1-5) ease-in-out infinite 0ms; }
+.section-head svg .anim-message-dot-2 { animation: typing-dot var(--dur-1-5) ease-in-out infinite var(--delay-150); }
+.section-head svg .anim-message-dot-3 { animation: typing-dot var(--dur-1-5) ease-in-out infinite var(--delay-300); }
+.section-head svg .anim-heart { animation: heart-flutter var(--dur-2-8) cubic-bezier(0.2, 0.85, 0.25, 1) infinite; transform-box: view-box; transform-origin: 12px 12px; }
+.section-head svg .favorite-star { animation: favorite-pop var(--dur-2-2) cubic-bezier(0.2, 0.85, 0.25, 1) infinite; }
+.section-head svg .favorite-rays { animation: favorite-rays var(--dur-2-2) ease-out infinite; transform-box: view-box; transform-origin: center; }
+.section-head svg .anim-gift-lid { animation: gift-lid var(--dur-2-8) ease-in-out infinite; transform-box: view-box; transform-origin: 12px 8px; }
+.section-head svg .anim-gift-particle {
+    animation: gift-particle var(--dur-2-8) ease-out infinite;
+    opacity: 0;
+    transform-box: view-box;
+    transform-origin: center;
+  }
+.section-head svg .anim-gift-particle-1 { --tx: -5px; --ty: -9px; }
+.section-head svg .anim-gift-particle-2 { --tx: 4px; --ty: -10px; animation-delay: var(--delay-150); }
+.section-head svg .anim-gift-particle-3 { --tx: -8px; --ty: -6px; animation-delay: var(--delay-300); }
+.section-head svg .anim-gift-particle-4 { --tx: 7px; --ty: -7px; animation-delay: var(--delay-300); }
+.section-head svg .anim-gift-particle-5 { --tx: -2px; --ty: -11px; animation-delay: var(--delay-600); }
+.section-head svg .anim-gift-particle-6 { --tx: 6px; --ty: -5px; animation-delay: var(--delay-600); }
+/* 以下两条此前未接入(class 存在但没有匹配规则,design-gallery 里同样是孤儿 keyframe)。
+   现补上选择器,和 icons-outlined/*.svg 里新加的 SMIL 保持一致。 */
+.section-head svg .anim-bookmark { animation: bookmark-tuck var(--dur-2-4) ease-in-out infinite; }
+.section-head svg .anim-clock-minute { animation: clock-hand 3s linear infinite; transform-box: view-box; transform-origin: 12px 12px; }
+
+/* ---- keyframes ---- */
+@keyframes ai-twinkle {
+    0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+    50% { opacity: 0.35; transform: scale(0.6) rotate(25deg); }
+  }
+@keyframes bell-clapper {
+    0%, 8%, 84%, 100% { transform: rotate(0deg); }
+    20% { transform: rotate(13deg); }
+    36% { transform: rotate(-9deg); }
+    52% { transform: rotate(6deg); }
+    68% { transform: rotate(-3deg); }
+  }
+@keyframes bell-rattle {
+    0%, 8%, 84%, 100% { transform: rotate(0deg); }
+    20% { transform: rotate(-11deg); }
+    36% { transform: rotate(8deg); }
+    52% { transform: rotate(-5deg); }
+    68% { transform: rotate(3deg); }
+  }
+@keyframes bookmark-tuck {
+    0%, 100% { transform: translateY(0); }
+    42% { transform: translateY(2px); }
+    72% { transform: translateY(-1px); }
+  }
+@keyframes brain-pulse {
+    0%, 100% { transform: scale(1); }
+    22% { transform: scale(1.06); }
+    44% { transform: scale(0.98); }
+    62% { transform: scale(1.06); }
+    82% { transform: scale(0.98); }
+  }
+@keyframes calendar-page {
+    0%, 100% { transform: translateY(0); }
+    45% { transform: translateY(1.2px); }
+  }
+@keyframes calendar-tabs {
+    0%, 100% { transform: translateY(0); }
+    35% { transform: translateY(-1.8px); }
+  }
+@keyframes cart-burst {
+    0%, 14% { opacity: 0; transform: translate(0, 0) scale(0.4) rotate(0deg); }
+    28% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+    72% { opacity: 0.85; transform: translate(var(--tx), var(--ty)) scale(1) rotate(18deg); }
+    100% { opacity: 0; transform: translate(calc(var(--tx) * 1.25), calc(var(--ty) * 1.2)) scale(0.7) rotate(30deg); }
+  }
+@keyframes cart-roll {
+    0%, 100% { transform: translateX(0); }
+    42% { transform: translateX(3px); }
+    75% { transform: translateX(-1px); }
+  }
+@keyframes clap-hand {
+    0%, 100% { transform: translateX(-1.5px) rotate(-7deg); }
+    24%, 50% { transform: translateX(1px) rotate(3deg); }
+    70% { transform: translateX(-0.6px) rotate(-3deg); }
+  }
+@keyframes clap-lines {
+    0%, 14%, 72%, 100% { opacity: 0; transform: scale(0.88); }
+    26%, 48% { opacity: 1; transform: scale(1); }
+    58% { opacity: 0.45; transform: scale(1.08); }
+  }
+@keyframes clock-hand {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+@keyframes cursor-click {
+    0%, 34% { opacity: 0; transform: scale(0.45); }
+    46% { opacity: 0.85; transform: scale(0.78); }
+    74%, 100% { opacity: 0; transform: scale(1.55); }
+  }
+@keyframes cursor-nudge {
+    0%, 100% { transform: translate(0, 0); }
+    42% { transform: translate(1px, -1px); }
+    66% { transform: translate(0.35px, -0.35px); }
+  }
+@keyframes doc-line-write {
+    0%, 12% {
+      opacity: 0;
+      stroke-dashoffset: 1;
+    }
+    42%, 76% {
+      opacity: 1;
+      stroke-dashoffset: 0;
+    }
+    100% {
+      opacity: 0;
+      stroke-dashoffset: 0;
+    }
+  }
+@keyframes eye-blink {
+    0%, 44%, 58%, 70%, 100% { transform: scaleY(1); }
+    50%, 64% { transform: scaleY(0.08); }
+  }
+@keyframes eye-pupil-blink {
+    0%, 44%, 58%, 70%, 100% { opacity: 1; transform: scaleY(1); }
+    50%, 64% { opacity: 0; transform: scaleY(0.08); }
+  }
+@keyframes favorite-pop {
+    0%   { transform: scale(1); }
+    20%  { transform: scale(0.72); }
+    46%  { transform: scale(1.2); }
+    72%  { transform: scale(0.94); }
+    100% { transform: scale(1); }
+  }
+@keyframes favorite-rays {
+    0%   { opacity: 0; transform: scale(0.58) rotate(0deg); }
+    18%  { opacity: 0; transform: scale(0.62) rotate(0deg); }
+    34%  { opacity: 1; }
+    76%  { opacity: 0.75; }
+    100% { opacity: 0; transform: scale(1.28) rotate(10deg); }
+  }
+@keyframes gear-turn {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(90deg); }
+  }
+@keyframes gift-box {
+    0%, 100% { transform: scaleY(1); }
+    42% { transform: scaleY(0.96); }
+  }
+@keyframes gift-lid {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    42% { transform: translateY(-3px) rotate(-4deg); }
+    70% { transform: translateY(-1px) rotate(2deg); }
+  }
+@keyframes gift-particle {
+    0%, 18% { opacity: 0; transform: translate(0, 3px) scale(0.62) rotate(0deg); }
+    32% { opacity: 1; transform: translate(0, 0) scale(1) rotate(8deg); }
+    72% { opacity: 0.9; transform: translate(var(--tx), var(--ty)) scale(1.05) rotate(18deg); }
+    100% { opacity: 0; transform: translate(calc(var(--tx) * 1.2), calc(var(--ty) * 1.25)) scale(0.78) rotate(28deg); }
+  }
+@keyframes heart-flutter {
+    0%, 10%, 68%, 100% { transform: scale(1) rotate(0deg); }
+    16% { transform: scale(0.94) rotate(-1.5deg); }
+    23% { transform: scale(1.18) rotate(1.5deg); }
+    31% { transform: scale(0.98) rotate(0deg); }
+    42% { transform: scale(1.1) rotate(-0.8deg); }
+    54% { transform: scale(1.01) rotate(0.4deg); }
+  }
+@keyframes home-settle {
+    0%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-2px); }
+    70% { transform: translateY(1px); }
+  }
+@keyframes hourglass-bottom {
+    0%, 100% { opacity: 0.68; transform: scaleX(0.72); }
+    60% { opacity: 1; transform: scaleX(1.08); }
+  }
+@keyframes hourglass-stream {
+    0%, 14% { opacity: 0; stroke-dashoffset: 1; }
+    30% { opacity: 1; }
+    68% { opacity: 1; stroke-dashoffset: 0; }
+    100% { opacity: 0; stroke-dashoffset: -1; }
+  }
+@keyframes hourglass-top {
+    0%, 100% { opacity: 0.95; transform: scaleY(1); }
+    54% { opacity: 0.5; transform: scaleY(0.64); }
+    78% { opacity: 0.9; transform: scaleY(0.86); }
+  }
+@keyframes ide-blink {
+    0%, 49% { opacity: 1; }
+    50%, 99% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+@keyframes lightning-flash {
+    0%, 100% { opacity: 0.92; transform: scale(1); }
+    42% { opacity: 1; transform: scale(1.08); }
+    72% { opacity: 0.78; transform: scale(0.98); }
+  }
+@keyframes lightning-pulse {
+    0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+    36% { transform: translateY(-1px) rotate(-3deg) scale(1.04); }
+    64% { transform: translateY(0.6px) rotate(2deg) scale(0.98); }
+  }
+@keyframes lock-dot {
+    0%, 100% { transform: scale(1); }
+    45% { transform: scale(1.35); }
+  }
+@keyframes lock-shackle {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    36% { transform: translateY(-2px) rotate(-9deg); }
+    72% { transform: translateY(0) rotate(0deg); }
+  }
+@keyframes music-float {
+    0% { opacity: 0; transform: translate(0, 3px) scale(0.82) rotate(-5deg); }
+    18% { opacity: 1; }
+    68% { opacity: 1; transform: translate(0.8px, -4px) scale(1) rotate(6deg); }
+    100% { opacity: 0; transform: translate(-0.5px, -7px) scale(0.86) rotate(-8deg); }
+  }
+@keyframes music-tilt {
+    0%, 100% { transform: rotate(0deg) translateY(0); }
+    34% { transform: rotate(-5deg) translateY(-0.8px); }
+    68% { transform: rotate(4deg) translateY(0.5px); }
+  }
+@keyframes pencil-trace {
+    0%, 14% {
+      opacity: 0;
+      stroke-dashoffset: 1;
+    }
+    46% {
+      opacity: 1;
+      stroke-dashoffset: 0;
+    }
+    72% {
+      opacity: 1;
+      stroke-dashoffset: 0;
+    }
+    100% {
+      opacity: 0;
+      stroke-dashoffset: 0;
+    }
+  }
+@keyframes pencil-write {
+    0%, 100% { transform: translate(-0.8px, -0.8px) rotate(-4deg); }
+    18% { transform: translate(1.4px, -2.4px) rotate(-1deg); }
+    36% { transform: translate(3.8px, -0.5px) rotate(3deg); }
+    56% { transform: translate(6.4px, -2.2px) rotate(1deg); }
+    76% { transform: translate(9px, -0.7px) rotate(4deg); }
+    88% { transform: translate(4.2px, -1.5px) rotate(-1deg); }
+  }
+@keyframes pin-drop {
+    0% { transform: translateY(-6px); opacity: 0; }
+    55% { transform: translateY(1px); opacity: 1; }
+    75% { transform: translateY(-1px); }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+@keyframes pin-ripple {
+    0% { opacity: 0; transform: scale(0.45); }
+    20% { opacity: 0.9; }
+    100% { opacity: 0; transform: scale(1.8); }
+  }
+@keyframes search-scan {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    10% { transform: translate(-4.2px, 0.4px) rotate(-10deg); }
+    18% { transform: translate(-1.1px, -0.2px) rotate(-2deg); }
+    30% { transform: translate(0.6px, -3.8px) rotate(7deg); }
+    39% { transform: translate(1.6px, -1px) rotate(2deg); }
+    52% { transform: translate(3px, 3.4px) rotate(9deg); }
+    62% { transform: translate(0.8px, 1px) rotate(2deg); }
+    78% { transform: translate(-0.7px, 0.2px) rotate(-1deg); }
+  }
+@keyframes search-sway {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    25% { transform: translateX(-1.4px) rotate(-7deg); }
+    55% { transform: translateX(1.4px) rotate(7deg); }
+    78% { transform: translateX(-0.5px) rotate(-3deg); }
+  }
+@keyframes typing-dot {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 1; }
+    38% { transform: translateY(-2px) scale(1.18); opacity: 0.75; }
+  }
+@keyframes user-head {
+    0%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-2px); }
+  }
+@keyframes user-shoulders {
+    0%, 100% { transform: scaleX(1); }
+    45% { transform: scaleX(1.08); }
+  }
+@keyframes wheel-pulse {
+    0%, 100% { transform: scale(1); }
+    42% { transform: scale(1.2); }
+  }
+</style>
+<p>computer use 这个概念不算新，最早是 2016 年 OpenAI 提出来的，2025 年是各家 AI 模型引入浏览器的大爆发时期，看着 Agent 的光标像人一样点按，这个画面在浏览器里的 Operator、设计 Agent 产品 Pencil 里都已经见过；到今年 9 月刚发布的 Astra，Agent 操作范围从浏览器扩到了 Blender、Figma 这些专业桌面软件，而且干活不止光标点按一条路线，同一个任务里，它可以一边在软件界面上点按，一边在后台跑脚本、调生图工具。</p>
+<img alt="" src="assets/astra-three-design-tests/computeruse时间轴-带界面.png"/>
+<p>2016 年，OpenAI 最开始对 computer use 的定义，是让 AI 像人一样使用电脑，看屏幕像素，操作键盘和鼠标。那时 OpenAI 有一个叫 Universe 的训练平台，让 AI 在上千个游戏和网页环境里练习用电脑。后来 Anthropic 在 2024 年 10 月把 Claude 的 computer use 开放成公测 API，不过公测版的能力还很初级，Anthropic 当时的模型 3.5 Sonnet 不是盯着连续画面看的，它每操作一步截一张屏幕图，一页页拼出电脑上发生了什么，页与页之间短暂弹出的通知和弹窗就大概率会漏掉。也因为这样，滚动、拖拽、缩放这些人做起来毫不费力的操作，对模型都是挑战，当时在 OSWorld（衡量模型操作真实电脑桌面的基准测试）上的得分只有 14.9%。</p>
+<p>三个月后 OpenAI 跟进发布 Operator，是一个在云端托管浏览器里替人浏览网页、填表下单的 agent 产品，底层是基于 GPT-4o 训练的模型，Operator 可以通过屏幕截图 "查看"浏览器，并使用鼠标和键盘与之"交互"，所以无需自定义 API 集成就能执行操作。半年后它并入了 ChatGPT 的 agent 模式，这条产品线走到今天是 ChatGPT Work。</p>
+<img alt="Operator 官方演示界面" src="assets/astra-three-design-tests/operator官方演示.png"/>
+<p>后来再到 2025 年 10 月 21 日，OpenAI 发布 Atlas 浏览器，Atlas 的 agent mode 是在本地浏览器里点击操作。可以直观看到 Agent 光标的操作交互轨迹。</p>
+<img alt="Atlas agent mode 官方演示界面" src="assets/astra-three-design-tests/atlas官方演示.png"/>
+<p>这次 Astra 的定位是"你在电脑上能做的任何事，Astra 都能替你做，而且快"，主打的优势有三个：computer use 本身最强，OSWorld 2.0 上得分 72.6%；复杂长时程任务能一口气干完，最难的端到端工作都能稳定输出，单个任务的耗时比上一代少了约 47%；还有超高标准的对齐，只做你授权它做的事，不越界乱动，测试里给模型划定权限范围，上一代模型在没有防护措施时，有 48.2% 的情况会做出范围之外的操作，Astra 这个比例是 0%。</p>
+<p>在设计/创意这个领域，OpenAI 从去年 2025 年 10 月开始就接上了 Figma MCP，OpenAI 官方插件仓库里还有 Adobe、Canva、product-design、creative-production 这些设计向插件。而这次，Blender 也能直接调用了，它的优势在于自身开源，有完整的 Python 接口可以写代码驱动，还能渲染出图让它自查结果，正好是 Astra 这套能力最好的展示台。无论从 OpenAI 内部人员分享的作品，还是社区刷屏的作品，这爆火程度都显而易见。</p>
+<p>那要真实感受 Astra 的提升力，就要拿上一代模型难做出来的任务。我今晚拿 GPT-6 Astra 做了三个设计任务：Blender 建场景、图片转绘并分层、网页 3D 交互，实测看看 computer use 是怎么玩儿的，其中 Agent 操纵电脑干活的整个过程，调了什么集成、跑了什么命令、中间怎么验证、看会不会碰到问题。</p>
+<div class="section-head"><svg height="70" style="display:block;margin:40px 0 0 0;overflow:visible" width="100%" xmlns="http://www.w3.org/2000/svg"><svg height="70" overflow="visible" style="overflow:visible" width="40" x="50%"><g transform="translate(-20 16)"><svg height="32" overflow="visible" viewBox="0 0 64 64" width="32" x="4" xmlns="http://www.w3.org/2000/svg" y="4">
+<defs><clipPath id="ne-clip-num1"><rect height="64" rx="15" width="64"></rect></clipPath></defs>
+<rect fill="#4FA3E8" height="64" rx="15" width="64"></rect>
+<g clip-path="url(#ne-clip-num1)"><g transform="translate(32 32) scale(1.2) translate(-32 -32)">
+<g transform="translate(32 32)">
+<animateTransform additive="sum" attributeName="transform" calcMode="spline" dur="3.2s" keySplines="0 0 1 1;0.5 1.7 0.4 1;0.5 1.7 0.4 1;0.5 1.7 0.4 1;0 0 1 1" keyTimes="0;0.62;0.72;0.82;0.9;1" repeatCount="indefinite" type="scale" values="1;1;1.12;0.97;1;1"></animateTransform>
+<g transform="translate(-32 -32)">
+<g transform="translate(23.52 13.45) scale(0.2249)"><path d="M52.3568 0C57.7487 2.97473 69.1253 7.69224 75.0003 10.3289C75.9313 60.9896 75.0905 114.182 75.0973 165C58.0154 164.76 40.9306 164.76 23.848 165C23.2131 164.97 22.6435 164.647 21.9906 164.392C21.264 158.314 21.7885 133.84 21.781 126.652L21.7704 45.2219L0 45.0717L52.3568 0Z" fill="#FBA6D2"></path></g>
+</g>
+</g>
+</g></g></svg></g></svg></svg><h2 style="color: #1FA2FF;">京都街景 3D 运镜动画<br/>Blender 脚本驱动</h2></div>
+<p>第一个案例是生成 Blender 3D 动画，前后共 5 轮对话，最后成果是一段 24 秒、576 帧的京都商店街动画，效果不错。</p>
+<img alt="Astra 交付的 24 秒京都商店街动画片段：镜头推进，行人走动，布帘灯笼摆动" src="assets/astra-three-design-tests/京都街景动画-6至16秒.gif"/>
+<p>初始 prompt 是一张京都图片和一句简单提示词："在 Blender 里制作一个 3D 京都城市建筑"。其实第一轮的效果已经相当可以了，但是这一步只验证了图片复刻这一项做得很好；后面我就自己发挥想象，加点元素丰富街道热闹的氛围，比如穿日式和服的小人、门店商铺装饰、加点缓慢推进的镜头语言。除了人物面部没加细节、走路姿势有 bug，整体与 Astra 的对话非常流畅，体感是 Astra 在意图理解、长时间任务处理上非常丝滑，我基本没有到要反复纠错的地步。</p>
+<img alt="第一轮产出的京都街景，我在 Blender 视口里环绕检查：建筑、石板路、树木一次成型" src="assets/astra-three-design-tests/blender第一轮场景预览.gif"/>
+<p>第二轮到最后一轮，我发给它的原话 prompt 都很直白：</p>
+<div class="quote-card" style="width:100%; margin:32px auto; text-align:left;"><div style="background:#FAF9F7; border-radius:8px; padding:22px 26px 24px; margin:0;"><div style="height:14px; margin-bottom:12px; font-size:0; line-height:0;"><svg height="14" shape-rendering="crispEdges" viewBox="0 0 23 14" width="23" xmlns="http://www.w3.org/2000/svg"><g fill="#1FA2FF" fill-opacity="0.3"><rect height="2" width="4" x="6" y="0"></rect><rect height="2" width="4" x="4" y="2"></rect><rect height="2" width="4" x="2" y="4"></rect><rect height="2" width="6" x="2" y="6"></rect><rect height="4" width="10" x="0" y="8"></rect><rect height="2" width="6" x="2" y="12"></rect><rect height="2" width="4" x="19" y="0"></rect><rect height="2" width="4" x="17" y="2"></rect><rect height="2" width="4" x="15" y="4"></rect><rect height="2" width="6" x="15" y="6"></rect><rect height="4" width="10" x="13" y="8"></rect><rect height="2" width="6" x="15" y="12"></rect></g></svg></div><p class="quote-p" style="margin:0; font-size:12px; font-weight:300; line-height:1.85; color:#1A1C1E;">现在这个画面里面缺少人，所以你再增加几个行走的人。这些人穿着日式和服。</p><div style="height:14px; font-size:0; line-height:0;">​</div><p class="quote-p" style="margin:0; font-size:12px; font-weight:300; line-height:1.85; color:#1A1C1E;">每个人的姿势都要不一样。</p><div style="height:14px; font-size:0; line-height:0;">​</div><p class="quote-p" style="margin:0; font-size:12px; font-weight:300; line-height:1.85; color:#1A1C1E;">现在路边的每一个建筑都是没有房间的感觉，门都是关的。应该是每一个都是一个店铺。增加一些卖日式食品的或者是体现日式商铺的一些门面。</p><div style="height:14px; font-size:0; line-height:0;">​</div><p class="quote-p" style="margin:0; font-size:12px; font-weight:300; line-height:1.85; color:#1A1C1E;">制作摄像头运动动画，随着底部时间轴，镜头慢慢向里推进，人动起来：行走、逛街、走向店铺并停留，店铺的门口的元素也动起来，整体塑造热闹的城市街景氛围。</p></div></div>
+<img alt="" src="assets/astra-three-design-tests/blender四步过程.png"/>
+<p>computer use 对于用户来说的体感，是会有一个代表 Agent 的光标出现在软件上，替你点按、拖拽。但是 Blender 界面上的 Agent 光标一直没动，只是定在中间闪烁，这是因为 Blender 有一套完整的 Python 接口，背后都有对应的代码调用去做操作；Astra 直接在后台调这套接口改场景数据，改完由 Blender 把新状态替换到视口里。所以画面变了，光标一直没动，也看不到中间的操作过程。</p>
+<img alt="交付的 .blend 在我本地 Blender 里打开，物体大纲和时间轴都能直接编辑" src="assets/astra-three-design-tests/blender光标标注.png"/>
+<div class="section-head"><svg height="70" style="display:block;margin:40px 0 0 0;overflow:visible" width="100%" xmlns="http://www.w3.org/2000/svg"><svg height="70" overflow="visible" style="overflow:visible" width="40" x="50%"><g transform="translate(-20 16)"><svg height="32" overflow="visible" viewBox="0 0 64 64" width="32" x="4" xmlns="http://www.w3.org/2000/svg" y="4">
+<defs><clipPath id="ne-clip-num2"><rect height="64" rx="15" width="64"></rect></clipPath></defs>
+<rect fill="#8163F0" height="64" rx="15" width="64"></rect>
+<g clip-path="url(#ne-clip-num2)"><g transform="translate(32 32) scale(1.2) translate(-32 -32)">
+<g transform="translate(32 32)">
+<animateTransform additive="sum" attributeName="transform" calcMode="spline" dur="3.2s" keySplines="0 0 1 1;0.5 1.7 0.4 1;0.5 1.7 0.4 1;0.5 1.7 0.4 1;0 0 1 1" keyTimes="0;0.62;0.72;0.82;0.9;1" repeatCount="indefinite" type="scale" values="1;1;1.12;0.97;1;1"></animateTransform>
+<g transform="translate(-32 -32)">
+<g transform="translate(17.28 13.56) scale(0.2249)"><path d="M63.7579 0.440018C76.649 -1.39574 94.2285 2.64441 104.839 10.1003C115.277 17.4358 121.696 27.9162 123.638 40.3001C126.34 57.6194 122.998 83.3275 108.436 94.8913C101.385 100.94 92.919 105.68 87.3878 113.294C84.1518 117.756 81.9168 125.257 87.3576 128.868C88.0199 128.928 88.6746 128.988 89.3368 129.041C93.4232 124.414 95.5529 119.283 101.566 116.537C106.698 114.189 112.982 114.618 117.67 116.424C122.825 118.403 126.949 122.405 129.086 127.491C134.934 141.214 125.82 159.474 112.794 162.649C81.834 170.188 86.9287 143.065 50.0285 157.443C35.7113 162.521 4.60193 169.917 4.49507 143.479C4.37166 113.008 53.4104 107.621 70.3051 89.6925C74.2108 85.547 80.6074 74.5174 73.6538 68.9048C62.1324 62.2088 44.7968 71.9143 32.2865 73.3513C16.9768 75.5256 2.57756 71.3199 0.367333 53.9479C-4.19986 18.0377 34.785 3.58488 63.7579 0.440018Z" fill="#C9F53F"></path></g>
+</g>
+</g>
+</g></g></svg></g></svg></svg><h2 style="color: #1FA2FF;">京都街景油画<br/>Figma 拆层补齐</h2></div>
+<p>第二个案例做绘图分层，前后十来轮对话，成品是一份真正可编辑的 Figma 分层文件：梵高风格的京都街景油画拆成 6 个能单独移动的图层，挪开前景物体，后面的背景也是完整的。</p>
+<img alt="拆层成品：路灯这类物体能单独选中、编辑，图层按前景、中景、远景分组" src="assets/astra-three-design-tests/figma三次拆层.gif"/>
+<p>我一开始发了一张京都街巷的参考照片给 Astra，说"在 Photoshop 里画一个京都城市建筑，风格采用梵高的绘画风格"。</p>
+<p>Astra 加载了 Computer Use 集成之后，发现我的 Photoshop 用不了了。我就说"换个软件吧，换成 Figma"。</p>
+<img alt="找不到 Photoshop 后，Astra 降级用内置生图工具出的梵高风格京都街景油画" src="assets/astra-three-design-tests/ScreenShot_2026-09-07_202844_785.png"/>
+<p>之后，Astra 同时调了 Com.figma.desktop 和 Computer Use 两个集成：先检查可用的导入方式，用 figma-create-new-file 技能新建文件，把油画以图片图层方式放入画布，同时 Agent 鼠标自己在 Figma 里点击操作，把文件名改成了"京都街巷 · 梵高风格油画"。</p>
+<p>后面我新提的需求是油画图片分层，原话依次是：</p>
+<div class="quote-card" style="width:100%; margin:32px auto; text-align:left;"><div style="background:#FAF9F7; border-radius:8px; padding:22px 26px 24px; margin:0;"><div style="height:14px; margin-bottom:12px; font-size:0; line-height:0;"><svg height="14" shape-rendering="crispEdges" viewBox="0 0 23 14" width="23" xmlns="http://www.w3.org/2000/svg"><g fill="#1FA2FF" fill-opacity="0.3"><rect height="2" width="4" x="6" y="0"></rect><rect height="2" width="4" x="4" y="2"></rect><rect height="2" width="4" x="2" y="4"></rect><rect height="2" width="6" x="2" y="6"></rect><rect height="4" width="10" x="0" y="8"></rect><rect height="2" width="6" x="2" y="12"></rect><rect height="2" width="4" x="19" y="0"></rect><rect height="2" width="4" x="17" y="2"></rect><rect height="2" width="4" x="15" y="4"></rect><rect height="2" width="6" x="15" y="6"></rect><rect height="4" width="10" x="13" y="8"></rect><rect height="2" width="6" x="15" y="12"></rect></g></svg></div><p class="quote-p" style="margin:0; font-size:12px; font-weight:300; line-height:1.85; color:#1A1C1E;">但是怎么是一整张图，要分成的</p><div style="height:14px; font-size:0; line-height:0;">​</div><p class="quote-p" style="margin:0; font-size:12px; font-weight:300; line-height:1.85; color:#1A1C1E;">在 Figma 里面你拆分层级有问题。你没有按照前景、中景、后景、每个元素物体这些层级去拆分。</p><div style="height:14px; font-size:0; line-height:0;">​</div><p class="quote-p" style="margin:0; font-size:12px; font-weight:300; line-height:1.85; color:#1A1C1E;">有个问题：比如说你把其中的那个路灯拆层之后，后面的背景就变成空白的了。你没有自动补上背景，是吧？因为我有可能会要移动路灯，那个原来路灯的位置不就被空了吗？</p><div style="height:14px; font-size:0; line-height:0;">​</div><p class="quote-p" style="margin:0; font-size:12px; font-weight:300; line-height:1.85; color:#1A1C1E;">那你能重绘吗</p><div style="height:14px; font-size:0; line-height:0;">​</div><p class="quote-p" style="margin:0; font-size:12px; font-weight:300; line-height:1.85; color:#1A1C1E;">还有另外的路灯、左侧建筑、右侧建筑、中间建筑</p></div></div>
+<p>接下来拆层花了 3 分 57 秒，中间经历了一次方案切换。Astra 先按"建筑、山林天空、路面、灯光"的分类去重绘拆分，提前说了"拆分时会重绘被遮挡的部分，细节可能与原图略有变化"。拆完之后，问题就出在元素重叠区域就被抠掉了。后面 Astra 通过生图模型垫图的方式，补齐了被抠掉的区域。</p>
+<p>这次在 Figma 里能直观看到 computer use，Agent 光标在 Figma 画布上移动、间歇性地很忙。在左侧图层列表里逐层命名，在右边画布上拖动元素、验证是否补全了。</p>
+<img alt="二次拆层过程加速回放：Agent 光标在图层列表和画布之间来回操作" src="assets/astra-three-design-tests/figma二次拆层光标.gif"/>
+<p>整个实现过程分三步，头尾两步靠生图模型，中间那步是纯几何计算。第一步照片转油画，用的是 Codex 内置的 image_gen 图像生成工具，保留参考图中的京都街巷的构图、建筑和透视，加入梵高式厚涂、旋动笔触和蓝黄对比，重新生成了一张 1536×1024 的位图。第二步拆层，它根据画面估算建筑、路灯这些物体的轮廓，用 Python 和 Shapely（处理几何图形的 Python 库）计算轮廓之间的重叠和遮挡关系，再生成一张包含原图和矢量蒙版的 SVG 导入 Figma。第三步补绘垫底图，再用 image_gen 生成"去掉路灯的建筑画面"和"去掉建筑的山林地面"，把补绘内容放到对应图层的下面，移动物体后露出的就是补画好的背景。</p>
+<img alt="" src="assets/astra-three-design-tests/figma拆层三步过程.png"/>
+<p>这个任务是典型的集成、shell 命令、脚本和 GUI 混在一起用的 AI 工作流，分工总结是：Figma 负责分层、组合和编辑，AI 工具负责转绘与背景重绘。交底也没少两条：轮廓是估算出来的，不是模型自动完成的精确物体分割；建筑之间被遮挡的完整结构，也没有全部重建。</p>
+<div class="section-head"><svg height="70" style="display:block;margin:40px 0 0 0;overflow:visible" width="100%" xmlns="http://www.w3.org/2000/svg"><svg height="70" overflow="visible" style="overflow:visible" width="40" x="50%"><g transform="translate(-20 16)"><svg height="32" overflow="visible" viewBox="0 0 64 64" width="32" x="4" xmlns="http://www.w3.org/2000/svg" y="4">
+<defs><clipPath id="ne-clip-num3"><rect height="64" rx="15" width="64"></rect></clipPath></defs>
+<rect fill="#F5DE18" height="64" rx="15" width="64"></rect>
+<g clip-path="url(#ne-clip-num3)"><g transform="translate(32 32) scale(1.2) translate(-32 -32)">
+<g transform="translate(32 32)">
+<animateTransform additive="sum" attributeName="transform" calcMode="spline" dur="3.2s" keySplines="0 0 1 1;0.5 1.7 0.4 1;0.5 1.7 0.4 1;0.5 1.7 0.4 1;0 0 1 1" keyTimes="0;0.62;0.72;0.82;0.9;1" repeatCount="indefinite" type="scale" values="1;1;1.12;0.97;1;1"></animateTransform>
+<g transform="translate(-32 -32)">
+<g transform="translate(18.52 13.00) scale(0.2249)"><path d="M47.0129 0.195403C72.4009 -1.19969 108.592 4.37312 116.02 33.3176C118.488 43.1208 117.002 53.5015 111.886 62.2246C102.53 77.9982 88.9136 81.816 72.6335 86.0237C87.1355 88.3339 101.015 90.8766 111.436 102.802C117.527 109.703 120.536 118.786 119.763 127.952C116.942 165.312 71.5906 170.99 42.1589 168.492C24.821 166.429 -6.41126 154.368 9.98887 130.674C17.5287 119.791 35.7144 116.221 48.3484 114.563C36.4196 112.883 22.6303 111.465 12.6147 104.963C-5.52598 93.1717 -1.29466 70.6102 17.1086 61.7446C26.0664 57.4318 30.9654 56.4493 40.3584 54.6641C23.4031 52.3615 -13.9661 44.2534 5.45743 16.6065C13.1473 5.66328 33.7038 1.27548 47.0129 0.195403Z" fill="#CB82ED"></path></g>
+</g>
+</g>
+</g></g></svg></g></svg></svg><h2 style="color: #1FA2FF;">网页 3D 交互<br/>自主搭建资产组合</h2></div>
+<p>第三个案例做 iPhone 产品官网，前后 6 轮对话，成品是三屏页面，同一台 3D 手机随滚动从正面连续转到侧面、再转到背面。</p>
+<img alt="三屏 iPhone 官网成品，3D 手机随滚动连续旋转换面" src="assets/astra-three-design-tests/iphone官网滚动旋转.gif"/>
+<p>我第一轮用 /goal 指令给了一段比较完整的需求：</p>
+<div class="quote-card" style="width:100%; margin:32px auto; text-align:left;"><div style="background:#FAF9F7; border-radius:8px; padding:22px 26px 24px; margin:0;"><div style="height:14px; margin-bottom:12px; font-size:0; line-height:0;"><svg height="14" shape-rendering="crispEdges" viewBox="0 0 23 14" width="23" xmlns="http://www.w3.org/2000/svg"><g fill="#1FA2FF" fill-opacity="0.3"><rect height="2" width="4" x="6" y="0"></rect><rect height="2" width="4" x="4" y="2"></rect><rect height="2" width="4" x="2" y="4"></rect><rect height="2" width="6" x="2" y="6"></rect><rect height="4" width="10" x="0" y="8"></rect><rect height="2" width="6" x="2" y="12"></rect><rect height="2" width="4" x="19" y="0"></rect><rect height="2" width="4" x="17" y="2"></rect><rect height="2" width="4" x="15" y="4"></rect><rect height="2" width="6" x="15" y="6"></rect><rect height="4" width="10" x="13" y="8"></rect><rect height="2" width="6" x="15" y="12"></rect></g></svg></div><p class="quote-p" style="margin:0; font-size:12px; font-weight:300; line-height:1.85; color:#1A1C1E;">设计一个最新 iPhone 手机产品官网，整页共三屏，每屏的布局样式都不一样，但都是简约大气的排版和配色，使用 3D 写实风格的 iPhone 手机，根据页面滑动，3D 手机会有自身的立体角度旋转，展示手机的不同位置、区域的介绍，比如首屏是灵动岛、往下滑动时角度旋转到侧边操作按钮、再往下滑动时角度旋转到背部的多个摄像头，每个转场时对应的文字信息介绍也会缓慢的淡入</p></div></div>
+<p>出了第一版之后我又给了 5 轮反馈，原话依次是：</p>
+<div class="quote-card" style="width:100%; margin:32px auto; text-align:left;"><div style="background:#FAF9F7; border-radius:8px; padding:22px 26px 24px; margin:0;"><div style="height:14px; margin-bottom:12px; font-size:0; line-height:0;"><svg height="14" shape-rendering="crispEdges" viewBox="0 0 23 14" width="23" xmlns="http://www.w3.org/2000/svg"><g fill="#1FA2FF" fill-opacity="0.3"><rect height="2" width="4" x="6" y="0"></rect><rect height="2" width="4" x="4" y="2"></rect><rect height="2" width="4" x="2" y="4"></rect><rect height="2" width="6" x="2" y="6"></rect><rect height="4" width="10" x="0" y="8"></rect><rect height="2" width="6" x="2" y="12"></rect><rect height="2" width="4" x="19" y="0"></rect><rect height="2" width="4" x="17" y="2"></rect><rect height="2" width="4" x="15" y="4"></rect><rect height="2" width="6" x="15" y="6"></rect><rect height="4" width="10" x="13" y="8"></rect><rect height="2" width="6" x="15" y="12"></rect></g></svg></div><p class="quote-p" style="margin:0; font-size:12px; font-weight:300; line-height:1.85; color:#1A1C1E;">浅色模式或者深色模式，哪个好看？你看着制作</p><div style="height:14px; font-size:0; line-height:0;">​</div><p class="quote-p" style="margin:0; font-size:12px; font-weight:300; line-height:1.85; color:#1A1C1E;">手机屏幕内放 3D 游戏界面 而且得是动态的</p><div style="height:14px; font-size:0; line-height:0;">​</div><p class="quote-p" style="margin:0; font-size:12px; font-weight:300; line-height:1.85; color:#1A1C1E;">文字不要遮挡机身，页面增加深色模式和颜色切换开关，手机颜色改为深空灰；文字的入场动画现在太平均了，每个样式的文字都要有节奏，比如一组文字，要先出主文字，而且动效样式都要不一样</p><div style="height:14px; font-size:0; line-height:0;">​</div><p class="quote-p" style="margin:0; font-size:12px; font-weight:300; line-height:1.85; color:#1A1C1E;">手机界面这个 3D 赛车画面 不好，改成 apple 官方的；然后机型要放大，咱们重点介绍的就是手机，机型精致度、质感、细节都提升，然后首屏感觉很空，背景可以加点 shader</p><div style="height:14px; font-size:0; line-height:0;">​</div><p class="quote-p" style="margin:0; font-size:12px; font-weight:300; line-height:1.85; color:#1A1C1E;">手机里 换个壁纸，背景的条纹也增加明暗变化 用透明度来控制 不要满屏都是 缺少空间感</p></div></div>
+<p>前三轮在定方向，后三轮已经是设计细节了，调试一些遮挡关系、动效节奏、材质质感、留白空间感。</p>
+<p>在这个案例里 Astra "操纵电脑"的方式就是改代码然后重新部署，整个过程里没有看到它操作任何桌面软件的界面。即使是偏复杂、多工具调用的长时间任务，Astra 体现了超高的自主性，除了写网页，它自己搭起了一条资产管线：找到 Apple 官方模型，用 Blender 做格式转换（用脚本，录屏里同样看不到界面操作），再交给网页端渲染。人类（我）的干预引导，质感、反光、空间感、明暗节奏，Astra 最多两次就准确地实现了。</p>
+<img alt="" src="assets/astra-three-design-tests/iphone官网三步过程.png"/>
+<p>测这个案例是因为我在 Fable 5 也做过，当时就光是一个 3D 手机模型，就效果不行，质感出不来、3D 感也不行，因为 Fable 5 自主只会用矢量绘制，靠一层层贴出来假立体效果。而 Astra 自主去搜 Apple 官方的 USDZ 模型转成网页能用的 GLB，再用 Three.js 实时渲染，机身的金属质感、镜头反光、转起来的立体感，都是真 3D 模型才能出来的效果。</p>
+<p>在这几个 AI 工作流里，对设计师来说，本质上没什么颠覆，只是从 UI/UX 领域扩到了 3D 建模领域，或者未来侵入到所有领域，AI 能做的只在于把需求想法帮人类快速在某个软件载体里实现、先看到效果，就到这一步。在 UI/UX 领域，AI 无法自主生成的创意、质感、情感层面设计，在 3D 领域仍然不能。</p>
+<p>从人机 + Agent 协作的角度，三个任务做下来，发现同样是 computer use，在不同的任务和操作的工具中，用户体验感知完全不同：Blender 全程只有 AI 对话在滚动展示进程，光标一动不动；Figma 能看着 Agent 的光标在画布上忙；3D 官网完全底层代码去实现，GUI 层完全没有。</p>
+<p>未来 Agent 背景下，People Use 与 Computer Use 要共存了。GUI 点按只是备选项，有代码接口就写代码，没有接口地方才动光标。这次实测里已经能看到苗头，Blender 因为接口齐全，反而成了三个案例里跑得最顺的。软件要兼顾两个对象：给人看的界面，给 Agent 用的接口。</p>
+<svg data-endmark="1" height="108" style="display:block;margin:40px 0;overflow:visible" width="100%" xmlns="http://www.w3.org/2000/svg"><svg height="108" overflow="visible" style="overflow:visible" width="108" x="50%"><g transform="translate(-54 0)"><g><animateTransform attributeName="transform" dur="42s" repeatCount="indefinite" type="rotate" values="0 54.0 54.0;360 54.0 54.0"></animateTransform><g opacity="1.0" transform="translate(52.82 14.09)"><g><animateTransform attributeName="transform" dur="42s" repeatCount="indefinite" type="rotate" values="0;-360"></animateTransform><text dominant-baseline="central" fill="#1FA2FF" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" opacity="1" text-anchor="middle" x="0" y="0">a<animate attributeName="opacity" calcMode="discrete" dur="1.35s" keyTimes="0.0000;0.3333" repeatCount="indefinite" values="1;0"></animate></text><text dominant-baseline="central" fill="#1FA2FF" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" opacity="0" text-anchor="middle" x="0" y="0">e<animate attributeName="opacity" calcMode="discrete" dur="1.35s" keyTimes="0.0000;0.3333;0.6667" repeatCount="indefinite" values="0;1;0"></animate></text><text dominant-baseline="central" fill="#1FA2FF" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" opacity="0" text-anchor="middle" x="0" y="0">n<animate attributeName="opacity" calcMode="discrete" dur="1.35s" keyTimes="0.0000;0.6667" repeatCount="indefinite" values="0;1"></animate></text></g></g><g opacity="0.5" transform="translate(72.60 15.69)"><g><animateTransform attributeName="transform" dur="42s" repeatCount="indefinite" type="rotate" values="0;-360"></animateTransform><text dominant-baseline="central" fill="#1FA2FF" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11.5" opacity="1" text-anchor="middle" x="0" y="0">0<animate attributeName="opacity" calcMode="discrete" dur="1.66s" keyTimes="0.0000;0.3333" repeatCount="indefinite" values="1;0"></animate></text><text dominant-baseline="central" fill="#1FA2FF" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11.5" opacity="0" text-anchor="middle" x="0" y="0">8<animate attributeName="opacity" calcMode="discrete" dur="1.66s" keyTimes="0.0000;0.3333;0.6667" repeatCount="indefinite" values="0;1;0"></animate></text><text dominant-baseline="central" fill="#1FA2FF" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11.5" opacity="0" text-anchor="middle" x="0" y="0">3<animate attributeName="opacity" calcMode="discrete" dur="1.66s" keyTimes="0.0000;0.6667" repeatCount="indefinite" values="0;1"></animate></text></g></g><g opacity="0.75" transform="translate(89.04 30.15)"><g><animateTransform attributeName="transform" dur="42s" repeatCount="indefinite" type="rotate" values="0;-360"></animateTransform><text dominant-baseline="central" fill="#8D97A3" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10.4" opacity="1" text-anchor="middle" x="0" y="0">1<animate attributeName="opacity" calcMode="discrete" dur="1.97s" keyTimes="0.0000;0.3333" repeatCount="indefinite" values="1;0"></animate></text><text dominant-baseline="central" fill="#8D97A3" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10.4" opacity="0" text-anchor="middle" x="0" y="0">0<animate attributeName="opacity" calcMode="discrete" dur="1.97s" keyTimes="0.0000;0.3333;0.6667" repeatCount="indefinite" values="0;1;0"></animate></text><text dominant-baseline="central" fill="#8D97A3" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10.4" opacity="0" text-anchor="middle" x="0" y="0">7<animate attributeName="opacity" calcMode="discrete" dur="1.97s" keyTimes="0.0000;0.6667" repeatCount="indefinite" values="0;1"></animate></text></g></g><g opacity="1.0" transform="translate(93.36 53.56)"><g><animateTransform attributeName="transform" dur="42s" repeatCount="indefinite" type="rotate" values="0;-360"></animateTransform><text dominant-baseline="central" fill="#1FA2FF" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10.6" opacity="1" text-anchor="middle" x="0" y="0">1<animate attributeName="opacity" calcMode="discrete" dur="2.28s" keyTimes="0.0000;0.3333" repeatCount="indefinite" values="1;0"></animate></text><text dominant-baseline="central" fill="#1FA2FF" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10.6" opacity="0" text-anchor="middle" x="0" y="0">4<animate attributeName="opacity" calcMode="discrete" dur="2.28s" keyTimes="0.0000;0.3333;0.6667" repeatCount="indefinite" values="0;1;0"></animate></text><text dominant-baseline="central" fill="#1FA2FF" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10.6" opacity="0" text-anchor="middle" x="0" y="0">9<animate attributeName="opacity" calcMode="discrete" dur="2.28s" keyTimes="0.0000;0.6667" repeatCount="indefinite" values="0;1"></animate></text></g></g><g opacity="0.5" transform="translate(92.90 75.81)"><g><animateTransform attributeName="transform" dur="42s" repeatCount="indefinite" type="rotate" values="0;-360"></animateTransform><text dominant-baseline="central" fill="#1FA2FF" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10.7" opacity="1" text-anchor="middle" x="0" y="0">s<animate attributeName="opacity" calcMode="discrete" dur="2.59s" keyTimes="0.0000;0.3333" repeatCount="indefinite" values="1;0"></animate></text><text dominant-baseline="central" fill="#1FA2FF" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10.7" opacity="0" text-anchor="middle" x="0" y="0">y<animate attributeName="opacity" calcMode="discrete" dur="2.59s" keyTimes="0.0000;0.3333;0.6667" repeatCount="indefinite" values="0;1;0"></animate></text><text dominant-baseline="central" fill="#1FA2FF" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10.7" opacity="0" text-anchor="middle" x="0" y="0">z<animate attributeName="opacity" calcMode="discrete" dur="2.59s" keyTimes="0.0000;0.6667" repeatCount="indefinite" values="0;1"></animate></text></g></g><g opacity="0.75" transform="translate(77.32 90.38)"><g><animateTransform attributeName="transform" dur="42s" repeatCount="indefinite" type="rotate" values="0;-360"></animateTransform><text dominant-baseline="central" fill="#8D97A3" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="13.5" opacity="1" text-anchor="middle" x="0" y="0">*<animate attributeName="opacity" calcMode="discrete" dur="2.90s" keyTimes="0.0000;0.3333" repeatCount="indefinite" values="1;0"></animate></text><text dominant-baseline="central" fill="#8D97A3" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="13.5" opacity="0" text-anchor="middle" x="0" y="0">+<animate attributeName="opacity" calcMode="discrete" dur="2.90s" keyTimes="0.0000;0.3333;0.6667" repeatCount="indefinite" values="0;1;0"></animate></text><text dominant-baseline="central" fill="#8D97A3" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="13.5" opacity="0" text-anchor="middle" x="0" y="0">·<animate attributeName="opacity" calcMode="discrete" dur="2.90s" keyTimes="0.0000;0.6667" repeatCount="indefinite" values="0;1"></animate></text></g></g><g opacity="1.0" transform="translate(53.46 95.62)"><g><animateTransform attributeName="transform" dur="42s" repeatCount="indefinite" type="rotate" values="0;-360"></animateTransform><text dominant-baseline="central" fill="#1FA2FF" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="13.6" opacity="1" text-anchor="middle" x="0" y="0">(<animate attributeName="opacity" calcMode="discrete" dur="3.21s" keyTimes="0.0000;0.3333" repeatCount="indefinite" values="1;0"></animate></text><text dominant-baseline="central" fill="#1FA2FF" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="13.6" opacity="0" text-anchor="middle" x="0" y="0">&lt;<animate attributeName="opacity" calcMode="discrete" dur="3.21s" keyTimes="0.0000;0.3333;0.6667" repeatCount="indefinite" values="0;1;0"></animate></text><text dominant-baseline="central" fill="#1FA2FF" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="13.6" opacity="0" text-anchor="middle" x="0" y="0">/<animate attributeName="opacity" calcMode="discrete" dur="3.21s" keyTimes="0.0000;0.6667" repeatCount="indefinite" values="0;1"></animate></text></g></g><g opacity="0.5" transform="translate(34.60 94.40)"><g><animateTransform attributeName="transform" dur="42s" repeatCount="indefinite" type="rotate" values="0;-360"></animateTransform><text dominant-baseline="central" fill="#1FA2FF" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11.3" opacity="1" text-anchor="middle" x="0" y="0">%<animate attributeName="opacity" calcMode="discrete" dur="3.52s" keyTimes="0.0000;0.3333" repeatCount="indefinite" values="1;0"></animate></text><text dominant-baseline="central" fill="#1FA2FF" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11.3" opacity="0" text-anchor="middle" x="0" y="0">*<animate attributeName="opacity" calcMode="discrete" dur="3.52s" keyTimes="0.0000;0.3333;0.6667" repeatCount="indefinite" values="0;1;0"></animate></text><text dominant-baseline="central" fill="#1FA2FF" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11.3" opacity="0" text-anchor="middle" x="0" y="0">&amp;<animate attributeName="opacity" calcMode="discrete" dur="3.52s" keyTimes="0.0000;0.6667" repeatCount="indefinite" values="0;1"></animate></text></g></g><g opacity="0.75" transform="translate(20.87 75.86)"><g><animateTransform attributeName="transform" dur="42s" repeatCount="indefinite" type="rotate" values="0;-360"></animateTransform><text dominant-baseline="central" fill="#8D97A3" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11.4" opacity="1" text-anchor="middle" x="0" y="0">)<animate attributeName="opacity" calcMode="discrete" dur="3.83s" keyTimes="0.0000;0.3333" repeatCount="indefinite" values="1;0"></animate></text><text dominant-baseline="central" fill="#8D97A3" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11.4" opacity="0" text-anchor="middle" x="0" y="0">]<animate attributeName="opacity" calcMode="discrete" dur="3.83s" keyTimes="0.0000;0.3333;0.6667" repeatCount="indefinite" values="0;1;0"></animate></text><text dominant-baseline="central" fill="#8D97A3" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11.4" opacity="0" text-anchor="middle" x="0" y="0">}<animate attributeName="opacity" calcMode="discrete" dur="3.83s" keyTimes="0.0000;0.6667" repeatCount="indefinite" values="0;1"></animate></text></g></g><g opacity="1.0" transform="translate(13.93 51.88)"><g><animateTransform attributeName="transform" dur="42s" repeatCount="indefinite" type="rotate" values="0;-360"></animateTransform><text dominant-baseline="central" fill="#1FA2FF" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.3" opacity="1" text-anchor="middle" x="0" y="0">*<animate attributeName="opacity" calcMode="discrete" dur="4.14s" keyTimes="0.0000;0.3333" repeatCount="indefinite" values="1;0"></animate></text><text dominant-baseline="central" fill="#1FA2FF" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.3" opacity="0" text-anchor="middle" x="0" y="0">^<animate attributeName="opacity" calcMode="discrete" dur="4.14s" keyTimes="0.0000;0.3333;0.6667" repeatCount="indefinite" values="0;1;0"></animate></text><text dominant-baseline="central" fill="#1FA2FF" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.3" opacity="0" text-anchor="middle" x="0" y="0">~<animate attributeName="opacity" calcMode="discrete" dur="4.14s" keyTimes="0.0000;0.6667" repeatCount="indefinite" values="0;1"></animate></text></g></g><g opacity="0.5" transform="translate(18.59 32.44)"><g><animateTransform attributeName="transform" dur="42s" repeatCount="indefinite" type="rotate" values="0;-360"></animateTransform><text dominant-baseline="central" fill="#1FA2FF" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.2" opacity="1" text-anchor="middle" x="0" y="0">(<animate attributeName="opacity" calcMode="discrete" dur="4.45s" keyTimes="0.0000;0.3333" repeatCount="indefinite" values="1;0"></animate></text><text dominant-baseline="central" fill="#1FA2FF" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.2" opacity="0" text-anchor="middle" x="0" y="0">[<animate attributeName="opacity" calcMode="discrete" dur="4.45s" keyTimes="0.0000;0.3333;0.6667" repeatCount="indefinite" values="0;1;0"></animate></text><text dominant-baseline="central" fill="#1FA2FF" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.2" opacity="0" text-anchor="middle" x="0" y="0">{<animate attributeName="opacity" calcMode="discrete" dur="4.45s" keyTimes="0.0000;0.6667" repeatCount="indefinite" values="0;1"></animate></text></g></g><g opacity="0.75" transform="translate(31.92 21.50)"><g><animateTransform attributeName="transform" dur="42s" repeatCount="indefinite" type="rotate" values="0;-360"></animateTransform><text dominant-baseline="central" fill="#8D97A3" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11.0" opacity="1" text-anchor="middle" x="0" y="0">%<animate attributeName="opacity" calcMode="discrete" dur="4.76s" keyTimes="0.0000;0.3333" repeatCount="indefinite" values="1;0"></animate></text><text dominant-baseline="central" fill="#8D97A3" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11.0" opacity="0" text-anchor="middle" x="0" y="0">#<animate attributeName="opacity" calcMode="discrete" dur="4.76s" keyTimes="0.0000;0.3333;0.6667" repeatCount="indefinite" values="0;1;0"></animate></text><text dominant-baseline="central" fill="#8D97A3" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11.0" opacity="0" text-anchor="middle" x="0" y="0">@<animate attributeName="opacity" calcMode="discrete" dur="4.76s" keyTimes="0.0000;0.6667" repeatCount="indefinite" values="0;1"></animate></text></g></g></g></g></svg></svg>
+<p style="color:#aaa; font-size:var(--fs-caption); text-align:left; margin:24px 0;">本文三个案例均为作者在 ChatGPT（GPT-6 Astra）中的一手实测，录屏、截图与 prompt 均为原始记录；Figma MCP 与官方插件信息来自 OpenAI 官方插件仓库 github.com/openai/plugins；computer use 概念与进展节点来自 OpenAI 与 Anthropic 的官方发布视频及公告，正文 Operator、Atlas 演示截图与时间轴图内的产品界面画面分别取自 OpenAI、Anthropic、Perplexity、Google 的官方发布视频与页面。</p></div>
+<!-- 底部 -->
+<footer class="article-footer">
+<div class="same-collection"></div>
+</footer>
+</article>
+</div>
+<script src="../script.js?v=27"></script>
+</body>
+</html>
