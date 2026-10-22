@@ -174,8 +174,9 @@ export function usePillarEntrance(deps: unknown[] = []) {
     const STAGGER = 110;
     const ROW_TOL = 28;
     const COL_STAGGER = 180;
-    /* 波次方向跟随滚动方向(2026-07-22):下滑批次从上往下,上滑批次从下往上
-       (贴近已可见内容的那排先出现,显现沿滚动方向推进) */
+    /* 入场只在往下读时播:进过视口的元素常驻显示,上滑回来不再复位重播
+       (2026-10-23 用户:回拉时逐个出现的效果删掉)。上滑时碰到从没进过视口的
+       元素(深链直接落在页面中部),也直接实打显现,不走错峰。 */
     let scrollDir: 1 | -1 = 1;
     let lastY = window.scrollY;
     const onDirScroll = () => {
@@ -186,22 +187,20 @@ export function usePillarEntrance(deps: unknown[] = []) {
     window.addEventListener('scroll', onDirScroll, { passive: true });
     const timers: number[] = [];
     let observer: IntersectionObserver | null = null;
-    let resetObserver: IntersectionObserver | null = null;
     let mo: MutationObserver | null = null;
     let bodyMo: MutationObserver | null = null;
 
     const revealByRow = (els: HTMLElement[]) => {
-      /* 轨迹随滚动方向:上滑进入 → 隐藏态切到上方(-22px),显现时向下落;
-         切换在显现前瞬时完成(禁过渡 + 强制回流),不会被看到 */
-      const fromAbove = scrollDir < 0;
-      els.forEach((el) => {
-        if (el.classList.contains('enter-from-above') !== fromAbove) {
+      if (scrollDir < 0) {
+        els.forEach((el) => {
           el.style.transition = 'none';
-          el.classList.toggle('enter-from-above', fromAbove);
+          reveal(el);
+          el.dataset.entered = '1';
           void el.offsetWidth;
           el.style.transition = '';
-        }
-      });
+        });
+        return;
+      }
       const sorted = els
         .slice()
         .sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
@@ -213,7 +212,6 @@ export function usePillarEntrance(deps: unknown[] = []) {
         lastTop = top;
         rows[rows.length - 1].push(el);
       });
-      if (scrollDir < 0) rows.reverse(); // 上滑:从下往上依次显现
       rows.forEach((row, step) => {
         const rowDelay = step * STAGGER;
         const ordered = row
@@ -240,11 +238,8 @@ export function usePillarEntrance(deps: unknown[] = []) {
           });
           revealByRow(inView);
 
-          /* 2026-07-22 改为可重播:进入视口按行错峰显现;完全离开视口后复位,
-             再次进入(上滑回来同样)重新依次入场 */
-          /* 收起时不冻结的话,下移中滑出视口的卡片会被 resetObserver 逐个瞬时打回
-             隐藏态,在整体淡出里一个个「瞬灭」;展开时不冻结,则每次回调都要对全部
-             元素做 getBoundingClientRect 排序分行 + 调度定时器,正好压在动画帧上
+          /* 首页模态位移期间冻结:每次回调都要对全部元素做 getBoundingClientRect
+             排序分行 + 调度定时器,正好压在动画帧上
              (Archive 30 个观察目标,实测长任务的来源之一)。
              展开的首屏批次已由 HomePage 手动点名,冻结期间漏掉的由下方 bodyMo 补扫。 */
           const homeModalTransition = isHomeModalRiding;
@@ -262,27 +257,7 @@ export function usePillarEntrance(deps: unknown[] = []) {
             },
             { root: null, rootMargin: '0px 0px -50px 0px', threshold: 0.1 },
           );
-          resetObserver = new IntersectionObserver(
-            (entries) => {
-              if (homeModalTransition()) return;
-              entries.forEach((e) => {
-                if (e.isIntersecting) return;
-                const el = e.target as HTMLElement;
-                if (!el.dataset.entered) return;
-                /* 复位瞬时完成(临时禁过渡),避免快速滑回时撞见半程反向动画 */
-                el.style.transition = 'none';
-                el.classList.remove('visible', 'heading-rise-in');
-                delete el.dataset.entered;
-                void el.offsetWidth;
-                el.style.transition = '';
-              });
-            },
-            { threshold: 0 },
-          );
-          targets.forEach((el) => {
-            observer!.observe(el);
-            resetObserver!.observe(el);
-          });
+          targets.forEach((el) => observer!.observe(el));
 
           /* 位移结束后补扫一次:冻结期间 IntersectionObserver 的回调被丢弃,而交叠
              状态已不再变化 —— 不补的话那批元素永远等不到下一次回调,停在隐藏态。 */
@@ -317,7 +292,6 @@ export function usePillarEntrance(deps: unknown[] = []) {
       timers.forEach(clearTimeout);
       window.removeEventListener('scroll', onDirScroll);
       observer?.disconnect();
-      resetObserver?.disconnect();
       mo?.disconnect();
       bodyMo?.disconnect();
     };

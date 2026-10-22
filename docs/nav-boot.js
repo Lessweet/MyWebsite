@@ -32,7 +32,10 @@ function initSiteNav() {
     // 「Blog」标签 → blog.html(无 loading 的 Feed 页),Archive⇄Blog 切换不重播 loading。
     const LOGO_HOME = base || './';
     const HOME = base + 'blog.html';
-    const wantNavBg = bd.contains('design-page') && !bd.contains('writing-page') && !bd.contains('reading-page');
+    /* home-v2 三页(首页 / Blog / Archive)的 CSS 一律把 .nav-bg 设成 display:none ——
+       注入了也只是在首页 loading 期间白拉一整个 shader 页面抢带宽(2026-10-23 v4) */
+    const wantNavBg = bd.contains('design-page') && !bd.contains('writing-page') && !bd.contains('reading-page')
+        && !bd.contains('home-v2');
     const navBg = wantNavBg
         ? '<iframe class="nav-bg" src="' + base + 'writing-banner.html?v=10&bare=1" title="" aria-hidden="true" tabindex="-1" scrolling="no"></iframe>'
         : '';
@@ -194,13 +197,18 @@ function toggleSiteTheme() {
        setSiteTheme 里的 .theme-switching(压到 0.18s)在这条路径上不够 —— 要的是 0。 */
     document.body.classList.add('theme-vt');
     document.documentElement.classList.toggle('theme-vt-collapse', !dark);
+    var wipe = null;
+    /* 收尾必须 cancel 掉圆动画:fill:'forwards' 的动画挂在 <html> 上,过渡结束后不会
+       自己消失,下一次切换时同名伪元素又被它钉回终点 —— 收回那次把 old(root) 钉在
+       circle(0),再转深色时浅色旧快照整张被裁没,圆外露出纯黑(2026-10-23 用户录屏) */
     var done = function () {
+        if (wipe) { wipe.cancel(); wipe = null; }
         document.body.classList.remove('theme-vt');
         document.documentElement.classList.remove('theme-vt-collapse');
     };
     var vt = document.startViewTransition(function () { setSiteTheme(dark); });
     vt.ready.then(function () {
-        document.documentElement.animate(
+        wipe = document.documentElement.animate(
             { clipPath: frames },
             /* fill:'forwards' 不能省:默认 fill:'none' 在动画跑完的那一刻把 clip-path
                退回基础值(= 无裁剪),而收回这一路裁的是**深色那张**,它一回到无裁剪

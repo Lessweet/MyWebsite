@@ -234,9 +234,36 @@ export default function HomePage() {
 
   /* 后台预载:入场收尾后挂载两个模态页(隐藏),内容提前备好 */
   const [preloaded, setPreloaded] = useState(false);
+  /* 计时从 hero-ready(loader 揭幕放闸)起算,而不是挂载起算:首次访问时挂载
+     发生在 loader 期间,挂载 +1.5s 正好砸在进度条收尾 / 黑雾上移上 —— 两页
+     几百节点 + iframe + 视频的挂载是一个大长任务(2026-10-23 v4 加载流畅度)。
+     再套一层 idle 回调,让 hero 逐字入场的帧先走。 */
   useEffect(() => {
-    const t = window.setTimeout(() => setPreloaded(true), PRELOAD_DELAY_MS);
-    return () => clearTimeout(t);
+    const docEl = document.documentElement;
+    let t = 0;
+    let idle = 0;
+    const schedule = () => {
+      t = window.setTimeout(() => {
+        if ('requestIdleCallback' in window) {
+          idle = window.requestIdleCallback(() => setPreloaded(true), { timeout: 1000 });
+        } else setPreloaded(true);
+      }, PRELOAD_DELAY_MS);
+    };
+    let mo: MutationObserver | undefined;
+    if (docEl.classList.contains('hero-ready')) schedule();
+    else {
+      mo = new MutationObserver((_, o) => {
+        if (!docEl.classList.contains('hero-ready')) return;
+        o.disconnect();
+        schedule();
+      });
+      mo.observe(docEl, { attributes: true, attributeFilter: ['class'] });
+    }
+    return () => {
+      mo?.disconnect();
+      clearTimeout(t);
+      if (idle) window.cancelIdleCallback(idle);
+    };
   }, []);
 
   const openModal = (target: ModalTarget) => (e: MouseEvent<HTMLAnchorElement>) => {
@@ -471,9 +498,8 @@ export default function HomePage() {
       if (activeWrap) activeWrap.style.display = 'none';
       /* 卡片入场态复位:预载让模态页常驻不卸载,卡片会停在上次的 .visible +
          entered,下次展开就「一开始全在场」,依次上移的入场动画看着像没了
-         (2026-07-27 用户实测)。pillar 自己的复位观察器在收起期间被冻结(防止
-         下移时卡片被逐个瞬灭),等冻结解除时 wrapper 已 display:none,复位回调
-         不会再来 —— 这里主动收尾。瞬时完成(禁过渡)且页面已不可见,看不到。 */
+         (2026-07-27 用户实测)。pillar 只在往下读时入场、不会自己复位
+         —— 这里主动收尾。瞬时完成(禁过渡)且页面已不可见,看不到。 */
       activeWrap?.querySelectorAll<HTMLElement>('.card-wrapper, .design-menu, .design-banner-frame, .section-divider h2').forEach((el) => {
         el.style.transition = 'none';
         el.classList.remove('visible', 'heading-rise-in', 'enter-from-above');
@@ -891,11 +917,11 @@ export default function HomePage() {
   return (
     <>
       {/* 首页 hero:自我介绍段(2026-08-22 换下「From AI-Assisted…」大字 + 署名行,
-          用户定稿):正常字号、整段灰底,重点词(姓名)黑;三个行内图形 ——
-          头像圆(原署名头像内嵌进文字)、NetEase 红点、指向下方 Blog 行的圆底下箭头。 */}
+          用户定稿):正常字号、整段灰底,重点词(姓名)黑;两个行内图形 ——
+          头像圆(原署名头像内嵌进文字)、Blog 前的丝绸圆球(NetEase 红环 2026-10-23 删除)。 */}
       <header className="home-hero">
         {/* 图形与它标注的词包进 .hero-intro-unit(nowrap):否则行尾可能在
-            inline-block 图形和后面的词之间折开,红点/箭头被单独甩在行尾。
+            inline-block 图形和后面的词之间折开,头像/圆球被单独甩在行尾。
             文字经 splitIntro 拆成折行单元(.hero-ch),空格并入前词、标点并入前字,
             全部间距都在单元字符串里 —— JSX 元素之间不放裸文本。 */}
         <p className="hero-intro" ref={introRef}>
@@ -929,7 +955,6 @@ export default function HomePage() {
           ))}
           {/* 单元带尾空格(nowrap 粘在词后):后续段不再以空格开头,免得折行后行首悬空格 */}
           <span className="hero-ch hero-intro-unit">
-            <span aria-hidden="true" className="hero-intro-dot" />
             {/* 字标 SVG(描线复刻,见 NeteaseWordmark.tsx):包在 <b> 里吃重点词颜色 */}
             <b className="hero-netease">
               <NeteaseWordmark />
@@ -938,7 +963,7 @@ export default function HomePage() {
           {splitIntro('担任 ').map((t, i) => (
             <span key={`c0${i}`} className="hero-ch">{t}</span>
           ))}
-          {/* 「UI 设计师」独立成单元:底下垫手绘红色下划线(2026-08-22 用户手绘样式);
+          {/* 「UI 设计师」独立成单元:底下垫手绘灰色双笔下划线(2026-08-22 手绘样式,10-23 红改灰);
               逗号并进单元防行首标点,但不吃下划线 */}
           <span className="hero-ch hero-intro-unit">
             <span className="hero-role-mark">
@@ -947,9 +972,28 @@ export default function HomePage() {
                   第二笔更短、垫在中段下方 —— 快速回锋的双线。两条都是变宽实心笔触
                   (上下缘不同相位抖动 = 粗细一直在变);preserveAspectRatio none 随词宽拉伸 */}
               <svg aria-hidden="true" className="hero-role-line" viewBox="0 0 200 24" preserveAspectRatio="none">
-                <path d="M4 7.5 C 30 5.8, 60 8, 90 6.6 C 120 5.4, 155 7.2, 194 5.2 C 197 5, 198 6, 197.5 7.2 C 197 8.6, 194 9.4, 190 9.8 C 158 12, 124 10, 92 11.4 C 62 12.6, 32 11, 7 12.6 C 4.6 12.7, 3.4 11.6, 3.5 10 C 3.6 8.8, 3.8 7.9, 4 7.5 Z" />
-                <path d="M22 15.5 C 50 13.8, 85 15.6, 118 14 C 128 13.5, 136 14.2, 138 15 C 139.5 15.9, 137 16.9, 132 17.3 C 100 19.4, 66 17.4, 35 19 C 28 19.3, 23.5 18.6, 23 17.4 C 22.6 16.6, 22.4 15.9, 22 15.5 Z" />
+                {/* hover 画笔重描:每笔一张遮罩,沿笔画中线的粗描边按 dashoffset 扫开 ——
+                    笔画本身是变宽实心轮廓、没有可描的中线,只能用遮罩露出来。
+                    两笔各用各的遮罩:中线描边够粗时会盖到邻笔边缘 */}
+                <defs>
+                  <mask id="hero-role-m1" maskUnits="userSpaceOnUse" x="-4" y="0" width="208" height="24">
+                    <path pathLength={1} d="M0 10.2 L203 6.8" />
+                  </mask>
+                  <mask id="hero-role-m2" maskUnits="userSpaceOnUse" x="-4" y="0" width="208" height="24">
+                    <path pathLength={1} d="M19 16.6 L143 15.4" />
+                  </mask>
+                </defs>
+                <path mask="url(#hero-role-m1)" d="M4 7.5 C 30 5.8, 60 8, 90 6.6 C 120 5.4, 155 7.2, 194 5.2 C 197 5, 198 6, 197.5 7.2 C 197 8.6, 194 9.4, 190 9.8 C 158 12, 124 10, 92 11.4 C 62 12.6, 32 11, 7 12.6 C 4.6 12.7, 3.4 11.6, 3.5 10 C 3.6 8.8, 3.8 7.9, 4 7.5 Z" />
+                <path mask="url(#hero-role-m2)" d="M22 15.5 C 50 13.8, 85 15.6, 118 14 C 128 13.5, 136 14.2, 138 15 C 139.5 15.9, 137 16.9, 132 17.3 C 100 19.4, 66 17.4, 35 19 C 28 19.3, 23.5 18.6, 23 17.4 C 22.6 16.6, 22.4 15.9, 22 15.5 Z" />
               </svg>
+              {/* 画笔:与下划线同框,笔尖跟着遮罩的扫开进度走(轨迹见 writing.css hero-pen-track) */}
+              <span aria-hidden="true" className="hero-role-pen">
+                <span className="hero-role-pen-track">
+                  <svg className="hero-role-pen-icon" viewBox="0 0 24 24">
+                    <path d="M16.2 3.8a2.3 2.3 0 0 1 3.3 0l.7.7a2.3 2.3 0 0 1 0 3.3L8.5 19.5 3 21l1.5-5.5Z" />
+                  </svg>
+                </span>
+              </span>
             </span>
             ，
           </span>
@@ -1032,7 +1076,7 @@ export default function HomePage() {
           display:contents 让激活页的子项保持 #app 直接子级(works-page 的网格依赖
           这一点,rideEls 的 walker 也会穿透它);未激活的那页 display:none 不占布局,
           iframe 内的 rAF 循环被浏览器自动暂停,不耗帧。
-          关闭后不卸载:滑出视口的卡片由 pillar 复位,再次展开照常重播入场且即点即现。
+          关闭后不卸载:卡片入场态由 finishClose 复位,再次展开照常重播入场且即点即现。
           标题/收起箭头从首帧就显形,它们是行文字/行箭头的延续。 */}
       {(preloaded || modal) && (
         <>

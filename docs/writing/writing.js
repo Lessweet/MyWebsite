@@ -110,7 +110,10 @@ function initSiteNav() {
     // 「Blog」标签 → blog.html(无 loading 的 Feed 页),Archive⇄Blog 切换不重播 loading。
     const LOGO_HOME = base || './';
     const HOME = base + 'blog.html';
-    const wantNavBg = bd.contains('design-page') && !bd.contains('writing-page') && !bd.contains('reading-page');
+    /* home-v2 三页(首页 / Blog / Archive)的 CSS 一律把 .nav-bg 设成 display:none ——
+       注入了也只是在首页 loading 期间白拉一整个 shader 页面抢带宽(2026-10-23 v4) */
+    const wantNavBg = bd.contains('design-page') && !bd.contains('writing-page') && !bd.contains('reading-page')
+        && !bd.contains('home-v2');
     const navBg = wantNavBg
         ? '<iframe class="nav-bg" src="' + base + 'writing-banner.html?v=10&bare=1" title="" aria-hidden="true" tabindex="-1" scrolling="no"></iframe>'
         : '';
