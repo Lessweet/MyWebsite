@@ -1,0 +1,1 @@
+import{c as t,j as o}from"./index-BOwIwFzp.js";import{B as e}from"./BlogPage-Bc76Uy2D.js";import"./articleShell-BjwCpdxn.js";import"./hooks-BwAh2NeZ.js";t.createRoot(document.getElementById("app")).render(o.jsx(e,{}));

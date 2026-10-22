@@ -2962,13 +2962,11 @@ html.hero-ready .hero-role { animation-delay: calc((var(--d, 0ms) + var(--hero-b
 /* ============ 首页介绍段(2026-08-22 用户定稿,换下大字标题 + 署名行) ============
    正常字号(--fs-p)整段灰,重点词(姓名)黑;三个行内图形嵌在文字流里:
    · .hero-intro-avatar 头像圆(原署名头像移入文字,浅圆底衬线稿,见 .hero-avatar 注释)
-   · .hero-intro-dot NetEase 红色实心圆点
    · .hero-intro-orb 弥散渐变流动圆球(Blog 词前,2026-08-22 由灰底下箭头换成)
    基础态按黑底写(与 .hero-by 一致),home-landing 白底与 theme-dark 在各自区块翻色。 */
 .hero-intro {
-    /* 介绍段的「手绘红」:NetEase 圆环 + UI 设计师下划线共用。
-       2026-08-22 三调:#E60012 → #DB0200 都嫌暗,定 #FF3B30(亮、年轻) */
-    --hero-red: #FF3B30;
+    /* UI 设计师手绘下划线的笔色(2026-10-23 用户:红改灰,NetEase 前的红环同日删除) */
+    --hero-line: var(--gray-400, #aeaeb2);
     /* 整段缩放走 zoom:连 px 定死的图形(头像/红环/球/say-hi 笔画)一起等比缩,
        且参与布局回流 —— transform:scale 只缩绘制不缩占位,字号单调则带不动那批
        px 图形。0.8 是手机档(2026-08-22 定,手机上观感刚好);
@@ -3025,11 +3023,9 @@ html.hero-ready .hero-role { animation-delay: calc((var(--d, 0ms) + var(--hero-b
     width: auto;
     vertical-align: baseline;
     margin-right: 0.18em;     /* 与右侧「担任」拉开(单元尾空格之外再加一点) */
-    margin-left: 0.14em;      /* 与左侧红圆拉开(2026-08-22 用户,红点自身 0.12em 之外再加) */
 }
-/* 「UI 设计师」手绘下划线(2026-08-22 用户手绘样式):微波浪红描边,
-   随词宽拉伸(preserveAspectRatio none),描边锁 3px 屏幕像素不被拉变形;
-   圆头 = 马克笔手感。红与 NetEase 圆环同色。 */
+/* 「UI 设计师」手绘下划线(2026-08-22 用户手绘样式):双笔变宽笔触,
+   随词宽拉伸(preserveAspectRatio none)。笔色 --hero-line(灰)。 */
 .hero-role-mark { position: relative; }
 .hero-role-line {
     position: absolute;
@@ -3040,7 +3036,46 @@ html.hero-ready .hero-role { animation-delay: calc((var(--d, 0ms) + var(--hero-b
     overflow: visible;
 }
 /* 变宽实心笔触:路径本身是笔画轮廓(见 JSX),填色即可,无描边 */
-.hero-role-line path { fill: var(--hero-red); }
+.hero-role-line path { fill: var(--hero-line); }
+body.home-landing.theme-dark .hero-intro { --hero-line: var(--gray-600, #636366); }
+/* 遮罩里的中线描边:白 = 露出。默认整条露出(dashoffset 0),hover 时从 1 扫回 0 */
+.hero-role-line mask path {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 10;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+}
+#hero-role-m2 path { stroke-width: 8; }
+/* 画笔:与下划线同一个框(定位参数同 .hero-role-line),平时不可见。
+   track 铺满这个框,它的 translate 百分比 = 框宽/框高的百分比 —— 关键帧里的
+   坐标直接写成 viewBox(200×24)里的位置换算出的百分比;笔尖落在 track 原点。 */
+.hero-role-pen {
+    position: absolute;
+    left: 0.1em;
+    bottom: -0.4em;
+    width: calc(100% - 0.2em);
+    height: 0.52em;
+    pointer-events: none;
+    opacity: 0;
+}
+.hero-role-pen-track { position: absolute; inset: 0; }
+.hero-role-pen-icon {
+    position: absolute;
+    /* 18px 图标里笔尖在 (3,21)/24 → (2.25,15.75)px,挪到 track 原点 */
+    left: -2.25px;
+    top: -15.75px;
+    width: 18px;
+    height: 18px;
+    overflow: visible;
+}
+.hero-role-pen-icon path {
+    fill: var(--site-bg, #FDFDFC);
+    stroke: #1C1C1E;
+    stroke-width: 1.8;
+    stroke-linejoin: round;
+}
+body.home-landing.theme-dark .hero-role-pen-icon path { fill: #1c1c1e; stroke: #fff; }
 
 /* ── hero Blog 词 hover 翻转(2026-08-22 用户:复用顶栏文字上浮的动效,只动文字、
    不加高亮块)。Playwrite 是连笔手写体,逐字拆分会断笔画(实测词宽 -20%)——
@@ -3063,6 +3098,16 @@ html.hero-ready .hero-role { animation-delay: calc((var(--d, 0ms) + var(--hero-b
         animation: hero-blog-roll 560ms both;
         animation-delay: calc(var(--i, 0) * 45ms);
     }
+    /* NetEase hover(2026-10-23 用户):颜色浅一半 */
+    .hero-intro .hero-netease { transition: opacity 0.2s ease; }
+    .hero-intro .hero-netease:hover { opacity: 0.5; }
+    /* UI 设计师 hover(2026-10-23 用户):画笔把两条下划线重新画一遍 ——
+       两笔先清空,笔从第一笔左端扫到右端,抬笔回到第二笔起点,再扫完第二笔后淡出。
+       遮罩扫开与笔尖位移用同一时间窗、同一条曲线,笔尖始终压在墨迹前沿。 */
+    .hero-role-mark:hover #hero-role-m1 path { animation: hero-role-draw1 1.1s both; }
+    .hero-role-mark:hover #hero-role-m2 path { animation: hero-role-draw2 1.1s both; }
+    .hero-role-mark:hover .hero-role-pen { animation: hero-role-pen-fade 1.1s both; }
+    .hero-role-mark:hover .hero-role-pen-track { animation: hero-role-pen-move 1.1s both; }
     /* 头像 hover(2026-08-22 用户:要有生命感,不是死图;同容文字的 hover 划出
        效果同日删除 —— 效果不好):
        1. 摆动 —— 底部为轴的钟摆式左右小幅摇,像探头打招呼(0.75s,用户嫌 0.9 慢);
@@ -3093,6 +3138,28 @@ html.hero-ready .hero-role { animation-delay: calc((var(--d, 0ms) + var(--hero-b
     45%  { transform: translateY(0.4em);    opacity: 0; }
     50%  { transform: translateY(-0.45em);  opacity: 0; animation-timing-function: cubic-bezier(0.18, 1, 0.32, 1); }
     100% { transform: translateY(0);        opacity: 1; }
+}
+/* 画笔时间轴(1.1s):落笔 0–5% → 第一笔 5–45% → 换行 45–55% → 第二笔 55–82% → 收笔淡出。
+   位置 = viewBox 坐标换算成框的百分比:第一笔中线 (0,10.2)→(203,6.8),第二笔 (19,16.6)→(143,15.4) */
+@keyframes hero-role-draw1 {
+    0%, 5% { stroke-dashoffset: 1; animation-timing-function: cubic-bezier(0.45, 0, 0.4, 1); }
+    45%, 100% { stroke-dashoffset: 0; }
+}
+@keyframes hero-role-draw2 {
+    0%, 55% { stroke-dashoffset: 1; animation-timing-function: cubic-bezier(0.45, 0, 0.4, 1); }
+    82%, 100% { stroke-dashoffset: 0; }
+}
+@keyframes hero-role-pen-move {
+    0%, 5% { transform: translate(0%, 42.5%); animation-timing-function: cubic-bezier(0.45, 0, 0.4, 1); }
+    45%    { transform: translate(101.5%, 28.3%); animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
+    55%    { transform: translate(9.5%, 69.2%); animation-timing-function: cubic-bezier(0.45, 0, 0.4, 1); }
+    82%    { transform: translate(71.5%, 64.2%); animation-timing-function: ease-out; }
+    100%   { transform: translate(80%, 20%); }
+}
+@keyframes hero-role-pen-fade {
+    0%       { opacity: 0; }
+    5%, 82%  { opacity: 1; }
+    100%     { opacity: 0; }
 }
 @keyframes hero-avatar-wave {
     0%   { transform: rotate(0); }
@@ -3138,7 +3205,6 @@ body.home-landing.theme-dark .hero-hi path { stroke: #fff; }
    不随字号缩放),同一 vertical-align 落在汉字视觉中线 —— 改尺寸只动这一条。
    -8px = 圆心对齐基线上方 ~8px(24px 字号的视觉中线),尺寸改了这里一起调 */
 .hero-intro-avatar,
-.hero-intro-dot,
 .hero-intro-orb {
     display: inline-block;
     width: 32px;
@@ -3153,18 +3219,6 @@ body.home-landing.theme-dark .hero-hi path { stroke: #fff; }
     background: #fff;
 }
 .hero-intro-avatar img { display: block; width: 100%; height: 100%; object-fit: cover; }
-/* 网易红标(近似官方色,深浅主题同色)。2026-08-22 数调:32px 正圆 → 圆角矩形
-   16/22/25px → 最终定为空心圆环(用户给了参考图:粗环、孔约占直径 1/3)。
-   环 = 粗边框 + 透明心,尺寸沿用 25px 档。 */
-.hero-intro-dot {
-    background: none;
-    box-sizing: border-box;
-    border: 6px solid var(--hero-red);   /* 2026-08-22 用户定稿:28px 空心圆、环 6px;红走 --hero-red */
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    vertical-align: -5px;   /* 高过字标一点,重心与字标光学居中 */
-}
 /* Blog 圆球(2026-08-22 用户,替换箭头 icon):弥散渐变 + 持续流动。
    做法 = 圆形裁切里放一层放大 1.8 倍的四色 radial 叠层,整层 blur 后慢速自转 ——
    旋转是 transform-only,合成器就能跑,不回流不重绘;色相取站内文章 accent 一族。 */

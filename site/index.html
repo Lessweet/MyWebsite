@@ -43,7 +43,8 @@
             height: 210svh;
             transform: translateX(-100%);
             background: #1c1c1e;
-            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            /* 进度期不挂 transform 过渡:位移由 Web Animations 逐帧给出(见脚本),
+               再叠一层过渡只会让它追着跑、拖出顿挫 */
             will-change: transform;
         }
         /* 扫满 100% 的时刻换羽化底(fog):宽视口下羽化弧会掠进视口下方两角,直切黑↔雾
@@ -61,7 +62,7 @@
         }
         #page-loader.fog .pl-fill {
             background-color: transparent;
-            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.5s ease;
+            transition: background-color 0.5s ease;
         }
         #page-loader.fog .pl-fill::after { opacity: 1; }
         /* 离场:黑雾 2s 上移,羽化底边扫过视口像雾被掀开;缓动 = sui.io 的 suiSmooth */
@@ -156,9 +157,9 @@
      不再需要中文字体。text= 只抓 4 个字形;display=swap 先用回退栈,到货即换。 -->
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Playwrite+DE+LA&amp;text=Blog&amp;display=swap" rel="stylesheet"/>
-<link href="writing/writing.css?v=456" rel="stylesheet"/>
+<link href="writing/writing.css?v=457" rel="stylesheet"/>
 <!-- 提前加载,使顶部导航能在首次绘制前同步注入,避免空 header 闪烁 -->
-<script src="nav-boot.js?v=17"></script>
+<script src="nav-boot.js?v=18"></script>
 </head>
 <!-- 复用 design-page 的 pillar 布局(左侧二级导航 + 右侧分模块),Writing 与 Design 页对称 -->
 <!-- home-landing:仅首页 —— 一屏白底 landing(writing.css);blog.html 不带。
@@ -182,8 +183,8 @@
 <div class="pl-num" id="pl-num"><span class="pl-num-row"><span class="pl-digits js-digits">0</span><span class="pl-pct">%</span></span></div>
 </div>
 <script>
-        /* 进度 = max(资源真实完成度, 缓慢爬向 90% 的模拟值),两者取大避免长时间停在 0;
-           收尾条件:window load / 全部资源就绪 / 8s 超时兜底,三者先到先算,补到 100% 后淡出。 */
+        /* 进度面走一条连续曲线(合成器驱动,见下方「进度条引擎」);
+           揭幕条件:首屏资源全部就绪(或 FAILSAFE 超时),补到 100% 后停一拍上滑。 */
         (function () {
             var docEl = document.documentElement;
             /* 只有本次会话「首次进入」才播 loading:同会话内刷新 / 从 Blog、Archive
@@ -205,7 +206,6 @@
                 sessionStorage.setItem('seen-loading', '1');
             } catch (e) {}
             docEl.classList.add('is-loading');
-            var t0 = Date.now();
             var pct = 0, loaded = 0, total = 0, counted = [], finished = false;
             var fill, num, digits;
             /* ── 数字轮播(odometer)────────────────────────────────────────
@@ -316,18 +316,99 @@
                 if (!digits || !digits.length) return;
                 if (!rafId) rafId = requestAnimationFrame(tick);
             }
-            function render(p) {
-                /* 时间曲线上限:资源秒开时数字也不许一下冲到 99,
-                   最多沿 MIN_MS 的缓动曲线走(先慢后匀速、近 99 再放缓) */
-                var t = Math.min(1, (Date.now() - t0) / MIN_MS);
-                var ceil = 99 * (0.5 - 0.5 * Math.cos(Math.PI * t));
-                p = Math.min(p, ceil);
-                p = Math.max(pct, Math.min(99, Math.round(p)));
-                if (p <= pct) return;
-                pct = p;
-                if (fill) fill.style.transform = 'translateX(' + (pct - 100) + '%)';
-                if (num && pct >= 52) num.style.color = '#fff';   /* 黑面过半,数字换白 */
-                showNumber();
+            /* ── 进度条引擎(2026-10-23 v4 重写:流畅度优先)──────────────────────
+               旧版每次进度更新都写一个取整的百分比,再交给 0.4s 的 CSS 过渡去追 ——
+               过渡每 150ms(爬行)/ 40ms(收尾)被重启一次,读出来是「冲一下停一下」;
+               收尾的 setInterval 跑在主线程,正撞上 React 挂载 / WebGL 圆球 / 模态预载,
+               主线程一卡进度就卡(2026-10-23 用户:没有流畅感)。
+               现在进度面全程由 Web Animations 驱动(只动 transform → 合成器线程,
+               主线程再忙也照常走帧),曲线用 JS 精确定义、逐 16ms 采样成关键帧,
+               三段之间按「位置 + 速度」接力,全程速度连续、没有顿挫:
+                 ① 主曲线:MIN_MS 内 0→100,缓起缓收(下方 EASE);
+                 ② 走到 DECIDE 处资源还没到齐 → 从当前速度平滑减速,之后保持慢速爬行
+                    (快慢两个指数分量叠加,渐近 HOLD_CAP —— 只有快分量的话 1.5s 就贴住上限,
+                    读出来就是卡死);
+                 ③ 资源到齐 → 从当前位置/速度用三次 Hermite 补满 100,末速度归零。
+               资源在 DECIDE 前就到齐(缓存 / 本地)时只走 ①,一条曲线到底。 */
+            var MIN_MS = 1800;      /* 主曲线时长 = 最快一次 loading 的扫满时间(2026-08-22 定) */
+            var DECIDE_AT = 0.42;   /* 主曲线走到这个时间比例时检查资源:之后曲线开始收,再切就晚了 */
+            var HOLD_CAP = 96;      /* 资源迟迟不到时渐近的上限,留出补满的那一段 */
+            var CREEP = 7, CREEP_TAU = 5000;   /* 慢分量:约 1.4%/s 起步、5s 时间常数的爬行 */
+            var FINISH_MS = 700;    /* 资源到齐后补满 100 的时长 */
+            /* 只防死等:某个资源卡死、load/error 都不触发时,不至于把人困在幕布后面 */
+            var FAILSAFE_MS = 20000;
+            var HOLD_MS = 550;      /* 扫满后停一拍再揭幕(期间换羽化底、光栅化大图层) */
+            /* 进度数字自 2026-07-22 起不展示:里程表引擎保留但不驱动 ——
+               它每帧改滤镜和 transform,看不见也照样吃主线程 */
+            var SHOW_NUM = false;
+            function cubicBezier(x1, y1, x2, y2) {
+                function at(a1, a2, t) { return ((1 - 3 * a2 + 3 * a1) * t + (3 * a2 - 6 * a1)) * t * t + 3 * a1 * t; }
+                function slope(a1, a2, t) { return 3 * (1 - 3 * a2 + 3 * a1) * t * t + 2 * (3 * a2 - 6 * a1) * t + 3 * a1; }
+                return function (x) {
+                    if (x <= 0) return 0;
+                    if (x >= 1) return 1;
+                    var t = x;
+                    for (var i = 0; i < 8; i++) {
+                        var d = at(x1, x2, t) - x, sl = slope(x1, x2, t);
+                        if (Math.abs(d) < 1e-6) break;
+                        if (Math.abs(sl) < 1e-6) break;
+                        t -= d / sl;
+                    }
+                    return at(y1, y2, Math.min(1, Math.max(0, t)));
+                };
+            }
+            /* 缓起缓收:起步从 0 速长起来(不是一上来就冲),收尾留长减速 */
+            var EASE = cubicBezier(0.45, 0, 0.2, 1);
+            var anim = null, curve = null, resourcesDone = false, phase = 'master';
+            function pctAt(t) { return curve(Math.max(0, t)); }
+            function velAt(t) { var a = Math.max(0, t - 1); return (curve(t + 1) - curve(a)) / (t + 1 - a); }
+            function nowT() { return anim && anim.currentTime != null ? anim.currentTime : 0; }
+            /* 把曲线 fn(t)(t:本段毫秒)逐 16ms 采样成关键帧交给合成器 */
+            function play(fn, dur, onDone) {
+                var n = Math.max(2, Math.ceil(dur / 16) + 1), frames = [];
+                for (var i = 0; i < n; i++) {
+                    var t = dur * i / (n - 1);
+                    frames.push({ transform: 'translateX(' + (fn(t) - 100).toFixed(3) + '%)', offset: i / (n - 1) });
+                }
+                var next = fill.animate(frames, { duration: dur, easing: 'linear', fill: 'forwards' });
+                if (anim) anim.cancel();   /* 同一帧内换段:先挂新段再撤旧段,中间没有空帧 */
+                anim = next;
+                curve = fn;
+                if (onDone) next.onfinish = onDone;
+            }
+            function startProgress() {
+                if (!fill || typeof fill.animate !== 'function') { pct = 0; return; }
+                play(function (t) { return 100 * EASE(t / MIN_MS); }, MIN_MS, function () {
+                    if (phase === 'master') full();
+                });
+                setTimeout(function () {
+                    if (resourcesDone || phase !== 'master') return;
+                    /* 换到减速段:同一位置、同一速度起步。p = p0 + A(1-e^(-s/τ1)) + B(1-e^(-s/τ2)),
+                       B = 慢爬行量(τ2 长),A 吃掉其余距离;τ1 由「起步速度 = 当前速度」反解 */
+                    var t = nowT(), p0 = pctAt(t), v0 = Math.max(1e-3, velAt(t));
+                    var gap = Math.max(0.5, HOLD_CAP - p0);
+                    var B = Math.min(CREEP, gap * 0.5), A = gap - B;
+                    var tau1 = A / Math.max(1e-4, v0 - B / CREEP_TAU);
+                    phase = 'hold';
+                    play(function (s) {
+                        return p0 + A * (1 - Math.exp(-s / tau1)) + B * (1 - Math.exp(-s / CREEP_TAU));
+                    }, FAILSAFE_MS);
+                }, MIN_MS * DECIDE_AT);
+            }
+            function finishFromHold() {
+                var t = nowT(), p0 = pctAt(t), v0 = Math.max(0, velAt(t));
+                var D = FINISH_MS, d = 100 - p0;
+                /* Hermite 起点斜率 = 当前速度 × 时长;超过 3×剩余距离会冲过头再回落,夹住 */
+                var m0 = Math.min(v0 * D, 3 * d);
+                phase = 'finish';
+                play(function (s) {
+                    var u = Math.min(1, s / D), u2 = u * u, u3 = u2 * u;
+                    return p0 * (2 * u3 - 3 * u2 + 1) + m0 * (u3 - 2 * u2 + u) + 100 * (-2 * u3 + 3 * u2);
+                }, D, full);
+            }
+            function showNumber() {
+                if (!SHOW_NUM || !digits || !digits.length) return;
+                if (!rafId) rafId = requestAnimationFrame(tick);
             }
             function cleanup() {
                 docEl.classList.remove('is-loading');
@@ -343,85 +424,54 @@
                在这一刻放闸,大字从将散未散的雾里逐字浮出;更早会在实黑下空放一遍,
                更晚(比如等雾散尽的 2s)整段入场就拖得太久。 */
             var HERO_GATE_MS = 650;
-            /* 最短展示时长:加载再快(缓存/本地),进度也要平滑扫到 100 再上滑,
-               保证每次访问都有完整的 loading 过程且不生硬。
-               5000 → 1800(2026-08-22 用户:线上首次加载停在幕布上太久。5000 是
-               2026-07-28 配合大字 hero 定的;首页已换成纯文本介绍段,没有重资源
-               可等,幕布只剩仪式感 —— 收到「进度扫完即揭幕」的最短节奏)。
-               留意:此刻它其实是「固定时长」而非「最短」—— 2026-07-28 撤掉了三条
-               等资源的闸(全部媒体 load / window.load / 8s 兜底,见 finish 注释),
-               没有任何东西能让揭幕延后或提前。要恢复成真正的下限,得把闸加回来,
-               且只等 img、不等 iframe/video(那 19 个重家伙才是当初拖到 8s 的元凶)。 */
-            var MIN_MS = 1800;
-            /* 只防死等:某个资源卡死、load/error 都不触发时,不至于把人困在幕布后面。
-               给得比 MIN_MS 宽裕得多 —— 正常网络走不到这里,真走到了说明确实有东西
-               挂了,那时候放人进去也比继续等着强。 */
-            var FAILSAFE_MS = 20000;
-            function setPct(p) {
-                p = Math.round(p);
-                pct = p;   /* 收尾扫到 100 也要写回 pct:轮播的目标值只认它 */
-                if (fill) fill.style.transform = 'translateX(' + (p - 100) + '%)';
-                if (num && p >= 52) num.style.color = '#fff';
-                showNumber();
+            /* 资源到齐:主曲线还在跑就让它自己走完;已切到减速段就从当前状态补满 */
+            function markResourcesDone() {
+                if (resourcesDone) return;
+                resourcesDone = true;
+                if (phase === 'hold') finishFromHold();
+                else if (!anim) full();   /* 不支持 WAAPI 的兜底:直接收尾 */
             }
-            /* 弹簧是渐近收敛的,固定等一个时长有可能在它还差半格时就把画面抬走
-               (实测差 0.024 格 ≈ 3px,肉眼看得出没对正)。
-               2026-07-28:进度数字自 07-22 起就 visibility:hidden 了(见上方 .pl-num),
-               等一个看不见的弹簧收敛纯属白等 —— 实测这段占 0.35~2s。现在直接进入
-               HOLD_MS 停顿再上滑;弹簧引擎保留(收尾时序里别处还读 pct),只是不再等它。
-               哪天数字重新露出来,把 waitAligned 改回 true 即可。 */
-            var HOLD_MS = 550, ALIGN_MAX = 2000;
-            var waitAligned = false;   /* 数字不可见时无需等对齐 */
-            function whenAligned(cb) {
-                if (!waitAligned) { setTimeout(cb, HOLD_MS); return; }
-                var t0a = Date.now();
-                (function poll() {
-                    if (aligned || Date.now() - t0a > ALIGN_MAX) { setTimeout(cb, HOLD_MS); return; }
-                    requestAnimationFrame(poll);
-                })();
-            }
-            function finish() {
+            /* 扫满:把终态钉成行内样式再撤动画(fill:forwards 的动画会压住 .done 的
+               上移过渡),换羽化底,停一拍后揭幕 */
+            function full() {
                 if (finished) return;
                 finished = true;
+                pct = 100;
+                showNumber();
                 var loader = document.getElementById('page-loader');
-                var remaining = Math.max(0, MIN_MS - (Date.now() - t0));
-                var from = pct, tFinish = Date.now();
-                var sweep = setInterval(function () {
-                    var k = remaining ? Math.min(1, (Date.now() - tFinish) / remaining) : 1;
-                    k = 0.5 - 0.5 * Math.cos(Math.PI * k);   /* 缓入缓出,前段更缓和 */
-                    setPct(from + (100 - from) * k);
-                    if (k >= 1) {
-                        clearInterval(sweep);
-                        /* 扫满全黑的此刻给黑面换羽化底(视口内不可见),趁 HOLD 停顿
-                           完成光栅化 —— 上移起步才不掉帧 */
-                        if (loader) loader.classList.add('fog');
-                        whenAligned(function () {
-                            var released = false;
-                            var release = function () {   /* 黑雾完全离场:撤遮罩 */
-                                if (released) return;
-                                released = true;
-                                if (loader) loader.remove();
-                            };
-                            if (!loader) { cleanup(); openHeroGate(); return; }
-                            /* Sui 式揭幕:进度面自身就是羽化黑幕。清掉进度期的行内
-                               transform(translateX 已到 0),交给 .done 规则做 2s 上移 */
-                            if (fill) fill.style.transform = '';
-                            loader.classList.add('done');
-                            cleanup();
-                            /* 雾掀到大字区时放闸(不等它散尽),大字从雾里浮出来 */
-                            setTimeout(openHeroGate, HERO_GATE_MS);
-                            /* 只认黑幕自己的 transform 结束(pl-num/logo 的 opacity
-                               transitionend 会冒泡上来,不能用 once 一刀切) */
-                            loader.addEventListener('transitionend', function (e) {
-                                if (e.target === fill && e.propertyName === 'transform') release();
-                            });
-                            setTimeout(release, 2600);   /* transitionend 兜底 */
-                        });   /* 等数字真正对齐、停一拍,再上滑 —— 见 whenAligned */
-                    }
-                }, 40);
+                if (fill) fill.style.transform = 'translateX(0%)';
+                if (anim) { anim.cancel(); anim = null; }
+                /* 扫满全黑的此刻给黑面换羽化底(视口内不可见),趁 HOLD 停顿
+                   完成光栅化 —— 上移起步才不掉帧 */
+                if (loader) loader.classList.add('fog');
+                setTimeout(function () {
+                    var released = false;
+                    var release = function () {   /* 黑雾完全离场:撤遮罩 */
+                        if (released) return;
+                        released = true;
+                        if (loader) loader.remove();
+                    };
+                    if (!loader) { cleanup(); openHeroGate(); return; }
+                    /* Sui 式揭幕:进度面自身就是羽化黑幕。清掉行内 transform
+                       (translateX 已到 0),交给 .done 规则做 2s 上移 */
+                    if (fill) fill.style.transform = '';
+                    loader.classList.add('done');
+                    cleanup();
+                    /* 雾掀到大字区时放闸(不等它散尽),大字从雾里浮出来 */
+                    setTimeout(openHeroGate, HERO_GATE_MS);
+                    /* 只认黑幕自己的 transform 结束(pl-num/logo 的 opacity
+                       transitionend 会冒泡上来,不能用 once 一刀切) */
+                    loader.addEventListener('transitionend', function (e) {
+                        if (e.target === fill && e.propertyName === 'transform') release();
+                    });
+                    setTimeout(release, 2600);   /* transitionend 兜底 */
+                }, HOLD_MS);
             }
+            /* 进度面在 loader 标记之后、本脚本之前已解析,首帧前就能挂动画。
+               放进 rAF:t=0 对齐到第一次真正绘制(外链 CSS 阻塞首绘期间不空跑) */
+            fill = document.getElementById('pl-fill');
+            requestAnimationFrame(startProgress);
             document.addEventListener('DOMContentLoaded', function () {
-                fill = document.getElementById('pl-fill');
                 num = document.getElementById('pl-num');
                 blurs = [].slice.call(document.querySelectorAll('.pl-defs feGaussianBlur'));
                 digits = document.querySelectorAll('.js-digits');
@@ -429,40 +479,15 @@
                     digits[d].textContent = '';   /* 换掉首帧那个静态 0,改成竖条 */
                     digits[d].appendChild(makeSlot());
                 }
-                showNumber();
-                /* 规则(2026-07-28 用户定):最短 5 秒 + 等资源加载完 + 进度走势就是
-                   资源加载的进度。三条一起,所以这里重新按真实加载来驱动:
-
-                   · 进度主驱动 = loaded / total。2026-08-23 修正:又加回一条缓慢爬行
-                     的模拟值兜底(见下方 trickle)—— 纯真实驱动在冷加载时,资源事件
-                     之间进度完全静止,用户读作「卡死」;爬行与真实进度取大、94 封顶,
-                     走势仍以真实加载为主。
-                   · finish() 只在全部资源 load 完时调用 —— MIN_MS 是下限不是定值,
-                     资源慢就等更久,由 finish 内部的 remaining 兜住下限那一头。
-                   · FAILSAFE_MS 只防死等:某个资源卡死/永不触发 load 时不至于把人
-                     困在幕布后面。给得比 MIN_MS 宽裕得多,正常网络不会碰到它 ——
-                     先前那版 8s 太紧,首页 19 个媒体元素(10 视频 + 9 iframe,每个
-                     iframe 还是独立文档)稍慢就撞上,用户实测「延迟很久」。 */
-                /* 缓慢爬行兜底(2026-08-23 用户:资源事件之间进度一动不动,像卡死;
-                   对 07-28「进度走势=真实加载」的修正)。真实进度仍是主驱动 ——
-                   render 内部与 pct 取大,爬行只保证「一直在很慢地走」:
-                   越高越慢(6%/s → 0.5%/s),94 封顶,绝不抢在真实进度前扫满。
-                   起步段还叠着 render 的 MIN_MS 余弦上限,首秒依然是缓起。 */
-                var sim = 0;
-                var trickle = setInterval(function () {
-                    if (finished) { clearInterval(trickle); return; }
-                    sim += sim < 20 ? 0.9 : sim < 50 ? 0.45 : sim < 80 ? 0.2 : 0.08;
-                    if (sim > 94) sim = 94;
-                    render(sim);
-                }, 150);
+                /* 揭幕时机仍等首屏资源(2026-07-28 用户定:进度对应真实加载),
+                   但进度条的走势不再跟着资源事件跳 —— 见上方引擎说明 */
                 var els = [].slice.call(document.querySelectorAll('iframe, img, video'));
                 total = els.length;
                 function mark() {
                     if (counted.indexOf(this) !== -1) return;   /* load 与 error 都绑了,只算一次 */
                     counted.push(this);
                     loaded++;
-                    render(loaded / total * 100);
-                    if (loaded >= total) finish();
+                    if (loaded >= total) markResourcesDone();
                 }
                 els.forEach(function (el) {
                     var tag = el.tagName;
@@ -473,13 +498,20 @@
                         el.addEventListener('loadeddata', mark, { once: true });
                         el.addEventListener('error', mark, { once: true });
                         return;
+                    } else if (tag === 'IFRAME') {
+                        /* 在 DOMContentLoaded 之前就加载完的 iframe,load 事件已经错过 ——
+                           不补判就只能等 FAILSAFE 放人(同源才读得到 readyState) */
+                        try {
+                            var idoc = el.contentDocument;
+                            if (idoc && idoc.readyState === 'complete' && idoc.URL !== 'about:blank') { mark.call(el); return; }
+                        } catch (e) {}
                     }
                     el.addEventListener('load', mark, { once: true });
                     el.addEventListener('error', mark, { once: true });
                 });
-                if (!total) finish();
+                if (!total) markResourcesDone();
             });
-            setTimeout(finish, FAILSAFE_MS);
+            setTimeout(markResourcesDone, FAILSAFE_MS);
         })();
     </script>
 <header class="header home-nav" data-active="writing" id="site-nav"></header>

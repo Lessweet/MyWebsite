@@ -100,7 +100,18 @@ const archiveVideoJobs = [
   '3DCards_compressed',
 ].map((n) => ({ name: n, file: `${n}.mp4`, out: ARCHIVE_OUT }));
 
-if (!jobs.length && !videoJobs.length) {
+/* 可选参数:只重截指定名字的封面(如 `node … astra-three-design-tests`),
+   其余海报原样不动 —— 全量重截会让每张图都产生二进制 diff */
+const ONLY = process.argv.slice(2);
+if (ONLY.length) {
+  const keep = (list) => list.filter((j) => ONLY.includes(j.name));
+  jobs.splice(0, jobs.length, ...keep(jobs));
+  archiveJobs.splice(0, archiveJobs.length, ...keep(archiveJobs));
+  videoJobs.splice(0, videoJobs.length, ...keep(videoJobs));
+  archiveVideoJobs.splice(0, archiveVideoJobs.length, ...keep(archiveVideoJobs));
+}
+
+if (!jobs.length && !videoJobs.length && !archiveJobs.length && !archiveVideoJobs.length) {
   console.error('没有找到任何动态封面');
   process.exit(1);
 }
