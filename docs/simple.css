@@ -1,0 +1,962 @@
+/* simple.css —— v4 简化版首页的唯一样式表(2026-10-23)。
+   首页不再加载 style.css / writing.css(老站 6500 行,仍服务旧的 Blog / Archive / 文章页)。
+   字体系统参考 benji.org:全页只有一个字号,层级只靠字重和灰度区分;正文居中单栏。 */
+
+/* ── 字体系统 ──────────────────────────────────────────────
+   --fs / --lh:全站唯一字号与行高。中文比 benji 的英文 14/20 需要更大更松:先定 15/26,
+   2026-10-23 用户嫌小上调到 16/28,又嫌大试 14/24,最终定 16/28。
+   层级:--fw 正文 400,--fw-strong 标题/重点 500;--ink 主文字,--ink-2 次要信息(40%)。
+   字体走系统栈:零下载、首帧即最终字形(英文 SF / 中文苹方,Windows 回落微软雅黑)。 */
+:root {
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    --fs: 16px;
+    --lh: 28px;
+    /* 大一档:作品标题。20 → 18 → 20(2026-10-23 用户);日期、简介、公众号 / 邮箱用正文字号 16 */
+    --fs-h2: 24px;   /* 作品标题 20 → 24(2026-10-23 用户:再大点) */
+    --lh-h2: 32px;
+    /* 小一档:辅助信息(介绍段末行的城市 + 时间),2026-10-23 用户定 14px */
+    --fs-sm: 16px;   /* 小一档 14 → 16(2026-10-24 用户) */
+    --lh-sm: 28px;
+    /* 阅读正文:个人介绍 + 作品简介,16 → 18(2026-10-24 用户:都用 18);日期等仍用 --fs 16 */
+    --fs-body: 18px;
+    --lh-body: 32px;
+    --fw: 400;
+    --fw-strong: 500;
+
+    --site-bg: #FDFDFC;
+    --ink: #3A3A3C;   /* 主文字:#111 太深 → #333 → #3A3A3C(2026-10-23 用户) */
+    --ink-2: #8E8E93;   /* 灰色文字(2026-10-23 用户定色值) */
+    --line: rgba(0, 0, 0, 0.1);   /* 细分割线(2026-10-24 用户:试过 benji 的 #F2F2F2,太淡,改回) */
+    --btn-line: rgba(0, 0, 0, 0.1);   /* 胶囊 / 主题键边框:保留原来的深度(2026-10-24 用户:#F2F2F2 太淡) */
+    --fill: #F2F2F7;
+    --gray-400: #aeaeb2;
+    --gray-500: #8e8e93;
+    --gray-600: #636366;
+    --logo-ink: #1C1C1E;         /* 字标实线 */
+    --logo-hatch: #8e8e93;       /* 字标斜线 */
+    --logo-dash: #636366;        /* 字标虚线 */
+    --logo-hatch-hover: #48484A; /* hover:斜线 #8e8e93 → #48484A,虚线 → --logo-ink,实线 → 纯黑 */
+    --logo-ink-hover: #000;
+    /* 装饰线色:UI 设计师手绘下划线 + 公众号/邮箱虚线下划线共用,刻意很浅 */
+    --mark: #C7C7CC;
+    --cover-bg: linear-gradient(135deg, #EDD9E3, #F8EEE3);   /* 公众号封面卡片底色 */
+    --sc-article-bg: #F2F2F4;   /* 两个展示块统一浅灰(2026-10-24 用户;原珊瑚浅底 #FEEDE9 / 黄浅底 #FDF7DB) */
+    --sc-covers-bg: #F2F2F4;
+
+    /* 单栏宽度(benji 为 550);手机两侧留白收到 16px */
+    --col: 560px;
+    --gutter: 32px;   /* 页面左右内边距:24 → 32,与宽屏两栏一致(手机 ≤600 仍 16) */
+
+    --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+    /* 封面 hover 放大 / 收回(2026-10-23 用户):试过 0.6–1.2s、1.02–1.05 倍,定为 0.7s + 1.03 倍,曲线 --ease-soft。
+       顶部 CTR 字标的 hover 浮起也用同一个节奏(--hover-dur / --hover-ease,2026-10-23 用户) */
+    --hover-dur: 0.7s;
+    --hover-ease: var(--ease-soft);
+    --cover-zoom: transform var(--hover-dur) var(--hover-ease);
+    --cover-zoom-scale: 1.03;
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    /* nav-boot.js 的 toggleSiteTheme 读这两个 token */
+    --theme-wipe-dur: 0.52s;
+}
+body.theme-dark {
+    --site-bg: #1c1c1e;
+    --ink: #f5f5f7;
+    --ink-2: #8E8E93;
+    --line: rgba(255, 255, 255, 0.1);
+    --btn-line: rgba(255, 255, 255, 0.1);
+    --fill: #2c2c2e;
+    --mark: #48484A;
+    --cover-bg: linear-gradient(135deg, #3A3036, #36322D);   /* 同色相压暗 */
+    --sc-article-bg: #2C2C2E;
+    --sc-covers-bg: #2C2C2E;
+    --gray-400: #636366;   /* 深色下斜线 / 虚线压暗,不抢正面实线 */
+    --logo-ink: #f5f5f7;
+    --logo-ink-hover: #fff;
+    --logo-hatch: #636366;
+    --logo-dash: #8e8e93;
+    --logo-hatch-hover: #aeaeb2;
+    --gray-500: #8e8e93;
+}
+@media (max-width: 600px) {
+    :root { --gutter: 16px; }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; padding: 0; }
+html { background: var(--site-bg); -webkit-text-size-adjust: 100%; }
+body {
+    background: var(--site-bg);
+    color: var(--ink);
+    font-family: var(--font);
+    font-size: var(--fs);
+    line-height: var(--lh);
+    font-weight: var(--fw);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-size: inherit; font-weight: var(--fw-strong); }
+/* 折行避开段尾单字(手机上「联系我。」只剩「我。」一行) */
+p, h2 { text-wrap: pretty; }   /* 段落 + 作品标题:避免最后一行只剩一两个字(作品标题 2026-10-23 用户加) */
+
+/* 首屏一起出现:HomePage 渲染完之前整页隐藏(见 site/index.html 顶部脚本与 HomePage 的 useLayoutEffect) */
+.app-loading .page { visibility: hidden; }
+.page {
+    max-width: calc(var(--col) + var(--gutter) * 2);
+    /* 左对齐、不居中(2026-10-23 用户:单列居中、双栏贴左,切换时跳得太大)——
+       电脑上不论单列双栏,左边起点都固定在 32px;单列时内容最宽 560,右侧留白 */
+    margin: 0;
+    padding: 0 var(--gutter);
+}
+
+/* ── 页顶:CTR 字标在介绍段上方,主题键在同一行右侧 ── */
+.site-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;   /* 主题键贴字标顶部 */
+    gap: 24px;
+    padding-top: 56px;
+}
+/* 字标宽 280px(2026-10-23 用户:整栏宽太大 → 320 → 再小一点 280);窄屏放不下时随之缩小,
+   始终让出主题键的位置;高度按 viewBox 比例自动 */
+.site-logo-link { display: block; flex: 0 1 256px; min-width: 0; color: var(--ink); }
+.site-logo { display: block; width: 100%; height: auto; overflow: visible; }
+/* 右上角:公众号 / 邮箱 + 主题键,正文字号,与主题键垂直居中(2026-10-23 用户) */
+.head-right { flex: none; display: flex; align-items: center; gap: 20px; }
+.head-links { display: flex; align-items: center; gap: 20px; font-size: var(--fs); line-height: var(--lh); }   /* 公众号 / 邮箱 16,与简介同号(2026-10-23 用户:20 太大) */
+.head-link {
+    color: var(--ink);
+    text-decoration: underline dashed transparent;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 6px;
+    transition: text-decoration-color 0.2s ease;
+}
+.head-link:hover,
+.gzh.open .head-link { text-decoration-color: var(--mark); }
+/* 右上角的二维码弹层靠右对齐到词尾,不顶出页面右缘 */
+.head-links .gzh-pop { left: auto; right: 0; transform: translateY(-4px); }
+.head-links .gzh:hover .gzh-pop,
+.head-links .gzh:focus-within .gzh-pop,
+.head-links .gzh.open .gzh-pop { transform: none; }
+.theme-toggle { flex: none; }
+/* 公众号 / 邮箱做成灰色细边胶囊(宽屏左下角、窄屏顶部都用;2026-10-23 用户),和主题键同高 36、同样的白底 + 浅灰边、同样的 hover(2026-10-23 用户) */
+.head-links .head-link {
+    display: inline-flex;
+    align-items: center;
+    height: 36px;
+    padding: 0 14px;
+    box-sizing: border-box;
+    border: 1px solid var(--btn-line);
+    border-radius: 18px;
+    background: transparent;   /* 不加白底,直接透出页面底色(2026-10-24 用户) */
+    font: inherit;
+    font-size: var(--fs-sm);   /* 小号 --fs-sm(现为 16) */
+    line-height: 1;
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 0.2s ease;
+}
+.head-links .gzh { display: inline-flex; }   /* 包裹层跟胶囊同高,二维码弹层才能离胶囊顶边留出 8px */
+.head-links .head-link:hover,
+.head-links .gzh.open .head-link { border-color: rgba(0, 0, 0, 0.2); }
+/* 深色下同样不加底色 */
+body.theme-dark .head-links .head-link:hover,
+body.theme-dark .head-links .gzh.open .head-link { border-color: rgba(255, 255, 255, 0.2); }
+/* 字标视觉语言:实线正面 / 虚线背面 / 斜线侧壁(结构见 site/scripts/gen-ctr-logo.py)。
+   三个字母同一套:底色填充 + 普通描边;线宽按屏幕像素 */
+.logo-fill { fill: var(--site-bg); }
+.logo-hatch-fill { fill: url(#ctr-hatch); }
+/* 2026-10-23 用户:字标整体颜色深一点 —— 浅色下斜线 #aeaeb2→#8e8e93、虚线 #8e8e93→#636366、
+   实线用比正文更深的 --logo-ink;深色主题维持原来的亮度关系 */
+.logo-hatch { stroke: var(--logo-hatch); stroke-width: 3; }
+.logo-hatch-dark { stroke: var(--logo-hatch-hover); stroke-width: 3; }   /* hover 斜线,随常态一起加深(2026-10-23 用户) */
+.logo-back-line {
+    fill: none;
+    stroke: var(--logo-dash);
+    stroke-width: 1.25;
+    stroke-dasharray: 4 3;
+}
+.logo-front-line {
+    fill: var(--site-bg);   /* 正面:底色填充盖住身后的侧壁 + 实线轮廓,同一条路径 */
+    stroke: var(--logo-ink);
+    stroke-width: 1.5;
+}
+/* 单个字母 hover:整个字母(正面 + 背面 + 侧壁 + 结构棱)一起往左上抬起,线条与斜线加深;移开落回 */
+.logo-letter { transition: transform var(--hover-dur) var(--hover-ease); }   /* 原 0.25s,改成跟封面 hover 同节奏 */
+.logo-back-line,
+.logo-front-line { transition: stroke var(--hover-dur) var(--hover-ease); }
+.logo-letter:hover { transform: translate(-10px, -8px); }
+.logo-letter:hover .logo-back-line { stroke: var(--logo-ink); }
+.logo-letter:hover .logo-front-line { stroke: var(--logo-ink-hover); }
+.logo-letter:hover .logo-hatch-fill { fill: url(#ctr-hatch-dark); }
+@media (prefers-reduced-motion: reduce) {
+    .logo-letter { transition: none; }
+}
+
+/* ── 联系方式:介绍段下方的一句话;「公众号」「邮箱」正文色 + 灰色虚线下划线,可点 ── */
+.contact { margin-top: 24px; font-size: var(--fs-sm); line-height: var(--lh-sm); }   /* 与介绍段同号 14 / 24 */
+.text-link {
+    color: var(--ink);
+    text-decoration: underline dashed var(--mark);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 5px;
+    margin: 0 0.25em;
+    white-space: nowrap;
+    transition: text-decoration-color 0.2s ease;
+}
+.text-link:hover,
+.gzh.open .text-link { text-decoration-color: var(--ink); }
+/* 公众号二维码:桌面 hover / 键盘聚焦弹出,触屏点按切换(.open 由 HomePage 挂) */
+.gzh { position: relative; z-index: 2; }
+.gzh-anchor { position: relative; }   /* 弹层按「公众号」这个词定位(单元前面可能粘着「在」) */
+.gzh-pop {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 12px 10px;   /* 尺寸沿用原来的小卡片(二维码 148 + 四周 12) */
+    /* 二维码要在深色主题下也能扫:卡片恒为白底 */
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    white-space: nowrap;
+    width: max-content;
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, -4px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+/* 固定尺寸、不吃全局 img max-width:弹层挂在行内词上,窄屏时包含块很窄,
+   max-width:100% 会把宽压小而高不变 → 二维码被拉长 */
+.gzh-pop img { width: 148px; height: 148px; max-width: none; object-fit: contain; }
+/* 照微信名片排版:二维码下方号名(深色、加粗),再下一行灰色说明 */
+.gzh-pop .gzh-name {
+    margin-top: 6px;
+    color: #3A3A3C;   /* 同 --ink 浅色值;弹层固定白底,不随主题 */
+    font-size: 13px;
+    line-height: 18px;
+    font-weight: var(--fw-strong);
+}
+.gzh-pop .gzh-cap {
+    margin-top: 1px;
+    color: #8E8E93;
+    font-size: 11px;
+    line-height: 16px;
+}
+@media (hover: hover) {
+    .gzh:hover .gzh-pop { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+}
+.gzh:focus-within .gzh-pop,
+.gzh.open .gzh-pop { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+@media (max-width: 600px) {
+    /* 手机上「公众号」离左缘只有四个字,居中弹层会顶出屏幕:改为左对齐到词首 */
+    .gzh-pop { left: 0; transform: translateY(-4px); }
+    .gzh:focus-within .gzh-pop,
+    .gzh.open .gzh-pop { transform: none; }
+}
+
+/* 主题切换:圆形按钮 + 一圈浅灰细边框,中间「深浅色」图标 ◐(2026-10-23 用户:拨动开关 → 圆形 button)。
+   36×36(2026-10-23 用户:28 → 36),顶边仍与字标齐平;图标 14px;深色时底色压暗、图标转半圈黑白对调。
+   点击切换见 nav-boot.js toggleSiteTheme */
+.theme-toggle {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    box-sizing: border-box;
+    border: 1px solid var(--btn-line);
+    border-radius: 50%;
+    background: transparent;   /* 不加白底,直接透出页面底色(2026-10-24 用户) */
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+/* hover 只把边框加深一点点:灰 --ink-2 太重(2026-10-23 用户);常态边框 0.1 → 0.2 */
+.theme-toggle:hover { border-color: rgba(0, 0, 0, 0.2); }
+/* 深色下同样不加底色 */
+body.theme-dark .theme-toggle:hover { border-color: rgba(255, 255, 255, 0.2); }
+.theme-toggle svg { display: none; }
+.theme-toggle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    margin: -7px 0 0 -7px;
+    box-sizing: border-box;
+    border-radius: 50%;
+    border: 1.5px solid var(--ink);
+    background: linear-gradient(90deg, var(--ink) 50%, transparent 50%);
+    transition: transform 0.25s var(--ease-soft);
+}
+body.theme-dark .theme-toggle::after { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) {
+    .theme-toggle::after { transition: none; }
+}
+
+/* ── 主题切换:圆形揭开(View Transitions,机制见 nav-boot.js toggleSiteTheme)── */
+::view-transition-group(root) { animation: none; }
+::view-transition-image-pair(root) { isolation: none; }
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+::view-transition-old(root) { z-index: 0; }
+::view-transition-new(root) { z-index: 1; }
+html.theme-vt-collapse::view-transition-old(root) { z-index: 1; }
+html.theme-vt-collapse::view-transition-new(root) { z-index: 0; }
+body.theme-vt,
+body.theme-vt *,
+body.theme-vt *::before,
+body.theme-vt *::after {
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+}
+
+/* ── 介绍段 ────────────────────────────────────────────────
+   直接用正文字号 --fs(16)/ --lh(28)(2026-10-23 用户:检查工具里要直接看到 16)。
+   以前整段按 24px 排、再用 zoom 缩小;行内图形(头像 / say-hi 三笔 / 画笔)的尺寸位置
+   已换算成 em(原 px ÷ 24),跟着字号等比走,改 --fs 不用再逐个调。
+   字号全站只有一套,不按单列 / 双栏分别设置(2026-10-23 用户) */
+.home-hero { padding-top: 48px; }   /* 字标到介绍段:40 → 80 → 24 太紧 → 48(2026-10-23 用户) */
+.hero-intro {
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    font-weight: var(--fw);
+    color: var(--ink);
+    text-wrap: pretty;
+}
+.hero-intro b { font-weight: var(--fw-strong); color: var(--ink); }
+/* 电脑上文字段收窄到栏宽 80%(2026-10-23 用户:整栏读起来太宽);Feed 简介同宽(2026-10-23 用户),
+   字标行与 Feed 标题、封面仍占满整栏 */
+@media (min-width: 601px) {
+    .hero-intro,
+    .contact,
+    .work-summary { max-width: min(80%, 32em); }   /* 且每行最多约 32 字:宽屏右栏很宽时不再跟着拉宽(2026-10-23 用户) */
+}
+/* 一句一段,段间距 24px */
+.hero-intro p + p { margin-top: 24px; }
+.hero-intro .hero-netease-logo {
+    display: inline-block;
+    height: 0.7em;
+    width: auto;
+    vertical-align: baseline;
+    margin-right: 0.18em;
+}
+.hero-intro-unit { white-space: pre; }
+
+/* 入场:逐字 soft-blur-in(--d 由 HomePage 按行下发) */
+.hero-ch {
+    display: inline-block;
+    white-space: pre;
+    --hero-char-blur: 6px;
+    /* 介绍区逐字入场(2026-10-23 用户:删了又加回) */
+    animation: hero-soft-blur-in 560ms var(--ease-soft) both;
+    animation-delay: var(--d, 0ms);
+}
+/* 介绍段里的字以前在 zoom 里,屏幕上的模糊 / 上浮是 6 × 2/3、9.3 × 2/3;去掉 zoom 后照原样写成屏幕值 */
+.hero-intro .hero-ch { --hero-char-blur: 4px; --hero-char-rise: 6.2px; }
+@keyframes hero-soft-blur-in {
+    from { opacity: 0; transform: translate3d(0, var(--hero-char-rise, 9.3px), 0); filter: blur(var(--hero-char-blur)); }
+    to   { opacity: 1; transform: none; filter: blur(0); }
+}
+/* 公众号 / 邮箱 / 主题键三个按钮也有入场(2026-10-23 用户):同介绍逐字的 soft-blur 浮现,
+   排在介绍区最后一行之后(--pills-d 由 HomePage 按介绍区实际节奏下发),从左到右各错开 80ms */
+.head-links .head-link,
+.head-right .theme-toggle {
+    --hero-char-blur: 6px;
+    animation: hero-soft-blur-in 560ms var(--ease-soft) both;
+    animation-delay: var(--pills-d, 700ms);
+}
+.head-links > :nth-child(2) .head-link,
+.head-links > .head-link:nth-child(2) { animation-delay: calc(var(--pills-d, 700ms) + 80ms); }
+.head-right .theme-toggle { animation-delay: calc(var(--pills-d, 700ms) + 160ms); }
+/* 单列(< 1152)时 --pills-d = 0:顶栏先出,介绍段随后(从上到下,HomePage 下发;2026-10-24 用户) */
+@media (prefers-reduced-motion: reduce) {
+    .hero-ch,
+    .head-links .head-link,
+    .head-right .theme-toggle { animation: none; }
+}
+
+/* 头像 + 右上 say-hi 三笔;名字与头像之间留一点空 */
+.hero-intro .hero-name { margin-left: 0.1em; }
+.hero-name-unit { position: relative; }
+.hero-intro-avatar {
+    display: inline-block;
+    border-radius: 50%;
+    margin: 0 0.12em;
+}
+.hero-intro-avatar {
+    width: 1.3333em;   /* 原 32px @24 */
+    height: 1.3333em;
+    vertical-align: -0.3333em;   /* 原 -8px @24 */
+    overflow: hidden;
+    background: #fff;
+}
+.hero-intro-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.hero-hi { position: absolute; pointer-events: none; }
+.hero-hi-right { top: -0.3333em; left: 1.125em; width: 0.7083em; height: 0.7083em; }   /* 原 -8 / 27 / 17px @24 */
+.hero-hi svg { display: block; width: 100%; height: 100%; }
+.hero-hi path {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+}
+
+
+/* UI 设计师:灰色双笔手绘下划线 + hover 画笔重描 */
+.hero-role-mark { position: relative; }
+.hero-role-line,
+.hero-role-pen {
+    position: absolute;
+    left: 0.1em;
+    bottom: -0.4em;
+    width: calc(100% - 0.2em);
+    height: 0.52em;
+}
+.hero-role-line { overflow: visible; }
+.hero-role-line path { fill: var(--mark); }
+.hero-role-line mask path {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 10;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+}
+#hero-role-m2 path { stroke-width: 8; }
+.hero-role-pen { pointer-events: none; opacity: 0; }
+.hero-role-pen-track { position: absolute; inset: 0; }
+.hero-role-pen-icon {
+    position: absolute;
+    left: -0.09375em;   /* 原 -2.25px @24;0.75em 图标里笔尖在 (3,21)/24,挪到 track 原点 */
+    top: -0.65625em;    /* 原 -15.75px @24 */
+    width: 0.75em;      /* 原 18px @24 */
+    height: 0.75em;
+    overflow: visible;
+}
+.hero-role-pen-icon path {
+    fill: var(--site-bg);
+    stroke: var(--ink);
+    stroke-width: 1.8;
+    stroke-linejoin: round;
+}
+
+@media (hover: hover) {
+    .hero-intro .hero-netease { transition: opacity 0.2s ease; }
+    .hero-intro .hero-netease:hover { opacity: 0.5; }
+
+    .hero-role-mark:hover #hero-role-m1 path { animation: hero-role-draw1 1.5s both; }
+    .hero-role-mark:hover #hero-role-m2 path { animation: hero-role-draw2 1.5s both; }
+    .hero-role-mark:hover .hero-role-pen { animation: hero-role-pen-fade 1.5s both; }
+    .hero-role-mark:hover .hero-role-pen-track { animation: hero-role-pen-move 1.5s both; }
+
+    .hero-intro-avatar:hover {
+        animation: hero-avatar-wave 0.75s ease-in-out both;
+        transform-origin: 50% 88%;
+    }
+    .hero-intro-avatar:hover ~ .hero-hi path { animation: hero-hi-draw 0.3s ease-out both; }
+    .hero-intro-avatar:hover ~ .hero-hi path:nth-child(2) { animation-delay: 0.08s; }
+    .hero-intro-avatar:hover ~ .hero-hi path:nth-child(3) { animation-delay: 0.16s; }
+
+}
+/* 画笔时间轴(1.5s,2026-10-23 用户:1.1s 太快、2s 太慢):落笔 → 第一笔 5–45% → 换行 → 第二笔 55–82% → 收笔淡出。
+   位置 = viewBox(200×24)坐标换算成框的百分比 */
+@keyframes hero-role-draw1 {
+    0%, 5% { stroke-dashoffset: 1; animation-timing-function: cubic-bezier(0.45, 0, 0.4, 1); }
+    45%, 100% { stroke-dashoffset: 0; }
+}
+@keyframes hero-role-draw2 {
+    0%, 55% { stroke-dashoffset: 1; animation-timing-function: cubic-bezier(0.45, 0, 0.4, 1); }
+    82%, 100% { stroke-dashoffset: 0; }
+}
+@keyframes hero-role-pen-move {
+    0%, 5% { transform: translate(0%, 42.5%); animation-timing-function: cubic-bezier(0.45, 0, 0.4, 1); }
+    45%    { transform: translate(101.5%, 28.3%); animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
+    55%    { transform: translate(9.5%, 69.2%); animation-timing-function: cubic-bezier(0.45, 0, 0.4, 1); }
+    82%    { transform: translate(71.5%, 64.2%); animation-timing-function: ease-out; }
+    100%   { transform: translate(80%, 20%); }
+}
+@keyframes hero-role-pen-fade {
+    0%       { opacity: 0; }
+    5%, 82%  { opacity: 1; }
+    100%     { opacity: 0; }
+}
+@keyframes hero-avatar-wave {
+    0%   { transform: rotate(0); }
+    25%  { transform: rotate(-9deg); }
+    55%  { transform: rotate(7deg); }
+    80%  { transform: rotate(-3deg); }
+    100% { transform: rotate(0); }
+}
+@keyframes hero-hi-draw {
+    from { stroke-dashoffset: 1; }
+    to   { stroke-dashoffset: 0; }
+}
+
+/* ── 代表作:单列 Feed,每条从上到下 = 年份 / 标题 / 横版封面 ── */
+.works {
+    display: flex;
+    flex-direction: column;
+    gap: 80px;   /* 作品之间 56 → 80(2026-10-23 用户) */
+    position: relative;
+    /* 分割线上下等距 = 介绍段段间距 24 的 3 倍(2026-10-24 用户;48 和 72 来回试过,更早是上 24、下 64)。宽屏双栏没有这条线,另有覆盖 */
+    margin-top: 72px;
+    padding-top: 72px;
+    padding-bottom: 96px;
+}
+/* 介绍段与 Feed 之间的细分割线(2026-10-23 用户:删了又加回):排在入场队列里 ——
+   介绍段收尾后从左往右画出,随后第一条作品浮现(时机由 HomePage 挂 .in + --d) */
+.works::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;   /* 通栏(2026-10-24 用户;之前只与左边那张卡同宽) */
+    height: 1px;
+    background: var(--line);
+    /* 入场:从下往上浮现(2026-10-23 用户:与文字、封面同一种动效;原为从左往右画出) */
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s var(--ease-soft), transform 0.7s var(--ease-soft);
+    transition-delay: var(--d, 0ms);
+}
+.works.in::before { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+    .works::before { opacity: 1; transform: none; transition: none; }
+}
+/* Feed 入场:每条作品进入视口时,日期 → 标题 → 简介逐字 soft-blur 浮现,节拍同介绍段
+   (.hero-ch;2026-10-23 用户:原来三段整块浮现不够流畅);文字走完封面再从下往上浮现。
+   每字的 --d 与封面的 --cover-d 由 HomePage staggerWork 按折行几何下发;出现过就常驻 */
+.feed-ch {
+    display: inline-block;
+    white-space: pre;
+    opacity: 0;
+    --hero-char-blur: 12px;   /* 入场起始模糊 6 → 10 → 12(2026-10-23 用户:模糊再多一点) */
+}
+/* 每字浮现时长 560 → 900ms(2026-10-23 用户:简介先慢,日期标题也跟着慢) */
+.work.in .feed-ch { animation: hero-soft-blur-in 900ms var(--ease-soft) both; animation-delay: var(--d, 0ms); }
+.work > .work-cover {
+    opacity: 0;
+    transform: translateY(24px);
+    /* 封面淡入 0.7 → 1.2s(2026-10-23 用户:时长增加) */
+    transition: opacity 1.2s var(--ease-soft), transform 1.2s var(--ease-soft);
+    transition-delay: var(--cover-d, 0ms);
+}
+.work.in > .work-cover { opacity: 1; transform: none; }
+/* 两图并排时不整块浮现,改成左图先出、右图隔 300ms 再出(2026-10-23 用户:要依次出现的感觉) */
+.work > .work-cover.showcase { opacity: 1; transform: none; transition: none; }
+.work > .showcase > .sc-pane {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 1.2s var(--ease-soft), transform 1.2s var(--ease-soft);
+    transition-delay: var(--cover-d, 0ms);
+}
+.work > .showcase > .sc-pane + .sc-pane { transition-delay: calc(var(--cover-d, 0ms) + 300ms); }
+.work.in > .showcase > .sc-pane { opacity: 1; transform: none; }
+/* 直接显示(.instant,HomePage 给「滑过头、从没进过视口」的上方作品加):不播入场,文字和封面直接就位 */
+.work.instant .feed-ch { animation: none; opacity: 1; }
+.work.instant > .work-cover,
+.work.instant > .showcase > .sc-pane,
+.work.instant > .gallery > .gl-item { transition: none; }
+/* 四图式(2026-10-23 用户):两行两列,每张 16:9、间距 8(同两图式);按左上 → 右上 → 左下 → 右下依次浮现,每张隔 300ms */
+.work-cover.gallery {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;   /* 8 → 16(2026-10-23 用户:四张图之间太密) */
+    aspect-ratio: auto;
+    border-radius: 0;
+    overflow: visible;
+    background: none;
+}
+.gl-item {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 12px;   /* 8 → 12(2026-10-23 用户) */
+    background: var(--fill);
+}
+.gallery .gl-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* --z = 图在格子里的放大倍数(works.ts 的 zoom,居中裁切);hover 只放大鼠标所在那一张,在 --z 基础上再 × --cover-zoom-scale */
+.work-cover.gallery .gl-item img { transform: scale(var(--z, 1)); }
+@media (hover: hover) {
+    .work-cover.gallery .gl-item:hover img { transform: scale(calc(var(--z, 1) * var(--cover-zoom-scale))); }
+}
+.work > .work-cover.gallery { opacity: 1; transform: none; transition: none; }
+.work > .gallery > .gl-item {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 1.2s var(--ease-soft), transform 1.2s var(--ease-soft);
+    transition-delay: calc(var(--cover-d, 0ms) + var(--i, 0) * 300ms);
+}
+.work.in > .gallery > .gl-item { opacity: 1; transform: none; }
+/* 只有一张图时通栏(2026-10-24 用户:Vision Pro 作品单图) */
+.work-cover.gallery:has(> .gl-item:only-child) { grid-template-columns: 1fr; }
+/* 三张时第一张通栏、下面两张并排(2026-10-24 用户:视频作品留三张) */
+.work-cover.gallery:has(> .gl-item:nth-child(3):last-child) > .gl-item:first-child { grid-column: 1 / -1; }
+@media (prefers-reduced-motion: reduce) {
+    .feed-ch { opacity: 1; }
+    .work.in .feed-ch { animation: none; }
+    .work > .work-cover,
+    .work > .showcase > .sc-pane,
+    .work > .gallery > .gl-item { transform: none; transition: opacity 0.3s ease; }
+}
+/* 日期单独一行在上(灰),标题换到下一行(2026-10-23 用户:标题放到下一行);
+   日期与标题同号;日期→标题 16、标题→简介 16、简介→封面 32、作品之间 80(2026-10-23 用户) */
+.work-head {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;   /* 日期 → 标题 24(2026-10-24 用户;12 / 24 来回试过):日期 / 标题 / 简介三段等距 24,同介绍段段间距 */
+}
+.work-year {
+    color: var(--ink-2);
+    font-size: var(--fs-body);   /* 日期当时间轴刻度:用简介字号 18 / 32,仍是灰色(2026-10-24 用户;试过 14、16) */
+    line-height: var(--lh-body);
+    font-variant-numeric: tabular-nums;
+}
+.work-title { font-size: var(--fs-h2); line-height: var(--lh-h2); }
+.work-title { font-weight: 600; }   /* 标题加粗一档 500 → 600(2026-10-24 用户:层级太弱) */
+.work-summary { margin-top: 24px; font-size: var(--fs-body); line-height: var(--lh-body); }   /* 标题到简介 24,与日期 → 标题等距,同介绍段段间距(2026-10-24 用户;12 / 24 来回试过);简介 18 / 32,与个人介绍同号 */   /* 左缘与日期对齐(2026-10-23 用户:不缩进到标题) */
+.work-cover {
+    margin-top: 36px;   /* 简介到封面 36(2026-10-24 用户;之前 16 → 24 → 32 → 40 → 48 来回试过) */
+    aspect-ratio: 16 / 9;
+    border-radius: 12px;   /* 封面圆角统一 12(2026-10-23 用户) */
+    overflow: hidden;
+    background: var(--fill);
+}
+.work-cover img { width: 100%; height: 100%; object-fit: cover; }
+/* 封面 hover(同 Signal 的 Feed 卡片):框不动、不溢出,里面的图放大到 --cover-zoom-scale(1.03),
+   0.6s 配不过冲的缓出曲线;只有鼠标在封面区域内才触发(2026-10-23 用户) */
+.work-cover img { transition: var(--cover-zoom); }
+@media (hover: hover) {
+    .work-cover:hover img { transform: scale(var(--cover-zoom-scale)); }
+}
+
+/* 「两图式」封面(HomePage Showcase,2026-10-23 用户):整体 16:9,并排两个独立图片容器,
+   各自圆角 + 流动渐变底。内部一律用 em:1em = 整体宽 / 56(560 宽时 10px),窄屏等比缩小 */
+.work-cover.showcase {
+    /* 每个容器单独 16:9(2026-10-23 用户:4:3 → 16:9),整体两个并排约 3.6:1 */
+    aspect-ratio: auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;   /* 8 → 16,与四图式一致(2026-10-23 用户) */
+    container-type: inline-size;
+    border-radius: 0;
+    overflow: visible;
+    background: none;
+}
+.sc-pane {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 12px;   /* 容器圆角:直角 → 8 → 12px(2026-10-23 用户) */
+    background: var(--fill);
+    font-size: calc(100cqw / 56);
+}
+/* 窄了就单列(2026-10-23 用户:窗口小于一定宽度都得单列,电脑窗口也会缩小):
+   不看浏览器窗口,看每条作品自己的宽度 —— 并排时每张卡要窄于手机(375)了就上下排、各占整宽(仍 16:9):
+   作品区 < 375 × 2 + 16 = 766(2026-10-23 用户;之前试过 760、480)。
+   手机、缩小的电脑窗口、宽屏两栏里偏窄的右栏都按这一条走。
+   两图式内部 em 改按容器宽 27.6 份算,排版与并排时的单个容器一致,只是等比放大 */
+.work { container-type: inline-size; }
+@container (max-width: 765px) {
+    .work-cover.showcase { flex-direction: column; }
+    .sc-pane { width: 100%; flex: none; font-size: calc(100cqw / 27.6); }
+    .work-cover.gallery { grid-template-columns: 1fr; }
+}
+/* 占位(mock)内容:还没有素材的作品先用空白手机 + 灰线条、空封面块撑出版式(2026-10-23 用户) */
+.sc-skel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1em;
+    padding: 2.2em 1.6em;
+}
+.sc-skel span { display: block; height: 0.9em; border-radius: 0.45em; background: #ECECEF; }
+.sc-skel span:nth-child(1) { width: 85%; height: 1.4em; }
+.sc-skel span:nth-child(2) { width: 55%; }
+.sc-skel span:nth-child(3) { height: 9em; border-radius: 0.8em; }
+.sc-skel span:nth-child(4) { width: 92%; }
+.sc-skel span:nth-child(5) { width: 70%; }
+.sc-skel span:nth-child(6) { width: 80%; }
+.showcase .sc-cover-skel { background: rgba(255, 255, 255, 0.7); }
+/* 两个容器各用自己的主题色做浅底(2026-10-23 用户:不要只用灰色):
+   左 = 这篇文章报告体的主色珊瑚 #F77353(13% 浅色),右 = 黄色 #F2CF1D(16% 浅色,封面系统的黄,用户定);深色主题取同色压暗 */
+.sc-pane-article { background: var(--sc-article-bg); }
+.sc-pane-covers  { background: var(--sc-covers-bg); }
+/* 流动渐变底(MeshBg.tsx)+ 同款 SVG 噪点叠层 */
+.mesh-bg, .mesh-grain {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+.mesh-bg { opacity: 0; transition: opacity 0.6s ease; }
+.mesh-bg.ready { opacity: 1; }
+.mesh-grain { opacity: 0.1; mix-blend-mode: overlay; }
+/* 深色主题:流动底整体压暗,不在深底上发亮 */
+body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
+.sc-inner {
+    position: absolute;
+    inset: 0;
+    transition: var(--cover-zoom);
+}
+/* 两图式封面 hover:跟其他封面同一个标配 —— 鼠标所在的那张卡,里面整体放大到 --cover-zoom-scale,卡框不动
+   (2026-10-23 用户:之前关掉过,现在要回来)。卡里的图不再各自放大,避免叠加 */
+@media (hover: hover) {
+    .work-cover.showcase:hover img { transform: none; }
+    .showcase .sc-pane:hover .sc-inner { transform: scale(var(--cover-zoom-scale)); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .sc-inner { transition: none; }
+}
+/* 左容器(560 宽时 276×155,即 27.6em × 15.5em):三屏 —— 三台手机并排、整体水平垂直居中,完整显示
+   (2026-10-23 用户)。手机内部按原尺寸(12.75em × 27.6em)画,再用字号整体缩到 0.475 倍 ≈ 6.05em × 13.1em */
+.sc-phones {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.6em;
+}
+.sc-phone {
+    position: relative;
+    flex: none;
+    font-size: 0.475em;
+    width: 12.75em;
+    height: 27.6em;
+    overflow: hidden;
+    border: 0.35em solid #fff;
+    border-radius: 1.2em;   /* 手机圆角收小:2em → 1.2em(×0.475 ≈ 6px @560) */
+    background: #fff;
+    box-shadow: 0 0.8em 2.4em rgba(0, 0, 0, 0.08);   /* 投影收淡、中性灰(2026-10-24 随浅灰底改),原 0.18 太黑太脏(2026-10-23 用户) */
+}
+.showcase .sc-phone img { display: block; width: 100%; height: auto; }   /* 压过 .work-cover img 的铺满 */
+/* 排版组件:白卡浮在手机两侧,压住手机边缘 */
+.showcase .sc-comp {
+    position: absolute;
+    width: 8em;
+    height: auto;
+    border-radius: 0.6em;
+    background: #fff;
+    box-shadow: 0 0.8em 2.4em rgba(60, 30, 50, 0.16);
+}
+/* 组件 8em 宽贴容器两侧,与手机留出间距(2026-10-23 用户:间距再大一点) */
+.sc-comp-1 { left: 1.2em;  top: 6.4em; }
+.sc-comp-2 { right: 1.2em; top: 1.4em; }
+.sc-comp-3 { right: 1.2em; top: 9.6em; }
+/* 右容器:封面横排两行错开(上 4 下 3,两行居中 → 错开半张),左右越出容器、上下不破边。
+   封面用定稿的 16:9 素材原比例(2026-10-23 用户:试过 4:3,改回 16:9),不带标题。
+   图高 = (容器高 15.5em − 上下各 1.6em − 行距 0.8em)/ 2 ≈ 5.75em,宽 = 高 × 16/9 ≈ 10.2em;静态 */
+.sc-covers {
+    position: absolute;
+    inset: 1.6em 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1.2em;   /* 封面之间 0.8 → 1.2em(2026-10-23 用户:间距增多),行距同列距 */
+}
+.sc-row {
+    display: flex;
+    justify-content: center;
+    gap: 1.2em;
+}
+.showcase .sc-cover {
+    display: block;
+    flex: none;
+    width: 10.2em;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 0.57em;   /* 与手机圆角一致(1.2em × 0.475,560 宽时约 5.7px;2026-10-23 用户) */
+    background: var(--fill);
+}
+@media (prefers-reduced-motion: reduce) {
+    .work-cover img { transition: none; }
+}
+
+/* ── 介绍段末行:城市 + 时间 + 时段状态图标(LocalTime.tsx);整行同一个灰 --ink-2 ── */
+.hero-loc {
+    margin-top: 24px;
+    color: var(--ink-2);
+    font-size: var(--fs-sm);   /* 小号 --fs-sm(现为 16) */
+    line-height: var(--lh-sm);
+}
+.loc-time {
+    display: inline-block;
+    margin-left: 0.25em;
+    font-variant-numeric: tabular-nums;
+}
+
+/* 时段状态图标:灰色线条,各带一个小循环动效 */
+.loc-status {
+    display: inline-block;
+    width: 20px;    /* 随字号:16 → 20、14 → 18 */
+    height: 20px;
+    margin-left: 6px;
+    vertical-align: -4px;
+    overflow: visible;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+/* 睡觉:两个 z 交替往上飘、淡出 */
+.st-z { animation: st-z 2.4s ease-in-out infinite both; }
+.st-z2 { animation-delay: 1.2s; }
+/* 天气图标动效(LocalTime 天气版):太阳慢转、云轻飘、雨雪下落、闪电闪一下 */
+.wx-spin { transform-box: fill-box; transform-origin: center; animation: wx-spin 12s linear infinite; }
+@keyframes wx-spin { to { transform: rotate(360deg); } }
+.wx-drift { animation: wx-drift 4s ease-in-out infinite alternate; }
+@keyframes wx-drift { from { transform: translateX(-0.6px); } to { transform: translateX(0.6px); } }
+.wx-fall { animation: wx-fall 1.4s ease-in infinite both; }
+.wx-fall2 { animation-delay: 0.45s; }
+.wx-fall3 { animation-delay: 0.9s; }
+@keyframes wx-fall {
+    0%   { opacity: 0; transform: translateY(-1.5px); }
+    30%  { opacity: 1; }
+    100% { opacity: 0; transform: translateY(2px); }
+}
+.wx-flash { animation: wx-flash 2.4s steps(1, end) infinite; }
+@keyframes wx-flash { 0%, 70%, 80%, 100% { opacity: 1; } 75% { opacity: 0.2; } }
+@media (prefers-reduced-motion: reduce) {
+    .wx-spin, .wx-drift, .wx-fall, .wx-flash { animation: none; }
+}
+@keyframes st-z {
+    0%   { opacity: 0; transform: translate(-1px, 2px); }
+    30%  { opacity: 1; }
+    100% { opacity: 0; transform: translate(1px, -3px); }
+}
+/* 咖啡 / 拉面:两缕热气轮流升起 */
+.st-steam { animation: st-steam 2s ease-in-out infinite both; }
+.st-steam2 { animation-delay: 1s; }
+@keyframes st-steam {
+    0%   { opacity: 0; transform: translateY(1.5px); }
+    40%  { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-2.5px); }
+}
+/* 画图:笔下的曲线反复画出来 */
+.st-squiggle { stroke-dasharray: 1; animation: st-draw 2.4s ease-in-out infinite both; }
+@keyframes st-draw {
+    0%       { stroke-dashoffset: 1; }
+    55%, 85% { stroke-dashoffset: 0; }
+    100%     { stroke-dashoffset: 0; opacity: 0; }
+}
+/* 写文章:三行字依次打出来,停一下再重来 */
+.st-line { stroke-dasharray: 1; animation: st-type 3s steps(6, end) infinite both; }
+.st-line2 { animation-delay: 0.5s; }
+.st-line3 { animation-delay: 1s; }
+@keyframes st-type {
+    0%        { stroke-dashoffset: 1; }
+    30%, 90%  { stroke-dashoffset: 0; }
+    100%      { stroke-dashoffset: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .st-z, .st-steam, .st-squiggle, .st-line { animation: none; }
+}
+/* 城市时间后面的天气 / 状态图标一律静止(2026-10-23 用户:icon 没必要加动效)。
+   上面的动画规则先留着,删掉这一条即可恢复 */
+.wx-spin, .wx-drift, .wx-fall, .wx-flash,
+.st-z, .st-steam, .st-squiggle, .st-line { animation: none; }
+
+/* ── 单列(< 1152px,含手机)(2026-10-23 用户:单列时重新安排位置)──
+   公众号 / 邮箱 + 主题开关放到页面最顶上一排(2026-10-23 用户):左边两个链接横排,右边开关,
+   开关右缘与内容栏(分割线)右端对齐;下面依次是字标 → 介绍区 → 作品。双栏时这一组钉在左下角。
+   header 与 #app 用 display:contents 拆开,在 .page 的纵向 flex 里用 order 排序 */
+@media (max-width: 1151px) {
+    /* 单列也铺满窗口宽度(2026-10-23 用户:单列时右边空间利用起来),左右内边距仍是 32(手机 16);
+       介绍段、作品简介自己有最大行宽,不会被拉太长 */
+    .page { display: flex; flex-direction: column; max-width: none; }
+    .site-head,
+    #app { display: contents; }
+    .head-right {
+        order: 0;
+        margin-top: 24px;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .head-links { flex-direction: row; align-items: center; gap: 4px; }   /* 胶囊之间 4,同宽屏左下角(2026-10-23 用户) */
+    /* 二维码弹层向下弹、左对齐到「公众号」,不顶出页面左缘 */
+    .head-links .gzh-pop { left: 0; right: auto; }
+    .site-logo-link { order: 1; flex: none; width: 256px; max-width: 100%; margin-top: 32px; }
+    .intro-col { order: 2; }
+    .works { order: 3; }
+}
+
+/* ── 宽屏两栏(2026-10-23 用户:电脑上单列浪费空间)──
+   左栏 = 固定面板,不随页面滚动(2026-10-23 用户):顶部字标 → 介绍段 + 联系方式 + 城市时间 → 左下角公众号 / 邮箱 / 主题键;
+   右栏 = 作品 Feed,吃满剩余宽度,只有它随页面滚动。
+   实现:顶栏 header 与 #app 用 display:contents 拆开;左栏三块各自 position:fixed 定在同一条左边线上,
+   网格第一列(320px)只占位;右栏顶部留出与介绍段齐平的空白。分割线只在单列时用,两栏时去掉 */
+@media (min-width: 1152px) {
+    .page {
+        --left-x: 32px;   /* 左栏左边线 = 页面左内边距 */
+        --intro-top: 201px;   /* 介绍段顶 = 字标顶 56 + 字标高 97 + 间距 48 */
+        max-width: none;   /* 不再封顶 1600 居中:左右内边距在任何宽度都固定 32(2026-10-23 用户) */
+        padding: 0 32px;   /* 左右内边距 56 → 32(2026-10-23 用户:可以更少) */
+        display: grid;
+        /* 左栏固定 440px(2026-10-23 用户:280 → 320 → 340 → 400 → 440),右栏跟随窗口宽度变化(之前试过 1 : 2 比例);
+           栏距固定 120px。双栏从 1152px 起:右栏 = 窗口 − 64 − 560 ≥ 528,比任何手机竖屏(≤ 430)都宽;
+           再窄就整页改单栏
+           (2026-10-23 用户:右边永远要比左边大很多);更窄时改为单列 */
+        grid-template-columns: 440px minmax(0, 1fr);   /* 320 → 340 → 400 → 440(2026-10-23 用户) */
+        column-gap: 120px;   /* 栏距固定 120:右栏起点不再随窗口宽度变化(2026-10-23 用户;原 10vw,夹在 80–192) */
+        align-items: start;
+    }
+    .site-head,
+    #app { display: contents; }
+    .site-logo-link { position: fixed; top: 56px; left: var(--left-x); width: 256px; z-index: 3; }
+    .intro-col {
+        position: fixed;
+        top: var(--intro-top);
+        left: var(--left-x);
+        width: 440px;
+        /* 窗口矮时介绍区自己滚,不压到左下角那一排按钮。预留 = 按钮离底 36 + 按钮高 36 + 至少留 48
+           (2026-10-24:原来留 104,窗口高 700 时就多出 1px 内部滚动) */
+        max-height: calc(100vh - var(--intro-top) - 120px);
+        overflow-y: auto;
+        scrollbar-width: none;
+        z-index: 2;
+    }
+    .intro-col::-webkit-scrollbar { display: none; }
+    /* 公众号 / 邮箱:左下角纵向排列(2026-10-23 用户);主题开关单独挪到右上角,见下 */
+    /* 左下角一排:公众号、邮箱、主题键三个等距排开,间距都是 4(2026-10-23 用户:横排、三个等距)。
+       整排钉在视口上,左对齐左栏左边线;按钮高 36,底 36 → 行中线离底 54,与原来链接行的中线一致 */
+    /* 试过挪到介绍区正下方,用户看过还是要左下角(2026-10-23) */
+    .head-right {
+        position: fixed;
+        left: var(--left-x);
+        bottom: 36px;
+        z-index: 3;
+        flex-direction: row;
+        align-items: center;
+        gap: 4px;   /* 20 → 8 → 4(2026-10-23 用户:改成胶囊后间距收紧) */
+    }
+    .head-links { flex-direction: row; align-items: center; gap: 4px; }
+    /* 左下角的二维码弹层向上弹、左对齐,不顶出窗口底部 */
+    .head-links .gzh-pop { top: auto; bottom: calc(100% + 8px); left: 0; right: auto; transform: translateY(4px); }
+    .head-links .gzh:hover .gzh-pop,
+    .head-links .gzh:focus-within .gzh-pop,
+    .head-links .gzh.open .gzh-pop { transform: none; }
+    /* 右栏第一条与左上角字标顶边视觉对齐(2026-10-23 用户;原来对齐介绍段 --intro-top 201):
+       字标线条顶在 y≈57;日期 16 / 28 的数字顶比行框顶低约 8.5px。算出来是 48,用户看过 52 → 定为 57(数字顶 ≈ 65.5) */
+    .works { grid-column: 2; margin-top: 0; padding-top: 57px; }
+    .intro-col .home-hero { padding-top: 0; }   /* 介绍段首行与右栏第一条作品顶部齐平 */
+    .works::before { display: none; }
+    .hero-intro,
+    .contact { max-width: none; }
+}

@@ -1,0 +1,80 @@
+{
+  "article": {
+    "title": "今年的 AI 设计工作流：进代码、做工具、用多个 agent、多做判断",
+    "date": "2026-09-28",
+    "account": "AI设计师阿东",
+    "dir": "20260928 设计师工作方式",
+    "file": "样张-报告体/article_report.html"
+  },
+  "files": [
+    {
+      "file": "article-phone.webp",
+      "width": 750,
+      "height": 1624,
+      "desc": "第 1 屏：手机上的公众号文章页首屏（375×812 @2x，模拟微信标题和作者行 + 首屏大图），《今年的 AI 设计工作流：进代码、做工具、用多个 agent、多做判断》",
+      "scrollY": 0,
+      "source": {
+        "title": "今年的 AI 设计工作流：进代码、做工具、用多个 agent、多做判断",
+        "dir": "20260928 设计师工作方式",
+        "file": "样张-报告体/article_report.html"
+      }
+    },
+    {
+      "file": "article-phone-2.webp",
+      "width": 750,
+      "height": 1624,
+      "desc": "第 2 屏：四行带像素图标的章节目录（1~5 月 / 6~7 月 / 8~9 月 / 7 月起）+ 第一章珊瑚色章首卡，《今年的 AI 设计工作流：进代码、做工具、用多个 agent、多做判断》",
+      "scrollY": 1675,
+      "source": {
+        "title": "今年的 AI 设计工作流：进代码、做工具、用多个 agent、多做判断",
+        "dir": "20260928 设计师工作方式",
+        "file": "样张-报告体/article_report.html"
+      }
+    },
+    {
+      "file": "article-phone-3.webp",
+      "width": 750,
+      "height": 1624,
+      "desc": "第 3 屏：时间线「02-23」条目 + 大数字卡「5–10%」（Brian Lovin 花在 Figma 上的时间）+ 「03-01」条目，《今年的 AI 设计工作流：进代码、做工具、用多个 agent、多做判断》",
+      "scrollY": 3115,
+      "source": {
+        "title": "今年的 AI 设计工作流：进代码、做工具、用多个 agent、多做判断",
+        "dir": "20260928 设计师工作方式",
+        "file": "样张-报告体/article_report.html"
+      }
+    },
+    {
+      "file": "comp-1.webp",
+      "width": 688,
+      "height": 232,
+      "desc": "带像素图标的章节小标题（目录第一行：「1~5 月 · 设计师开始直接在代码里做设计」+ 像素笔记本图标），来自《今年的 AI 设计工作流：进代码、做工具、用多个 agent、多做判断》",
+      "source": {
+        "title": "今年的 AI 设计工作流：进代码、做工具、用多个 agent、多做判断",
+        "dir": "20260928 设计师工作方式",
+        "file": "样张-报告体/article_report.html"
+      }
+    },
+    {
+      "file": "comp-2.webp",
+      "width": 688,
+      "height": 442,
+      "desc": "带头像署名的引用卡（浅珊瑚底、像素引号，Perplexity 设计经理 Sebastian Speier 的原话），来自《今年的 AI 设计工作流：进代码、做工具、用多个 agent、多做判断》",
+      "source": {
+        "title": "今年的 AI 设计工作流：进代码、做工具、用多个 agent、多做判断",
+        "dir": "20260928 设计师工作方式",
+        "file": "样张-报告体/article_report.html"
+      }
+    },
+    {
+      "file": "comp-3.webp",
+      "width": 688,
+      "height": 320,
+      "desc": "时间线条目（「02-02」日期 + 虚线 + 嵌品牌小图标和头像的正文：OpenAI 发布 Codex 桌面版），来自《今年的 AI 设计工作流：进代码、做工具、用多个 agent、多做判断》",
+      "source": {
+        "title": "今年的 AI 设计工作流：进代码、做工具、用多个 agent、多做判断",
+        "dir": "20260928 设计师工作方式",
+        "file": "样张-报告体/article_report.html"
+      }
+    }
+  ]
+}

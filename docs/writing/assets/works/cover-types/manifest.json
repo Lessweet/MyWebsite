@@ -1,0 +1,56 @@
+[
+  {
+    "file": "01-glass-hero-codebase.webp",
+    "type": "磁块字标",
+    "article": "20260718 Figma Make 设计师发PR",
+    "title": "AI native 设计师的交付物，不只设计稿，还有 GitHub PR"
+  },
+  {
+    "file": "02-posters-3d-emoji.webp",
+    "type": "拼图海报",
+    "article": "20260918 Google 3D Emoji 设计",
+    "title": "Google 重做 3D emoji，全手工建模，AI 只用来算对比度"
+  },
+  {
+    "file": "03-icon-siri-blueprint.webp",
+    "type": "图标构造线",
+    "article": "20260623 SiriAI",
+    "title": "你的 App 在 AI 眼里是什么形状"
+  },
+  {
+    "file": "04-wordmark-config.webp",
+    "type": "文字字标",
+    "article": "20260626 Figma config/发布会介绍",
+    "title": "设计师被 AI 替代之前，Figma 用一整套新功能抬高设计师上限"
+  },
+  {
+    "file": "05-glass-tag-ai-craft.webp",
+    "type": "毛玻璃词块",
+    "article": "20260902 让AI成为世界级设计师",
+    "title": "前 Apple AI 设计专家：去除 AI 味、解锁 AI 设计创造力的 8 种技法"
+  },
+  {
+    "file": "06-shards-gemini-argon.webp",
+    "type": "不规则拼贴",
+    "article": "20261014 Gemini 4 Argon",
+    "title": "Google 新模型 Gemini 4 Argon 做 3D 视觉很强啊"
+  },
+  {
+    "file": "07-portrait-meaghan-choi.webp",
+    "type": "人物封面",
+    "article": "20261022 Meaghan Choi 设计再也回不去了",
+    "title": "Anthropic 设计师的 AI 工作流：从一个想法到产品发布都要参与"
+  },
+  {
+    "file": "08-wireframe-anthropic-jobs.webp",
+    "type": "界面线框",
+    "article": "20261017 Anthropic内部工作方式变化",
+    "title": "Anthropic 公开内部就业数据：初级岗招聘变少，员工转向管理 agent"
+  },
+  {
+    "file": "ai-mode-google-search.webp",
+    "type": "界面线框",
+    "article": "20261007 Google搜索设计VP谈AI设计",
+    "title": "Google AI 搜索设计负责人：你会因为 AI 做出最好的设计"
+  }
+]
