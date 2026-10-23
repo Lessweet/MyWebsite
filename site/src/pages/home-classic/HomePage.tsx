@@ -1,0 +1,1101 @@
+/**
+ * 旧版首页(v4 简化版上线前的完整首页,2026-10-23 起住 classic.html)。
+ * 新旧两站互不穿插:旧 Blog / Archive / 文章页的「回首页」都指向这里,新首页不链接旧页面。
+ * 首页(docs/index.html 的 React 版)。loader(里程表引擎/灰底首帧/字体)原样留在
+ * 入口 HTML 内联;React 只渲染 hero + 三行大字索引。
+ * hero 逐字拆分与索引行 rise 拆字在 JSX 直渲(产物 DOM 与旧版内联 walker 一致,
+ * 不做挂载后变异);显现时机仍由 html.hero-ready / CSS 闸门控制,与旧版一致。
+ */
+import { memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import type { CSSProperties, MouseEvent } from 'react';
+import { useScrollProgress, useHeaderAlwaysVisible } from '../../shared/hooks';
+import { createSilkPill } from '../../shared/silk-pill/silkPillEngine';
+import NeteaseWordmark from '../home/NeteaseWordmark';
+import TongrongName from '../home/TongrongName';
+import BlogPage from '../blog/BlogPage';
+import ArchivePage from '../archive/ArchivePage';
+import { INDEX_ARROW_PATH } from '../../shared/PageCollapse';
+
+/* 两个模态页的 props 是常量("revealed"),但 modal 每变一次相位(open/riding/
+   closing/null),HomePage 重渲染都会把这两棵几百节点的树整个重新协调一遍 ——
+   手机上一次要几百毫秒,正好卡在点击和收起编排之间(2026-08-17 用户录屏
+   「点了没反应,然后一格一格消失」,实测 tap 后 ~650ms 才加上 closing 类)。
+   memo 后相位切换零协调,开合的响应回到即点即动。 */
+const MemoBlogPage = memo(BlogPage);
+const MemoArchivePage = memo(ArchivePage);
+
+/* 镜像 style.css 的 --hero-speed:hero 介绍段的时长/延迟在 CSS 里都 ×它,而索引
+   --row-d 不经 CSS 缩放。下方按介绍段的「真实」出现时刻算列表起始,故要乘它 ——
+   改 style.css 的 --hero-speed 时,这里同步。 */
+const HERO_SPEED = 1.4;
+/* 镜像 style.css 的 --hero-char-dur(648ms):介绍段每行走一条 hero-soft-blur-in,
+   索引行起点 = 末行真实收尾 ×--hero-speed 再 +200ms 呼吸 —— 改 CSS token 时同步。 */
+const HERO_CHAR_DUR = 648;
+/* 介绍段入场节拍(soft-blur-in spec):行内逐字从左到右连续错峰,行与行之间在
+   连续节拍上再加一口停顿 —— 上一行末字起步后,下一行首字隔 LINE_STEP 才跟上,
+   读出「一行扫完、下一行接着扫」。--d 在 CSS 里 ×--hero-speed(1.4)。
+   CHAR_STEP 取 15ms = spec usage_notes 给 <24px 正文的档(大标题才用 25)。 */
+const INTRO_CHAR_STEP = 15;
+const INTRO_LINE_STEP = 120;
+
+/* Blog 前的丝绸圆球(design-gallery shader.html 的 Silk Pill「Obsidian · 曜石黑」
+   配色,引擎搬入 shared/silk-pill 并带平滑变速补丁;2026-08-22 由玻璃星系球换来):
+   默认低速涌动 = BASE;hover 瞬间提到 FAST,再在 RECOVER_S 秒内指数滑回(机制保留)。 */
+const ORB_SPEED_BASE = 0.4;
+const ORB_SPEED_FAST = 2.6;
+const ORB_RECOVER_S = 5;
+/* 曜石黑三色:谷底近墨 → 冷灰光帘 → 银白亮芯(gallery 预设原值) */
+const ORB_COLORS = ['#0a0b0f', '#3b4049', '#d6dae2'];
+
+/* 介绍段拆分:行是折行结果、随视口变,没法在 JSX 里预知 —— 拆成最小折行单元
+   (CJK 单字 / 拉丁词,句读并进前一单元防行首标点),挂载后按几何分行、逐行下发 --d。
+   单元复用 .hero-ch(inline-block + pre + soft-blur 入场),空格保留在单元内。 */
+function splitIntro(text: string): string[] {
+  const raw = text.match(/[A-Za-z0-9]+|\s+|./g) || [];
+  const out: string[] = [];
+  let pending = '';
+  for (const t of raw) {
+    if (out.length && (/^\s+$/.test(t) || /[。，、；：！？）》」』…]/.test(t))) {
+      out[out.length - 1] += t;
+    } else if (/^\s+$/.test(t)) {
+      pending += t; /* 行首空白攒着并进下一个实词 */
+    } else {
+      out.push(pending + t);
+      pending = '';
+    }
+  }
+  return out;
+}
+
+/* 索引行 rise 拆字:行间 120 / 字间 35;箭头包成该行最后一个「字符」同批升起。
+   列表起始 BASE 不再固定 620 —— 改由组件内按「署名真实出现时刻」算出(见下方),
+   否则 --hero-speed 放慢署名后,列表会抢在署名之前升起(2026-07-26 修正入场先后)。 */
+const ROWS = [
+  { label: 'Blog', href: 'blog.html' },
+  { label: 'Archive', href: 'archive.html' },
+  { label: 'Contact', href: 'mailto:chentongrong1@gmail.com' },
+];
+const ROW_STEP = 120;
+const CHAR_STEP = 35;
+/* = --rise-fade-dur(writing.css token):行内末字淡入完成即视为该行「已就位」,
+   逐行挂 .row-in 放开 hover 反色 —— 每行显示完立刻可交互,不等整段入场收尾 */
+const RISE_FADE = 1050;
+
+/* 行尾箭头与 Blog/Archive 标题行的「收起」箭头同一 path(PageCollapse 单一数据源)——
+   模态 morph 时两端用克隆互相变形,造型必须同源 */
+const ARROW = (
+  <svg viewBox="0 0 24 24">
+    <path d={INDEX_ARROW_PATH} />
+  </svg>
+);
+
+/* ── 首页 → Blog / Archive 全屏模态(test/page-interaction 实验)──
+   点击 Blog / Archive 行不跳页:同文档内把 body 换成目标页布局、就地挂载目标页组件。
+   2026-07-27 v2「整块位移」:标题与索引行已同字号同左缘 —— 不再用克隆飞字,而是把
+   模态内容(标题行 + 菜单 + feed,即 #app 里除首页两块外的全部)整体从「行的位置」
+   平移到最终位置:标题本身就是那行字,feed 从行下方跟着一起上移入场,行不再是
+   孤立组件(用户要求)。收起箭头 = 行尾同一支箭头原位旋转 0→135°,随整体移动。
+   返回键 / Esc / 收起箭头关闭,反向整块下移;后半程重播首页 hero 入场。
+   morph = 整块上移中;open = 已就位;closing = 整块下移中。 */
+type ModalTarget = 'blog' | 'archive';
+type ModalState = { target: ModalTarget; phase: 'morph' | 'open' | 'closing' } | null;
+
+const MODAL_PAGES: Record<ModalTarget, { href: string; bodyClass: string; label: string }> = {
+  blog: { href: 'blog.html', bodyClass: 'blog-page', label: 'Blog' },
+  archive: { href: 'archive.html', bodyClass: 'works-page', label: 'Archive' },
+};
+/* 收起的后半程时点:模态内容淡出一收完就恢复首页布局,hero / 索引随即显形,
+   块继续下移落进已经在场的行里。
+   下限约束:必须小于 morphTiming 的最短时长(560ms),布局恢复才来得及在落位前发生。
+   CSS 侧的淡出时长(writing.css .home-modal-closing)与这里同值 —— 一起改。 */
+const HOME_RESTORE_MS = 320;
+/* 首页入场大致收尾后,把两个模态页隐藏挂载做后台预载(2026-07-27 用户要求
+   「展开前内容就该是完整的」)。点击才加载的话,7 个 iframe + 10 个视频要靠
+   「赶在位移落位前备齐」,热缓存下勉强赶得上(实测 840ms < 1385ms),冷启动
+   就会看到内容陆续补上。延迟到入场之后再开始:太早会与 loader / hero 抢带宽。
+   注意这与被否掉的骨架图方案无关 —— 骨架是「位移期间不给 src、拿灰块顶着」,
+   这里是「提前把内容备好」,展开时直接展示。 */
+const PRELOAD_DELAY_MS = 1500;
+/* 预载后 DOM 里同时躺着两页,所有针对模态内容的查询都必须限定在激活页内 ——
+   document.querySelector 会命中第一个(隐藏那页),隐藏元素的 rect 全是 0,
+   位移起终点、fixed 接力、首屏批次全会算错(2026-07-27 加回预载时实测:
+   收起会多出一个差 53px 的中间布局)。 */
+const ACTIVE_CLASS = 'home-modal-active';
+const inActive = <T extends Element>(sel: string) =>
+  document.querySelector<T>(`.${ACTIVE_CLASS} ${sel}`);
+const allInActive = <T extends Element>(sel: string) =>
+  Array.from(document.querySelectorAll<T>(`.${ACTIVE_CLASS} ${sel}`));
+/* 恢复时首页元素的显形,与标题落位对表(2026-08-17 用户:落位瞬间其他元素
+   淡入太快、太早,要「标题先落进行里,其余内容随后缓缓浮现」;同日二调推到
+   落位之后,三调又改回来 —— Archive 卡顿修掉后「落位前 240ms」的节奏是对的,
+   之前显得早只是被卡顿糊掉了):
+   · 其他元素在标题落位前 HOME_FADE_LEAD_MS 开始淡入,落位后继续补完;
+   · hero 拉长到 1.4s(原 1s),索引行 0.64s(原为恢复瞬间实打出现);
+   · 落点行(Blog/Archive 自己那行)除外 —— 标题就要落在它上面,必须先实打就位。
+   延迟按剩余行程实算,Blog / Archive 行程不同也各自对齐。 */
+const HOME_HERO_FADE_MS = 1400;
+const HOME_INDEX_FADE_MS = 640;
+const HOME_FADE_LEAD_MS = 240;
+/* morph 的时长/缓动从 token 读(--page-morph-dur / --ease),展开收起同一组:
+   easeOutQuad —— 立即起步、末端滑行,但初速度只有 --ease-soft 的 40%
+   (用户:不要缓起,但起步别那么猛)。
+   时长按行程缩放、速度恒定(2026-07-27 用户定):Blog / Archive 行位置不同,
+   固定时长会让 Archive(行更靠下、行程更长)明显更快。--page-morph-dur 定义为
+   「基准行程 MORPH_REF_PX 的时长」,实际时长线性缩放,夹在 0.8×–1.3× 之间
+   (下限 0.8× = 440ms 必须大于 HOME_RESTORE_MS=320,收起的布局恢复才来得及在落位前
+   发生;上限 1.3× 是从 1.6× 收来的 —— 大窗口下行程长,1.6× 会把时长顶到 1.3 秒)。
+   系统开了减弱动效就不飞了,直接落位(与 CSS 侧 prefers-reduced-motion 规则同一态度)。 */
+const MORPH_REF_PX = 420;
+/* 箭头旋转占位移时长的比例:同一条 ease-out 里,前 40% 时间转掉 85% 的角度,
+   剩下一点角度要磨完大半时长 —— 位移的长尾看不出来,角度的长尾非常显眼,
+   观感就是「转到一半停住、过一会儿才补完」(2026-07-27 用户实测 Archive)。
+   0.55 仍嫌慢(用户再提),收到 0.36:块刚起步箭头就已转到位,干脆利落。 */
+const ARROW_SPIN_RATIO = 0.36;
+/* 展开时标题行先起步、feed 晚这么多跟上(2026-07-27 用户要求「blog 那一行先往上
+   移动,再带出 feed」)—— 读作标题把列表「带」上来,而不是一整块平移。
+   收起同样错峰但反过来(feed 先走、标题殿后),归位时标题最后落进行里。
+   注意 fill:'both':延迟期间元素必须保持起始态,否则会先显示在最终位置再跳回去。 */
+const FEED_LEAD_MS = 90;
+/* 展开(上移)比收起慢一档(2026-07-27 用户要求「向上移动的速度整体时长增加」)。
+   收起不跟着加:那一程用户没提,且退场本来就该比进场干脆。
+   基准时长 --page-morph-dur 仍是两者共用,这里只在展开时乘系数。 */
+const MORPH_OPEN_SCALE = 1.35;
+function morphTiming(distance?: number) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    return { duration: 1, easing: 'linear' };
+  }
+  const rootCs = getComputedStyle(document.documentElement);
+  const base = (parseFloat(rootCs.getPropertyValue('--page-morph-dur')) || 1.12) * 1000;
+  const duration =
+    distance === undefined
+      ? base
+      : Math.min(base * 1.3, Math.max(base * 0.8, (base * distance) / MORPH_REF_PX));
+  return {
+    duration,
+    easing: rootCs.getPropertyValue('--ease').trim() || 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+  };
+}
+
+/* 参与整块位移的元素:#app 里除首页 hero / 索引外的全部内容。不包一层 wrapper 是
+   因为 works-page 的 .design-layout 是网格,子项必须保持直接子级 —— 改为对每个子项
+   施加同一段 transform。
+   必须递归下探 display:contents:Archive 为了让 banner 与作品拼成一个连续网格,把
+   .design-content / .category-section 设成了 display:contents —— 这类元素没有盒子,
+   transform / opacity 对它完全无效。只取直接子级的话,Archive 上真正动起来的只有
+   banner 卡(它是 #app 的真实子节点),其余卡片纹丝不动,banner 就成了「自己走自己
+   轨迹」的孤立组件(2026-07-27 用户三次实测的同一根因)。下探到真实盒子后,
+   全部内容拿同一段 transform,才是一个整体。
+   同时打上 .home-ride-el:收起时的淡出规则要按这批真实盒子来写(同理,写在
+   display:contents 的容器上不生效)。 */
+function rideEls(): HTMLElement[] {
+  const app = document.getElementById('app');
+  if (!app) return [];
+  const out: HTMLElement[] = [];
+  const walk = (parent: Element) => {
+    Array.from(parent.children).forEach((child) => {
+      const el = child as HTMLElement;
+      if (el.classList.contains('home-hero') || el.classList.contains('home-index')) return;
+      const d = getComputedStyle(el).display;
+      if (d === 'contents') {
+        /* 穿透进去取真实盒子,但容器自己也要打标记:收起恢复 home-landing 后
+           works-page / blog-page 的 display:contents 规则失效,.design-content
+           变回 block 重新占位(实测 663px),把首页索引行顶上去,直到模态卸载
+           才塌回去 —— 就是收起落位时的那一下硬跳(2026-07-27 用户实测 Archive)。
+           打上类后 home-restoring 的摘除规则能连整棵子树一起拿掉。 */
+        el.classList.add('home-ride-el');
+        walk(el);
+      } else if (d !== 'none') {
+        el.classList.add('home-ride-el');
+        out.push(el);
+      }
+      /* d === 'none' 的整支跳过:那是未激活的预载页(常驻挂载、隐藏),
+         既不参与位移,也不该被打上 .home-ride-el —— 打了会被收起时的
+         淡出/摘除规则误伤,下次激活它就是隐形的。 */
+    });
+  };
+  walk(app);
+  /* 只让当前视口内的元素真的动:Archive 有 3 个 iframe + 9 个 video,23 个元素
+     同时跑 transform 会各自提一个合成层,每帧重新合成 —— 展开中段明显卡顿
+     (2026-07-27 用户实测)。视口外的元素此刻不可见(尚未入场),不动它们无差别。
+     .home-ride-el 仍打在全部真实盒子上 —— 收起的淡出规则要覆盖到所有内容。 */
+  const vh = window.innerHeight;
+  return out.filter((el) => {
+    const r = el.getBoundingClientRect();
+    return r.bottom > 0 && r.top < vh;
+  });
+}
+
+export default function HomePage() {
+  useHeaderAlwaysVisible();
+  useScrollProgress();
+  /* 首页顶栏常驻固定,不随滚动收起(2026-07-22 用户要求;Blog/Archive 保留收起交互) */
+
+  const [modal, setModal] = useState<ModalState>(null);
+  const morphFrom = useRef<DOMRect | null>(null);
+  const rideAnimsRef = useRef<Animation[]>([]);
+
+  /* 后台预载:入场收尾后挂载两个模态页(隐藏),内容提前备好 */
+  const [preloaded, setPreloaded] = useState(false);
+  /* 计时从 hero-ready(loader 揭幕放闸)起算,而不是挂载起算:首次访问时挂载
+     发生在 loader 期间,挂载 +1.5s 正好砸在进度条收尾 / 黑雾上移上 —— 两页
+     几百节点 + iframe + 视频的挂载是一个大长任务(2026-10-23 v4 加载流畅度)。
+     再套一层 idle 回调,让 hero 逐字入场的帧先走。 */
+  useEffect(() => {
+    const docEl = document.documentElement;
+    let t = 0;
+    let idle = 0;
+    const schedule = () => {
+      t = window.setTimeout(() => {
+        if ('requestIdleCallback' in window) {
+          idle = window.requestIdleCallback(() => setPreloaded(true), { timeout: 1000 });
+        } else setPreloaded(true);
+      }, PRELOAD_DELAY_MS);
+    };
+    let mo: MutationObserver | undefined;
+    if (docEl.classList.contains('hero-ready')) schedule();
+    else {
+      mo = new MutationObserver((_, o) => {
+        if (!docEl.classList.contains('hero-ready')) return;
+        o.disconnect();
+        schedule();
+      });
+      mo.observe(docEl, { attributes: true, attributeFilter: ['class'] });
+    }
+    return () => {
+      mo?.disconnect();
+      clearTimeout(t);
+      if (idle) window.cancelIdleCallback(idle);
+    };
+  }, []);
+
+  const openModal = (target: ModalTarget) => (e: MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    /* 双击/快速连点:state 提交前第二次点击 modal 仍是 null,靠 history.state 兜底防重 */
+    if (modal || (history.state as { homeModal?: string } | null)?.homeModal) return;
+    /* 点击必然发生在 hover(或触屏 :active)反色态:文字右移 --hl-shift,直接量会把
+       缩进量记进起终点,落位交接回未 hover 基态就会跳一下。测量前临时清掉位移
+       (同帧清 → 量 → 还原,不可见),morph 全程按未 hover 基态的几何走。 */
+    const shiftEls = Array.from(
+      e.currentTarget.querySelectorAll<HTMLElement>('.hi-label, .hi-arrow'),
+    );
+    shiftEls.forEach((el) => {
+      el.style.transition = 'none';
+      el.style.transform = 'none';
+    });
+    const mask = e.currentTarget.querySelector<HTMLElement>('.hi-label .heading-rise-mask');
+    if (mask) morphFrom.current = mask.getBoundingClientRect();
+    shiftEls.forEach((el) => {
+      el.style.transform = '';
+      el.style.transition = '';
+    });
+    history.pushState({ homeModal: target }, '', MODAL_PAGES[target].href);
+    setModal({ target, phase: 'morph' });
+  };
+
+  /* morph:换 body 类(首页藏进模态下面、目标页布局生效)→ 量出标题的自然位置 →
+     模态内容整块从「行的位置」(向下偏移 dy)动画到自然位置。标题在首帧就显形 ——
+     它起步时与被点击的行像素重合,本身就是那行字的延续;feed 挂在标题下方,
+     从行下面跟着一起上移、边移边由 pillar 入场系统显现(无闸门,点击瞬间就开始)。
+     收起按钮的箭头同程从 0° 旋到 135°(CSS 静态值),完成行尾 ↗ → 收起 ↓ 的变形。
+     全部在 layout effect 内同步完成,首帧画出来就已经是「整块压在行位置」。 */
+  useLayoutEffect(() => {
+    if (modal?.phase !== 'morph') return;
+    const page = MODAL_PAGES[modal.target];
+    const body = document.body;
+    body.classList.remove('home-landing');
+    body.classList.add(page.bodyClass, 'home-modal', 'home-modal-riding');
+    window.scrollTo(0, 0);
+    /* 展开同样罩布(covers.tsx):上移期间封面全部退回海报,iframe 合成层不参与
+       位移 —— 与收起同一套轻量化(2026-08-17 用户:展开也要和 Blog 一样丝滑)。
+       落位后的 covers:resync 摘罩,预热好的封面两帧内活过来。 */
+    window.dispatchEvent(new Event('covers:shed'));
+    const titleMask = inActive<HTMLElement>('.page-title .heading-rise-mask');
+    const from = morphFrom.current;
+    const els = rideEls();
+    if (!titleMask || !from || !els.length) {
+      setModal({ target: modal.target, phase: 'open' });
+      return;
+    }
+    /* 首屏内容整批首发:整块上移要读作「一整页跟着行走」—— 落位后处于第一屏内的
+       feed 元素(banner / 分类菜单 / 区块标题 / 卡片)在起步时就一起显形、随块上移,
+       各自走自己的入场过渡;pillar 的错峰队列只留给首屏之外、日后滚动进入的内容。
+       (2026-07-27 用户两次实测迭代:先是 banner 被初批错峰排到几百毫秒后、被上移中
+       拿到零延迟的 icon 卡反超;点名 banner 首发后,其余卡片又显得「没跟块一起动」——
+       收敛为按最终位置划首屏、整批首发。)
+       此刻 transform 动画尚未挂上,量到的就是落位后的自然位置。 */
+    const firstWave = allInActive<HTMLElement>(
+      '.design-menu, .design-banner-frame, .section-divider h2, .card-wrapper',
+    ).filter((el) => {
+      /* 零尺寸 = 藏在 display:none 支路里(如 works-page 的区块标题),不参与首发 */
+      const r = el.getBoundingClientRect();
+      return r.height > 0 && r.top < window.innerHeight;
+    });
+    firstWave.forEach((el) => (el.dataset.entered = '1'));
+    /* 依次入场:直接复用 usePillarEntrance 的 revealByRow 编排(行间 STAGGER、
+       行内按 left 排序列间 COL_STAGGER),与独立 blog.html / archive.html 加载时
+       的卡片入场完全同一套节奏(2026-07-27 用户要求)。
+       为什么不交给 pillar 自己跑:它的 useEffect 在本 layout effect 之后执行,
+       那时元素已带位移偏移,视口判定会把首屏元素算成「在视口外」而全部漏掉。
+       这里趁位移尚未施加、元素还在落位后的自然位置,按同一算法排好班。 */
+    const PILLAR_STAGGER = 110;
+    const PILLAR_ROW_TOL = 28;
+    const PILLAR_COL_STAGGER = 180;
+    const waveTimers: number[] = [];
+    let waveRaf = 0;
+    if (firstWave.length) {
+      const sorted = firstWave
+        .map((el) => ({ el, r: el.getBoundingClientRect() }))
+        .sort((a, b) => a.r.top - b.r.top);
+      const rows: { el: HTMLElement; r: DOMRect }[][] = [];
+      let lastTop: number | null = null;
+      sorted.forEach((item) => {
+        const top = Math.round(item.r.top);
+        if (lastTop === null || top - lastTop > PILLAR_ROW_TOL) rows.push([]);
+        lastTop = top;
+        rows[rows.length - 1].push(item);
+      });
+      const schedule = rows.flatMap((row, step) =>
+        row
+          .slice()
+          .sort((a, b) => a.r.left - b.r.left)
+          .map((item, col) => ({
+            el: item.el,
+            delay: step * PILLAR_STAGGER + col * PILLAR_COL_STAGGER,
+          })),
+      );
+      /* 双 rAF:先让隐藏基态绘制一帧,过渡才有起点 */
+      waveRaf = requestAnimationFrame(() =>
+        requestAnimationFrame(() =>
+          schedule.forEach(({ el, delay }) =>
+            waveTimers.push(
+              window.setTimeout(
+                () =>
+                  el.classList.add(
+                    el.classList.contains('heading-rise') ? 'heading-rise-in' : 'visible',
+                  ),
+                delay,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    const to = titleMask.getBoundingClientRect();
+    const dx = from.left - to.left;
+    const dy = from.top - to.top;
+    const base = morphTiming(Math.hypot(dx, dy));
+    const timing = { ...base, duration: base.duration * MORPH_OPEN_SCALE };
+    const anims = els.map((el) =>
+      el.animate(
+        [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'translate(0px, 0px)' }],
+        {
+          ...timing,
+          delay: el.classList.contains('page-title-row') ? 0 : FEED_LEAD_MS,
+          fill: 'both',
+        },
+      ),
+    );
+    /* 位移期间冻结模态里的全部媒体:正在播的封面 iframe 每帧都在跑 shader、
+       视频在解码,全压在动画帧上(2026-08-17 用户录屏「收起特别卡」的一环)。
+       不用恢复:展开落位后由 covers:resync 重判激活,收起则整个模态随后卸载。 */
+    allInActive<HTMLVideoElement>('video').forEach((v) => v.pause());
+    allInActive<HTMLIFrameElement>('iframe').forEach((f) => {
+      try {
+        f.contentWindow?.postMessage({ type: 'cover-pause' }, '*');
+      } catch {
+        /* 拿不到 contentWindow(已卸载)就略过 */
+      }
+    });
+    const collapseSvg = inActive<SVGSVGElement>('.page-collapse svg');
+    if (collapseSvg) {
+      anims.push(
+        collapseSvg.animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(135deg)' }], {
+          ...timing,
+          duration: timing.duration * ARROW_SPIN_RATIO,
+          fill: 'forwards',
+        }),
+      );
+    }
+    rideAnimsRef.current = anims;
+    /* 挂在最后结束的动画上:feed 带 FEED_LEAD_MS 延迟,比标题行晚落位 ——
+       挂在 anims[0](标题行)的话,open 相会提前 cancel 掉还在飞的 feed */
+    const lastAnim = anims.find((a) => (a.effect?.getTiming().delay ?? 0) > 0) ?? anims[0];
+    lastAnim.onfinish = () => setModal({ target: modal.target, phase: 'open' });
+    return () => {
+      cancelAnimationFrame(waveRaf);
+      waveTimers.forEach(clearTimeout);
+      /* pause 而非 cancel:上移中途被收起时,closing 相要从当前偏移接力反向下移 ——
+         cancel 会把 transform 瞬间打回,量到的就是错的位置。正常落位后动画已结束,
+         pause 无副作用。 */
+      anims.forEach((a) => a.pause());
+    };
+  }, [modal]);
+
+  /* open:整块已就位(动画结束、transform 回到 none),解除滚动锁 */
+  useLayoutEffect(() => {
+    if (modal?.phase !== 'open') return;
+    /* 不再统一放行视频:封面改为海报默认静止(2026-08-16),播放归
+       covers.tsx 的激活逻辑管(桌面 hover / 触屏视口居中),这里强播会穿帮 */
+    document.body.classList.remove('home-modal-riding');
+    /* 位移期间封面的 IO 判定被按住(见 covers.tsx inPageTransition),
+       落位后广播一次重判 —— 该预热的预热、居中的开播 */
+    window.dispatchEvent(new Event('covers:resync'));
+    rideAnimsRef.current.forEach((a) => a.cancel());
+    rideAnimsRef.current = [];
+  }, [modal]);
+
+  /* closing:整块反向下移(与展开镜像),分三拍:
+     ① t=0:feed / 菜单 / banner 淡出(CSS .home-modal-closing,标题行除外 ——
+        标题就是即将归位的行文字,必须全程可见),整块从当前偏移(半空被收起时
+        接力,不跳变)向下移往行位置;收起箭头 135° 转回 0° 变回行尾 ↗;
+     ② t=HOME_RESTORE_MS(feed 淡完):恢复首页布局 —— 模态内容先用
+        body.home-restoring 从布局摘除(React 卸载要等落位后),但下移中的
+        标题行不受影响(排除在摘除规则外);索引行禁过渡瞬时显形垫底
+        (行字符显示态锁在 home-landing 上,不禁会带错峰延迟重播);
+        hero + 署名重播自己的逐字 soft-blur 入场(hero-ready 摘→回流→重挂,
+        2026-07-27 用户要求「再次入场动画」);落点行文字/箭头先藏住,
+        免得和下移中的标题行重影;
+     ③ 落位:标题行与真实行像素重合,行显形交接,setModal(null) 卸载模态内容
+        (home-restoring 由 modal=null 的 effect 在卸载提交后再摘)。 */
+  useLayoutEffect(() => {
+    if (modal?.phase !== 'closing') return;
+    const page = MODAL_PAGES[modal.target];
+    const body = document.body;
+    body.classList.add('home-modal-closing', 'home-modal-riding');
+
+    const targetRow = document.querySelector<HTMLElement>(`.home-index-row[href="${page.href}"]`);
+    const rowParts = targetRow
+      ? Array.from(targetRow.querySelectorAll<HTMLElement>('.hi-label, .hi-arrow'))
+      : [];
+    rowParts.forEach((el) => (el.style.visibility = 'hidden'));
+
+    /* 落位接力时标题行被改成 fixed(见 restoreTimer),这些 inline 样式必须还原 ——
+       预载让两页常驻不卸载,残留会留到下一次展开:标题行还挂着 top:0 就跑到页顶,
+       又因脱离文档流让位移起点算错、整块从右下角移入(2026-07-27 用户实测第二次
+       展开的大 bug)。以前模态关闭即卸载,残留随组件消失,所以没暴露。 */
+    let landedTitleRow: HTMLElement | null = null;
+    const clearTitleRowInline = () => {
+      if (!landedTitleRow) return;
+      const st = landedTitleRow.style;
+      st.position = '';
+      st.top = '';
+      st.left = '';
+      st.width = '';
+      st.margin = '';
+      landedTitleRow = null;
+    };
+
+    let finished = false;
+    const finishClose = () => {
+      if (finished) return;
+      finished = true;
+      /* 第一步必须先把激活页藏起来,再做任何清理 ——
+         摘掉 position:fixed 的那一刻 transform 还挂在元素上,而这个值是按 fixed
+         坐标系算的,回到文档流后叠加它会把标题行甩到页面外(实测 y 从 665 跳到
+         1556),这一帧被绘制就是用户看到的「闪一下」。与缓动无关:删掉弹性落位后
+         依旧存在(2026-07-27 逐帧采样定位)。
+         隐藏用 inline display —— React 下次渲染这个 wrapper 时会用 style prop
+         覆盖回来,不会残留。 */
+      const activeWrap = document.querySelector<HTMLElement>(`.${ACTIVE_CLASS}`);
+      if (activeWrap) activeWrap.style.display = 'none';
+      /* 卡片入场态复位:预载让模态页常驻不卸载,卡片会停在上次的 .visible +
+         entered,下次展开就「一开始全在场」,依次上移的入场动画看着像没了
+         (2026-07-27 用户实测)。pillar 只在往下读时入场、不会自己复位
+         —— 这里主动收尾。瞬时完成(禁过渡)且页面已不可见,看不到。 */
+      activeWrap?.querySelectorAll<HTMLElement>('.card-wrapper, .design-menu, .design-banner-frame, .section-divider h2').forEach((el) => {
+        el.style.transition = 'none';
+        el.classList.remove('visible', 'heading-rise-in', 'enter-from-above');
+        delete el.dataset.entered;
+        void el.offsetWidth;
+        el.style.transition = '';
+      });
+      /* 同一同步块内完成交接:标题行隐去、行文字显形,浏览器不会在中间绘制 */
+      rowParts.forEach((el) => (el.style.visibility = ''));
+      rideAnimsRef.current.forEach((a) => a.cancel());
+      rideAnimsRef.current = [];
+      clearTitleRowInline();
+      body.classList.remove('home-modal-riding');
+      setModal(null);
+    };
+
+    /* 下移全程的起终点偏移与时长(fixed 接力要用完整路径 + 同一时长续曲线),
+       主分支里赋值;免 ride 的兜底路径不赋值,rideActive 保持 false、接力块整体跳过。 */
+    let rideActive = false;
+    let rideStart = { x: 0, y: 0 };
+    let rideEnd = { x: 0, y: 0 };
+    let rideTiming = { duration: 0, easing: 'linear' };
+    const closeStart = performance.now();
+    const restoreTimer = window.setTimeout(() => {
+      /* ① 标题行切到屏幕坐标系接力剩余下移:换类后首页内容回到文档流,标题行的
+         布局原点会被顶到 hero 之下,fill:forwards 的 transform 随之整体错位
+         (2026-07-27 用户实测「Blog 先消失又闪现」的另一半成因 —— 第一半是
+         home-restoring 摘除规则误伤,见 writing.css)。趁布局未变量出当前几何,
+         转 position:fixed 后按「完整路径 + 完整时长 + 同一条曲线」重建动画,
+         再把 currentTime 拨到已流逝的 HOME_RESTORE_MS —— 接进同一条曲线的
+         同一时刻,速度零断差(此前用「剩余路程的新 ease-out」接力,新曲线从头
+         起步速度陡,落位前会抖一下,2026-07-27 用户实测)。 */
+      const titleRow = inActive<HTMLElement>('.page-title-row');
+      const tMask = inActive<HTMLElement>('.page-title .heading-rise-mask');
+      if (rideActive && titleRow && tMask && from) {
+        const rowRect = titleRow.getBoundingClientRect();
+        const mNow = new DOMMatrixReadOnly(getComputedStyle(titleRow).transform);
+        /* 标题行的「无 transform 布局位置」= 当前视口位置 − 当前动画偏移 */
+        const natLeft = rowRect.left - mNow.m41;
+        const natTop = rowRect.top - mNow.m42;
+        rideAnimsRef.current.forEach((a) => {
+          if (a.effect && (a.effect as KeyframeEffect).target === titleRow) a.cancel();
+        });
+        landedTitleRow = titleRow;
+        titleRow.style.position = 'fixed';
+        titleRow.style.top = '0';
+        titleRow.style.left = '0';
+        titleRow.style.width = `${rowRect.width}px`;
+        titleRow.style.margin = '0';
+        /* 用下移起步时算好的同一组时长/缓动(距离缩放后各次不同,不能重新取 token) */
+        const landAnim = titleRow.animate(
+          [
+            {
+              transform: `translate(${natLeft + rideStart.x}px, ${natTop + rideStart.y}px)`,
+            },
+            { transform: `translate(${natLeft + rideEnd.x}px, ${natTop + rideEnd.y}px)` },
+          ],
+          {
+            duration: rideTiming.duration,
+            easing: rideTiming.easing,
+            /* 与被它接替的那段同 delay:标题行收起时殿后 FEED_LEAD_MS,
+               不带上的话 currentTime 落在曲线的另一个时刻,接力处会跳 */
+            delay: FEED_LEAD_MS,
+            fill: 'both',
+          },
+        );
+        /* currentTime 含 delay 期。对表用「真实流逝时间」而不是写死 HOME_RESTORE_MS:
+           手机上主线程一卡,这个 setTimeout 会晚到几百毫秒,再按 320ms 拨表就等于
+           把标题拽回曲线的早段 —— 用户看到的正是「标题跳一下/回落动效缺失」
+           (2026-08-17 录屏)。按真实时间拨,主线程再卡,接力也接在当下该在的位置;
+           已经该到头了就直接收尾,不再补一段迟到的动画。 */
+        const elapsed = performance.now() - closeStart;
+        const total = FEED_LEAD_MS + rideTiming.duration;
+        rideAnimsRef.current.push(landAnim);
+        if (elapsed >= total - 16) {
+          landAnim.currentTime = total;
+          finishClose();
+        } else {
+          landAnim.currentTime = elapsed;
+          landAnim.onfinish = finishClose;
+        }
+      }
+      const riseEls = Array.from(
+        document.querySelectorAll<HTMLElement>('.home-index-row, .home-index-row .heading-rise-char'),
+      );
+      riseEls.forEach((el) => (el.style.transition = 'none'));
+      body.classList.remove(page.bodyClass, 'home-modal', 'home-modal-closing');
+      body.classList.add('home-landing', 'home-restoring');
+      document.documentElement.classList.remove('is-loading');
+      void body.offsetWidth;
+      riseEls.forEach((el) => (el.style.transition = ''));
+      /* 滚动已在 closing 起步帧归零(带 transform 补偿),这里不再动滚动。
+         显形与标题落位对表(常量注释见 HOME_HERO_FADE_MS):延迟 = 剩余行程 −
+         HOME_FADE_LEAD_MS,fill:backwards 让延迟期保持全透明。落点行不淡入。 */
+      const easeSoft =
+        getComputedStyle(document.documentElement).getPropertyValue('--ease-soft').trim() ||
+        'cubic-bezier(0.22, 1, 0.36, 1)';
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const remaining = Math.max(
+        0,
+        FEED_LEAD_MS + rideTiming.duration - (performance.now() - closeStart),
+      );
+      const fadeDelay = reduce ? 0 : Math.max(0, remaining - HOME_FADE_LEAD_MS);
+      document.querySelectorAll<HTMLElement>('.home-hero').forEach((el) => {
+        el.animate([{ opacity: 0 }, { opacity: 1 }], {
+          duration: reduce ? 1 : HOME_HERO_FADE_MS,
+          delay: fadeDelay,
+          easing: easeSoft,
+          fill: 'backwards',
+        });
+      });
+      document.querySelectorAll<HTMLElement>('.home-index-row').forEach((el) => {
+        const label = el.querySelector('.hi-label')?.getAttribute('aria-label');
+        if (label === page.label) {
+          /* 落点行本体立即实打(标题要落进来才无缝),但它的分割线跟大部队
+             同班次淡入 —— 单独先亮一根线很跳(2026-08-17 用户截图圈出) */
+          const bc = getComputedStyle(el).borderTopColor;
+          el.animate([{ borderTopColor: 'transparent' }, { borderTopColor: bc }], {
+            duration: reduce ? 1 : HOME_INDEX_FADE_MS,
+            delay: fadeDelay,
+            easing: easeSoft,
+            fill: 'backwards',
+          });
+          return;
+        }
+        el.animate([{ opacity: 0 }, { opacity: 1 }], {
+          duration: reduce ? 1 : HOME_INDEX_FADE_MS,
+          delay: fadeDelay,
+          easing: easeSoft,
+          fill: 'backwards',
+        });
+      });
+    }, HOME_RESTORE_MS);
+
+    const from = morphFrom.current; /* 首页行位置(打开时记录,scroll=0 的视口坐标) */
+    const titleMask = inActive<HTMLElement>('.page-title .heading-rise-mask');
+    const els = rideEls();
+    let fallbackTimer: number | undefined;
+    if (!titleMask || !from || !els.length) {
+      fallbackTimer = window.setTimeout(finishClose, HOME_RESTORE_MS + 60);
+      return () => {
+        clearTimeout(restoreTimer);
+        clearTimeout(fallbackTimer);
+      };
+    }
+    /* 当前偏移:上移中途被收起时,块停在半空(morph cleanup 是 pause)——
+       从计算样式里读出当前 translate,接力反向;已就位则为 0。 */
+    const m = new DOMMatrixReadOnly(getComputedStyle(els[0]).transform);
+    const curX = m.m41;
+    const curY = m.m42;
+    /* 深滚后收起:同一帧先把滚动归零,再把「原滚动量」并入起始偏移作补偿 ——
+       块在视口里纹丝不动,只是坐标系换到了页顶,下移全程连续
+       (否则 420ms 恢复首页时归零滚动,下移中的块会跳一段)。 */
+    const scrolled = window.scrollY;
+    if (scrolled) window.scrollTo(0, 0);
+    const startY = curY - scrolled;
+    /* 标题的自然位置 = 归零后的视口位置 - 当前 transform 偏移;目标 = 行位置 - 自然位置 */
+    const now = titleMask.getBoundingClientRect();
+    const dx = from.left - (now.left - curX);
+    const dy = from.top - (now.top - curY);
+    rideAnimsRef.current.forEach((a) => a.cancel());
+    rideActive = true;
+    rideStart = { x: curX, y: startY };
+    rideEnd = { x: dx, y: dy };
+    /* 时长按剩余行程算(半空接力时行程短、时长按比例短),速度与展开一致。
+       曾试过过冲式弹性落位(--ease-spring),2026-07-27 移除:落点行上下都紧邻
+       另一行、行距只有 83px,过冲 25px 时标题行会压到邻行上晃一下(用户读作
+       「闪一下」),收到看不出闪的 2px 又已经完全读不出弹性 —— 这个场景没有
+       可用区间,统一回 ease-out。 */
+    const timing = morphTiming(Math.hypot(dx - curX, dy - startY));
+    rideTiming = timing;
+    /* 收起前先让所有封面退回海报态(covers.tsx 卸掉 iframe):整块位移最贵的
+       就是 iframe 合成层,Archive 首屏有 3 个还嵌着视频,Blog 只有图片 ——
+       这正是「Archive 收起不如 Blog 丝滑」的差距(2026-08-17 用户)。React 的
+       卸载在本任务内提交、首帧动画前生效,且不改布局(海报与 iframe 同盒)。 */
+    window.dispatchEvent(new Event('covers:shed'));
+    const anims = els.map((el) => {
+      /* 逐元素读自己的当前偏移:展开的错峰(FEED_LEAD_MS)会让标题行与 feed 处在
+         不同位置,统一用 els[0] 的值会让 feed 跳一下 */
+      const em = new DOMMatrixReadOnly(getComputedStyle(el).transform);
+      const isTitle = el.classList.contains('page-title-row');
+      return el.animate(
+        [
+          { transform: `translate(${em.m41}px, ${em.m42 - scrolled}px)` },
+          { transform: `translate(${dx}px, ${dy}px)` },
+        ],
+        { ...timing, delay: isTitle ? FEED_LEAD_MS : 0, fill: 'both' },
+      );
+    });
+    /* 位移期间冻结模态里的全部媒体:正在播的封面 iframe 每帧都在跑 shader、
+       视频在解码,全压在动画帧上(2026-08-17 用户录屏「收起特别卡」的一环)。
+       不用恢复:展开落位后由 covers:resync 重判激活,收起则整个模态随后卸载。 */
+    allInActive<HTMLVideoElement>('video').forEach((v) => v.pause());
+    allInActive<HTMLIFrameElement>('iframe').forEach((f) => {
+      try {
+        f.contentWindow?.postMessage({ type: 'cover-pause' }, '*');
+      } catch {
+        /* 拿不到 contentWindow(已卸载)就略过 */
+      }
+    });
+    const collapseSvg = inActive<SVGSVGElement>('.page-collapse svg');
+    if (collapseSvg) {
+      /* 与展开对称:旋转压到位移时长的 ARROW_SPIN_RATIO,不拖 ease-out 的角度长尾 */
+      anims.push(
+        collapseSvg.animate([{ transform: 'rotate(135deg)' }, { transform: 'rotate(0deg)' }], {
+          ...timing,
+          duration: timing.duration * ARROW_SPIN_RATIO,
+          fill: 'forwards',
+        }),
+      );
+    }
+    rideAnimsRef.current = anims;
+    /* 标题行殿后归位,收尾挂它 —— 挂 feed 的话标题还在飞就被清理掉了 */
+    const lastClose = anims.find((a) => (a.effect?.getTiming().delay ?? 0) > 0) ?? anims[0];
+    lastClose.onfinish = finishClose;
+    return () => {
+      clearTimeout(restoreTimer);
+      if (fallbackTimer) clearTimeout(fallbackTimer);
+      clearTitleRowInline(); // 中断兜底:fixed 残留会毁掉下一次展开
+      /* 用 ref 而不是局部 anims:restore 时接力的 landAnim 也在 ref 里,一并清 */
+      rideAnimsRef.current.forEach((a) => a.cancel());
+      rideAnimsRef.current = [];
+    };
+  }, [modal]);
+
+  /* 收尾的最后一步:模态内容卸载「提交完成后」才摘 home-restoring ——
+     早一帧摘,模态内容会以无样式状态在首页下面闪现一下 */
+  useEffect(() => {
+    if (modal === null) {
+      document.body.classList.remove('home-restoring', 'home-modal-riding');
+      window.dispatchEvent(new Event('covers:resync'));
+    }
+  }, [modal]);
+
+  /* 模态打开期间:返回键(popstate)关闭;Esc 等价于按返回。
+     Esc 只在历史条目还带 homeModal 时才 back —— 连按 Esc 时第二下已经 pop 过,
+     再 back 会退出站点历史。 */
+  useEffect(() => {
+    if (!modal || modal.phase === 'closing') return;
+    const onPop = () => {
+      /* 两级模态叠加时(首页 → Blog 模态 → 文章模态)popstate 会同时打到两层的
+         监听器上,一次返回把两层一起关掉,状态错乱后下面那条 reload 兜底还会把
+         独立文章页整页加载出来。内层(文章模态)开着时这次返回就是它的,让路。 */
+      if (document.body.classList.contains('article-modal')) return;
+      setModal({ target: modal.target, phase: 'closing' });
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && (history.state as { homeModal?: string } | null)?.homeModal)
+        history.back();
+    };
+    window.addEventListener('popstate', onPop);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('popstate', onPop);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [modal]);
+
+  /* 模态关闭后按浏览器「前进」会走回带 homeModal 的历史条目 —— 此时没有行位置可起飞,
+     直接整页加载真实目标页,URL 与内容保持一致 */
+  useEffect(() => {
+    if (modal) return;
+    const onPop = (e: PopStateEvent) => {
+      /* 同上:内层模态还在处理自己的返回时不要抢 —— 否则会在文章 URL 上整页 reload,
+         直接跳成独立文章页 */
+      if (document.body.classList.contains('article-modal')) return;
+      if ((e.state as { homeModal?: string } | null)?.homeModal) location.reload();
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [modal]);
+
+  /* 刷新/同会话回访:hero-ready 可能在 React 挂载前已就位,内容以最终态首绘、
+     入场动画被跳过。摘掉重加让入场每次刷新都重播(2026-07-22 用户要求)。
+     关键:索引行字符走 transition,--d(620ms+)的延迟是双向的 —— 直接摘类后
+     隐藏态要等延迟才生效,2 帧后加回类等于什么都没发生。所以摘类时临时
+     transition:none + 强制回流,让隐藏态立即落地,再恢复过渡、重加闸门。
+     hero 字符走 animation(重加类自动从头播),不受影响。 */
+  useEffect(() => {
+    const docEl = document.documentElement;
+    if (!docEl.classList.contains('hero-ready')) return;
+    docEl.classList.remove('hero-ready');
+    docEl.classList.remove('entrance-done'); // 行分割线也按首载节奏重播
+    // 重播入场时逐行 hover 闸门一并复位,由下方计时重挂
+    document.querySelectorAll('.home-index-row.row-in').forEach((el) => el.classList.remove('row-in'));
+    const els = Array.from(
+      document.querySelectorAll<HTMLElement>('.heading-rise-char, .home-index-row'),
+    );
+    els.forEach((el) => (el.style.transition = 'none'));
+    void document.body.offsetWidth; // 强制回流:隐藏态立即生效
+    const r1 = requestAnimationFrame(() => {
+      els.forEach((el) => (el.style.transition = ''));
+      requestAnimationFrame(() => docEl.classList.add('hero-ready'));
+    });
+    return () => cancelAnimationFrame(r1);
+  }, []);
+
+  /* 介绍段逐行 + 行内从左到右入场:挂载后(hero-ready 闸门开启前)按几何把单元
+     分行 —— 行的判定 = 单元左缘比前一个更靠左(左对齐排版里只有换行会回退左缘),
+     比 offsetTop 稳:行内头像/圆底比文字高,顶缘不共线。
+     --d = 全段连续字位×CHAR_STEP + 行号×LINE_STEP:行内逐字左→右,换行处多停一口。
+     末单元延迟存进 state,索引行起点跟着实测节拍推迟。 */
+  const introRef = useRef<HTMLParagraphElement>(null);
+  /* 丝绸圆球(Obsidian):WebGL 引擎挂进 .hero-intro-orb。WebGL 不可用 / 用户要求
+     减弱动效时不建球,span 自带的 CSS 弥散渐变兜底还在。曜石黑深浅主题通用,不跟底色。 */
+  const orbRef = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    const host = orbRef.current;
+    if (!host || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const orb = createSilkPill(host, {
+      width: 28,   /* 2026-08-22 用户:32 缩一档,保持 4 的倍数;CSS .hero-intro-orb 同步 */
+      height: 28,
+      seed: 'Obsidian',
+      colors: ORB_COLORS,
+      silk: { radius: 1, speed: ORB_SPEED_BASE }, /* radius 1 = 全圆;其余用 gallery 默认 */
+    });
+    if (!orb) return;
+    host.classList.add('orb-live');
+    /* hover 冲击:入峰无过渡(瞬间加快),随后 τ = RECOVER/3 的指数衰减滑回 ——
+       5s 末残余 e⁻³ ≈ 5%,落回默认几乎无感。重复 hover 从峰值重来。
+       speed 能这样跳变靠的是引擎副本的积分时钟补丁,见 silkPillEngine.js 文件头。 */
+    let raf = 0;
+    const onEnter = () => {
+      /* Blog 词的回滚类先摘掉:hover 期间由 :hover 规则驱动上浮 */
+      unit.classList.remove('hero-blog-rolling');
+      cancelAnimationFrame(raf);
+      const t0 = performance.now();
+      const step = (now: number) => {
+        const t = (now - t0) / 1000;
+        if (t >= ORB_RECOVER_S) {
+          orb.set({ silk: { speed: ORB_SPEED_BASE } });
+          return;
+        }
+        const k = Math.exp(-t / (ORB_RECOVER_S / 3));
+        orb.set({ silk: { speed: ORB_SPEED_BASE + (ORB_SPEED_FAST - ORB_SPEED_BASE) * k } });
+        raf = requestAnimationFrame(step);
+      };
+      raf = requestAnimationFrame(step);
+    };
+    /* 移出:Blog 词滚一圈回原位(:hover 一撤 CSS 规则就没了,与顶栏 nav-rolling 同法) */
+    const onLeave = () => unit.classList.add('hero-blog-rolling');
+    const unit = host.closest('.hero-intro-unit') ?? host;
+    unit.addEventListener('mouseenter', onEnter);
+    unit.addEventListener('mouseleave', onLeave);
+    return () => {
+      cancelAnimationFrame(raf);
+      unit.removeEventListener('mouseenter', onEnter);
+      unit.removeEventListener('mouseleave', onLeave);
+      orb.destroy();
+      host.classList.remove('orb-live');
+    };
+  }, []);
+  /* 兜底初值:桌面实测 59 单元 3 行的末字延迟,量完立刻被真实值覆盖 */
+  const [introLastD, setIntroLastD] = useState(58 * INTRO_CHAR_STEP + 2 * INTRO_LINE_STEP);
+  useLayoutEffect(() => {
+    const p = introRef.current;
+    if (!p) return;
+    let line = 0;
+    let prevLeft = -Infinity;
+    let last = 0;
+    Array.from(p.children).forEach((el, i) => {
+      const { left } = el.getBoundingClientRect();
+      if (left < prevLeft - 1) line++;
+      prevLeft = left;
+      last = i * INTRO_CHAR_STEP + line * INTRO_LINE_STEP;
+      (el as HTMLElement).style.setProperty('--d', `${last}ms`);
+    });
+    setIntroLastD(last);
+  }, []);
+
+  /* 列表起步 = 介绍段扫到约 1/3 处(2026-08-22 用户:等整段扫完再出太晚)——
+     视觉上仍是自上而下(列表在页面底部、rise 又慢),但不再干等文字收尾。
+     真实毫秒;索引 --row-d 不经 CSS 缩放,故此处自行 ×HERO_SPEED。 */
+  const BASE = Math.round((introLastD * HERO_SPEED) / 3 + 200);
+  /* 入场彻底结束 → 挂 entrance-done 换快速档。列表提前起步后,收尾可能是
+     「列表最后一行升完」也可能是「介绍段末字化开完」(手机行多时后者更晚),取大者。 */
+  const entranceEnd = Math.max(
+    BASE + 2 * ROW_STEP + 8 * CHAR_STEP + 1260 + 200,
+    Math.round((introLastD + HERO_CHAR_DUR) * HERO_SPEED) + 200,
+  );
+
+  /* 入场收尾 2200ms 后给 html 挂 entrance-done(过渡换快速档);
+     闸门 = html.hero-ready(loader 收尾/跳过时由入口脚本添加) */
+  useEffect(() => {
+    const timers: number[] = [];
+    const markDone = () => {
+      /* 逐行放开 hover:各行末字(箭头)淡入完成的时刻挂 .row-in,该行立即可交互,
+         不陪最后一行等 entranceEnd。延迟公式与 JSX 里 --d 的错峰完全同源。 */
+      document.querySelectorAll<HTMLElement>('.home-index-row').forEach((el, r) => {
+        const chars = el.querySelectorAll('.heading-rise-char').length;
+        const readyAt = BASE + r * ROW_STEP + (chars - 1) * CHAR_STEP + RISE_FADE;
+        timers.push(window.setTimeout(() => el.classList.add('row-in'), readyAt));
+      });
+      timers.push(window.setTimeout(() => document.documentElement.classList.add('entrance-done'), entranceEnd));
+    };
+    let mo: MutationObserver | undefined;
+    if (document.documentElement.classList.contains('hero-ready')) markDone();
+    else {
+      mo = new MutationObserver((_, o) => {
+        if (document.documentElement.classList.contains('hero-ready')) {
+          o.disconnect();
+          markDone();
+        }
+      });
+      mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    }
+    return () => {
+      timers.forEach((t) => clearTimeout(t));
+      mo?.disconnect();
+    };
+    /* BASE 依赖介绍段实测行数(layout effect 里 setState),行数落定后重挂计时 ——
+       都发生在 hero-ready 闸门开启前,重挂无感 */
+  }, [BASE, entranceEnd]);
+
+  return (
+    <>
+      {/* 首页 hero:自我介绍段(2026-08-22 换下「From AI-Assisted…」大字 + 署名行,
+          用户定稿):正常字号、整段灰底,重点词(姓名)黑;两个行内图形 ——
+          头像圆(原署名头像内嵌进文字)、Blog 前的丝绸圆球(NetEase 红环 2026-10-23 删除)。 */}
+      <header className="home-hero">
+        {/* 图形与它标注的词包进 .hero-intro-unit(nowrap):否则行尾可能在
+            inline-block 图形和后面的词之间折开,头像/圆球被单独甩在行尾。
+            文字经 splitIntro 拆成折行单元(.hero-ch),空格并入前词、标点并入前字,
+            全部间距都在单元字符串里 —— JSX 元素之间不放裸文本。 */}
+        <p className="hero-intro" ref={introRef}>
+          {/* 开场白(2026-08-22):「UI 设计师」与后文重复已删,换成打招呼 ——
+              与头像 say-hi 笔画呼应;头衔只留「曾在 NetEase 担任 UI 设计师」那处 */}
+          {splitIntro('Hi，我是 ').map((t, i) => (
+            <span key={`a${i}`} className="hero-ch">{t}</span>
+          ))}
+          <span className="hero-ch hero-intro-unit hero-name-unit">
+            <span aria-label="同容 头像" className="hero-intro-avatar" role="img">
+              <img alt="" src="writing/assets/tongrong-avatar.svg?v=2" />
+            </span>
+            {/* 头像两侧手绘装饰(2026-08-22 用户:默认常显,不只 hover):
+                右上三道 say-hi 小笔画(左上小星试过一版,2026-08-22 用户砍掉)。
+                hover 头像时两侧逐条重新描画一遍,配合摆动 —— 兄弟节点,:hover ~ 选中 */}
+            <span aria-hidden="true" className="hero-hi hero-hi-right">
+              <svg viewBox="0 0 24 24">
+                <path pathLength={1} d="M4.5 15 C5.5 12.5, 6 10.5, 6.2 8" />
+                <path pathLength={1} d="M10.5 13 C11.8 10.5, 13.4 8.8, 15.5 7.4" />
+                <path pathLength={1} d="M14.5 18.5 C16.5 17.4, 18.6 16.9, 20.8 16.9" />
+              </svg>
+            </span>
+            {/* 手写名 SVG(用户原始矢量,见 TongrongName.tsx):包在 <b> 里吃重点词颜色 */}
+            <b className="hero-name">
+              <TongrongName />
+            </b>
+            。
+          </span>
+          {splitIntro('做界面、图标系统和动效。曾在 ').map((t, i) => (
+            <span key={`b${i}`} className="hero-ch">{t}</span>
+          ))}
+          {/* 单元带尾空格(nowrap 粘在词后):后续段不再以空格开头,免得折行后行首悬空格 */}
+          <span className="hero-ch hero-intro-unit">
+            {/* 字标 SVG(描线复刻,见 NeteaseWordmark.tsx):包在 <b> 里吃重点词颜色 */}
+            <b className="hero-netease">
+              <NeteaseWordmark />
+            </b>{' '}
+          </span>
+          {splitIntro('担任 ').map((t, i) => (
+            <span key={`c0${i}`} className="hero-ch">{t}</span>
+          ))}
+          {/* 「UI 设计师」独立成单元:底下垫手绘灰色双笔下划线(2026-08-22 手绘样式,10-23 红改灰);
+              逗号并进单元防行首标点,但不吃下划线 */}
+          <span className="hero-ch hero-intro-unit">
+            <span className="hero-role-mark">
+              UI 设计师
+              {/* 双笔画手绘下划线(2026-08-22 用户:要两条的笔画感):主笔全宽扫过,
+                  第二笔更短、垫在中段下方 —— 快速回锋的双线。两条都是变宽实心笔触
+                  (上下缘不同相位抖动 = 粗细一直在变);preserveAspectRatio none 随词宽拉伸 */}
+              <svg aria-hidden="true" className="hero-role-line" viewBox="0 0 200 24" preserveAspectRatio="none">
+                {/* hover 画笔重描:每笔一张遮罩,沿笔画中线的粗描边按 dashoffset 扫开 ——
+                    笔画本身是变宽实心轮廓、没有可描的中线,只能用遮罩露出来。
+                    两笔各用各的遮罩:中线描边够粗时会盖到邻笔边缘 */}
+                <defs>
+                  <mask id="hero-role-m1" maskUnits="userSpaceOnUse" x="-4" y="0" width="208" height="24">
+                    <path pathLength={1} d="M0 10.2 L203 6.8" />
+                  </mask>
+                  <mask id="hero-role-m2" maskUnits="userSpaceOnUse" x="-4" y="0" width="208" height="24">
+                    <path pathLength={1} d="M19 16.6 L143 15.4" />
+                  </mask>
+                </defs>
+                <path mask="url(#hero-role-m1)" d="M4 7.5 C 30 5.8, 60 8, 90 6.6 C 120 5.4, 155 7.2, 194 5.2 C 197 5, 198 6, 197.5 7.2 C 197 8.6, 194 9.4, 190 9.8 C 158 12, 124 10, 92 11.4 C 62 12.6, 32 11, 7 12.6 C 4.6 12.7, 3.4 11.6, 3.5 10 C 3.6 8.8, 3.8 7.9, 4 7.5 Z" />
+                <path mask="url(#hero-role-m2)" d="M22 15.5 C 50 13.8, 85 15.6, 118 14 C 128 13.5, 136 14.2, 138 15 C 139.5 15.9, 137 16.9, 132 17.3 C 100 19.4, 66 17.4, 35 19 C 28 19.3, 23.5 18.6, 23 17.4 C 22.6 16.6, 22.4 15.9, 22 15.5 Z" />
+              </svg>
+              {/* 画笔:与下划线同框,笔尖跟着遮罩的扫开进度走(轨迹见 writing.css hero-pen-track) */}
+              <span aria-hidden="true" className="hero-role-pen">
+                <span className="hero-role-pen-track">
+                  <svg className="hero-role-pen-icon" viewBox="0 0 24 24">
+                    <path d="M16.2 3.8a2.3 2.3 0 0 1 3.3 0l.7.7a2.3 2.3 0 0 1 0 3.3L8.5 19.5 3 21l1.5-5.5Z" />
+                  </svg>
+                </span>
+              </span>
+            </span>
+            ，
+          </span>
+          {splitIntro('现在我一边设计一边自己实现。把看到的、想到的，写成文章，都在 ').map(
+            (t, i) => (
+              <span key={`c${i}`} className="hero-ch">{t}</span>
+            ),
+          )}
+          <span className="hero-ch hero-intro-unit hero-blog-unit">
+            {/* 丝绸圆球 Obsidian(WebGL,orb effect 挂载;CSS 弥散渐变作 WebGL 不可用兜底) */}
+            <span aria-hidden="true" className="hero-intro-orb" ref={orbRef} />
+            {/* hover 翻转:逐字 mask+roll、22ms 错峰,与顶栏同节奏(2026-08-22 用户定逐字;
+                代价是 Playwrite 连笔在字间断开,已确认接受) */}
+            <b className="hero-blog-word">
+              {'Blog'.split('').map((ch, i) => (
+                <span key={i} className="hero-blog-mask">
+                  <span className="hero-blog-roll" style={{ '--i': i } as CSSProperties}>
+                    {ch}
+                  </span>
+                </span>
+              ))}
+            </b>{' '}
+          </span>
+          {splitIntro('里。').map((t, i) => (
+            <span key={`d${i}`} className="hero-ch">{t}</span>
+          ))}
+        </p>
+      </header>
+      {/* 首页索引:Blog / Archive / Contact 三行大字导航 */}
+      <nav className="home-index" aria-label="站内入口">
+        {ROWS.map((row, r) => {
+          const base = BASE + r * ROW_STEP;
+          let i = 0;
+          return (
+            <a
+              key={row.label}
+              className="home-index-row heading-rise"
+              href={row.href}
+              style={{ '--row-d': `${base}ms` } as CSSProperties}
+              onClick={
+                row.href === 'blog.html'
+                  ? openModal('blog')
+                  : row.href === 'archive.html'
+                    ? openModal('archive')
+                    : undefined
+              }
+            >
+              <span className="hi-label" aria-label={row.label}>
+                <span className="heading-rise-mask" aria-hidden="true">
+                  {row.label.split('').map((chr, k) => (
+                    <span
+                      key={k}
+                      className="heading-rise-char"
+                      style={{ '--d': `${base + i++ * CHAR_STEP}ms` } as CSSProperties}
+                    >
+                      {chr}
+                    </span>
+                  ))}
+                </span>
+              </span>
+              <span className="hi-arrow" aria-hidden="true">
+                <span className="heading-rise-mask" aria-hidden="true">
+                  <span
+                    className="heading-rise-char"
+                    style={{ '--d': `${base + i++ * CHAR_STEP}ms` } as CSSProperties}
+                  >
+                    {ARROW}
+                  </span>
+                </span>
+              </span>
+            </a>
+          );
+        })}
+      </nav>
+      {/* Blog / Archive 全屏模态:与首页同住 #app,body.blog-page / works-page 让线上样式原样生效。
+          整块位移方案:标题/收起箭头从首帧就显形 —— 它们起步时与被点击的行像素重合,
+          本身就是行文字/行箭头的延续('revealed' = 瞬时显形,不播逐字入场) */}
+      {/* Blog / Archive 全屏模态:两页常驻挂载(预载完成后),用 display 切换激活 ——
+          展开时内容早已加载完,直接展示、按 pillar 节奏依次升起。
+          display:contents 让激活页的子项保持 #app 直接子级(works-page 的网格依赖
+          这一点,rideEls 的 walker 也会穿透它);未激活的那页 display:none 不占布局,
+          iframe 内的 rAF 循环被浏览器自动暂停,不耗帧。
+          关闭后不卸载:卡片入场态由 finishClose 复位,再次展开照常重播入场且即点即现。
+          标题/收起箭头从首帧就显形,它们是行文字/行箭头的延续。 */}
+      {(preloaded || modal) && (
+        <>
+          <div
+            className={modal?.target === 'blog' ? ACTIVE_CLASS : undefined}
+            style={{ display: modal?.target === 'blog' ? 'contents' : 'none' }}
+          >
+            <MemoBlogPage modalTitle="revealed" />
+          </div>
+          <div
+            className={modal?.target === 'archive' ? ACTIVE_CLASS : undefined}
+            style={{ display: modal?.target === 'archive' ? 'contents' : 'none' }}
+          >
+            <MemoArchivePage modalTitle="revealed" />
+          </div>
+        </>
+      )}
+    </>
+  );
+}

@@ -20,6 +20,7 @@ const ARTICLE_SLUGS = fs
 /* 16 个入口。按 site/ 里实际存在的文件过滤,迁移期间可逐页添加 */
 const ALL_ENTRIES: Record<string, string> = {
   index: resolve(ROOT, 'index.html'),
+  classic: resolve(ROOT, 'classic.html'), // 旧版首页,与新首页互不穿插(2026-10-23)
   blog: resolve(ROOT, 'blog.html'),
   archive: resolve(ROOT, 'archive.html'),
   ...Object.fromEntries(

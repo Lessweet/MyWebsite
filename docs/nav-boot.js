@@ -30,7 +30,9 @@ function initSiteNav() {
     const bd = document.body.classList;
     // 字标 → 首页入口(index,带 loading;目录形式是规范地址);
     // 「Blog」标签 → blog.html(无 loading 的 Feed 页),Archive⇄Blog 切换不重播 loading。
-    const LOGO_HOME = base || './';
+    /* 字标 → 旧版首页 classic.html(2026-10-23 起:新首页是 v4 简化版,旧 Blog / Archive / 文章页
+       自成一套,回首页只回旧版首页,新旧两站互不穿插) */
+    const LOGO_HOME = base + 'classic.html';
     const HOME = base + 'blog.html';
     /* home-v2 三页(首页 / Blog / Archive)的 CSS 一律把 .nav-bg 设成 display:none ——
        注入了也只是在首页 loading 期间白拉一整个 shader 页面抢带宽(2026-10-23 v4) */
@@ -219,6 +221,24 @@ function toggleSiteTheme() {
         );
     }, done);   /* 快照失败(被打断等)就直接收尾,别把 theme-vt 留在身上 */
     vt.finished.then(done, done);
+    /* 收回(深 → 浅)时,圆缩回主题键的那一刻,按钮整体弹一下(2026-10-23 用户:收回来时整体缩放、弹性)。
+       用 Web Animations 直接挂在按钮上,不碰它 CSS 里的入场 animation(换 animation-name 会让入场重播) */
+    /* 只给新首页(按钮在 .head-right 里)加;Blog / Archive / 文章页的旧版按钮不动 */
+    if (!dark && btn && btn.animate && btn.closest('.head-right')) {
+        vt.finished.then(function () {
+            btn.animate(
+                [
+                    { transform: 'scale(1)' },
+                    { transform: 'scale(0.82)', offset: 0.18 },
+                    { transform: 'scale(1.12)', offset: 0.45 },
+                    { transform: 'scale(0.96)', offset: 0.7 },
+                    { transform: 'scale(1.02)', offset: 0.86 },
+                    { transform: 'scale(1)' },
+                ],
+                { duration: 620, easing: 'ease-out' },
+            );
+        });
+    }
     save();
 }
 

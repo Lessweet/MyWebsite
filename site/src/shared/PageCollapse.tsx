@@ -54,7 +54,7 @@ export default function PageCollapse({
       aria-label="收起,回到首页"
       onClick={() => {
         if (modal) history.back();
-        else window.location.href = 'index.html';
+        else window.location.href = 'classic.html';   // 旧版首页:新旧两站互不穿插
       }}
     >
       {/* 独立页:复用 heading-rise 的遮罩 + 字符结构,从基线下方升起;
