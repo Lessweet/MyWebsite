@@ -21,7 +21,9 @@ const INTRO_LINE_STEP = 60;
 /* 介绍段拆分:行是折行结果、随视口变,没法在 JSX 里预知 —— 拆成最小折行单元
    (CJK 单字 / 拉丁词,句读并进前一单元防行首标点),挂载后按几何分行、逐行下发 --d。
    {…} 括起的词整组算一个单元、不会被折开(2026-10-23 用户:「被 / 看见」「视 / 觉」「常 / 态」断得难看) */
-function splitIntro(text: string): string[] {
+/* groups = false 时忽略 {…} 词组、照常逐字拆(手机上介绍段要像作品简介一样排满右边,2026-10-25 用户) */
+function splitIntro(text: string, groups = true): string[] {
+  if (!groups) text = text.replace(/[{}]/g, '');
   const raw = text.match(/\{[^}]*\}|[A-Za-z0-9]+|\s+|./g) || [];
   const out: string[] = [];
   let pending = '';
@@ -134,6 +136,16 @@ export default function HomePage() {
      index.html 先给 <html> 挂 app-loading 藏起整页,这里在首次渲染提交后、浏览器绘制前去掉 */
   useLayoutEffect(() => {
     document.documentElement.classList.remove('app-loading');
+  }, []);
+
+  /* 手机宽度(≤ 600)介绍段不按词组断行,逐字排满(2026-10-25 用户:右边参差,没有段落整块感);
+     电脑上仍按词组断句。跨过断点时跟着切换 */
+  const [phoneWrap, setPhoneWrap] = useState(() => window.matchMedia('(max-width: 600px)').matches);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 600px)');
+    const on = () => setPhoneWrap(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
   }, []);
 
   /* 逐行下发入场延迟:行的判定 = 单元左缘比前一个更靠左(换行、换段都会回退左缘) */
@@ -292,7 +304,7 @@ export default function HomePage() {
             <b className="hero-name">同容</b>
             ，
           </span>
-          {splitIntro('{研究}{内容}{怎么}{被创作、}{被呈现、}{被看见。}').map((t, i) => (
+          {splitIntro('{研究}{内容}{怎么}{被创作、}{被呈现、}{被看见。}', !phoneWrap).map((t, i) => (
             <span key={`b${i}`} className="hero-ch">{t}</span>
           ))}
           </p>
@@ -344,14 +356,14 @@ export default function HomePage() {
             </span>
             ，
           </span>
-          {splitIntro('{设计}{内容}{产品的}{视觉体验，}{创作者}{平台、}{阅读、}{社区这类，}{做界面、图标系统和动效。}').map(
+          {splitIntro('{设计}{内容}{产品的}{视觉体验，}{创作者}{平台、}{阅读、}{社区这类，}{做界面、图标系统和动效。}', !phoneWrap).map(
             (t, i) => (
               <span key={`c${i}`} className="hero-ch">{t}</span>
             ),
           )}
           </p>
           <p>
-          {splitIntro('{现在我}{边设计、}{边实现，}{AI coding、}{skills、}{PR }{是常态。}{同时，}{把看到的、}{想到的，}{写成}{文章。}').map((t, i) => (
+          {splitIntro('{现在我}{边设计、}{边实现，}{AI coding、}{skills、}{PR }{是常态。}{同时，}{把看到的、}{想到的，}{写成}{文章。}', !phoneWrap).map((t, i) => (
             <span key={`d${i}`} className="hero-ch">{t}</span>
           ))}
           </p>
