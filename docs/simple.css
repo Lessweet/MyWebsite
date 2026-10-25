@@ -624,8 +624,8 @@ body.theme-vt *::after {
 }
 .work-year {
     color: var(--ink-2);
-    font-size: var(--fs-body);   /* 日期当时间轴刻度:用简介字号 18 / 32,仍是灰色(2026-10-24 用户;试过 14、16) */
-    line-height: var(--lh-body);
+    font-size: var(--fs-sm);   /* 日期用 16 那档 --fs-sm / --lh-sm(2026-10-25 用户;试过 14、18) */
+    line-height: var(--lh-sm);
     font-variant-numeric: tabular-nums;
 }
 .work-title { font-size: var(--fs-h2); line-height: var(--lh-h2); }
