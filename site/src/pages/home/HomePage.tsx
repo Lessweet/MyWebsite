@@ -274,6 +274,8 @@ export default function HomePage() {
       /* 双 rAF:先让初始态(透明、下移)绘制一帧,过渡才有起点 */
       raf = requestAnimationFrame(() => (raf = requestAnimationFrame(() => works.classList.add('in'))));
     }
+    /* 逐段浮现、双栏时右栏的排队时刻(performance.now 的绝对时间):下一小段最早什么时候开始 */
+    let blockCursor = 0;
     const io = new IntersectionObserver(
       (entries) => {
         const hits = entries.filter((e) => e.isIntersecting).map((e) => e.target as HTMLElement);
@@ -296,9 +298,25 @@ export default function HomePage() {
           /* 逐段浮现:每条作品整条当一段浮上来(里面的逐字、封面入场都关掉);打开页面就在视口里的
              接在介绍区后面,之后滚动进来的立刻开始,同一批之间隔两个段间隔 */
           if (BLOCKS_ENTRANCE) {
-            const k = blockBatch++;
             reveal(el);
-            setBlock(el, (now - t0 < 400 ? blocksWorksAt() : 0) + k * 2 * ENTRANCE.blocks.step);
+            const { step, sectionGap } = ENTRANCE.blocks;
+            /* 双栏(2026-10-25 用户:单栏很好,双栏右边 Feed 不像逐段、不连贯):右栏和左栏一起从上往下流 ——
+               每条作品拆成 日期 → 标题 → 简介 → 每张封面 一小段一小段地来,段间隔同左栏;
+               首屏在左栏开始后 sectionGap 起步,不再等左栏走完;之后滚动进来的接着排,不和上一批抢 */
+            if (window.matchMedia('(min-width: 1152px)').matches) {
+              const cover = el.querySelector('.work-cover');
+              const covers = cover?.matches('.gallery, .showcase') ? [...cover.querySelectorAll('.gl-item, .sc-pane')] : [cover];
+              const parts = [el.querySelector('.work-year'), el.querySelector('.work-title'), el.querySelector('.work-summary'), ...covers];
+              parts.forEach((part) => {
+                if (!part) return;
+                const at = Math.max(now + (now - t0 < 400 ? sectionGap : 0), blockCursor);
+                setBlock(part, at - now);
+                blockCursor = at + step;
+              });
+              return;
+            }
+            const k = blockBatch++;
+            setBlock(el, (now - t0 < 400 ? blocksWorksAt() : 0) + k * 2 * step);
             return;
           }
           /* 斜向渐清入场时,打开页面就在视口里的作品直接显示,交给扫光;之后滚动进来的照常依次浮现 */

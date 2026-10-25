@@ -828,7 +828,7 @@ export default function RevealTuner() {
                       <div className="rt-field">
                         <span className="rt-label">节奏</span>
                         <Cascade p={bk} onChange={(step, sectionGap) => setBlocks({ step, sectionGap })} />
-                        <span className="rt-hint">左右拖:一段接一段的快慢;每根横条是一段从开始浮现到完全出现</span>
+                        <span className="rt-hint">左右拖:一段接一段的快慢;每根横条是一段从开始浮现到完全出现。双栏时右栏每条作品再拆成日期、标题、简介、每张封面,和左栏一起往下流,作品区前停顿 = 右栏比左栏晚起步多久</span>
                       </div>
                       <div className="rt-field">
                         <span className="rt-label">每段时长</span>
