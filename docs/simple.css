@@ -1583,8 +1583,8 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     height: 8px;   /* 一条作品一根,线距 8(2026-10-25 用户:纵向间距太长;原 12) */
     cursor: pointer;
 }
-/* 一套样式(2026-10-25 用户):滚动自动走、鼠标悬停选,都只有一个焦点 ——
-   焦点 14 纯黑,紧挨着的上下各一根 11,其余 8 浅灰;焦点换了,长短和深浅用过渡跟过去 */
+/* 一套样式(2026-10-25 用户):滚动自动走、鼠标悬停选,都只有一个焦点,焦点纯黑、其余浅灰;
+   悬停时焦点 14、紧挨着的上下各一根 11,其余 8;平时都是 8。焦点换了,长短和深浅用过渡跟过去 */
 .wr-tick > i {
     /* 绝对定位钉在右边:长短怎么变,右端始终对齐(2026-10-25 用户) */
     position: absolute;
@@ -1598,8 +1598,10 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     opacity: 0.2;
     transition: width 0.16s ease-out, opacity 0.16s ease-out;
 }
-.wr-tick.is-near > i { width: 11px; }
-.wr-tick.is-focus > i { width: 14px; opacity: 1; }
+.wr-tick.is-focus > i { opacity: 1; }
+/* 平时(鼠标不在刻度上)线都是短的,只用颜色标出正在看的那条;悬停时焦点和相邻的才变长(2026-10-25 用户) */
+.work-rail.is-hover .wr-tick.is-near > i { width: 11px; }
+.work-rail.is-hover .wr-tick.is-focus > i { width: 14px; }
 .wr-tick:focus-visible { outline: none; }
 /* 预览卡:刻度左边,只有一张,top 跟着悬停的线走、高度跟内容走,都用过渡。
    外层 .wr-pop 管位置和显隐,右边留 6px 透明的「桥」,鼠标从刻度移到卡片上不会断;
