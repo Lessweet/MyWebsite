@@ -42,8 +42,8 @@ export function loadRevealParams(): RevealParams {
   return REVEAL_DEFAULTS;
 }
 
-export function applyRevealParams(p: RevealParams) {
-  const s = document.documentElement.style;
+export function applyRevealParams(p: RevealParams, root: HTMLElement = document.documentElement) {
+  const s = root.style;
   s.setProperty('--rv-dur', `${p.dur}s`);
   s.setProperty('--rv-ease', EASES[p.ease]?.css ?? EASES.inout.css);
   s.setProperty('--rv-angle', `${p.angle}deg`);
@@ -277,7 +277,12 @@ export default function RevealTuner() {
     }
   };
 
-  /* 参数变了:写 localStorage + <html> 变量,稍等一下自动重播预览 */
+  /* 参数变了:写 localStorage + 本页 <html> 变量,同时直接改预览页的变量,不重新加载预览
+     (2026-10-25 用户:暂停之后调参要直接看暂停那一帧,不要从头开始)。
+     - 暂停着(含拖到某一帧):停在原地,只是这一帧换成新参数的样子;时长变了按进度比例换算,画面位置不跳;
+     - 正在播:接着播;
+     - 已播完:改了参数看不出效果,从头播一遍 */
+  const prevDur = useRef(p.dur);
   useEffect(() => {
     try {
       localStorage.setItem(KEY, JSON.stringify(p));
@@ -285,10 +290,30 @@ export default function RevealTuner() {
       /* 存不了也不影响预览 */
     }
     applyRevealParams(p);
+    const oldDur = prevDur.current;
+    prevDur.current = p.dur;
     if (!open) return;
-    const t = window.setTimeout(() => setNonce((n) => n + 1), 350);
-    return () => clearTimeout(t);
+    const root = frameRef.current?.contentDocument?.documentElement;
+    const a = getAnim();
+    if (!root || !a) return;
+    const t = Number(a.currentTime ?? 0);
+    const finished = a.playState === 'finished' || t >= oldDur * 1000 - 1;
+    applyRevealParams(p, root);
+    if (finished) {
+      a.currentTime = 0;
+      a.play();
+    } else if (oldDur !== p.dur) {
+      a.currentTime = (t / oldDur) * p.dur;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [p, open]);
+  /* 重播:原地从头播,不重新加载预览 */
+  const replay = () => {
+    const a = getAnim();
+    if (!a) return setNonce((n) => n + 1);
+    a.currentTime = 0;
+    a.play();
+  };
 
   /* 预览框按 1440 × 900 等比缩放 */
   useLayoutEffect(() => {
@@ -355,8 +380,10 @@ export default function RevealTuner() {
            <div aria-label="入场扫光参数" aria-modal="true" className="rt-panel" role="dialog">
             <div className="rt-head">
               <h2>入场扫光</h2>
-              <button className="rt-btn" type="button" onClick={() => setOpen(false)}>
-                关闭
+              <button aria-label="关闭" className="rt-close" title="关闭(Esc)" type="button" onClick={() => setOpen(false)}>
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
               </button>
             </div>
             <div className="rt-body">
@@ -437,7 +464,7 @@ export default function RevealTuner() {
                   <EaseCards value={p.ease} onChange={(v) => setP({ ...p, ease: v })} />
                 </div>
                 <div className="rt-actions">
-                  <button className="rt-btn rt-primary" type="button" onClick={() => setNonce((n) => n + 1)}>
+                  <button className="rt-btn rt-primary" type="button" onClick={replay}>
                     重播
                   </button>
                   <button className="rt-btn" type="button" onClick={() => setP(REVEAL_DEFAULTS)}>

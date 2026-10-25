@@ -128,7 +128,7 @@ p, h2 { text-wrap: pretty; }   /* 段落 + 作品标题:避免最后一行只剩
    整条过渡带宽 --rv-width(默认 70%,即原来的模糊 30 + 空白 40) */
 .page-reveal {
     position: fixed;
-    inset: 0;
+    inset: -4px;   /* 四边多出一点:缩小显示(调参预览)时模糊层边缘会漏出一行清楚的内容 */
     z-index: 50;
     pointer-events: none;
     /* 时长 1.6 → 2.6 → 3.6s(2026-10-25 用户:再慢一点) */
@@ -1159,7 +1159,6 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     height: min(720px, 100%);
     overflow: hidden;
     background: var(--site-bg);
-    border: 1px solid var(--line);
     border-radius: 16px;
     box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18);
 }
@@ -1167,9 +1166,20 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px var(--gutter);
-    border-bottom: 1px solid var(--line);
+    padding: 20px var(--gutter) 4px;
 }
+/* 面板里不用细线分隔(2026-10-25 用户:不要细线、关闭用 icon) */
+.rt-close {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    margin-right: -6px;
+    border-radius: 50%;
+    color: var(--ink-2);
+}
+.rt-close:hover { color: var(--ink); background: var(--fill); }
+.rt-close svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
 .rt-head h2 { font-size: 18px; line-height: 28px; font-weight: 600; }
 .rt-body {
     flex: 1;
@@ -1183,9 +1193,8 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     position: relative;
     min-height: 0;
     overflow: hidden;
-    border: 1px solid var(--line);
     border-radius: 12px;
-    background: var(--site-bg);
+    background: var(--fill);   /* 不描边,用一层浅底和面板区分 */
 }
 .rt-preview iframe {
     position: absolute;
@@ -1194,9 +1203,9 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     border: 0;
     transform-origin: center;
 }
-.rt-controls { display: flex; flex-direction: column; gap: 20px; overflow: auto; }
-.rt-field { display: flex; flex-direction: column; gap: 6px; }
-.rt-label { display: flex; justify-content: space-between; }
+.rt-controls { display: flex; flex-direction: column; gap: 36px; overflow: auto; padding-bottom: 8px; }   /* 组间 20 → 36(2026-10-25 用户:太密) */
+.rt-field { display: flex; flex-direction: column; gap: 10px; }
+.rt-label { display: flex; justify-content: space-between; font-weight: 500; }
 .rt-label b { font-weight: 500; font-variant-numeric: tabular-nums; }
 .rt-hint { color: var(--ink-2); font-size: 12px; line-height: 16px; }
 .rt-field input[type='range'] { width: 100%; accent-color: var(--ink); }
@@ -1231,7 +1240,7 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     background: color-mix(in srgb, var(--site-bg) 85%, transparent);
     -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
-    box-shadow: 0 0 0 1px var(--line);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 /* 进度条可拖动:点击区域加高到 20,视觉上仍是 4px 细条 + 一个圆点把手 */
 .rt-track {
