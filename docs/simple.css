@@ -978,7 +978,7 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
 @media (min-width: 1152px) {
     .page {
         --left-x: 32px;   /* 左栏左边线 = 页面左内边距 */
-        --intro-top: 201px;   /* 介绍段顶 = 字标顶 56 + 字标高 97 + 间距 48 */
+        --intro-top: 192px;   /* 介绍段顶:字标字形底 → 第一行字形顶肉眼 48,同单栏(2026-10-25 用户;原 201,肉眼 57) */
         max-width: none;   /* 不再封顶 1600 居中:左右内边距在任何宽度都固定 32(2026-10-23 用户) */
         padding: 0 32px;   /* 左右内边距 56 → 32(2026-10-23 用户:可以更少) */
         display: grid;
