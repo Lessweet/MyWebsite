@@ -192,7 +192,7 @@ export default function HomePage() {
     return () => clearTimeout(fallback);
   }, []);
 
-  /* 页面滚动过才显示顶部边缘模糊(simple.css .edge-top),回到最顶上就收起 */
+  /* 页面滚动过才显示顶部边缘渐隐(simple.css .edge-top),回到最顶上就收起 */
   useEffect(() => {
     const root = document.documentElement;
     const on = () => root.classList.toggle('page-scrolled', window.scrollY > 4);
