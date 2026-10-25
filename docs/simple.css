@@ -522,10 +522,11 @@ body.theme-vt *::after {
     padding-top: 0;
     padding-bottom: 96px;
 }
-/* 每个作品日期上方一条细线,和日期是一组(2026-10-25 用户:原来介绍段与 Feed 之间那条分割线改成这样)。
+/* 只在第一个作品日期上方一条细线,和日期是一组:既是介绍段与作品区的分界,也是作品列表的开头
+   (2026-10-25 用户:原来那条分割线挪到这里;试过每个作品都有一条,太重复)。
    通栏同作品宽;线到日期 12(肉眼约 20,比作品之间 80 近得多)。入场:跟这条作品一起从下往上浮现,
    时机 = 这条作品第一个字开始的时刻(HomePage staggerWork 下发 --line-d) */
-.work::before {
+.work:first-child::before {
     content: '';
     display: block;
     height: 1px;
