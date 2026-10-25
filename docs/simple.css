@@ -1567,7 +1567,7 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
    越近越长越亮,鼠标划过时像一个跟着走的鼓包。正在看的那块常亮。预览卡只有一张,往左弹。 */
 .work-rail {
     position: fixed;
-    top: 60px;   /* 线在每根 12px 高的格子正中:60 + 6 = 66,对齐日期字顶(实测 66.3) */
+    top: 62px;   /* 线在每根 8px 高的格子正中:62 + 4 = 66,对齐日期字顶(实测 66.3) */
     right: 0;
     z-index: 4;
     display: flex;
@@ -1580,7 +1580,7 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     position: relative;
     display: block;
     width: 32px;   /* 正好是页面右内边距:线最长 14px,右边留 10px */
-    height: 12px;   /* 一条作品一根,线距 12 */
+    height: 8px;   /* 一条作品一根,线距 8(2026-10-25 用户:纵向间距太长;原 12) */
     cursor: pointer;
 }
 .wr-tick > i {
