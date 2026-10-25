@@ -1607,7 +1607,9 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
 .wr-pop {
     position: absolute;
     top: 0;
-    right: 100%;
+    /* 卡片右缘伸到作品栏右缘外 4px(压住 Feed 的右边,不让底下的图从卡片右边露出来;
+       2026-10-25 用户:卡片往右、要遮住底层 Feed)。刻度线最长 14、离右边 10,卡片右缘离线还有 4 */
+    right: calc(100% - 10px);
     padding-right: 6px;
     opacity: 0;
     pointer-events: none;
