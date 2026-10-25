@@ -1578,15 +1578,19 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
 }
 .wr-tick {
     --f: 0;
-    display: grid;
-    place-items: center end;
-    width: 32px;
+    position: relative;
+    display: block;
+    width: 32px;   /* 正好是页面右内边距:最长的 20px + 右边 10px 留白 */
     height: 12px;   /* 一条作品一根,线距 12 */
-    padding-right: 10px;
     cursor: pointer;
 }
 .wr-tick > i {
-    width: calc(8px + 22px * var(--f));   /* 平时 8,悬停那根 30(约 4 倍) */
+    /* 绝对定位钉在右边:长短怎么变,右端始终对齐(2026-10-25 用户) */
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    margin-top: -0.75px;
+    width: calc(8px + 12px * var(--f));   /* 平时 8,悬停那根 20(2026-10-25 用户:不要太长;原 30) */
     height: 1.5px;
     border-radius: 1px;
     background: var(--ink);
