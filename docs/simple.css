@@ -115,25 +115,40 @@ p, h2 { text-wrap: pretty; }   /* 段落 + 作品标题:避免最后一行只剩
    这时介绍段逐字动画、首屏作品入场都关掉(html.reveal-entrance),只靠这道扫光 */
 @property --reveal {
     syntax: '<percentage>';
-    inherits: false;
-    initial-value: -12%;
+    inherits: true;   /* 两层伪元素都要读到动画中的值 */
+    initial-value: -32%;
 }
+/* 两层(2026-10-25 用户:一开始不要任何、就是空白):
+   ::before 模糊层 —— 分界线一过就开始糊(10% 内糊满);
+   ::after  底色层 —— 不透明的页面底色,在模糊层后面再 20% 才盖满。
+   从左上往右下依次是:扫过 = 清楚 → 分界线附近 = 模糊浮现 → 更远 = 纯空白。起点 -32% 时整屏都是底色 */
 .page-reveal {
     position: fixed;
     inset: 0;
     z-index: 50;
     pointer-events: none;
-    /* 过渡带 35% → 10%、雾更浓更糊:清楚 / 模糊之间要有明显的斜向分界(2026-10-25 用户) */
-    background: color-mix(in srgb, var(--site-bg) 80%, transparent);
+    animation: page-reveal 3.6s cubic-bezier(0.45, 0, 0.2, 1) forwards;   /* 1.6 → 2.6 → 3.6s(2026-10-25 用户:再慢一点) */
+}
+.page-reveal::before,
+.page-reveal::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+}
+.page-reveal::before {
     -webkit-backdrop-filter: blur(18px);
     backdrop-filter: blur(18px);
     -webkit-mask-image: linear-gradient(135deg, transparent var(--reveal), #000 calc(var(--reveal) + 10%));
     mask-image: linear-gradient(135deg, transparent var(--reveal), #000 calc(var(--reveal) + 10%));
-    animation: page-reveal 3.6s cubic-bezier(0.45, 0, 0.2, 1) forwards;   /* 1.6 → 2.6 → 3.6s(2026-10-25 用户:再慢一点) */
+}
+.page-reveal::after {
+    background: var(--site-bg);
+    -webkit-mask-image: linear-gradient(135deg, transparent calc(var(--reveal) + 10%), #000 calc(var(--reveal) + 30%));
+    mask-image: linear-gradient(135deg, transparent calc(var(--reveal) + 10%), #000 calc(var(--reveal) + 30%));
 }
 .app-loading .page-reveal { animation-play-state: paused; }
 @keyframes page-reveal {
-    from { --reveal: -12%; }
+    from { --reveal: -32%; }
     to   { --reveal: 102%; }
 }
 @media (prefers-reduced-motion: reduce) {
