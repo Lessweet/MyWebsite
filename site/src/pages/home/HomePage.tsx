@@ -10,13 +10,16 @@ import { createPortal } from 'react-dom';
 import NeteaseWordmark from './NeteaseWordmark';
 import { WORKS } from './works';
 import LocalTime from './LocalTime';
-import RevealTuner, { applyRevealParams, loadRevealParams } from './RevealTuner';
+import RevealTuner from './RevealTuner';
+import { applyEntrance, currentEntrance } from './entrance';
 
+/* 入场方式和参数(2026-10-25 用户:调参台里选用哪一种入场、各自调参数):线上固定默认,本地开发按调参面板存的 */
+const ENTRANCE = currentEntrance();
 /* 入场节拍(soft-blur-in):介绍段 + 联系方式共用一条队列,逐字从左到右连续错峰,
    换行 / 换段处多停一口。2026-10-23 用户嫌慢:15ms/120ms ×1.4(整段约 4.6s)
-   收到 6ms/60ms(整段约 2s 内走完),单字时长见 simple.css .hero-ch。 */
-const INTRO_CHAR_STEP = 6;
-const INTRO_LINE_STEP = 60;
+   收到 6ms/60ms(整段约 2s 内走完),单字时长见 simple.css .hero-ch。现在是 entrance.ts 的字间隔 / 换行停顿 */
+const INTRO_CHAR_STEP = ENTRANCE.stagger.charStep;
+const INTRO_LINE_STEP = ENTRANCE.stagger.lineStep;
 
 
 /* 介绍段拆分:行是折行结果、随视口变,没法在 JSX 里预知 —— 拆成最小折行单元
@@ -67,9 +70,8 @@ function staggerWork(el: HTMLElement, base: number) {
   return last + 120;   /* 封面开始浮现的时刻(相对 base 所在的时间零点) */
 }
 
-/* 入场方式开关(2026-10-25 用户:试斜向渐清入场):true = 打开页面一道斜向扫光从左上揭到右下(index.html 的 .page-reveal);
-   false = 换回原来的介绍段逐字浮现 + 首屏作品依次入场 */
-const REVEAL_ENTRANCE = true;
+/* true = 斜向扫光入场(index.html 的 .page-reveal);false = 依次出现(介绍段逐字浮现 + 首屏作品依次入场) */
+const REVEAL_ENTRANCE = ENTRANCE.mode === 'sweep';
 /* 调参面板里的预览(?embed=1):不再显示调节按钮 */
 const IS_EMBED = new URLSearchParams(location.search).has('embed');
 
@@ -146,10 +148,8 @@ export default function HomePage() {
     const root = document.documentElement;
     /* 斜向渐清入场(REVEAL_ENTRANCE):关掉介绍段逐字 / 按钮入场,首屏只靠扫光;要换回逐字入场把开关设成 false */
     if (REVEAL_ENTRANCE) root.classList.add('reveal-entrance');
-    /* 本地开发:用调参面板存下的扫光参数(线上用 simple.css 里的默认值) */
-    if (import.meta.env.DEV) applyRevealParams(loadRevealParams());
-    /* 调参面板里的预览:扫光随着去掉 app-loading 开始,通知面板的进度条同步起步 */
-    if (import.meta.env.DEV && IS_EMBED) window.parent.postMessage({ type: 'reveal-start' }, location.origin);
+    /* 本地开发:用调参面板存下的入场参数(线上用 simple.css 里的默认值) */
+    if (import.meta.env.DEV) applyEntrance(ENTRANCE);
     root.classList.remove('app-loading');
   }, []);
 
@@ -218,10 +218,12 @@ export default function HomePage() {
     });
     /* 公众号 / 邮箱(宽屏还有主题键)接在介绍区最后一行后面浮现(2026-10-23 用户:入场也要有动画) */
     document.documentElement.style.setProperty('--pills-d', `${introLastRef.current + 150}ms`);
-    /* 介绍区入场播完(最后一个字的延迟 + 动画 560ms)后挂 .intro-done:之后重新生成的字不再播入场 */
+    /* 介绍区入场播完(最后一个字的延迟 + 动画 560ms)后挂 .intro-done:之后重新生成的字不再播入场。
+       调参面板的预览里不挂:挂了字的入场动画就没了,进度条没法往回拖 */
+    if (import.meta.env.DEV && IS_EMBED) return;
     const done = window.setTimeout(
       () => document.documentElement.classList.add('intro-done'),
-      introLastRef.current + 700,
+      introLastRef.current + ENTRANCE.stagger.dur + 150,
     );
     return () => clearTimeout(done);
   }, []);
@@ -241,7 +243,7 @@ export default function HomePage() {
        删掉联系方式那句后介绍区约 0.5s 就走完,写死的 1.5s 让下面空等了 1 秒(2026-10-23 用户:掉队) */
     const HERO_DONE = introLastRef.current + 300;
     /* 上一条封面开始浮现后,下一条再等这么久开始 */
-    const NEXT_GAP = 400;
+    const NEXT_GAP = ENTRANCE.stagger.workGap;
     /* 排队中的作品:end = 下一条最早可以开始的时刻(该条封面开始浮现 + NEXT_GAP) */
     const pending: { el: HTMLElement; end: number }[] = [];
     /* 分割线在介绍段收尾时画出,第一条作品再晚 DIVIDER_LEAD 跟上 */
