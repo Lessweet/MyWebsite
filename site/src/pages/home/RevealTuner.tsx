@@ -64,6 +64,33 @@ export default function RevealTuner() {
   const [copied, setCopied] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
+  /* 播放进度(2026-10-25 用户:预览下方加个进度条):预览页加载完、扫光开始时起步,走满用时 = 时长 */
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (startedAt === null) return;
+    let raf = 0;
+    const tick = () => {
+      const t = Math.min((performance.now() - startedAt) / 1000, p.dur);
+      setElapsed(t);
+      if (t < p.dur) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [startedAt, p.dur]);
+  /* 重新加载预览时进度归零 */
+  useEffect(() => {
+    setStartedAt(null);
+    setElapsed(0);
+  }, [nonce]);
+  /* 预览页在扫光开始的那一刻发 reveal-start(HomePage 嵌入模式);iframe 的 load 要等图片全下完,会晚 */
+  useEffect(() => {
+    const on = (e: MessageEvent) => {
+      if (e.origin === location.origin && e.data?.type === 'reveal-start') setStartedAt(performance.now());
+    };
+    window.addEventListener('message', on);
+    return () => window.removeEventListener('message', on);
+  }, []);
 
   /* 参数变了:写 localStorage + <html> 变量,稍等一下自动重播预览 */
   useEffect(() => {
@@ -151,6 +178,14 @@ export default function RevealTuner() {
                   style={{ width: PREVIEW_W, height: PREVIEW_H, transform: `translate(-50%, -50%) scale(${scale})` }}
                   title="入场动画预览"
                 />
+                <div className="rt-progress">
+                  <div className="rt-track">
+                    <span style={{ width: `${(elapsed / p.dur) * 100}%` }} />
+                  </div>
+                  <span className="rt-time">
+                    {elapsed.toFixed(1)} / {p.dur.toFixed(1)}s
+                  </span>
+                </div>
               </div>
               <div className="rt-controls">
                 {SLIDERS.map((s) => (

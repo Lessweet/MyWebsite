@@ -1207,3 +1207,23 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
 @media (max-width: 760px) {
     .rt-body { grid-template-columns: 1fr; grid-template-rows: 42vh auto; overflow: auto; }
 }
+/* 预览下方的播放进度条 */
+.rt-progress {
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 14px;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--site-bg) 85%, transparent);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 0 0 1px var(--line);
+}
+.rt-track { flex: 1; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.rt-track span { display: block; height: 100%; background: var(--ink); }
+.rt-time { font-size: 12px; line-height: 16px; color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; }

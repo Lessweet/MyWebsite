@@ -148,6 +148,8 @@ export default function HomePage() {
     if (REVEAL_ENTRANCE) root.classList.add('reveal-entrance');
     /* 本地开发:用调参面板存下的扫光参数(线上用 simple.css 里的默认值) */
     if (import.meta.env.DEV) applyRevealParams(loadRevealParams());
+    /* 调参面板里的预览:扫光随着去掉 app-loading 开始,通知面板的进度条同步起步 */
+    if (import.meta.env.DEV && IS_EMBED) window.parent.postMessage({ type: 'reveal-start' }, location.origin);
     root.classList.remove('app-loading');
   }, []);
 
