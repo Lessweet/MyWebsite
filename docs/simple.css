@@ -16,8 +16,8 @@
     --fs-h2: 24px;   /* 作品标题 20 → 24(2026-10-23 用户:再大点) */
     --lh-h2: 32px;
     /* 小一档:辅助信息(介绍段末行的城市 + 时间),2026-10-23 用户定 14px */
-    --fs-sm: 14px;   /* 小一档:14 → 16(2026-10-24)→ 14(2026-10-25 用户:改 token 本身,日期 / 时间行 / 胶囊一起变) */
-    --lh-sm: 24px;
+    --fs-sm: 16px;   /* 小一档:14 → 16(2026-10-24)→ 试过 14 又改回 16(2026-10-25 用户:14 太小) */
+    --lh-sm: 28px;
     /* 阅读正文:个人介绍 + 作品简介,16 → 18(2026-10-24 用户:都用 18);日期等仍用 --fs 16 */
     --fs-body: 18px;
     --lh-body: 32px;
@@ -153,7 +153,7 @@ p, h2 { text-wrap: pretty; }   /* 段落 + 作品标题:避免最后一行只剩
     border-radius: 18px;
     background: transparent;   /* 不加白底,直接透出页面底色(2026-10-24 用户) */
     font: inherit;
-    font-size: var(--fs-sm);   /* 小号 --fs-sm(现为 14) */
+    font-size: var(--fs-sm);   /* 小号 --fs-sm(现为 16) */
     line-height: 1;
     cursor: pointer;
     text-decoration: none;
@@ -796,7 +796,7 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
 .hero-loc {
     margin-top: 24px;
     color: var(--ink-2);
-    font-size: var(--fs-sm);   /* 小号 --fs-sm(现为 14) */
+    font-size: var(--fs-sm);   /* 小号 --fs-sm(现为 16) */
     line-height: var(--lh-sm);
 }
 .loc-time {
@@ -808,8 +808,8 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
 /* 时段状态图标:灰色线条,各带一个小循环动效 */
 .loc-status {
     display: inline-block;
-    width: 18px;    /* 随字号:16 → 20、14 → 18 */
-    height: 18px;
+    width: 20px;    /* 随字号:16 → 20、14 → 18 */
+    height: 20px;
     margin-left: 6px;
     vertical-align: -4px;
     overflow: visible;
