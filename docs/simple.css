@@ -122,9 +122,9 @@ p, h2 { text-wrap: pretty; }   /* 段落 + 作品标题:避免最后一行只剩
     pointer-events: none;
 }
 /* 顶部那条只在页面滚动后出现:在最顶上时不糊住主题键和字标(HomePage 挂 .page-scrolled) */
-.edge-top { top: 0; height: calc(48px + env(safe-area-inset-top, 0px)); opacity: 0; transition: opacity 0.25s ease; }
+.edge-top { top: 0; height: calc(80px + env(safe-area-inset-top, 0px)); opacity: 0; transition: opacity 0.25s ease; }   /* 48 → 80(2026-10-25 用户:区域大一点) */
 .page-scrolled .edge-top { opacity: 1; }
-.edge-bottom { bottom: 0; height: calc(56px + env(safe-area-inset-bottom, 0px)); }
+.edge-bottom { bottom: 0; height: calc(96px + env(safe-area-inset-bottom, 0px)); }   /* 56 → 96 */
 .edge-blur::before,
 .edge-blur::after {
     content: '';
