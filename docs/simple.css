@@ -1623,12 +1623,12 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     overflow: hidden;
     border-radius: 12px;
     background: var(--site-bg);
-    box-shadow: 0 0 0 1px var(--line), 0 12px 32px rgba(0, 0, 0, 0.12);
+    /* 边框和投影都很淡(2026-10-25 用户:投影太重、边框太深;原 1px 0.1 黑 + 32px 0.12 黑,悬停还更深) */
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 6px 20px rgba(0, 0, 0, 0.05);
     color: var(--ink);
     cursor: pointer;
-    transition: height 0.22s var(--ease-soft), box-shadow 0.2s ease;
+    transition: height 0.22s var(--ease-soft);
 }
-.wr-card:hover { box-shadow: 0 0 0 1px var(--btn-line), 0 14px 36px rgba(0, 0, 0, 0.16); }
 .wr-card-inner {
     display: flex;
     flex-direction: column;
@@ -1647,7 +1647,7 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     font-size: 13px;
     line-height: 20px;
 }
-body.theme-dark .wr-card { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 12px 32px rgba(0, 0, 0, 0.5); }
+body.theme-dark .wr-card { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 6px 20px rgba(0, 0, 0, 0.3); }
 /* 点了刻度、滚到之后那块内容轻轻闪一下(文章作者:目标已在屏幕内时点了没反应,缺一个「你已经在这里了」) */
 .wr-ping {
     position: absolute;
