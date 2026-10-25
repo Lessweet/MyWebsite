@@ -1561,19 +1561,18 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
 }
 
 /* ── 作品导航刻度(2026-10-25 用户:参考 Codex 对话导航栏的消息摘要刻度,照文章录屏)──
-   宽屏双栏才有(WorkRail.tsx 只在 ≥ 1152 渲染):钉在页面最右边(右内边距 32 里)、视口垂直居中。
+   宽屏双栏才有(WorkRail.tsx 只在 ≥ 1152 渲染):钉在页面最右边(右内边距 32 里);
+   第一根线和右栏第一条作品日期的字顶(≈ 65)对齐,滚动时不动(2026-10-25 用户:和 Feed 初始位置顶对齐,原来是垂直居中)。
    一排短细线(一条作品一根),右对齐;--f(0–1)= 离光标多近,由脚本按距离写进每根线:
    越近越长越亮,鼠标划过时像一个跟着走的鼓包。正在看的那块常亮。预览卡只有一张,往左弹。 */
 .work-rail {
     position: fixed;
-    top: 50%;
+    top: 60px;   /* 线在每根 12px 高的格子正中:60 + 6 = 66,对齐日期字顶(实测 66.3) */
     right: 0;
     z-index: 4;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    padding: 8px 0;
-    transform: translateY(-50%);
     animation: hero-fade-in 0.6s ease 0.8s both;   /* 等入场走完再淡出来,不抢首屏 */
 }
 .wr-tick {
@@ -1612,13 +1611,13 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     padding-right: 6px;
     opacity: 0;
     pointer-events: none;
-    transform: translate(6px, -50%);
+    transform: translate(6px, -14px);   /* 卡片顶边略高于悬停的线,往下展开(刻度在页面顶部,居中会被切) */
     transition:
         opacity 0.18s ease,
         transform 0.22s var(--ease-soft),
         top 0.22s var(--ease-soft);
 }
-.work-rail.is-hover .wr-pop { opacity: 1; pointer-events: auto; transform: translate(0, -50%); }
+.work-rail.is-hover .wr-pop { opacity: 1; pointer-events: auto; transform: translate(0, -14px); }
 .wr-card {
     width: 264px;
     overflow: hidden;
