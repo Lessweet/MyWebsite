@@ -164,10 +164,10 @@ export default function HomePage() {
       ...p.querySelectorAll('.hero-ch'),
       ...document.querySelectorAll('.contact .hero-ch, .hero-loc .hero-ch'),
     ];
-    /* 单栏(< 1152)时顶栏在页面最上面:按从上到下的顺序,顶栏三个按钮先出,介绍段晚 PILLS_LEAD 再起步
-       (2026-10-24 用户:试试从上到下);宽屏顶栏在左下角,仍排在介绍区之后 */
+    /* 单栏(< 1152)时主题键在页面最上面,先出;介绍段晚 PILLS_LEAD 再起步(2026-10-24 用户:从上到下)。
+       公众号 / 邮箱单栏时在介绍区下方(2026-10-25),和宽屏一样接在介绍区最后一行后面 */
     const topFirst = window.matchMedia('(max-width: 1151px)').matches;
-    const PILLS_LEAD = 300;
+    const PILLS_LEAD = 200;
     const offset = topFirst ? PILLS_LEAD : 0;
     units.forEach((el, i) => {
       const { left } = el.getBoundingClientRect();
@@ -177,8 +177,8 @@ export default function HomePage() {
       (el as HTMLElement).style.setProperty('--d', `${d}ms`);
       introLastRef.current = d;
     });
-    /* 公众号 / 邮箱 / 主题键三个按钮接在介绍区最后一行后面浮现(2026-10-23 用户:入场也要有动画) */
-    document.documentElement.style.setProperty('--pills-d', `${topFirst ? 0 : introLastRef.current + 150}ms`);
+    /* 公众号 / 邮箱(宽屏还有主题键)接在介绍区最后一行后面浮现(2026-10-23 用户:入场也要有动画) */
+    document.documentElement.style.setProperty('--pills-d', `${introLastRef.current + 150}ms`);
   }, []);
 
   /* Feed 入场(2026-10-23 用户):介绍段收尾 → 细分割线画出 → 作品依次逐字浮现(同批错开);

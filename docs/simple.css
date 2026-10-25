@@ -891,14 +891,13 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
     .page { display: flex; flex-direction: column; max-width: none; }
     .site-head,
     #app { display: contents; }
-    .head-right {
-        order: 0;
-        margin-top: 24px;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .head-links { flex-direction: row; align-items: center; gap: 4px; }   /* 胶囊之间 4,同宽屏左下角(2026-10-23 用户) */
+    /* 公众号 / 邮箱挪到介绍区下方(2026-10-25 用户:和宽屏一样,先介绍再联系方式);
+       顶上只留主题键,靠右。.head-right 拆开,两组各自参与 .page 的纵向排序 */
+    .head-right { display: contents; }
+    /* 入场:主题键在最顶上,最先出;公众号 / 邮箱跟在时间行后面(--pills-d,HomePage 下发) */
+    .head-right .theme-toggle { order: 0; align-self: flex-end; margin-top: 24px; animation-delay: 0ms; }
+    /* 时间行 → 胶囊:肉眼约 39,同段落间距(时间行字形下方自带约 7px) */
+    .head-links { order: 3; margin-top: 32px; flex-direction: row; align-items: center; gap: 4px; }   /* 胶囊之间 4,同宽屏左下角(2026-10-23 用户) */
     /* 二维码弹层向下弹、左对齐到「公众号」,不顶出页面左缘 */
     .head-links .gzh-pop { left: 0; right: auto; }
     .site-logo-link { order: 1; flex: none; width: 256px; max-width: 100%; margin-top: 71px; }   /* 顶栏到字标:肉眼 72(胶囊边框到字形顶;字形顶还有约 1px 空白)。2026-10-25 用户:三段间距看着一样 */
@@ -906,7 +905,7 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
        2026-10-25 用户:48 → 24 → 30(肉眼同段落 39)→ 肉眼 48 */
     .home-hero { padding-top: 39px; }
     .intro-col { order: 2; }
-    .works { order: 3; }
+    .works { order: 4; margin-top: 72px; }   /* 胶囊 → 细线:肉眼 72(胶囊边框没有留白) */
 }
 
 /* ── 宽屏两栏(2026-10-23 用户:电脑上单列浪费空间)──
