@@ -160,6 +160,8 @@ export default function HomePage() {
     const root = document.documentElement;
     /* 斜向渐清入场(REVEAL_ENTRANCE):关掉介绍段逐字 / 按钮入场,首屏只靠扫光;要换回逐字入场把开关设成 false */
     if (REVEAL_ENTRANCE) root.classList.add('reveal-entrance');
+    /* 不用扫光时,index.html 里那层扫光白雾在首次绘制前就拿掉(不然要等 useEffect,多盖一帧) */
+    else document.querySelector('.page-reveal')?.remove();
     /* 逐段浮现:顶上那组(字标、主题键)第 0 段,介绍区每段、城市时间依次隔一个段间隔;作品在 Feed 入场里排 */
     if (BLOCKS_ENTRANCE) {
       root.classList.add('blocks-entrance');

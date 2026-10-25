@@ -46,8 +46,9 @@ export const EASES: Record<string, { label: string; css: string; pts: [number, n
   in: { label: '先慢后快', css: 'cubic-bezier(0.55, 0, 0.9, 0.4)', pts: [0.55, 0, 0.9, 0.4] },
 };
 
+/* 线上默认用逐段浮现(2026-10-25 用户) */
 export const ENTRANCE_DEFAULTS: EntranceConfig = {
-  mode: 'sweep',
+  mode: 'blocks',
   sweep: { dur: 3.6, ease: 'inout', angle: 135, blur: 18, width: 70 },
   stagger: { charStep: 6, lineStep: 60, dur: 560, blur: 4, rise: 6.2, ease: 'out', workGap: 400 },
   blocks: { step: 50, sectionGap: 200, dur: 500, rise: 8, blur: 0, ease: 'ease' },
