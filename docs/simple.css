@@ -170,6 +170,25 @@ p, h2 { text-wrap: pretty; }   /* 段落 + 作品标题:避免最后一行只剩
 .reveal-entrance .hero-ch,
 .reveal-entrance .head-right .theme-toggle { animation: none; }
 
+/* ── 入场:逐段浮现(2026-10-25 用户:照 benji.org 的节奏和流畅感,横版也要适配)──
+   benji.org 的做法:每个块(标题、每段文字、列表、页脚)opacity 0 → 1、上浮 8px,0.5s ease,
+   块与块隔 50ms,列表前多停 200ms;一秒左右全部到位 —— 察觉不到「在播动画」,但有先后。
+   这里的块:字标 + 主题键(第 0 段)→ 每段介绍 → 城市时间 → 每条作品(整条一起,里面的逐字 / 封面入场都关掉)。
+   横版两栏也按这个顺序:左栏从上到下,再到右栏作品。--bd 由 HomePage 下发,其余参数走 --bk-* */
+.blocks-entrance .hero-ch,
+.blocks-entrance .head-links .head-link { animation: none; }
+/* !important:主题键、作品分割线等各自有入场动画规则,逐段浮现时统一换成这一个 */
+.blocks-entrance .bk {
+    animation: block-in var(--bk-dur, 500ms) var(--bk-ease, ease) var(--bd, 0ms) both !important;
+}
+@keyframes block-in {
+    from { opacity: 0; transform: translateY(var(--bk-rise, 8px)); filter: blur(var(--bk-blur, 0px)); }
+    to   { opacity: 1; transform: none; filter: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .blocks-entrance .bk { animation: none !important; }
+}
+
 /* ── 屏幕上下边缘渐进模糊(2026-10-25 用户:滑动时上下都要有,像 Safari 顶部那样,各浏览器打开都一样)──
    两条固定在视口上 / 下边缘的遮罩:两层 backdrop-filter(轻 / 重)各配一个渐变蒙版,越靠边越糊,
    再叠一层淡淡的页面底色,边缘的内容渐渐隐去。z-index 1:盖住随页面滚动的内容,
@@ -708,11 +727,7 @@ body.theme-vt *::after {
 .work > .showcase > .sc-pane { opacity: 0; }
 .work.in > .showcase > .sc-pane { opacity: 1; animation: rise-in 1.2s var(--ease-soft) var(--cover-d, 0ms) both; }
 .work.in > .showcase > .sc-pane + .sc-pane { animation-delay: calc(var(--cover-d, 0ms) + 300ms); }
-/* 直接显示(.instant,HomePage 给「滑过头、从没进过视口」的上方作品加):不播入场,文字和封面直接就位 */
-.work.instant .feed-ch { animation: none; opacity: 1; }
-.work.instant > .work-cover,
-.work.instant > .showcase > .sc-pane,
-.work.instant > .gallery > .gl-item { animation: none; }
+
 /* 四图式(2026-10-23 用户):两行两列,每张 16:9、间距 8(同两图式);按左上 → 右上 → 左下 → 右下依次浮现,每张隔 300ms */
 .work-cover.gallery {
     display: grid;
@@ -743,6 +758,13 @@ body.theme-vt *::after {
     opacity: 1;
     animation: rise-in 1.2s var(--ease-soft) calc(var(--cover-d, 0ms) + var(--i, 0) * 300ms) both;
 }
+/* 直接显示(.instant,HomePage 给「滑过头、从没进过视口」的上方作品加):不播入场,文字和封面直接就位。
+   放在所有入场规则后面、选择器多带一层 .in:同样权重时写在后面的入场规则会盖过它(2026-10-25 修) */
+.work.in.instant .feed-ch { animation: none; opacity: 1; }
+.work.in.instant > .work-cover,
+.work.in.instant > .showcase > .sc-pane,
+.work.in.instant > .showcase > .sc-pane + .sc-pane,
+.work.in.instant > .gallery > .gl-item { animation: none; }
 /* 只有一张图时通栏(2026-10-24 用户:Vision Pro 作品单图) */
 .work-cover.gallery:has(> .gl-item:only-child) { grid-template-columns: 1fr; }
 /* 三张时第一张通栏、下面两张并排(2026-10-24 用户:视频作品留三张) */
@@ -1361,7 +1383,7 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
 .rt-tbar-legend span:last-child { right: 0; transform: none; }
 .rt-tbar-legend .rt-tbar-at { right: auto; transform: translateX(-50%); }
 
-.rt-eases { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.rt-eases { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; }
 .rt-ease {
     display: flex;
     flex-direction: column;
@@ -1408,7 +1430,7 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
 .rt-orient svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; }
 
 /* 入场方式:两张带示意图的卡片 */
-.rt-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.rt-modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .rt-mode {
     display: flex;
     flex-direction: column;
@@ -1479,3 +1501,30 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
 .rt-rise-arrow { fill: none; stroke: var(--ink-2); stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; }
 .rt-rise small { font-size: 11px; line-height: 14px; color: var(--ink-2); }
 .rt-rise[aria-pressed='true'] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+
+/* 逐段浮现的节奏:小甘特图,左边段名,右边每行一根横条(开始浮现 → 完全出现) */
+.rt-cascade { display: grid; grid-template-columns: auto 1fr; gap: 0 10px; padding: 10px 12px; border-radius: 8px; background: var(--fill); }
+.rt-cascade-labels { display: grid; grid-auto-rows: 14px; gap: 4px; font-size: 11px; line-height: 14px; color: var(--ink-2); white-space: nowrap; }
+.rt-cascade-rows { position: relative; display: grid; grid-auto-rows: 14px; gap: 4px; cursor: ew-resize; touch-action: none; }
+.rt-cascade-row { position: relative; }
+.rt-cascade-row i {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    border-radius: 4px;
+    /* 左浅右深:这一段从透明慢慢出现 */
+    background: linear-gradient(90deg, color-mix(in srgb, var(--ink) 12%, transparent), var(--ink));
+    transition: left 0.15s ease, width 0.15s ease;
+}
+.rt-cascade-row.is-work i { background: linear-gradient(90deg, color-mix(in srgb, var(--ink) 12%, transparent), color-mix(in srgb, var(--ink) 55%, transparent)); }
+.rt-cascade-h {
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    width: 3px;
+    margin-left: -1.5px;
+    border-radius: 2px;
+    background: var(--ink);
+    box-shadow: 0 0 0 2px var(--fill);
+    transition: left 0.15s ease;
+}

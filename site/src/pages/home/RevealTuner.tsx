@@ -12,7 +12,7 @@ import {
   loadEntrance,
   saveEntrance,
 } from './entrance';
-import type { EntranceConfig, EntranceMode, StaggerParams, SweepParams } from './entrance';
+import type { BlocksParams, EntranceConfig, EntranceMode, StaggerParams, SweepParams } from './entrance';
 
 /* ── 各参数各自合适的操作方式(2026-10-25 用户:不要每个都是滑块和按钮)── */
 
@@ -253,8 +253,7 @@ function Rhythm({ charStep, lineStep, onChange }: { charStep: number; lineStep: 
 }
 
 /* 上浮距离:每张卡片画一个字从虚影的位置浮到实字的位置,箭头长短就是距离 */
-function RiseCards({ value, onChange }: { value: number; onChange: (v: number) => void }) {
-  const opts = [0, 3, 6.2, 12, 20];
+function RiseCards({ value, onChange, opts }: { value: number; onChange: (v: number) => void; opts: number[] }) {
   return (
     <div className="rt-rises">
       {opts.map((v) => (
@@ -271,14 +270,91 @@ function RiseCards({ value, onChange }: { value: number; onChange: (v: number) =
   );
 }
 
-/* 入场方式:两张卡片,各画一个小示意 */
+/* 逐段浮现的节奏:一张小甘特图,每行一段(字标、介绍各段、时间、作品),横条从开始浮现画到浮现完。
+   左右拖 = 改段间隔(拖的是「时间」那行的起点);条的长短跟着每段时长变,作品区前的停顿在下面选 */
+const CASCADE_ROWS = ['字标', '介绍 1', '介绍 2', '介绍 3', '联系', '时间', '作品 1', '作品 2'];
+const CASCADE_SPAN = 2000;
+function Cascade({ p, onChange }: { p: BlocksParams; onChange: (step: number, sectionGap: number) => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const starts = CASCADE_ROWS.map((_, i) => (i <= 5 ? i * p.step : 5 * p.step + p.sectionGap + (i - 6) * 2 * p.step));
+  const end = starts[starts.length - 1] + p.dur;
+  const set = (clientX: number) => {
+    const r = ref.current!.getBoundingClientRect();
+    const t = Math.min(1, Math.max(0, (clientX - r.left) / r.width)) * CASCADE_SPAN;
+    onChange(Math.round(Math.min(150, t / 5) / 5) * 5, p.sectionGap);
+  };
+  const pct = (t: number) => `${(t / CASCADE_SPAN) * 100}%`;
+  return (
+    <div className="rt-cascade-wrap">
+      <div className="rt-cascade">
+        <div className="rt-cascade-labels" aria-hidden="true">
+          {CASCADE_ROWS.map((l) => (
+            <span key={l}>{l}</span>
+          ))}
+        </div>
+        <div
+          aria-label="段间隔"
+          aria-valuemax={150}
+          aria-valuemin={0}
+          aria-valuenow={p.step}
+          className="rt-cascade-rows"
+          ref={ref}
+          role="slider"
+          onPointerDown={(e) => {
+            e.currentTarget.setPointerCapture(e.pointerId);
+            set(e.clientX);
+          }}
+          onPointerMove={(e) => e.buttons & 1 && set(e.clientX)}
+        >
+          {starts.map((t, i) => (
+            <div className={`rt-cascade-row${i >= 6 ? ' is-work' : ''}`} key={i}>
+              <i style={{ left: pct(t), width: pct(p.dur) }} />
+            </div>
+          ))}
+          <b className="rt-cascade-h" style={{ left: pct(starts[5]) }} />
+        </div>
+      </div>
+      <div className="rt-rhythm-legend">
+        <span>
+          每段隔 <b>{p.step}ms</b>
+        </span>
+        <span>全部到位约 {(end / 1000).toFixed(2)}s</span>
+      </div>
+      <div className="rt-seg-row">
+        <span>作品区前停顿</span>
+        <div className="rt-chips">
+          {[0, 100, 200, 400].map((v) => (
+            <button aria-pressed={p.sectionGap === v} className="rt-chip" key={v} type="button" onClick={() => onChange(p.step, v)}>
+              {v}ms
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* 入场方式:三张卡片,各画一个小示意 */
 function ModeCards({ value, onChange }: { value: EntranceMode; onChange: (v: EntranceMode) => void }) {
   return (
     <div className="rt-modes">
       {(Object.keys(ENTRANCE_MODES) as EntranceMode[]).map((k) => (
         <button aria-pressed={value === k} className="rt-mode" key={k} type="button" onClick={() => onChange(k)}>
           <svg aria-hidden="true" viewBox="0 0 64 40">
-            {k === 'sweep' ? (
+            {k === 'blocks' ? (
+              [0, 1, 2, 3].map((row) => (
+                <rect
+                  fill="currentColor"
+                  height={row === 3 ? 8 : 5}
+                  key={row}
+                  opacity={0.7 - row * 0.17}
+                  rx="1.5"
+                  width={row === 3 ? 56 : [40, 56, 48][row]}
+                  x="4"
+                  y={4 + row * 9}
+                />
+              ))
+            ) : k === 'sweep' ? (
               <>
                 <defs>
                   <linearGradient id="rt-mode-sweep" x1="0" x2="1" y1="0" y2="1">
@@ -515,7 +591,8 @@ export default function RevealTuner() {
       (cfg.mode === 'stagger' &&
         (old.stagger.charStep !== cfg.stagger.charStep ||
           old.stagger.lineStep !== cfg.stagger.lineStep ||
-          old.stagger.workGap !== cfg.stagger.workGap));
+          old.stagger.workGap !== cfg.stagger.workGap)) ||
+      (cfg.mode === 'blocks' && (old.blocks.step !== cfg.blocks.step || old.blocks.sectionGap !== cfg.blocks.sectionGap));
     if (needsReload) return reload(old.mode === cfg.mode);
     const doc = frameDoc();
     if (!doc) return;
@@ -575,8 +652,8 @@ export default function RevealTuner() {
 
   const setSweep = (patch: Partial<SweepParams>) => setCfg({ ...cfg, sweep: { ...cfg.sweep, ...patch } });
   const setStagger = (patch: Partial<StaggerParams>) => setCfg({ ...cfg, stagger: { ...cfg.stagger, ...patch } });
-  const resetMode = () =>
-    setCfg(cfg.mode === 'sweep' ? { ...cfg, sweep: ENTRANCE_DEFAULTS.sweep } : { ...cfg, stagger: ENTRANCE_DEFAULTS.stagger });
+  const setBlocks = (patch: Partial<BlocksParams>) => setCfg({ ...cfg, blocks: { ...cfg.blocks, ...patch } });
+  const resetMode = () => setCfg({ ...cfg, [cfg.mode]: ENTRANCE_DEFAULTS[cfg.mode] });
 
   const copy = async () => {
     const text = describeEntrance(cfg);
@@ -591,6 +668,7 @@ export default function RevealTuner() {
 
   const sw = cfg.sweep;
   const st = cfg.stagger;
+  const bk = cfg.blocks;
   const pct = total ? (elapsed / total) * 100 : 0;
 
   return (
@@ -726,6 +804,33 @@ export default function RevealTuner() {
                         <EaseCards value={sw.ease} onChange={(ease) => setSweep({ ease })} />
                       </div>
                     </>
+                  ) : cfg.mode === 'blocks' ? (
+                    <>
+                      <div className="rt-field">
+                        <span className="rt-label">节奏</span>
+                        <Cascade p={bk} onChange={(step, sectionGap) => setBlocks({ step, sectionGap })} />
+                        <span className="rt-hint">左右拖:一段接一段的快慢;每根横条是一段从开始浮现到完全出现</span>
+                      </div>
+                      <div className="rt-field">
+                        <span className="rt-label">每段时长</span>
+                        <Stepper chips={[300, 500, 700, 1000]} label="每段时长(毫秒)" max={2000} min={100} step={50} unit="ms" value={bk.dur} onChange={(dur) => setBlocks({ dur })} />
+                        <span className="rt-hint">每一段从透明到完全出现用多久</span>
+                      </div>
+                      <div className="rt-field">
+                        <span className="rt-label">上浮距离</span>
+                        <RiseCards opts={[0, 4, 8, 16, 24]} value={bk.rise} onChange={(rise) => setBlocks({ rise })} />
+                        <span className="rt-hint">每段从多低的地方浮上来</span>
+                      </div>
+                      <div className="rt-field">
+                        <span className="rt-label">起始模糊</span>
+                        <BlurSwatches opts={[0, 2, 4, 8]} scale={0.85} value={bk.blur} onChange={(blur) => setBlocks({ blur })} />
+                        <span className="rt-hint">刚出现时有多糊(benji.org 是 0,不糊)</span>
+                      </div>
+                      <div className="rt-field">
+                        <span className="rt-label">速度曲线</span>
+                        <EaseCards value={bk.ease} onChange={(ease) => setBlocks({ ease })} />
+                      </div>
+                    </>
                   ) : (
                     <>
                       <div className="rt-field">
@@ -745,7 +850,7 @@ export default function RevealTuner() {
                       </div>
                       <div className="rt-field">
                         <span className="rt-label">上浮距离</span>
-                        <RiseCards value={st.rise} onChange={(rise) => setStagger({ rise })} />
+                        <RiseCards opts={[0, 3, 6.2, 12, 20]} value={st.rise} onChange={(rise) => setStagger({ rise })} />
                         <span className="rt-hint">字从多低的地方浮上来</span>
                       </div>
                       <div className="rt-field">

@@ -72,6 +72,18 @@ function staggerWork(el: HTMLElement, base: number) {
 
 /* true = 斜向扫光入场(index.html 的 .page-reveal);false = 依次出现(介绍段逐字浮现 + 首屏作品依次入场) */
 const REVEAL_ENTRANCE = ENTRANCE.mode === 'sweep';
+/* 逐段浮现(2026-10-25 用户:照 benji.org 的节奏):整段整段依次浮上来,见 simple.css .bk */
+const BLOCKS_ENTRANCE = ENTRANCE.mode === 'blocks';
+function setBlock(el: Element | null, delay: number) {
+  if (!el) return;
+  el.classList.add('bk');
+  (el as HTMLElement).style.setProperty('--bd', `${delay}ms`);
+}
+/* 介绍区有几段(字标那组算第 0 段,之后每段介绍、城市时间各一段),作品区从哪个时刻开始 */
+function blocksWorksAt() {
+  const n = document.querySelectorAll('.hero-intro > p').length + 1;
+  return n * ENTRANCE.blocks.step + ENTRANCE.blocks.sectionGap;
+}
 /* 调参面板里的预览(?embed=1):不再显示调节按钮 */
 const IS_EMBED = new URLSearchParams(location.search).has('embed');
 
@@ -148,6 +160,14 @@ export default function HomePage() {
     const root = document.documentElement;
     /* 斜向渐清入场(REVEAL_ENTRANCE):关掉介绍段逐字 / 按钮入场,首屏只靠扫光;要换回逐字入场把开关设成 false */
     if (REVEAL_ENTRANCE) root.classList.add('reveal-entrance');
+    /* 逐段浮现:顶上那组(字标、主题键)第 0 段,介绍区每段、城市时间依次隔一个段间隔;作品在 Feed 入场里排 */
+    if (BLOCKS_ENTRANCE) {
+      root.classList.add('blocks-entrance');
+      const { step } = ENTRANCE.blocks;
+      setBlock(document.querySelector('.site-logo-link'), 0);
+      document.querySelectorAll('.head-right > .head-links, .head-right > .theme-toggle').forEach((el) => setBlock(el, 0));
+      [...document.querySelectorAll('.hero-intro > p'), document.querySelector('.hero-loc')].forEach((el, i) => setBlock(el, (i + 1) * step));
+    }
     /* 本地开发:用调参面板存下的入场参数(线上用 simple.css 里的默认值) */
     if (import.meta.env.DEV) applyEntrance(ENTRANCE);
     root.classList.remove('app-loading');
@@ -263,6 +283,7 @@ export default function HomePage() {
            再过 NEXT_GAP 才开始逐字;队列跨批次累计(滚动后新进视口的也排在后面) */
         /* 上面的作品直接显示、不再补播入场(2026-10-23 用户:从底部往上划回去时,上面不要入场动画了):
            一下滑到底、或刷新后停在下面时,上面那些从没进过视口;某条出现时,把它上面还没出现的全部直接亮出来 */
+        let blockBatch = 0;
         const reveal = (el: HTMLElement) => {
           el.classList.add('in', 'instant');
           io.unobserve(el);
@@ -272,6 +293,14 @@ export default function HomePage() {
             if (!above.classList.contains('in')) reveal(above);
           });
           if (el.classList.contains('in')) return;
+          /* 逐段浮现:每条作品整条当一段浮上来(里面的逐字、封面入场都关掉);打开页面就在视口里的
+             接在介绍区后面,之后滚动进来的立刻开始,同一批之间隔两个段间隔 */
+          if (BLOCKS_ENTRANCE) {
+            const k = blockBatch++;
+            reveal(el);
+            setBlock(el, (now - t0 < 400 ? blocksWorksAt() : 0) + k * 2 * ENTRANCE.blocks.step);
+            return;
+          }
           /* 斜向渐清入场时,打开页面就在视口里的作品直接显示,交给扫光;之后滚动进来的照常依次浮现 */
           if (REVEAL_ENTRANCE && now - t0 < 400) {
             reveal(el);
