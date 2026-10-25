@@ -624,7 +624,7 @@ body.theme-vt *::after {
     gap: 24px;   /* 日期 → 标题 24(2026-10-24 用户;12 / 24 来回试过):日期 / 标题 / 简介三段等距 24,同介绍段段间距 */
 }
 .work-year {
-    color: var(--ink-2);
+    color: var(--ink);   /* 日期不用浅灰,用正文色(2026-10-25 用户) */
     font-size: var(--fs-sm);   /* 日期用小号 --fs-sm / --lh-sm(2026-10-25 用户) */
     line-height: var(--lh-sm);
     font-variant-numeric: tabular-nums;
