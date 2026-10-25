@@ -396,7 +396,14 @@ body.theme-vt *::after {
 .hero-intro b { font-weight: var(--fw-strong); color: var(--ink); }
 /* 电脑上文字段收窄到栏宽 80%(2026-10-23 用户:整栏读起来太宽);Feed 简介同宽(2026-10-23 用户),
    字标行与 Feed 标题、封面仍占满整栏 */
-@media (min-width: 601px) {
+/* 行宽上限 32em(约 576px,每行约 32 字)。单栏时只有窗口窄到放不下这么宽才铺满整栏、右边与封面对齐
+   (2026-10-25 用户:只有很窄的时候才撑满;试过单栏一律撑满,宽一点的窗口行太长) */
+@media (min-width: 601px) and (max-width: 1151px) {
+    .hero-intro,
+    .contact,
+    .work-summary { max-width: 32em; }
+}
+@media (min-width: 1152px) {
     .hero-intro,
     .contact,
     .work-summary { max-width: min(80%, 32em); }   /* 且每行最多约 32 字:宽屏右栏很宽时不再跟着拉宽(2026-10-23 用户) */
@@ -950,10 +957,12 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
        顶上只留主题键,靠右。.head-right 拆开,两组各自参与 .page 的纵向排序 */
     .head-right { display: contents; }
     /* 入场:主题键在最顶上,最先出;公众号 / 邮箱跟在时间行后面(--pills-d,HomePage 下发) */
-    .head-right .theme-toggle { order: 0; align-self: flex-end; margin-top: 24px; animation-delay: 0ms; }
+    /* 主题键悬浮在右上角、不占一行,字标才能和双栏一样离页面顶端 56(2026-10-25 用户:两种布局顶部间距一样) */
+    .page { position: relative; }
+    .head-right .theme-toggle { position: absolute; top: 24px; right: var(--gutter); animation-delay: 0ms; }
     /* 二维码弹层向下弹、左对齐到「公众号」,不顶出页面左缘 */
     .head-links .gzh-pop { left: 0; right: auto; }
-    .site-logo-link { order: 1; flex: none; width: 256px; max-width: 100%; margin-top: 71px; }   /* 顶栏到字标:肉眼 72(胶囊边框到字形顶;字形顶还有约 1px 空白)。2026-10-25 用户:三段间距看着一样 */
+    .site-logo-link { order: 1; flex: none; width: 256px; max-width: 100%; margin-top: 56px; }   /* 页面顶端到字标 56,同双栏(2026-10-25 用户) */
     /* 字标到介绍:肉眼 48(字标字形底 → 第一行字形顶;第一行上方自带约 8px 空白,所以盒子数值 39)。
        2026-10-25 用户:48 → 24 → 30(肉眼同段落 39)→ 肉眼 48 */
     .home-hero { padding-top: 39px; }

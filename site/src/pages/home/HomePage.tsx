@@ -148,11 +148,11 @@ export default function HomePage() {
     return () => window.removeEventListener('scroll', on);
   }, []);
 
-  /* 手机宽度(≤ 600)介绍段不按词组断行,逐字排满(2026-10-25 用户:右边参差,没有段落整块感);
-     电脑上仍按词组断句。跨过断点时跟着切换 */
-  const [phoneWrap, setPhoneWrap] = useState(() => window.matchMedia('(max-width: 600px)').matches);
+  /* 窗口很窄(< 640,介绍段放不下 32em 行宽、铺满整栏)时不按词组断行,逐字排满
+     (2026-10-25 用户:右边参差,没有段落整块感;只有很窄的时候才这样)。宽一点仍按词组断句。跨过断点时跟着切换 */
+  const [phoneWrap, setPhoneWrap] = useState(() => window.matchMedia('(max-width: 639px)').matches);
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 600px)');
+    const mq = window.matchMedia('(max-width: 639px)');
     const on = () => setPhoneWrap(mq.matches);
     mq.addEventListener('change', on);
     return () => mq.removeEventListener('change', on);
