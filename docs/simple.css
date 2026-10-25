@@ -514,31 +514,31 @@ body.theme-vt *::after {
     flex-direction: column;
     gap: 80px;   /* 作品之间 56 → 80(2026-10-23 用户) */
     position: relative;
-    /* 分割线上下肉眼都是 72(= 段间距 24 的 3 倍),和顶栏到字标一样(2026-10-25 用户:看着要一样)。
-       文字行自带留白:时间行字形下方约 6px、日期(18 / 32)字形上方约 8px,所以盒子数值减掉这部分。宽屏双栏没有这条线,另有覆盖 */
+    /* 时间行到第一条作品顶上的细线:肉眼 72(时间行字形下方自带约 6px,所以 66)。
+       2026-10-25 用户:分割线改成每个作品日期上方的线,和日期一组 */
     margin-top: 66px;
-    padding-top: 64px;
+    padding-top: 0;
     padding-bottom: 96px;
 }
-/* 介绍段与 Feed 之间的细分割线(2026-10-23 用户:删了又加回):排在入场队列里 ——
-   介绍段收尾后从左往右画出,随后第一条作品浮现(时机由 HomePage 挂 .in + --d) */
-.works::before {
+/* 每个作品日期上方一条细线,和日期是一组(2026-10-25 用户:原来介绍段与 Feed 之间那条分割线改成这样)。
+   通栏同作品宽;线到日期 12(肉眼约 20,比作品之间 80 近得多)。入场:跟这条作品一起从下往上浮现,
+   时机 = 这条作品第一个字开始的时刻(HomePage staggerWork 下发 --line-d) */
+.work::before {
     content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;   /* 通栏(2026-10-24 用户;之前只与左边那张卡同宽) */
+    display: block;
     height: 1px;
+    margin-bottom: 12px;
     background: var(--line);
-    /* 入场:从下往上浮现(2026-10-23 用户:与文字、封面同一种动效;原为从左往右画出) */
     opacity: 0;
     transform: translateY(24px);
     transition: opacity 0.7s var(--ease-soft), transform 0.7s var(--ease-soft);
-    transition-delay: var(--d, 0ms);
+    transition-delay: var(--line-d, 0ms);
 }
-.works.in::before { opacity: 1; transform: none; }
+.work.in::before { opacity: 1; transform: none; }
+.work.instant::before { transition: none; }
 @media (prefers-reduced-motion: reduce) {
-    .works::before { opacity: 1; transform: none; transition: none; }
+    .work::before { opacity: 1; transform: none; transition: none; }
+}
 }
 /* Feed 入场:每条作品进入视口时,日期 → 标题 → 简介逐字 soft-blur 浮现,节拍同介绍段
    (.hero-ch;2026-10-23 用户:原来三段整块浮现不够流畅);文字走完封面再从下往上浮现。
@@ -963,9 +963,9 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
     .head-links .gzh.open .gzh-pop { transform: none; }
     /* 右栏第一条与左上角字标顶边视觉对齐(2026-10-23 用户;原来对齐介绍段 --intro-top 201):
        字标线条顶在 y≈57;日期 16 / 28 的数字顶比行框顶低约 8.5px。算出来是 48,用户看过 52 → 定为 57(数字顶 ≈ 65.5) */
-    .works { grid-column: 2; margin-top: 0; padding-top: 57px; }
+    .works { grid-column: 2; margin-top: 0; padding-top: 56px; }   /* 细线顶 = 字标顶 56 */
     .intro-col .home-hero { padding-top: 0; }   /* 介绍段首行与右栏第一条作品顶部齐平 */
-    .works::before { display: none; }
+    /* 宽屏右栏:第一条作品顶上的细线与左上角字标顶边齐平(2026-10-25) */
     .hero-intro,
     .contact { max-width: none; }
 }

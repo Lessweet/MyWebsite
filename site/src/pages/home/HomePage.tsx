@@ -61,6 +61,7 @@ function staggerWork(el: HTMLElement, base: number) {
     last = base + i * INTRO_CHAR_STEP + line * INTRO_LINE_STEP;
     u.style.setProperty('--d', `${last}ms`);
   });
+  el.style.setProperty('--line-d', `${base}ms`);   /* 日期上方的细线和第一个字同时浮现 */
   el.style.setProperty('--cover-d', `${last + 120}ms`);
   return last + 120;   /* 封面开始浮现的时刻(相对 base 所在的时间零点) */
 }
