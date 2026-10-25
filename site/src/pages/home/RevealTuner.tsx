@@ -772,6 +772,7 @@ export default function RevealTuner() {
                     </span>
                   </div>
                 </div>
+                <div className="rt-side">
                 <div className="rt-controls">
                   <div className="rt-field">
                     <span className="rt-label">入场方式</span>
@@ -864,17 +865,23 @@ export default function RevealTuner() {
                       </div>
                     </>
                   )}
-                  <div className="rt-actions">
-                    <button className="rt-btn rt-primary" type="button" onClick={replay}>
-                      重播
-                    </button>
-                    <button className="rt-btn" type="button" onClick={resetMode}>
-                      恢复默认
-                    </button>
-                    <button className="rt-btn" type="button" onClick={copy}>
-                      {copied ? '已复制' : '复制参数'}
-                    </button>
-                  </div>
+                </div>
+                {/* 底栏固定在面板底部,参数区单独滚动(2026-10-25 用户:固定在底部、要有主次):
+                    复制参数是主操作(实心),重播次之(图标 + 文字),恢复默认最轻(灰色文字,放最左) */}
+                <div className="rt-actions">
+                  <button className="rt-link" type="button" onClick={resetMode}>
+                    恢复默认
+                  </button>
+                  <button className="rt-ghost" type="button" onClick={replay}>
+                    <svg aria-hidden="true" viewBox="0 0 16 16">
+                      <path d="M2.8 8a5.2 5.2 0 1 0 1.6-3.75M2.8 2.6v3.2H6" />
+                    </svg>
+                    重播
+                  </button>
+                  <button className="rt-btn rt-primary" type="button" onClick={copy}>
+                    {copied ? '已复制' : '复制参数'}
+                  </button>
+                </div>
                 </div>
               </div>
             </div>
