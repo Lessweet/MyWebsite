@@ -1579,7 +1579,7 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     --f: 0;
     position: relative;
     display: block;
-    width: 32px;   /* 正好是页面右内边距:最长的 20px + 右边 10px 留白 */
+    width: 32px;   /* 正好是页面右内边距:线最长 14px,右边留 10px */
     height: 12px;   /* 一条作品一根,线距 12 */
     cursor: pointer;
 }
@@ -1589,7 +1589,7 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     top: 50%;
     right: 10px;
     margin-top: -0.75px;
-    width: calc(8px + 12px * var(--f));   /* 平时 8,悬停那根 20(2026-10-25 用户:不要太长;原 30) */
+    width: calc(6px + 8px * var(--f));   /* 平时 6,悬停那根 14(2026-10-25 用户:再短一点;试过 8 → 30、8 → 20) */
     height: 1.5px;
     border-radius: 1px;
     background: var(--ink);
