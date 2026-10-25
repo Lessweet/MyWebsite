@@ -514,9 +514,10 @@ body.theme-vt *::after {
     flex-direction: column;
     gap: 80px;   /* 作品之间 56 → 80(2026-10-23 用户) */
     position: relative;
-    /* 分割线上下等距 = 介绍段段间距 24 的 3 倍(2026-10-24 用户;48 和 72 来回试过,更早是上 24、下 64)。宽屏双栏没有这条线,另有覆盖 */
-    margin-top: 72px;
-    padding-top: 72px;
+    /* 分割线上下肉眼都是 72(= 段间距 24 的 3 倍),和顶栏到字标一样(2026-10-25 用户:看着要一样)。
+       文字行自带留白:时间行字形下方约 6px、日期字形上方约 7px,所以盒子数值减掉这部分。宽屏双栏没有这条线,另有覆盖 */
+    margin-top: 66px;
+    padding-top: 65px;
     padding-bottom: 96px;
 }
 /* 介绍段与 Feed 之间的细分割线(2026-10-23 用户:删了又加回):排在入场队列里 ——
@@ -897,7 +898,7 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
     .head-links { flex-direction: row; align-items: center; gap: 4px; }   /* 胶囊之间 4,同宽屏左下角(2026-10-23 用户) */
     /* 二维码弹层向下弹、左对齐到「公众号」,不顶出页面左缘 */
     .head-links .gzh-pop { left: 0; right: auto; }
-    .site-logo-link { order: 1; flex: none; width: 256px; max-width: 100%; margin-top: 64px; }   /* 顶栏到字标 32 → 64(2026-10-25 用户:拉大 2 倍) */
+    .site-logo-link { order: 1; flex: none; width: 256px; max-width: 100%; margin-top: 71px; }   /* 顶栏到字标:肉眼 72(胶囊边框到字形顶;字形顶还有约 1px 空白)。2026-10-25 用户:三段间距看着一样 */
     /* 字标到介绍 48 → 24,同段间距:字标、介绍、时间成一组,组外是 64 / 72(2026-10-25 用户:红框内更像一组) */
     .home-hero { padding-top: 24px; }
     .intro-col { order: 2; }
