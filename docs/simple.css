@@ -1589,7 +1589,7 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     top: 50%;
     right: 10px;
     margin-top: -0.75px;
-    width: calc(6px + 8px * var(--f));   /* 平时 6,悬停那根 14(2026-10-25 用户:再短一点;试过 8 → 30、8 → 20) */
+    width: calc(8px + 6px * var(--f));   /* 平时 8,悬停那根 14(2026-10-25 用户;试过 8 → 30、8 → 20、6 → 14) */
     height: 1.5px;
     border-radius: 1px;
     background: var(--ink);
