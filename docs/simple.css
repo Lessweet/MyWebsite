@@ -1560,11 +1560,10 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     transition: left 0.15s ease;
 }
 
-/* ── 作品导航刻度(2026-10-25 用户:参考 Codex 对话导航栏的消息摘要刻度)──
-   宽屏双栏才有(WorkRail.tsx 只在 ≥ 1152 渲染):钉在页面最右边(右内边距 32 里)、视口垂直居中
-   (试过放两栏之间,用户:放中间肯定不合适)。刻度右对齐,变长时往左伸,预览卡往左弹。
-   每条作品一根刻度,之间三根短的小刻度当尺子;正在看的那条变长变深;
-   悬停 / 键盘聚焦在刻度右边浮出这条的日期、标题、简介,点击滚到这条 */
+/* ── 作品导航刻度(2026-10-25 用户:参考 Codex 对话导航栏的消息摘要刻度,照文章录屏)──
+   宽屏双栏才有(WorkRail.tsx 只在 ≥ 1152 渲染):钉在页面最右边(右内边距 32 里)、视口垂直居中。
+   一排短细线(一条作品一根),右对齐;--f(0–1)= 离光标多近,由脚本按距离写进每根线:
+   越近越长越亮,鼠标划过时像一个跟着走的鼓包。正在看的那块常亮。预览卡只有一张,往左弹。 */
 .work-rail {
     position: fixed;
     top: 50%;
@@ -1573,55 +1572,67 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 0;
+    padding: 8px 0;
     transform: translateY(-50%);
     animation: hero-fade-in 0.6s ease 0.8s both;   /* 等入场走完再淡出来,不抢首屏 */
 }
 .wr-tick {
-    position: relative;
+    --f: 0;
     display: grid;
     place-items: center end;
     width: 32px;
-    height: 20px;
-    padding-right: 10px;   /* 线只有 2px,点按区域留高一些 */
+    height: 12px;   /* 一条作品一根,线距 12 */
+    padding-right: 10px;
     cursor: pointer;
 }
 .wr-tick > i {
-    width: 12px;
-    height: 2px;
+    width: calc(8px + 22px * var(--f));   /* 平时 8,悬停那根 30(约 4 倍) */
+    height: 1.5px;
     border-radius: 1px;
-    background: var(--ink-2);
-    opacity: 0.45;
-    transition: width 0.2s var(--ease-soft), opacity 0.2s ease, background-color 0.2s ease;
+    background: var(--ink);
+    opacity: 0.28;
+    /* 跟手要快,但不能一跳一跳:短过渡把逐帧的变化抹平 */
+    transition: width 0.12s ease-out, opacity 0.12s ease-out;
 }
-.wr-tick:hover > i,
-.wr-tick:focus-visible > i { width: 18px; opacity: 0.8; }
-.wr-tick.is-active > i { width: 20px; opacity: 1; background: var(--ink); }
+.wr-tick.is-seen > i { opacity: 0.7; }   /* 正在屏幕里的那几块:深一档,不变长 */
+.work-rail.is-hover .wr-tick > i { opacity: 0.2; }   /* 悬停时其余的线都变浅 */
+.work-rail.is-hover .wr-tick.is-hot > i { opacity: 1; }
 .wr-tick:focus-visible { outline: none; }
-.wr-minor { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; padding: 2px 10px 2px 0; }
-.wr-minor i { width: 6px; height: 1.5px; border-radius: 1px; background: var(--ink-2); opacity: 0.22; }
-/* 预览卡:刻度左边,盖在作品栏右缘上 */
-.wr-card {
+/* 预览卡:刻度左边,只有一张,top 跟着悬停的线走、高度跟内容走,都用过渡。
+   外层 .wr-pop 管位置和显隐,右边留 6px 透明的「桥」,鼠标从刻度移到卡片上不会断;
+   卡片可以点,点了滚到那块内容(2026-10-25 用户) */
+.wr-pop {
     position: absolute;
-    top: 50%;
-    right: calc(100% + 4px);
-    width: 280px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 14px 16px;
+    top: 0;
+    right: 100%;
+    padding-right: 6px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(6px, -50%);
+    transition:
+        opacity 0.18s ease,
+        transform 0.22s var(--ease-soft),
+        top 0.22s var(--ease-soft);
+}
+.work-rail.is-hover .wr-pop { opacity: 1; pointer-events: auto; transform: translate(0, -50%); }
+.wr-card {
+    width: 264px;
+    overflow: hidden;
     border-radius: 12px;
     background: var(--site-bg);
     box-shadow: 0 0 0 1px var(--line), 0 12px 32px rgba(0, 0, 0, 0.12);
     color: var(--ink);
-    text-align: left;
-    opacity: 0;
-    pointer-events: none;
-    transform: translate(4px, -50%);
-    transition: opacity 0.18s ease, transform 0.18s var(--ease-soft);
+    cursor: pointer;
+    transition: height 0.22s var(--ease-soft), box-shadow 0.2s ease;
 }
-.wr-tick:hover .wr-card,
-.wr-tick:focus-visible .wr-card { opacity: 1; transform: translate(0, -50%); }
+.wr-card:hover { box-shadow: 0 0 0 1px var(--btn-line), 0 14px 36px rgba(0, 0, 0, 0.16); }
+.wr-card-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 14px 14px;
+    animation: hero-fade-in 0.18s ease both;   /* 换内容时淡入,不硬切 */
+}
 .wr-card small { color: var(--ink-2); font-size: 12px; line-height: 16px; }
 .wr-card b { font-size: 15px; line-height: 22px; font-weight: 600; }
 .wr-card span {
@@ -1634,7 +1645,20 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     line-height: 20px;
 }
 body.theme-dark .wr-card { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 12px 32px rgba(0, 0, 0, 0.5); }
+/* 点了刻度、滚到之后那块内容轻轻闪一下(文章作者:目标已在屏幕内时点了没反应,缺一个「你已经在这里了」) */
+.wr-ping {
+    position: absolute;
+    z-index: 3;
+    pointer-events: none;
+    animation: wr-ping 1.2s var(--ease-soft) both;
+}
+@keyframes wr-ping {
+    0%   { box-shadow: 0 0 0 0 transparent; background: transparent; }
+    20%  { box-shadow: 0 0 0 4px color-mix(in srgb, var(--ink) 14%, transparent); background: color-mix(in srgb, var(--ink) 4%, transparent); }
+    100% { box-shadow: 0 0 0 12px transparent; background: transparent; }
+}
 @media (prefers-reduced-motion: reduce) {
-    .work-rail { animation: none; }
-    .wr-tick > i, .wr-card { transition: none; }
+    .work-rail, .wr-card-inner { animation: none; }
+    .wr-ping { display: none; }
+    .wr-tick > i, .wr-pop, .wr-card { transition: none; }
 }
