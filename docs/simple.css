@@ -430,6 +430,9 @@ body.theme-vt *::after {
 }
 /* 介绍段里的字以前在 zoom 里,屏幕上的模糊 / 上浮是 6 × 2/3、9.3 × 2/3;去掉 zoom 后照原样写成屏幕值 */
 .hero-intro .hero-ch { --hero-char-blur: 4px; --hero-char-rise: 6.2px; }
+/* 首次入场播完后不再有入场动画(HomePage 挂 .intro-done):缩放窗口跨过断点时介绍段会按另一种断行重新生成,
+   不然这些字会再上浮一次(2026-10-25 用户) */
+.intro-done .hero-ch { animation: none; }
 @keyframes hero-soft-blur-in {
     from { opacity: 0; transform: translate3d(0, var(--hero-char-rise, 9.3px), 0); filter: blur(var(--hero-char-blur)); }
     /* 终点用 filter: none 而不是 blur(0):blur(0) 仍会让每个字单元成为绝对定位的包含块,
@@ -963,9 +966,9 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
     /* 二维码弹层向下弹、左对齐到「公众号」,不顶出页面左缘 */
     .head-links .gzh-pop { left: 0; right: auto; }
     .site-logo-link { order: 1; flex: none; width: 256px; max-width: 100%; margin-top: 56px; }   /* 页面顶端到字标 56,同双栏(2026-10-25 用户) */
-    /* 字标到介绍:肉眼 48(字标字形底 → 第一行字形顶;第一行上方自带约 8px 空白,所以盒子数值 39)。
-       2026-10-25 用户:48 → 24 → 30(肉眼同段落 39)→ 肉眼 48 */
-    .home-hero { padding-top: 39px; }
+    /* 字标到介绍:和双栏一样(盒子 48,肉眼约 57)。2026-10-25 用户:两种布局要一致,以双栏为准;
+       当天试过 24 / 30 / 39 都改回 */
+    .home-hero { padding-top: 48px; }
     .intro-col { order: 2; }
     .works { order: 4; }   /* 时间行 → 细线仍是 .works 的 margin-top 66(肉眼 72) */
 }
@@ -978,7 +981,7 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
 @media (min-width: 1152px) {
     .page {
         --left-x: 32px;   /* 左栏左边线 = 页面左内边距 */
-        --intro-top: 192px;   /* 介绍段顶:字标字形底 → 第一行字形顶肉眼 48,同单栏(2026-10-25 用户;原 201,肉眼 57) */
+        --intro-top: 201px;   /* 介绍段顶 = 字标顶 56 + 字标高 97 + 间距 48(肉眼约 57;单栏照这个对齐,2026-10-25 用户) */
         max-width: none;   /* 不再封顶 1600 居中:左右内边距在任何宽度都固定 32(2026-10-23 用户) */
         padding: 0 32px;   /* 左右内边距 56 → 32(2026-10-23 用户:可以更少) */
         display: grid;

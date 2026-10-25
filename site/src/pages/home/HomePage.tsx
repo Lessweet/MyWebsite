@@ -188,6 +188,12 @@ export default function HomePage() {
     });
     /* 公众号 / 邮箱(宽屏还有主题键)接在介绍区最后一行后面浮现(2026-10-23 用户:入场也要有动画) */
     document.documentElement.style.setProperty('--pills-d', `${introLastRef.current + 150}ms`);
+    /* 介绍区入场播完(最后一个字的延迟 + 动画 560ms)后挂 .intro-done:之后重新生成的字不再播入场 */
+    const done = window.setTimeout(
+      () => document.documentElement.classList.add('intro-done'),
+      introLastRef.current + 700,
+    );
+    return () => clearTimeout(done);
   }, []);
 
   /* Feed 入场(2026-10-23 用户):介绍段收尾 → 细分割线画出 → 作品依次逐字浮现(同批错开);
