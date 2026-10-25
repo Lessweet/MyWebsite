@@ -80,9 +80,9 @@ body.theme-dark {
     --logo-hatch-hover: #aeaeb2;
     --gray-500: #8e8e93;
 }
-@media (max-width: 600px) {
-    :root { --gutter: 16px; }
-}
+/* 左右内边距在 375 → 760 之间随窗口平滑过渡 16 → 32(2026-10-25):原来 600 / 601 一刀切 16 → 32,
+   拖动窗口经过 601 时文字区突然窄 32px,行尾的字往回跳。斜率 16/385 ≈ 0.042,文字区仍随窗口单调变宽 */
+:root { --gutter: clamp(16px, calc(16px + (100vw - 375px) * 0.04156), 32px); }
 
 *, *::before, *::after { box-sizing: border-box; }
 * { margin: 0; padding: 0; }
@@ -396,9 +396,10 @@ body.theme-vt *::after {
 .hero-intro b { font-weight: var(--fw-strong); color: var(--ink); }
 /* 电脑上文字段收窄到栏宽 80%(2026-10-23 用户:整栏读起来太宽);Feed 简介同宽(2026-10-23 用户),
    字标行与 Feed 标题、封面仍占满整栏 */
-/* 很窄(< 640,文字宽度跟着窗口变)时用普通断行:pretty 会为了避免末行太短而调整前面几行的断点,
-   拖动窗口时行尾的字会来回跳(2026-10-25 用户:窗口缩小过程中字一会出现一会消失) */
-@media (max-width: 639px) {
+/* 单栏一律用普通断行(配合 HomePage 单栏不按词组拆):pretty 会为了避免末行太短而调整前面几行的断点,
+   拖动窗口时行尾的字会来回跳;在 640 处换断行方式也会跳一下(2026-10-25 用户:窗口缩小过程中字一会出现一会消失)。
+   断行方式只在单栏 / 双栏切换时变,那时整页布局本来就变了 */
+@media (max-width: 1151px) {
     .hero-intro p,
     .work-summary { text-wrap: wrap; }
 }

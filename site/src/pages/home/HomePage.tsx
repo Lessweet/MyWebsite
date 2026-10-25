@@ -148,11 +148,11 @@ export default function HomePage() {
     return () => window.removeEventListener('scroll', on);
   }, []);
 
-  /* 窗口很窄(< 640,介绍段放不下 32em 行宽、铺满整栏)时不按词组断行,逐字排满
-     (2026-10-25 用户:右边参差,没有段落整块感;只有很窄的时候才这样)。宽一点仍按词组断句。跨过断点时跟着切换 */
-  const [phoneWrap, setPhoneWrap] = useState(() => window.matchMedia('(max-width: 639px)').matches);
+  /* 单栏(≤ 1151)介绍段不按词组断行,逐字排(2026-10-25 用户:右边参差;拖动窗口时字来回跳)。
+     原来只在 < 640 逐字,拖过 640 时断行方式一换,行尾的字就跳一下;现在只在单栏 / 双栏切换时变 */
+  const [phoneWrap, setPhoneWrap] = useState(() => window.matchMedia('(max-width: 1151px)').matches);
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 639px)');
+    const mq = window.matchMedia('(max-width: 1151px)');
     const on = () => setPhoneWrap(mq.matches);
     mq.addEventListener('change', on);
     return () => mq.removeEventListener('change', on);
