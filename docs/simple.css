@@ -858,10 +858,10 @@ body.theme-vt *::after {
 .showcase .sc-cover-skel { background: rgba(255, 255, 255, 0.7); }
 /* 两个容器各用自己的主题色做浅底(2026-10-23 用户:不要只用灰色):
    左 = 这篇文章报告体的主色珊瑚 #F77353(13% 浅色),右 = 黄色 #F2CF1D(16% 浅色,封面系统的黄,用户定);深色主题取同色压暗 */
-/* 2026-10-25 用户:两块背景改成作品集第 5、6 页的「效果背景」—— 深色底 + 一束柔光 + 颗粒
-   (Figma 2557:13735 / 2557:13981 导出,1280 宽 webp;浅色、深色主题都用这两张) */
-.sc-pane-article { background: #0B0B0B url(writing/assets/works/showcase/bg-article.webp) center / cover no-repeat; }
-.sc-pane-covers  { background: #0B0B0B url(writing/assets/works/showcase/bg-covers.webp) center / cover no-repeat; }
+/* 2026-10-25 试过作品集第 5、6 页的「效果背景」(深色底 + 柔光 + 颗粒,图还留在
+   writing/assets/works/showcase/bg-article.webp、bg-covers.webp),用户:黑色太重,改回统一浅灰 */
+.sc-pane-article { background: var(--sc-article-bg); }
+.sc-pane-covers  { background: var(--sc-covers-bg); }
 /* 流动渐变底(MeshBg.tsx)+ 同款 SVG 噪点叠层 */
 .mesh-bg, .mesh-grain {
     position: absolute;
