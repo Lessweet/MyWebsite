@@ -68,26 +68,69 @@ const MAILTO = `mailto:${MAIL}`;
 
 /* 公众号链接 + 二维码弹层:桌面 hover / 聚焦弹出,触屏点按切换,点页面别处收起。
    介绍段末句与右上角各用一份,各管各的开合 */
+/* 按钮整体弹一下(2026-10-25 用户:公众号 hover 时也要主题键那种弹性动效);
+   节奏与 nav-boot.js 里主题键收回时的弹跳一致。用 Web Animations,不碰 CSS 里的入场 animation */
+const BOUNCE: Keyframe[] = [
+  { transform: 'scale(1)' },
+  { transform: 'scale(0.82)', offset: 0.18 },
+  { transform: 'scale(1.12)', offset: 0.45 },
+  { transform: 'scale(0.96)', offset: 0.7 },
+  { transform: 'scale(1.02)', offset: 0.86 },
+  { transform: 'scale(1)' },
+];
+function bounce(el: HTMLElement | null) {
+  if (!el?.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  el.animate(BOUNCE, { duration: 620, easing: 'ease-out' });
+}
+
 function Gzh({ className = '', linkClass }: { className?: string; linkClass: string }) {
   const [open, setOpen] = useState(false);
+  /* 鼠标悬停也会显示弹层(CSS :hover);shut = 用户点了收起,盖过悬停 / 聚焦,鼠标移开后复位
+     (2026-10-25 用户:支持再次点击收起) */
+  const [hover, setHover] = useState(false);
+  const [shut, setShut] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     if (!open) return;
     const close = () => setOpen(false);
     document.addEventListener('click', close);
     return () => document.removeEventListener('click', close);
   }, [open]);
+  const shown = !shut && (open || hover);
   /* 弹层挂在这个单元里:单元入场动画带 filter/transform 会自成层叠上下文,
      .gzh 自身给 z-index,弹层才盖得住后面(折行后)的字 */
   return (
-    <span className={`${className} gzh${open ? ' open' : ''}`.trim()}>
+    <span
+      className={`${className} gzh${open && !shut ? ' open' : ''}${shut ? ' shut' : ''}`.trim()}
+      /* 只认真鼠标:触屏点按也会先发 mouseenter,不能当成悬停 */
+      onPointerEnter={(e) => {
+        if (e.pointerType !== 'mouse') return;
+        setHover(true);
+        bounce(btnRef.current);
+      }}
+      onPointerLeave={(e) => {
+        if (e.pointerType !== 'mouse') return;
+        setHover(false);
+        setShut(false);
+      }}
+    >
       <span className="gzh-anchor">
       <button
-        aria-expanded={open}
+        aria-expanded={shown}
         className={linkClass}
+        ref={btnRef}
         type="button"
         onClick={(e) => {
           e.stopPropagation();
-          setOpen((v) => !v);
+          if (shown) {
+            setOpen(false);
+            setShut(true);
+            btnRef.current?.blur();   /* 不然 :focus-within 又把弹层顶出来 */
+          } else {
+            setShut(false);
+            setOpen(true);
+            if (!hover) bounce(btnRef.current);   /* 触屏没有悬停,点开时弹一下 */
+          }
         }}
       >
         公众号
