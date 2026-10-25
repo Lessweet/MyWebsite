@@ -6,13 +6,14 @@
    - 预览卡只有一张,跟着光标上下滑,内容换时高度平滑过渡(文章作者嫌 Codex 的卡片尺寸硬切);
    - 点刻度或点预览卡(2026-10-25 用户:每个节点的小片可以点击直接定位)都滚到那块内容,到了以后那块轻轻闪一下(文章作者:目标已在屏幕内时点了没反应,缺个「你已经在这里了」);
    - 鼠标离开,焦点回到正在看的那条。
-   单栏没有悬停、也没地方放,不显示。样式见 simple.css .work-rail */
+   手机、平板(没有鼠标悬停)不显示;电脑上窗口窄成单列时也显示在右上角。样式见 simple.css .work-rail */
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 type Item = { date: string; title: string; summary?: string };
 type Block = { el: HTMLElement; work: number };
 
-const WIDE = '(min-width: 1152px)';
+/* 宽屏双栏;或者电脑上(有鼠标悬停)窗口窄成单列时也放在右上角(2026-10-25 用户)。手机、平板不显示 */
+const WIDE = '(min-width: 1152px), (hover: hover) and (pointer: fine) and (min-width: 601px)';
 
 /* 从页面上收集每条作品:滚动定位按它的文字块(.work-head)算,屏幕里有没有按整条作品算 */
 function collectBlocks(): Block[] {
@@ -24,6 +25,8 @@ export default function WorkRail({ items }: { items: Item[] }) {
   const [blocks, setBlocks] = useState<Block[]>([]);
   /* 正在看的那条(随滚动自动走) */
   const [current, setCurrent] = useState(0);
+  /* 单列时滑到作品区才出现(2026-10-25 用户:滑到 Feed 时出现并固定在右上角);双栏一打开就在 */
+  const [away, setAway] = useState(false);
   const [hover, setHover] = useState<number | null>(null);
   const [cardY, setCardY] = useState(0);
   const railRef = useRef<HTMLElement>(null);
@@ -62,6 +65,8 @@ export default function WorkRail({ items }: { items: Item[] }) {
       });
       if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) c = blocks.length - 1;
       setCurrent(c);
+      const twoCol = window.matchMedia('(min-width: 1152px)').matches;
+      setAway(!twoCol && blocks[0].el.getBoundingClientRect().top > vh * 0.4);
     };
     update();
     window.addEventListener('scroll', update, { passive: true });
@@ -107,8 +112,8 @@ export default function WorkRail({ items }: { items: Item[] }) {
     if (!b) return;
     const head = (el: HTMLElement) => el.querySelector<HTMLElement>('.work-head') ?? el;
     const docTop = (el: HTMLElement) => el.getBoundingClientRect().top + window.scrollY;
-    /* 让这条的日期落在第一条刚打开页面时的高度 */
-    const top = docTop(head(b.el)) - docTop(head(blocks[0].el));
+    /* 让这条的日期落在离窗口顶 57 处:和双栏时第一条刚打开页面的位置一样,单列时也照这个 */
+    const top = docTop(head(b.el)) - 57;
     const target = Math.max(0, Math.min(top, document.documentElement.scrollHeight - window.innerHeight));
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     /* 闪一下:在那块内容上临时盖一个圆角框做动画,不碰内容自己的入场动画 */
@@ -152,7 +157,8 @@ export default function WorkRail({ items }: { items: Item[] }) {
   return (
     <nav
       aria-label="作品导航"
-      className={`work-rail${hb ? ' is-hover' : ''}`}
+      aria-hidden={away || undefined}
+      className={`work-rail${hb ? ' is-hover' : ''}${away ? ' is-away' : ''}`}
       ref={railRef}
       onPointerLeave={onLeave}
       onPointerMove={(e) => {

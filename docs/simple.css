@@ -1558,7 +1558,7 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
 }
 
 /* ── 作品导航刻度(2026-10-25 用户:参考 Codex 对话导航栏的消息摘要刻度,照文章录屏)──
-   宽屏双栏才有(WorkRail.tsx 只在 ≥ 1152 渲染):钉在页面最右边(右内边距 32 里);
+   宽屏双栏,以及电脑上窄成单列时(WorkRail.tsx 按窗口和有无鼠标悬停决定渲染):钉在页面最右边(右内边距 32 里);
    第一根线和右栏第一条作品日期的字顶(≈ 65)对齐,滚动时不动(2026-10-25 用户:和 Feed 初始位置顶对齐,原来是垂直居中)。
    一排短细线(一条作品一根),右对齐;--f(0–1)= 离光标多近,由脚本按距离写进每根线:
    越近越长越亮,鼠标划过时像一个跟着走的鼓包。正在看的那块常亮。预览卡只有一张,往左弹。 */
@@ -1570,8 +1570,12 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    animation: hero-fade-in 0.6s ease 0.8s both;   /* 等入场走完再淡出来,不抢首屏 */
+    /* 等入场走完再淡出来,不抢首屏。只填充开始前(backwards):播完后让 .is-away 的透明度说了算 */
+    animation: hero-fade-in 0.6s ease 0.8s backwards;
+    transition: opacity 0.25s ease;
 }
+/* 单列时还没滑到作品区:藏起来(滑到 Feed 才出现,2026-10-25 用户) */
+.work-rail.is-away { opacity: 0; pointer-events: none; }
 .wr-tick {
     position: relative;
     display: block;
