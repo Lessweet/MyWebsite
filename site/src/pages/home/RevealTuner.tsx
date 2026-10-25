@@ -10,11 +10,10 @@ export type RevealParams = {
   ease: string; // EASES 的 key
   angle: number; // 度
   blur: number; // px
-  band: number; // % 模糊带
-  fade: number; // % 空白过渡
+  width: number; // % 过渡带宽度:分界线 → 纯空白
 };
 
-export const REVEAL_DEFAULTS: RevealParams = { dur: 3.6, ease: 'inout', angle: 135, blur: 18, band: 30, fade: 40 };
+export const REVEAL_DEFAULTS: RevealParams = { dur: 3.6, ease: 'inout', angle: 135, blur: 18, width: 70 };
 
 const EASES: Record<string, { label: string; css: string; pts: [number, number, number, number] }> = {
   inout: { label: '慢进慢出', css: 'cubic-bezier(0.45, 0, 0.2, 1)', pts: [0.45, 0, 0.2, 1] },
@@ -23,12 +22,20 @@ const EASES: Record<string, { label: string; css: string; pts: [number, number, 
   in: { label: '先慢后快', css: 'cubic-bezier(0.55, 0, 0.9, 0.4)', pts: [0.55, 0, 0.9, 0.4] },
 };
 
-const KEY = 'reveal-params-v2';   /* v1 存的是旧默认(模糊带 10%、空白 20%),换 key 不再读 */
+/* v3:模糊带 + 空白过渡合成一个过渡带宽度;v2 存的旧值换算过来(宽度 = 两段相加) */
+const KEY = 'reveal-params-v3';
+const OLD_KEY = 'reveal-params-v2';
 
 export function loadRevealParams(): RevealParams {
   try {
     const raw = localStorage.getItem(KEY);
     if (raw) return { ...REVEAL_DEFAULTS, ...JSON.parse(raw) };
+    const old = localStorage.getItem(OLD_KEY);
+    if (old) {
+      const { band, fade, ...rest } = JSON.parse(old);
+      const width = typeof band === 'number' && typeof fade === 'number' ? Math.min(100, Math.max(20, band + fade)) : REVEAL_DEFAULTS.width;
+      return { ...REVEAL_DEFAULTS, ...rest, width };
+    }
   } catch {
     /* 隐私模式等读不到就用默认 */
   }
@@ -41,8 +48,7 @@ export function applyRevealParams(p: RevealParams) {
   s.setProperty('--rv-ease', EASES[p.ease]?.css ?? EASES.inout.css);
   s.setProperty('--rv-angle', `${p.angle}deg`);
   s.setProperty('--rv-blur', `${p.blur}px`);
-  s.setProperty('--rv-band', `${p.band}%`);
-  s.setProperty('--rv-fade', `${p.fade}%`);
+  s.setProperty('--rv-width', `${p.width}%`);
 }
 
 /* ── 各参数各自合适的操作方式(2026-10-25 用户:不要每个都是滑块和按钮)── */
@@ -145,49 +151,40 @@ function BlurSwatches({ value, onChange }: { value: number; onChange: (v: number
   );
 }
 
-/* 过渡带:从分界线开始,模糊区 → 空白过渡区 → 纯空白;两个把手分别拖模糊带终点、空白过渡终点 */
-function TransitionBar({ band, fade, onChange }: { band: number; fade: number; onChange: (band: number, fade: number) => void }) {
+/* 过渡带宽度(2026-10-25 用户:两个把手的过渡带怎么调都有分割感)——
+   模糊和空白现在是一整段渐进过渡,只剩一个量:从分界线到纯空白有多宽。一个把手,拖它定终点;
+   条本身画出过渡的样子(内容色 → 底色,缓入缓出),越宽越柔,越窄越利落 */
+function WidthBar({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   const ref = useRef<HTMLDivElement>(null);
-  const drag = useRef<'band' | 'end' | null>(null);
-  const end = band + fade;
-  const at = (clientX: number) => {
+  const set = (clientX: number) => {
     const r = ref.current!.getBoundingClientRect();
-    return Math.round(Math.min(100, Math.max(0, ((clientX - r.left) / r.width) * 100)));
+    onChange(Math.round(Math.min(100, Math.max(20, ((clientX - r.left) / r.width) * 100))));
   };
-  const move = (clientX: number) => {
-    const v = at(clientX);
-    if (drag.current === 'band') {
-      const b = Math.min(Math.max(2, v), 60, end);
-      onChange(b, end - b);
-    } else if (drag.current === 'end') {
-      onChange(band, Math.max(0, Math.min(100, v) - band));
-    }
-  };
+  const w = value;
   return (
     <div className="rt-tbar-wrap">
       <div
+        aria-label="过渡带宽度"
+        aria-valuemax={100}
+        aria-valuemin={20}
+        aria-valuenow={value}
         className="rt-tbar"
         ref={ref}
+        role="slider"
         style={{
-          background: `linear-gradient(90deg, var(--rt-blur-start) 0%, var(--rt-blur-end) ${band}%, var(--site-bg) ${end}%, var(--site-bg) 100%)`,
+          background: `linear-gradient(90deg, var(--rt-blur-start) 0%, var(--rt-blur-start) ${w * 0.04}%, var(--rt-blur-end) ${w * 0.5}%, var(--site-bg) ${w}%, var(--site-bg) 100%)`,
         }}
         onPointerDown={(e) => {
-          const v = at(e.clientX);
-          drag.current = Math.abs(v - band) <= Math.abs(v - end) ? 'band' : 'end';
           e.currentTarget.setPointerCapture(e.pointerId);
-          move(e.clientX);
+          set(e.clientX);
         }}
-        onPointerMove={(e) => (e.buttons & 1 ? move(e.clientX) : (drag.current = null))}
-        onPointerUp={() => (drag.current = null)}
+        onPointerMove={(e) => e.buttons & 1 && set(e.clientX)}
       >
-        <i aria-label="模糊带终点" className="rt-tbar-h" style={{ left: `${band}%` }} />
-        <i aria-label="空白过渡终点" className="rt-tbar-h" style={{ left: `${end}%` }} />
+        <i className="rt-tbar-h" style={{ left: `${value}%` }} />
       </div>
       <div className="rt-tbar-legend">
         <span>分界线</span>
-        <span style={{ left: `${band / 2}%` }}>模糊 {band}%</span>
-        <span style={{ left: `${band + fade / 2}%` }}>过渡 {fade}%</span>
-        <span>空白</span>
+        <span className="rt-tbar-at" style={{ left: `${Math.min(value, 82)}%` }}>{value}% 处纯空白</span>
       </div>
     </div>
   );
@@ -320,7 +317,7 @@ export default function RevealTuner() {
   if (!slot) return null;
 
   const copy = async () => {
-    const text = `入场扫光参数:时长 ${p.dur}s,曲线 ${EASES[p.ease].label}(${EASES[p.ease].css}),角度 ${p.angle}°,模糊 ${p.blur}px,模糊带 ${p.band}%,空白过渡 ${p.fade}%`;
+    const text = `入场扫光参数:时长 ${p.dur}s,曲线 ${EASES[p.ease].label}(${EASES[p.ease].css}),角度 ${p.angle}°,模糊 ${p.blur}px,过渡带 ${p.width}%`;
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
@@ -428,12 +425,12 @@ export default function RevealTuner() {
                 <div className="rt-field">
                   <span className="rt-label">模糊强度</span>
                   <BlurSwatches value={p.blur} onChange={(v) => setP({ ...p, blur: v })} />
-                  <span className="rt-hint">分界线附近内容有多糊</span>
+                  <span className="rt-hint">过渡带里最糊的地方有多糊</span>
                 </div>
                 <div className="rt-field">
                   <span className="rt-label">过渡带</span>
-                  <TransitionBar band={p.band} fade={p.fade} onChange={(band, fade) => setP({ ...p, band, fade })} />
-                  <span className="rt-hint">拖两个把手:模糊区越窄分界越硬;过渡区越宽,空白来得越慢</span>
+                  <WidthBar value={p.width} onChange={(v) => setP({ ...p, width: v })} />
+                  <span className="rt-hint">从分界线到纯空白有多宽:越宽越柔,越窄越利落</span>
                 </div>
                 <div className="rt-field">
                   <span className="rt-label">速度曲线</span>

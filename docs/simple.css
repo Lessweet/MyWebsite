@@ -110,19 +110,22 @@ p, h2 { text-wrap: pretty; }   /* 段落 + 作品标题:避免最后一行只剩
 .app-loading .page { visibility: hidden; }
 
 /* ── 入场:斜向渐清(2026-10-25 用户:试一个类似的入场)──
-   全屏一层模糊 + 页面底色的白雾,蒙版是 135° 渐变;--reveal 从 -40% 走到 110%,
+   全屏几层渐进模糊 + 页面底色的白雾,蒙版是 135° 渐变;--reveal 从 -(过渡带+2%) 走到 102%,
    透明区从左上往右下推进,扫过的地方变清楚。首屏渲染出来(去掉 app-loading)才开始;播完 HomePage 移除这层。
    这时介绍段逐字动画、首屏作品入场都关掉(html.reveal-entrance),只靠这道扫光 */
 @property --reveal {
     syntax: '<percentage>';
-    inherits: true;   /* 两层伪元素都要读到动画中的值 */
+    inherits: true;   /* 里面每一层都要读到动画中的值 */
     initial-value: -72%;
 }
-/* 两层(2026-10-25 用户:一开始不要任何、就是空白):
-   ::before 模糊层 —— 分界线一过就开始糊(10% 内糊满);
-   ::after  底色层 —— 不透明的页面底色,在模糊层后面再 20% 才盖满。
-   从左上往右下依次是:扫过 = 清楚 → 分界线附近 = 模糊浮现 → 更远 = 纯空白。起点 -32% 时整屏都是底色 */
-/* 参数都走 --rv-* 变量,默认值写在这里;调参面板(RevealTuner,只在本地开发出现)改的是 <html> 上的同名变量 */
+/* 渐进过渡(2026-10-25 用户:过渡带无论怎么调都有分割感)——
+   旧做法是「一层固定强度的模糊淡入 + 一层底色淡入」首尾相接:过渡里看到的是清楚图叠一张糊图(重影),
+   两段交接处还有一道棱。现在换成:
+   - 5 层模糊(i),强度按 1/16 → 1 逐层翻倍,起点错开叠在一起,模糊是一点点变重的,不再是清楚 / 糊两张图叠化;
+   - 1 层底色(b),和后几层模糊重叠着慢慢盖上来,没有「模糊区结束、空白区开始」的交接线;
+   - 每层的蒙版都用缓入缓出的五个点(0 / 16% / 50% / 84% / 100%),不是直线渐变,起止处不出亮边。
+   每层用 --s / --e 写自己在过渡带里的起止(0 = 分界线,1 = 过渡带尽头 = 纯空白),--k 是模糊倍数。
+   整条过渡带宽 --rv-width(默认 70%,即原来的模糊 30 + 空白 40) */
 .page-reveal {
     position: fixed;
     inset: 0;
@@ -131,28 +134,34 @@ p, h2 { text-wrap: pretty; }   /* 段落 + 作品标题:避免最后一行只剩
     /* 时长 1.6 → 2.6 → 3.6s(2026-10-25 用户:再慢一点) */
     animation: page-reveal var(--rv-dur, 3.6s) var(--rv-ease, cubic-bezier(0.45, 0, 0.2, 1)) forwards;
 }
-.page-reveal::before,
-.page-reveal::after {
-    content: '';
+.page-reveal > * {
     position: absolute;
     inset: 0;
+    --a: calc(var(--reveal) + var(--rv-width, 70%) * var(--s));
+    --b: calc(var(--reveal) + var(--rv-width, 70%) * var(--e));
+    --m: linear-gradient(var(--rv-angle, 135deg),
+        transparent var(--a),
+        rgba(0, 0, 0, 0.16) calc(var(--a) * 0.75 + var(--b) * 0.25),
+        rgba(0, 0, 0, 0.5) calc(var(--a) * 0.5 + var(--b) * 0.5),
+        rgba(0, 0, 0, 0.84) calc(var(--a) * 0.25 + var(--b) * 0.75),
+        #000 var(--b));
+    -webkit-mask-image: var(--m);
+    mask-image: var(--m);
 }
-.page-reveal::before {
-    -webkit-backdrop-filter: blur(var(--rv-blur, 18px));
-    backdrop-filter: blur(var(--rv-blur, 18px));
-    -webkit-mask-image: linear-gradient(var(--rv-angle, 135deg), transparent var(--reveal), #000 calc(var(--reveal) + var(--rv-band, 30%)));
-    mask-image: linear-gradient(var(--rv-angle, 135deg), transparent var(--reveal), #000 calc(var(--reveal) + var(--rv-band, 30%)));
+.page-reveal > i {
+    -webkit-backdrop-filter: blur(calc(var(--rv-blur, 18px) * var(--k)));
+    backdrop-filter: blur(calc(var(--rv-blur, 18px) * var(--k)));
 }
-.page-reveal::after {
-    background: var(--site-bg);
-    -webkit-mask-image: linear-gradient(var(--rv-angle, 135deg), transparent calc(var(--reveal) + var(--rv-band, 30%)), #000 calc(var(--reveal) + var(--rv-band, 30%) + var(--rv-fade, 40%)));
-    mask-image: linear-gradient(var(--rv-angle, 135deg), transparent calc(var(--reveal) + var(--rv-band, 30%)), #000 calc(var(--reveal) + var(--rv-band, 30%) + var(--rv-fade, 40%)));
-}
+.page-reveal > i:nth-child(1) { --k: 0.0625; --s: 0;    --e: 0.2; }
+.page-reveal > i:nth-child(2) { --k: 0.125;  --s: 0.08; --e: 0.32; }
+.page-reveal > i:nth-child(3) { --k: 0.25;   --s: 0.18; --e: 0.46; }
+.page-reveal > i:nth-child(4) { --k: 0.5;    --s: 0.3;  --e: 0.62; }
+.page-reveal > i:nth-child(5) { --k: 1;      --s: 0.44; --e: 0.8; }
+.page-reveal > b { background: var(--site-bg); --s: 0.3; --e: 1; }
 .app-loading .page-reveal { animation-play-state: paused; }
-/* 起点 = -(模糊带 + 空白过渡 + 2%):第一帧整屏都是底色。
-   模糊带 10 → 30%、空白过渡 20 → 40%(2026-10-25 用户:能看出一条分界线,要柔和过渡) */
+/* 起点 = -(过渡带 + 2%):第一帧整屏都是底色 */
 @keyframes page-reveal {
-    from { --reveal: calc(0% - var(--rv-band, 30%) - var(--rv-fade, 40%) - 2%); }
+    from { --reveal: calc(0% - var(--rv-width, 70%) - 2%); }
     to   { --reveal: 102%; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1341,6 +1350,7 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
 .rt-tbar-legend span { position: absolute; white-space: nowrap; transform: translateX(-50%); }
 .rt-tbar-legend span:first-child { left: 0; transform: none; }
 .rt-tbar-legend span:last-child { right: 0; transform: none; }
+.rt-tbar-legend .rt-tbar-at { right: auto; transform: translateX(-50%); }
 
 .rt-eases { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 .rt-ease {
