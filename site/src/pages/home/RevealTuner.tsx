@@ -14,7 +14,8 @@ import {
 } from './entrance';
 import type { BlocksParams, EntranceConfig, EntranceMode, StaggerParams, SweepParams } from './entrance';
 
-/* ── 各参数各自合适的操作方式(2026-10-25 用户:不要每个都是滑块和按钮)── */
+/* ── 各参数各自合适的操作方式(2026-10-25 用户:不要每个都是滑块和按钮)──
+   控件下面不放解释文字、入场方式卡片不放说明(2026-10-25 用户:删除) */
 
 /* 数值:− / + 步进,可直接输入,下面一排常用值 */
 function Stepper({
@@ -382,7 +383,6 @@ function ModeCards({ value, onChange }: { value: EntranceMode; onChange: (v: Ent
             )}
           </svg>
           <b>{ENTRANCE_MODES[k].label}</b>
-          <small>{ENTRANCE_MODES[k].hint}</small>
         </button>
       ))}
     </div>
@@ -797,22 +797,18 @@ export default function RevealTuner() {
                       <div className="rt-field">
                         <span className="rt-label">时长</span>
                         <Stepper chips={[1.6, 2.6, 3.6, 5, 8]} label="时长(秒)" max={10} min={0.4} step={0.1} unit="s" value={sw.dur} onChange={(dur) => setSweep({ dur })} />
-                        <span className="rt-hint">扫光从开始到全部清楚用多久</span>
                       </div>
                       <div className="rt-field">
                         <span className="rt-label">方向</span>
                         <AngleDial value={sw.angle} onChange={(angle) => setSweep({ angle })} />
-                        <span className="rt-hint">拖动指针,指向扫光前进的方向</span>
                       </div>
                       <div className="rt-field">
                         <span className="rt-label">模糊强度</span>
                         <BlurSwatches opts={[0, 6, 12, 18, 28, 40]} scale={1 / 8} value={sw.blur} onChange={(blur) => setSweep({ blur })} />
-                        <span className="rt-hint">过渡带里最糊的地方有多糊</span>
                       </div>
                       <div className="rt-field">
                         <span className="rt-label">过渡带</span>
                         <WidthBar value={sw.width} onChange={(width) => setSweep({ width })} />
-                        <span className="rt-hint">从分界线到纯空白有多宽:越宽越柔,越窄越利落</span>
                       </div>
                       <div className="rt-field">
                         <span className="rt-label">速度曲线</span>
@@ -824,22 +820,18 @@ export default function RevealTuner() {
                       <div className="rt-field">
                         <span className="rt-label">节奏</span>
                         <Cascade p={bk} onChange={(step, sectionGap) => setBlocks({ step, sectionGap })} />
-                        <span className="rt-hint">左右拖:一段接一段的快慢;每根横条是一段从开始浮现到完全出现。双栏时右栏每条作品再拆成日期、标题、简介、每张封面,和左栏一起往下流,作品区前停顿 = 右栏比左栏晚起步多久</span>
                       </div>
                       <div className="rt-field">
                         <span className="rt-label">每段时长</span>
                         <Stepper chips={[300, 500, 700, 1000]} label="每段时长(毫秒)" max={2000} min={100} step={50} unit="ms" value={bk.dur} onChange={(dur) => setBlocks({ dur })} />
-                        <span className="rt-hint">每一段从透明到完全出现用多久</span>
                       </div>
                       <div className="rt-field">
                         <span className="rt-label">上浮距离</span>
                         <RiseCards opts={[0, 4, 8, 16, 24]} value={bk.rise} onChange={(rise) => setBlocks({ rise })} />
-                        <span className="rt-hint">每段从多低的地方浮上来</span>
                       </div>
                       <div className="rt-field">
                         <span className="rt-label">起始模糊</span>
                         <BlurSwatches opts={[0, 2, 4, 8]} scale={0.85} value={bk.blur} onChange={(blur) => setBlocks({ blur })} />
-                        <span className="rt-hint">刚出现时有多糊(benji.org 是 0,不糊)</span>
                       </div>
                       <div className="rt-field">
                         <span className="rt-label">速度曲线</span>
@@ -851,22 +843,18 @@ export default function RevealTuner() {
                       <div className="rt-field">
                         <span className="rt-label">节奏</span>
                         <Rhythm charStep={st.charStep} lineStep={st.lineStep} onChange={(charStep, lineStep) => setStagger({ charStep, lineStep })} />
-                        <span className="rt-hint">左右拖:字一个接一个出来的快慢;换行停顿:每到行尾多等一下</span>
                       </div>
                       <div className="rt-field">
                         <span className="rt-label">单字时长</span>
                         <Stepper chips={[300, 560, 900, 1200]} label="单字时长(毫秒)" max={3000} min={100} step={20} unit="ms" value={st.dur} onChange={(dur) => setStagger({ dur })} />
-                        <span className="rt-hint">每个字从出现到完全清楚用多久(作品区自动放慢到 1.6 倍)</span>
                       </div>
                       <div className="rt-field">
                         <span className="rt-label">起始模糊</span>
                         <BlurSwatches opts={[0, 2, 4, 8, 12]} scale={0.85} value={st.blur} onChange={(blur) => setStagger({ blur })} />
-                        <span className="rt-hint">字刚出现时有多糊(作品区是 3 倍)</span>
                       </div>
                       <div className="rt-field">
                         <span className="rt-label">上浮距离</span>
                         <RiseCards opts={[0, 3, 6.2, 12, 20]} value={st.rise} onChange={(rise) => setStagger({ rise })} />
-                        <span className="rt-hint">字从多低的地方浮上来</span>
                       </div>
                       <div className="rt-field">
                         <span className="rt-label">速度曲线</span>
@@ -875,7 +863,6 @@ export default function RevealTuner() {
                       <div className="rt-field">
                         <span className="rt-label">作品间隔</span>
                         <Stepper chips={[0, 200, 400, 800]} label="作品间隔(毫秒)" max={2000} min={0} step={50} unit="ms" value={st.workGap} onChange={(workGap) => setStagger({ workGap })} />
-                        <span className="rt-hint">上一条作品的封面开始出现后,下一条再等多久</span>
                       </div>
                     </>
                   )}
