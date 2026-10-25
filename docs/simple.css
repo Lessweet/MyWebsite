@@ -109,6 +109,38 @@ p, h2 { text-wrap: pretty; }   /* 段落 + 作品标题:避免最后一行只剩
 /* 首屏一起出现:HomePage 渲染完之前整页隐藏(见 site/index.html 顶部脚本与 HomePage 的 useLayoutEffect) */
 .app-loading .page { visibility: hidden; }
 
+/* ── 入场:斜向渐清(2026-10-25 用户:试一个类似的入场)──
+   全屏一层模糊 + 页面底色的白雾,蒙版是 135° 渐变;--reveal 从 -40% 走到 110%,
+   透明区从左上往右下推进,扫过的地方变清楚。首屏渲染出来(去掉 app-loading)才开始;播完 HomePage 移除这层。
+   这时介绍段逐字动画、首屏作品入场都关掉(html.reveal-entrance),只靠这道扫光 */
+@property --reveal {
+    syntax: '<percentage>';
+    inherits: false;
+    initial-value: -40%;
+}
+.page-reveal {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    pointer-events: none;
+    background: color-mix(in srgb, var(--site-bg) 72%, transparent);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    -webkit-mask-image: linear-gradient(135deg, transparent var(--reveal), #000 calc(var(--reveal) + 35%));
+    mask-image: linear-gradient(135deg, transparent var(--reveal), #000 calc(var(--reveal) + 35%));
+    animation: page-reveal 1.6s cubic-bezier(0.45, 0, 0.2, 1) forwards;
+}
+.app-loading .page-reveal { animation-play-state: paused; }
+@keyframes page-reveal {
+    from { --reveal: -40%; }
+    to   { --reveal: 110%; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .page-reveal { display: none; }
+}
+.reveal-entrance .hero-ch,
+.reveal-entrance .head-right .theme-toggle { animation: none; }
+
 /* ── 屏幕上下边缘渐进模糊(2026-10-25 用户:滑动时上下都要有,像 Safari 顶部那样,各浏览器打开都一样)──
    两条固定在视口上 / 下边缘的遮罩:两层 backdrop-filter(轻 / 重)各配一个渐变蒙版,越靠边越糊,
    再叠一层淡淡的页面底色,边缘的内容渐渐隐去。z-index 1:盖住随页面滚动的内容,

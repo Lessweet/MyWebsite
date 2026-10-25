@@ -66,6 +66,10 @@ function staggerWork(el: HTMLElement, base: number) {
   return last + 120;   /* 封面开始浮现的时刻(相对 base 所在的时间零点) */
 }
 
+/* 入场方式开关(2026-10-25 用户:试斜向渐清入场):true = 打开页面一道斜向扫光从左上揭到右下(index.html 的 .page-reveal);
+   false = 换回原来的介绍段逐字浮现 + 首屏作品依次入场 */
+const REVEAL_ENTRANCE = true;
+
 const MAIL = 'chentongrong1@gmail.com';
 const MAILTO = `mailto:${MAIL}`;
 
@@ -136,7 +140,24 @@ export default function HomePage() {
   /* 首屏一起出现(2026-10-23 用户):静态的字标 / 开关和 React 渲染的内容同一帧显示 ——
      index.html 先给 <html> 挂 app-loading 藏起整页,这里在首次渲染提交后、浏览器绘制前去掉 */
   useLayoutEffect(() => {
-    document.documentElement.classList.remove('app-loading');
+    const root = document.documentElement;
+    /* 斜向渐清入场(REVEAL_ENTRANCE):关掉介绍段逐字 / 按钮入场,首屏只靠扫光;要换回逐字入场把开关设成 false */
+    if (REVEAL_ENTRANCE) root.classList.add('reveal-entrance');
+    root.classList.remove('app-loading');
+  }, []);
+
+  /* 扫光播完就移除那层白雾(不移除的话透明蒙版下的 backdrop-filter 还会一直算) */
+  useEffect(() => {
+    const veil = document.querySelector<HTMLElement>('.page-reveal');
+    if (!veil) return;
+    if (!REVEAL_ENTRANCE || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      veil.remove();
+      return;
+    }
+    const done = () => veil.remove();
+    veil.addEventListener('animationend', done, { once: true });
+    const fallback = window.setTimeout(done, 2500);   /* 动画没跑(后台标签等)也别一直挂着 */
+    return () => clearTimeout(fallback);
   }, []);
 
   /* 页面滚动过才显示顶部边缘模糊(simple.css .edge-top),回到最顶上就收起 */
@@ -240,6 +261,11 @@ export default function HomePage() {
             if (!above.classList.contains('in')) reveal(above);
           });
           if (el.classList.contains('in')) return;
+          /* 斜向渐清入场时,打开页面就在视口里的作品直接显示,交给扫光;之后滚动进来的照常依次浮现 */
+          if (REVEAL_ENTRANCE && now - t0 < 400) {
+            reveal(el);
+            return;
+          }
           /* 严格依次(2026-10-24 用户:第一条没出完,第二条不能出来):每条都等上一条封面开始浮现、
              再过 NEXT_GAP 才开始。原来滚动进来的最多只等 300ms,首屏同时在视口里的两条会一起开始。
              滑得快时不空等:还在排队、但已经滑出视口上方的作品直接显示,不再挡着后面 */
