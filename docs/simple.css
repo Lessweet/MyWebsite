@@ -122,12 +122,14 @@ p, h2 { text-wrap: pretty; }   /* 段落 + 作品标题:避免最后一行只剩
    ::before 模糊层 —— 分界线一过就开始糊(10% 内糊满);
    ::after  底色层 —— 不透明的页面底色,在模糊层后面再 20% 才盖满。
    从左上往右下依次是:扫过 = 清楚 → 分界线附近 = 模糊浮现 → 更远 = 纯空白。起点 -32% 时整屏都是底色 */
+/* 参数都走 --rv-* 变量,默认值写在这里;调参面板(RevealTuner,只在本地开发出现)改的是 <html> 上的同名变量 */
 .page-reveal {
     position: fixed;
     inset: 0;
     z-index: 50;
     pointer-events: none;
-    animation: page-reveal 3.6s cubic-bezier(0.45, 0, 0.2, 1) forwards;   /* 1.6 → 2.6 → 3.6s(2026-10-25 用户:再慢一点) */
+    /* 时长 1.6 → 2.6 → 3.6s(2026-10-25 用户:再慢一点) */
+    animation: page-reveal var(--rv-dur, 3.6s) var(--rv-ease, cubic-bezier(0.45, 0, 0.2, 1)) forwards;
 }
 .page-reveal::before,
 .page-reveal::after {
@@ -136,19 +138,20 @@ p, h2 { text-wrap: pretty; }   /* 段落 + 作品标题:避免最后一行只剩
     inset: 0;
 }
 .page-reveal::before {
-    -webkit-backdrop-filter: blur(18px);
-    backdrop-filter: blur(18px);
-    -webkit-mask-image: linear-gradient(135deg, transparent var(--reveal), #000 calc(var(--reveal) + 10%));
-    mask-image: linear-gradient(135deg, transparent var(--reveal), #000 calc(var(--reveal) + 10%));
+    -webkit-backdrop-filter: blur(var(--rv-blur, 18px));
+    backdrop-filter: blur(var(--rv-blur, 18px));
+    -webkit-mask-image: linear-gradient(var(--rv-angle, 135deg), transparent var(--reveal), #000 calc(var(--reveal) + var(--rv-band, 10%)));
+    mask-image: linear-gradient(var(--rv-angle, 135deg), transparent var(--reveal), #000 calc(var(--reveal) + var(--rv-band, 10%)));
 }
 .page-reveal::after {
     background: var(--site-bg);
-    -webkit-mask-image: linear-gradient(135deg, transparent calc(var(--reveal) + 10%), #000 calc(var(--reveal) + 30%));
-    mask-image: linear-gradient(135deg, transparent calc(var(--reveal) + 10%), #000 calc(var(--reveal) + 30%));
+    -webkit-mask-image: linear-gradient(var(--rv-angle, 135deg), transparent calc(var(--reveal) + var(--rv-band, 10%)), #000 calc(var(--reveal) + var(--rv-band, 10%) + var(--rv-fade, 20%)));
+    mask-image: linear-gradient(var(--rv-angle, 135deg), transparent calc(var(--reveal) + var(--rv-band, 10%)), #000 calc(var(--reveal) + var(--rv-band, 10%) + var(--rv-fade, 20%)));
 }
 .app-loading .page-reveal { animation-play-state: paused; }
+/* 起点 = -(模糊带 + 空白过渡 + 2%):第一帧整屏都是底色 */
 @keyframes page-reveal {
-    from { --reveal: -32%; }
+    from { --reveal: calc(0% - var(--rv-band, 10%) - var(--rv-fade, 20%) - 2%); }
     to   { --reveal: 102%; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1098,4 +1101,91 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
     .work:first-child::before { display: none; }
     .hero-intro,
     .contact { max-width: none; }
+}
+
+/* ── 入场扫光调参面板(RevealTuner,只在本地开发出现;2026-10-25 用户)── */
+.rt-toggle {
+    position: relative;
+    flex: none;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    border: 1px solid var(--btn-line);
+    border-radius: 50%;
+    color: var(--ink);
+    transition: border-color 0.2s ease;
+}
+.rt-toggle:hover { border-color: rgba(0, 0, 0, 0.2); }
+body.theme-dark .rt-toggle:hover { border-color: rgba(255, 255, 255, 0.2); }
+.rt-toggle svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
+/* 单栏:主题键悬浮在右上角,调节按钮挨在它左边 */
+@media (max-width: 1151px) {
+    .rt-toggle { position: absolute; top: 24px; right: calc(var(--gutter) + 44px); }
+}
+.rt-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    background: var(--site-bg);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 20px;
+}
+.rt-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px var(--gutter);
+    border-bottom: 1px solid var(--line);
+}
+.rt-head h2 { font-size: 18px; line-height: 28px; font-weight: 600; }
+.rt-body {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 24px;
+    padding: 24px var(--gutter);
+}
+.rt-preview {
+    position: relative;
+    min-height: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--site-bg);
+}
+.rt-preview iframe {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    border: 0;
+    transform-origin: center;
+}
+.rt-controls { display: flex; flex-direction: column; gap: 20px; overflow: auto; }
+.rt-field { display: flex; flex-direction: column; gap: 6px; }
+.rt-label { display: flex; justify-content: space-between; }
+.rt-label b { font-weight: 500; font-variant-numeric: tabular-nums; }
+.rt-hint { color: var(--ink-2); font-size: 12px; line-height: 16px; }
+.rt-field input[type='range'] { width: 100%; accent-color: var(--ink); }
+.rt-seg, .rt-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.rt-actions { margin-top: auto; padding-top: 8px; }
+.rt-btn {
+    height: 32px;
+    padding: 0 14px;
+    border: 1px solid var(--btn-line);
+    border-radius: 16px;
+    color: var(--ink);
+    font-size: 14px;
+}
+.rt-btn:hover { border-color: rgba(0, 0, 0, 0.25); }
+.rt-btn[aria-pressed='true'],
+.rt-primary { background: var(--ink); border-color: var(--ink); color: var(--site-bg); }
+@media (max-width: 760px) {
+    .rt-body { grid-template-columns: 1fr; grid-template-rows: 42vh auto; overflow: auto; }
 }

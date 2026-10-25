@@ -10,6 +10,7 @@ import { createPortal } from 'react-dom';
 import NeteaseWordmark from './NeteaseWordmark';
 import { WORKS } from './works';
 import LocalTime from './LocalTime';
+import RevealTuner, { applyRevealParams, loadRevealParams } from './RevealTuner';
 
 /* 入场节拍(soft-blur-in):介绍段 + 联系方式共用一条队列,逐字从左到右连续错峰,
    换行 / 换段处多停一口。2026-10-23 用户嫌慢:15ms/120ms ×1.4(整段约 4.6s)
@@ -69,6 +70,8 @@ function staggerWork(el: HTMLElement, base: number) {
 /* 入场方式开关(2026-10-25 用户:试斜向渐清入场):true = 打开页面一道斜向扫光从左上揭到右下(index.html 的 .page-reveal);
    false = 换回原来的介绍段逐字浮现 + 首屏作品依次入场 */
 const REVEAL_ENTRANCE = true;
+/* 调参面板里的预览(?embed=1):不再显示调节按钮 */
+const IS_EMBED = new URLSearchParams(location.search).has('embed');
 
 const MAIL = 'chentongrong1@gmail.com';
 const MAILTO = `mailto:${MAIL}`;
@@ -143,6 +146,8 @@ export default function HomePage() {
     const root = document.documentElement;
     /* 斜向渐清入场(REVEAL_ENTRANCE):关掉介绍段逐字 / 按钮入场,首屏只靠扫光;要换回逐字入场把开关设成 false */
     if (REVEAL_ENTRANCE) root.classList.add('reveal-entrance');
+    /* 本地开发:用调参面板存下的扫光参数(线上用 simple.css 里的默认值) */
+    if (import.meta.env.DEV) applyRevealParams(loadRevealParams());
     root.classList.remove('app-loading');
   }, []);
 
@@ -431,6 +436,8 @@ export default function HomePage() {
         </div>
       </header>
       <LocalTime />
+      {/* 入场扫光调参面板:只在本地开发出现(2026-10-25 用户) */}
+      {import.meta.env.DEV && !IS_EMBED && <RevealTuner />}
       </div>
       <section className="works" aria-label="代表作">
         {WORKS.map((w) => (
