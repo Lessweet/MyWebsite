@@ -162,7 +162,7 @@ export default function HomePage() {
        文案变长后抢在介绍段之前) */
     const units = [
       ...p.querySelectorAll('.hero-ch'),
-      ...document.querySelectorAll('.contact .hero-ch, .hero-loc .hero-ch'),
+      ...document.querySelectorAll('.hero-loc .hero-ch'),   /* 联系方式那句现在在 .hero-intro 里,上一行已包含 */
     ];
     /* 单栏(< 1152)时主题键在页面最上面,先出;介绍段晚 PILLS_LEAD 再起步(2026-10-24 用户:从上到下)。
        公众号 / 邮箱单栏时在介绍区下方(2026-10-25),和宽屏一样接在介绍区最后一行后面 */
@@ -367,6 +367,25 @@ export default function HomePage() {
           {splitIntro('{现在我}{边设计、}{边实现，}{AI coding、}{skills、}{PR }{是常态。}{同时，}{把看到的、}{想到的，}{写成}{文章。}', !phoneWrap).map((t, i) => (
             <span key={`d${i}`} className="hero-ch">{t}</span>
           ))}
+          </p>
+          {/* 联系方式一句话(2026-10-25 用户:单栏时用这句,不用公众号 / 邮箱两个胶囊,底部不再挤一堆);
+              宽屏仍用左下角的胶囊,这句隐藏(simple.css) */}
+          <p className="contact">
+            {/* 链接和前面的字粘成一个单元(「在公众号」「通过邮箱联系我。」):折行时不会以链接开头,
+                否则链接左边的间距会让行首缩进一格 */}
+            {splitIntro('可以').map((t, i) => (   /* 去掉开头的「你」(2026-10-25 用户) */
+              <span key={`e${i}`} className="hero-ch">{t}</span>
+            ))}
+            {/* 外层给 z-index:每个字单元入场带 filter 会自成层叠上下文,二维码弹层才盖得住后面的字 */}
+            <span className="hero-ch gzh-wrap">
+              在<Gzh linkClass="text-link" />
+            </span>
+            {splitIntro('上找到我，或者').map((t, i) => (
+              <span key={`f${i}`} className="hero-ch">{t}</span>
+            ))}
+            <span className="hero-ch">
+              通过<a className="text-link" href={MAILTO} title={MAIL}>邮箱</a>联系我。
+            </span>
           </p>
         </div>
       </header>

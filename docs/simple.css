@@ -199,7 +199,11 @@ body.theme-dark .head-links .gzh.open .head-link { border-color: rgba(255, 255, 
 }
 
 /* ── 联系方式:介绍段下方的一句话;「公众号」「邮箱」正文色 + 灰色虚线下划线,可点 ── */
-.contact { margin-top: 24px; font-size: var(--fs-sm); line-height: var(--lh-sm); }   /* 与介绍段同号 14 / 24 */
+/* 2026-10-25 用户:放回这句(介绍区最后一段,同介绍段字号),代替公众号 / 邮箱两个胶囊;单栏、宽屏都用这句。
+   胶囊(#head-links)不再显示,宽屏左下角只剩主题键 */
+.head-links { display: none; }
+button.text-link { padding: 0; border: 0; background: none; font: inherit; cursor: pointer; }
+.gzh-wrap { position: relative; z-index: 2; }
 .text-link {
     color: var(--ink);
     text-decoration: underline dashed var(--mark);
@@ -896,8 +900,6 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
     .head-right { display: contents; }
     /* 入场:主题键在最顶上,最先出;公众号 / 邮箱跟在时间行后面(--pills-d,HomePage 下发) */
     .head-right .theme-toggle { order: 0; align-self: flex-end; margin-top: 24px; animation-delay: 0ms; }
-    /* 时间行 → 胶囊:肉眼约 39,同段落间距(时间行字形下方自带约 7px) */
-    .head-links { order: 3; margin-top: 32px; flex-direction: row; align-items: center; gap: 4px; }   /* 胶囊之间 4,同宽屏左下角(2026-10-23 用户) */
     /* 二维码弹层向下弹、左对齐到「公众号」,不顶出页面左缘 */
     .head-links .gzh-pop { left: 0; right: auto; }
     .site-logo-link { order: 1; flex: none; width: 256px; max-width: 100%; margin-top: 71px; }   /* 顶栏到字标:肉眼 72(胶囊边框到字形顶;字形顶还有约 1px 空白)。2026-10-25 用户:三段间距看着一样 */
@@ -905,7 +907,7 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
        2026-10-25 用户:48 → 24 → 30(肉眼同段落 39)→ 肉眼 48 */
     .home-hero { padding-top: 39px; }
     .intro-col { order: 2; }
-    .works { order: 4; margin-top: 72px; }   /* 胶囊 → 细线:肉眼 72(胶囊边框没有留白) */
+    .works { order: 4; }   /* 时间行 → 细线仍是 .works 的 margin-top 66(肉眼 72) */
 }
 
 /* ── 宽屏两栏(2026-10-23 用户:电脑上单列浪费空间)──
@@ -967,6 +969,9 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
        字标线条顶在 y≈57;日期 16 / 28 的数字顶比行框顶低约 8.5px。算出来是 48,用户看过 52 → 定为 57(数字顶 ≈ 65.5) */
     .works { grid-column: 2; margin-top: 0; padding-top: 57px; }   /* 日期 18 / 32 的字顶 ≈ 65,同之前用户看定的位置 */
     .intro-col .home-hero { padding-top: 0; }   /* 介绍段首行与右栏第一条作品顶部齐平 */
+    /* 左栏是自己滚动的固定面板:联系方式那句在面板底部,二维码弹层往下弹会被面板裁掉、还撑出可滚动的空白,
+       改为往上弹(2026-10-25) */
+    .hero-intro .gzh-pop { top: auto; bottom: calc(100% + 8px); transform: translate(-50%, 4px); }
     /* 双栏时不要第一个作品日期上方那条细线(2026-10-25 用户:双列时完整,不需要) */
     .work:first-child::before { display: none; }
     .hero-intro,
