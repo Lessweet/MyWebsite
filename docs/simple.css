@@ -1260,17 +1260,6 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     font-size: 13px;
 }
 .rt-link:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-.rt-ghost {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    height: 36px;
-    padding: 0 12px;
-    border-radius: 18px;
-    color: var(--ink);
-}
-.rt-ghost:hover { background: var(--fill); }
-.rt-ghost svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .rt-actions .rt-primary { height: 36px; padding: 0 18px; border-radius: 18px; font-weight: 500; }
 .rt-btn {
     height: 32px;

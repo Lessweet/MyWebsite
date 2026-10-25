@@ -578,10 +578,6 @@ export default function RevealTuner() {
       playFrom(isFinished() ? 0 : t.T);
     }
   };
-  const replay = () => {
-    if (!tl.current.offsets.size) return reload(false);
-    playFrom(0);
-  };
 
   /* 参数变了:存起来 + 写本页变量;预览页能直接改的(CSS 变量)直接改,不重新加载
      (2026-10-25 用户:暂停之后调参要直接看暂停那一帧,不要从头开始)。
@@ -885,16 +881,11 @@ export default function RevealTuner() {
                   )}
                 </div>
                 {/* 底栏固定在面板底部,参数区单独滚动(2026-10-25 用户:固定在底部、要有主次):
-                    复制参数是主操作(实心),重播次之(图标 + 文字),恢复默认最轻(灰色文字,放最左) */}
+                    复制参数是主操作(实心),恢复默认最轻(灰色文字,放最左)。
+                    重播按钮去掉了(用户:多余,左边播放键播完再点就是从头播) */}
                 <div className="rt-actions">
                   <button className="rt-link" type="button" onClick={resetMode}>
                     恢复默认
-                  </button>
-                  <button className="rt-ghost" type="button" onClick={replay}>
-                    <svg aria-hidden="true" viewBox="0 0 16 16">
-                      <path d="M2.8 8a5.2 5.2 0 1 0 1.6-3.75M2.8 2.6v3.2H6" />
-                    </svg>
-                    重播
                   </button>
                   <button className="rt-btn rt-primary" type="button" onClick={copy}>
                     {copied ? '已复制' : '复制参数'}
