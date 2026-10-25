@@ -465,6 +465,9 @@ export default function RevealTuner() {
     const t = tl.current;
     const fresh = doc.getAnimations().filter((a) => {
       if (t.offsets.has(a) || a.startTime == null) return false;
+      /* 作品导航刻度自己的淡入不算入场 */
+      const target = (a.effect as KeyframeEffect | null)?.target;
+      if (target?.closest?.('.work-rail')) return false;
       return a.effect?.getComputedTiming().iterations !== Infinity;
     });
     if (fresh.length) {

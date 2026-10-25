@@ -11,6 +11,7 @@ import NeteaseWordmark from './NeteaseWordmark';
 import { WORKS } from './works';
 import LocalTime from './LocalTime';
 import RevealTuner from './RevealTuner';
+import WorkRail from './WorkRail';
 import { applyEntrance, currentEntrance } from './entrance';
 
 /* 入场方式和参数(2026-10-25 用户:调参台里选用哪一种入场、各自调参数):线上固定默认,本地开发按调参面板存的 */
@@ -493,6 +494,8 @@ export default function HomePage() {
       <LocalTime />
       {/* 入场扫光调参面板:只在本地开发出现(2026-10-25 用户) */}
       {import.meta.env.DEV && !IS_EMBED && <RevealTuner />}
+      {/* 作品导航刻度:宽屏双栏才出现(2026-10-25 用户:参考 Codex 的消息摘要刻度) */}
+      <WorkRail items={WORKS} />
       </div>
       <section className="works" aria-label="代表作">
         {WORKS.map((w) => (

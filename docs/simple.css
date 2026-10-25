@@ -1559,3 +1559,82 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     box-shadow: 0 0 0 2px var(--fill);
     transition: left 0.15s ease;
 }
+
+/* ── 作品导航刻度(2026-10-25 用户:参考 Codex 对话导航栏的消息摘要刻度)──
+   宽屏双栏才有(WorkRail.tsx 只在 ≥ 1152 渲染):钉在页面最右边(右内边距 32 里)、视口垂直居中
+   (试过放两栏之间,用户:放中间肯定不合适)。刻度右对齐,变长时往左伸,预览卡往左弹。
+   每条作品一根刻度,之间三根短的小刻度当尺子;正在看的那条变长变深;
+   悬停 / 键盘聚焦在刻度右边浮出这条的日期、标题、简介,点击滚到这条 */
+.work-rail {
+    position: fixed;
+    top: 50%;
+    right: 0;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0;
+    transform: translateY(-50%);
+    animation: hero-fade-in 0.6s ease 0.8s both;   /* 等入场走完再淡出来,不抢首屏 */
+}
+.wr-tick {
+    position: relative;
+    display: grid;
+    place-items: center end;
+    width: 32px;
+    height: 20px;
+    padding-right: 10px;   /* 线只有 2px,点按区域留高一些 */
+    cursor: pointer;
+}
+.wr-tick > i {
+    width: 12px;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--ink-2);
+    opacity: 0.45;
+    transition: width 0.2s var(--ease-soft), opacity 0.2s ease, background-color 0.2s ease;
+}
+.wr-tick:hover > i,
+.wr-tick:focus-visible > i { width: 18px; opacity: 0.8; }
+.wr-tick.is-active > i { width: 20px; opacity: 1; background: var(--ink); }
+.wr-tick:focus-visible { outline: none; }
+.wr-minor { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; padding: 2px 10px 2px 0; }
+.wr-minor i { width: 6px; height: 1.5px; border-radius: 1px; background: var(--ink-2); opacity: 0.22; }
+/* 预览卡:刻度左边,盖在作品栏右缘上 */
+.wr-card {
+    position: absolute;
+    top: 50%;
+    right: calc(100% + 4px);
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: var(--site-bg);
+    box-shadow: 0 0 0 1px var(--line), 0 12px 32px rgba(0, 0, 0, 0.12);
+    color: var(--ink);
+    text-align: left;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(4px, -50%);
+    transition: opacity 0.18s ease, transform 0.18s var(--ease-soft);
+}
+.wr-tick:hover .wr-card,
+.wr-tick:focus-visible .wr-card { opacity: 1; transform: translate(0, -50%); }
+.wr-card small { color: var(--ink-2); font-size: 12px; line-height: 16px; }
+.wr-card b { font-size: 15px; line-height: 22px; font-weight: 600; }
+.wr-card span {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+    color: var(--ink-2);
+    font-size: 13px;
+    line-height: 20px;
+}
+body.theme-dark .wr-card { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 12px 32px rgba(0, 0, 0, 0.5); }
+@media (prefers-reduced-motion: reduce) {
+    .work-rail { animation: none; }
+    .wr-tick > i, .wr-card { transition: none; }
+}
