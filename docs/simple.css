@@ -116,24 +116,25 @@ p, h2 { text-wrap: pretty; }   /* 段落 + 作品标题:避免最后一行只剩
 @property --reveal {
     syntax: '<percentage>';
     inherits: false;
-    initial-value: -40%;
+    initial-value: -12%;
 }
 .page-reveal {
     position: fixed;
     inset: 0;
     z-index: 50;
     pointer-events: none;
-    background: color-mix(in srgb, var(--site-bg) 72%, transparent);
-    -webkit-backdrop-filter: blur(14px);
-    backdrop-filter: blur(14px);
-    -webkit-mask-image: linear-gradient(135deg, transparent var(--reveal), #000 calc(var(--reveal) + 35%));
-    mask-image: linear-gradient(135deg, transparent var(--reveal), #000 calc(var(--reveal) + 35%));
+    /* 过渡带 35% → 10%、雾更浓更糊:清楚 / 模糊之间要有明显的斜向分界(2026-10-25 用户) */
+    background: color-mix(in srgb, var(--site-bg) 80%, transparent);
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+    -webkit-mask-image: linear-gradient(135deg, transparent var(--reveal), #000 calc(var(--reveal) + 10%));
+    mask-image: linear-gradient(135deg, transparent var(--reveal), #000 calc(var(--reveal) + 10%));
     animation: page-reveal 3.6s cubic-bezier(0.45, 0, 0.2, 1) forwards;   /* 1.6 → 2.6 → 3.6s(2026-10-25 用户:再慢一点) */
 }
 .app-loading .page-reveal { animation-play-state: paused; }
 @keyframes page-reveal {
-    from { --reveal: -40%; }
-    to   { --reveal: 110%; }
+    from { --reveal: -12%; }
+    to   { --reveal: 102%; }
 }
 @media (prefers-reduced-motion: reduce) {
     .page-reveal { display: none; }
