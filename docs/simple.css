@@ -128,7 +128,7 @@ p, h2 { text-wrap: pretty; }   /* 段落 + 作品标题:避免最后一行只剩
     backdrop-filter: blur(14px);
     -webkit-mask-image: linear-gradient(135deg, transparent var(--reveal), #000 calc(var(--reveal) + 35%));
     mask-image: linear-gradient(135deg, transparent var(--reveal), #000 calc(var(--reveal) + 35%));
-    animation: page-reveal 1.6s cubic-bezier(0.45, 0, 0.2, 1) forwards;
+    animation: page-reveal 2.6s cubic-bezier(0.45, 0, 0.2, 1) forwards;   /* 1.6 → 2.6s(2026-10-25 用户:再慢一点) */
 }
 .app-loading .page-reveal { animation-play-state: paused; }
 @keyframes page-reveal {

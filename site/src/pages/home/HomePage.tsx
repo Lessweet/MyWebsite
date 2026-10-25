@@ -156,7 +156,7 @@ export default function HomePage() {
     }
     const done = () => veil.remove();
     veil.addEventListener('animationend', done, { once: true });
-    const fallback = window.setTimeout(done, 2500);   /* 动画没跑(后台标签等)也别一直挂着 */
+    const fallback = window.setTimeout(done, 3500);   /* 动画没跑(后台标签等)也别一直挂着 */
     return () => clearTimeout(fallback);
   }, []);
 
