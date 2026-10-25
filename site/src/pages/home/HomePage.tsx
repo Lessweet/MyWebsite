@@ -161,6 +161,8 @@ export default function HomePage() {
       veil.remove();
       return;
     }
+    /* 调参面板的预览里留着这层:播完也能拖进度条往回看 */
+    if (import.meta.env.DEV && IS_EMBED) return;
     const done = () => veil.remove();
     veil.addEventListener('animationend', done, { once: true });
     const fallback = window.setTimeout(done, 4500);   /* 动画没跑(后台标签等)也别一直挂着 */

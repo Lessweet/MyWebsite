@@ -1224,6 +1224,138 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     backdrop-filter: blur(8px);
     box-shadow: 0 0 0 1px var(--line);
 }
-.rt-track { flex: 1; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
-.rt-track span { display: block; height: 100%; background: var(--ink); }
+/* 进度条可拖动:点击区域加高到 20,视觉上仍是 4px 细条 + 一个圆点把手 */
+.rt-track {
+    position: relative;
+    flex: 1;
+    height: 20px;
+    cursor: pointer;
+    touch-action: none;
+    background: linear-gradient(var(--line), var(--line)) center / 100% 4px no-repeat;
+    border-radius: 2px;
+}
+.rt-track span {
+    position: absolute;
+    left: 0;
+    top: 8px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--ink);
+}
+.rt-track i {
+    position: absolute;
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    margin: -6px 0 0 -6px;
+    border-radius: 50%;
+    background: var(--ink);
+    box-shadow: 0 0 0 3px var(--site-bg);
+}
+.rt-play {
+    flex: none;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink);
+}
+.rt-play svg { width: 16px; height: 16px; fill: currentColor; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .rt-time { font-size: 12px; line-height: 16px; color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* 调参面板:各参数的专属控件(2026-10-25 用户:不要每个都是滑块和按钮) */
+.rt-stepper-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.rt-stepper {
+    display: inline-flex;
+    align-items: center;
+    height: 36px;
+    border: 1px solid var(--btn-line);
+    border-radius: 18px;
+    overflow: hidden;
+}
+.rt-stepper button { width: 36px; height: 100%; font-size: 18px; color: var(--ink); }
+.rt-stepper button:hover { background: var(--fill); }
+.rt-stepper input {
+    width: 44px;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    outline: none;
+}
+.rt-stepper span { padding: 0 4px 0 2px; color: var(--ink-2); }
+.rt-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.rt-chip { height: 28px; padding: 0 10px; border-radius: 14px; color: var(--ink-2); font-size: 13px; }
+.rt-chip:hover { color: var(--ink); background: var(--fill); }
+.rt-chip[aria-pressed='true'] { color: var(--ink); background: var(--fill); font-weight: 500; }
+
+.rt-dial-row { display: flex; align-items: center; gap: 16px; }
+.rt-dial { width: 80px; height: 80px; flex: none; cursor: grab; touch-action: none; }
+.rt-dial-ring { fill: var(--fill); stroke: var(--btn-line); }
+.rt-dial-tick { stroke: var(--ink-2); stroke-width: 1.2; stroke-linecap: round; }
+.rt-dial-needle { stroke: var(--ink); stroke-width: 2.5; stroke-linecap: round; }
+.rt-dial-knob { fill: var(--ink); }
+.rt-dial-val { display: flex; flex-direction: column; }
+.rt-dial-val b { font-size: 20px; line-height: 28px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.rt-dial-val span { color: var(--ink-2); }
+
+.rt-swatches { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.rt-swatch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 0 6px;
+    border: 1px solid var(--btn-line);
+    border-radius: 10px;
+    color: var(--ink);
+}
+.rt-swatch span { font-size: 15px; font-weight: 500; line-height: 20px; }
+.rt-swatch small { font-size: 11px; line-height: 14px; color: var(--ink-2); }
+.rt-swatch[aria-pressed='true'] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+
+.rt-tbar-wrap { --rt-blur-start: color-mix(in srgb, var(--ink) 55%, var(--site-bg)); --rt-blur-end: color-mix(in srgb, var(--ink) 14%, var(--site-bg)); }
+.rt-tbar {
+    position: relative;
+    height: 32px;
+    border-radius: 8px;
+    box-shadow: inset 0 0 0 1px var(--btn-line);
+    cursor: ew-resize;
+    touch-action: none;
+}
+.rt-tbar-h {
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    width: 4px;
+    margin-left: -2px;
+    border-radius: 2px;
+    background: var(--ink);
+    box-shadow: 0 0 0 2px var(--site-bg);
+}
+.rt-tbar-legend { position: relative; height: 18px; margin-top: 6px; font-size: 12px; line-height: 18px; color: var(--ink-2); }
+.rt-tbar-legend span { position: absolute; white-space: nowrap; transform: translateX(-50%); }
+.rt-tbar-legend span:first-child { left: 0; transform: none; }
+.rt-tbar-legend span:last-child { right: 0; transform: none; }
+
+.rt-eases { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.rt-ease {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 4px 8px;
+    border: 1px solid var(--btn-line);
+    border-radius: 10px;
+    color: var(--ink);
+    font-size: 12px;
+}
+.rt-ease svg { width: 56px; height: 36px; overflow: visible; }
+.rt-ease-axis { fill: none; stroke: var(--line); stroke-width: 1; }
+.rt-ease-curve { fill: none; stroke: var(--ink-2); stroke-width: 2; stroke-linecap: round; }
+.rt-ease[aria-pressed='true'] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.rt-ease[aria-pressed='true'] .rt-ease-curve { stroke: var(--ink); }

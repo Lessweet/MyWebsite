@@ -16,11 +16,11 @@ export type RevealParams = {
 
 export const REVEAL_DEFAULTS: RevealParams = { dur: 3.6, ease: 'inout', angle: 135, blur: 18, band: 30, fade: 40 };
 
-const EASES: Record<string, { label: string; css: string }> = {
-  inout: { label: '慢进慢出', css: 'cubic-bezier(0.45, 0, 0.2, 1)' },
-  linear: { label: '匀速', css: 'linear' },
-  out: { label: '先快后慢', css: 'cubic-bezier(0.22, 1, 0.36, 1)' },
-  in: { label: '先慢后快', css: 'cubic-bezier(0.55, 0, 0.9, 0.4)' },
+const EASES: Record<string, { label: string; css: string; pts: [number, number, number, number] }> = {
+  inout: { label: '慢进慢出', css: 'cubic-bezier(0.45, 0, 0.2, 1)', pts: [0.45, 0, 0.2, 1] },
+  linear: { label: '匀速', css: 'linear', pts: [0, 0, 1, 1] },
+  out: { label: '先快后慢', css: 'cubic-bezier(0.22, 1, 0.36, 1)', pts: [0.22, 1, 0.36, 1] },
+  in: { label: '先慢后快', css: 'cubic-bezier(0.55, 0, 0.9, 0.4)', pts: [0.55, 0, 0.9, 0.4] },
 };
 
 const KEY = 'reveal-params-v2';   /* v1 存的是旧默认(模糊带 10%、空白 20%),换 key 不再读 */
@@ -45,13 +45,176 @@ export function applyRevealParams(p: RevealParams) {
   s.setProperty('--rv-fade', `${p.fade}%`);
 }
 
-const SLIDERS: { key: keyof RevealParams; label: string; min: number; max: number; step: number; unit: string; hint: string }[] = [
-  { key: 'dur', label: '时长', min: 0.6, max: 8, step: 0.1, unit: 's', hint: '扫光从左上走到右下用多久' },
-  { key: 'angle', label: '角度', min: 90, max: 180, step: 5, unit: '°', hint: '90 从左往右,135 斜向,180 从上往下' },
-  { key: 'blur', label: '模糊强度', min: 0, max: 40, step: 1, unit: 'px', hint: '分界线附近内容有多糊' },
-  { key: 'band', label: '模糊带宽度', min: 2, max: 40, step: 1, unit: '%', hint: '越小分界越硬,越大越柔' },
-  { key: 'fade', label: '空白过渡', min: 0, max: 60, step: 1, unit: '%', hint: '模糊之后多远变成纯空白' },
-];
+/* ── 各参数各自合适的操作方式(2026-10-25 用户:不要每个都是滑块和按钮)── */
+
+/* 时长:− / + 步进(0.1s),可直接输入,下面几个常用时长快捷选 */
+function DurationField({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const clamp = (v: number) => Math.round(Math.min(10, Math.max(0.4, v)) * 10) / 10;
+  return (
+    <div className="rt-stepper-row">
+      <div className="rt-stepper">
+        <button aria-label="减 0.1 秒" type="button" onClick={() => onChange(clamp(value - 0.1))}>−</button>
+        <input
+          aria-label="时长(秒)"
+          inputMode="decimal"
+          value={value}
+          onChange={(e) => {
+            const v = Number(e.target.value);
+            if (!Number.isNaN(v) && e.target.value !== '') onChange(clamp(v));
+          }}
+        />
+        <span>s</span>
+        <button aria-label="加 0.1 秒" type="button" onClick={() => onChange(clamp(value + 0.1))}>+</button>
+      </div>
+      <div className="rt-chips">
+        {[1.6, 2.6, 3.6, 5, 8].map((v) => (
+          <button aria-pressed={value === v} className="rt-chip" key={v} type="button" onClick={() => onChange(v)}>
+            {v}s
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* 角度:圆形方向盘,指针指向扫光前进的方向;拖动或点击设置,吸附到 5° */
+function AngleDial({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const ref = useRef<SVGSVGElement>(null);
+  const set = (clientX: number, clientY: number) => {
+    const r = ref.current!.getBoundingClientRect();
+    const dx = clientX - (r.left + r.width / 2);
+    const dy = clientY - (r.top + r.height / 2);
+    let deg = (Math.atan2(dx, -dy) * 180) / Math.PI;
+    if (deg < 0) deg += 360;
+    onChange((Math.round(deg / 5) * 5) % 360);
+  };
+  const rad = (value * Math.PI) / 180;
+  const x = 40 + Math.sin(rad) * 28;
+  const y = 40 - Math.cos(rad) * 28;
+  const names: Record<number, string> = { 90: '往右', 135: '往右下', 180: '往下', 45: '往右上', 225: '往左下', 270: '往左', 315: '往左上', 0: '往上' };
+  return (
+    <div className="rt-dial-row">
+      <svg
+        aria-label="扫光方向"
+        className="rt-dial"
+        ref={ref}
+        role="slider"
+        aria-valuenow={value}
+        viewBox="0 0 80 80"
+        onPointerDown={(e) => {
+          e.currentTarget.setPointerCapture(e.pointerId);
+          set(e.clientX, e.clientY);
+        }}
+        onPointerMove={(e) => e.buttons & 1 && set(e.clientX, e.clientY)}
+      >
+        <circle cx="40" cy="40" r="36" className="rt-dial-ring" />
+        {[0, 45, 90, 135, 180, 225, 270, 315].map((d) => (
+          <line
+            className="rt-dial-tick"
+            key={d}
+            x1={40 + Math.sin((d * Math.PI) / 180) * 32}
+            x2={40 + Math.sin((d * Math.PI) / 180) * 36}
+            y1={40 - Math.cos((d * Math.PI) / 180) * 32}
+            y2={40 - Math.cos((d * Math.PI) / 180) * 36}
+          />
+        ))}
+        <line className="rt-dial-needle" x1="40" x2={x} y1="40" y2={y} />
+        <circle cx={x} cy={y} r="5" className="rt-dial-knob" />
+        <circle cx="40" cy="40" r="2.5" className="rt-dial-knob" />
+      </svg>
+      <div className="rt-dial-val">
+        <b>{value}°</b>
+        <span>{names[value] ?? '斜向'}</span>
+      </div>
+    </div>
+  );
+}
+
+/* 模糊强度:一排样张,每张是被模糊过的「Aa 字」,看着选 */
+function BlurSwatches({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const opts = [0, 6, 12, 18, 28, 40];
+  return (
+    <div className="rt-swatches">
+      {opts.map((v) => (
+        <button aria-pressed={value === v} className="rt-swatch" key={v} type="button" onClick={() => onChange(v)}>
+          <span style={{ filter: `blur(${v / 8}px)` }}>Aa 字</span>
+          <small>{v}px</small>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* 过渡带:从分界线开始,模糊区 → 空白过渡区 → 纯空白;两个把手分别拖模糊带终点、空白过渡终点 */
+function TransitionBar({ band, fade, onChange }: { band: number; fade: number; onChange: (band: number, fade: number) => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const drag = useRef<'band' | 'end' | null>(null);
+  const end = band + fade;
+  const at = (clientX: number) => {
+    const r = ref.current!.getBoundingClientRect();
+    return Math.round(Math.min(100, Math.max(0, ((clientX - r.left) / r.width) * 100)));
+  };
+  const move = (clientX: number) => {
+    const v = at(clientX);
+    if (drag.current === 'band') {
+      const b = Math.min(Math.max(2, v), 60, end);
+      onChange(b, end - b);
+    } else if (drag.current === 'end') {
+      onChange(band, Math.max(0, Math.min(100, v) - band));
+    }
+  };
+  return (
+    <div className="rt-tbar-wrap">
+      <div
+        className="rt-tbar"
+        ref={ref}
+        style={{
+          background: `linear-gradient(90deg, var(--rt-blur-start) 0%, var(--rt-blur-end) ${band}%, var(--site-bg) ${end}%, var(--site-bg) 100%)`,
+        }}
+        onPointerDown={(e) => {
+          const v = at(e.clientX);
+          drag.current = Math.abs(v - band) <= Math.abs(v - end) ? 'band' : 'end';
+          e.currentTarget.setPointerCapture(e.pointerId);
+          move(e.clientX);
+        }}
+        onPointerMove={(e) => (e.buttons & 1 ? move(e.clientX) : (drag.current = null))}
+        onPointerUp={() => (drag.current = null)}
+      >
+        <i aria-label="模糊带终点" className="rt-tbar-h" style={{ left: `${band}%` }} />
+        <i aria-label="空白过渡终点" className="rt-tbar-h" style={{ left: `${end}%` }} />
+      </div>
+      <div className="rt-tbar-legend">
+        <span>分界线</span>
+        <span style={{ left: `${band / 2}%` }}>模糊 {band}%</span>
+        <span style={{ left: `${band + fade / 2}%` }}>过渡 {fade}%</span>
+        <span>空白</span>
+      </div>
+    </div>
+  );
+}
+
+/* 速度曲线:卡片里画出曲线形状 */
+function EaseCards({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="rt-eases">
+      {Object.entries(EASES).map(([k, v]) => {
+        const [x1, y1, x2, y2] = v.pts;
+        const W = 56;
+        const H = 36;
+        const d = `M0 ${H} C ${x1 * W} ${H - y1 * H}, ${x2 * W} ${H - y2 * H}, ${W} 0`;
+        return (
+          <button aria-pressed={value === k} className="rt-ease" key={k} type="button" onClick={() => onChange(k)}>
+            <svg aria-hidden="true" viewBox={`-2 -2 ${W + 4} ${H + 4}`}>
+              <path className="rt-ease-axis" d={`M0 ${H} H ${W}`} />
+              <path className="rt-ease-curve" d={d} />
+            </svg>
+            <span>{v.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 const PREVIEW_W = 1440;
 const PREVIEW_H = 900;
@@ -64,33 +227,58 @@ export default function RevealTuner() {
   const [copied, setCopied] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
-  /* 播放进度(2026-10-25 用户:预览下方加个进度条):预览页加载完、扫光开始时起步,走满用时 = 时长 */
-  const [startedAt, setStartedAt] = useState<number | null>(null);
+  /* 播放进度(2026-10-25 用户:预览下方加进度条,支持拖动):直接读写预览页里扫光动画(.page-reveal)的时间点。
+     预览页在嵌入模式下扫光播完不移除那层,所以播完也能往回拖 */
+  const frameRef = useRef<HTMLIFrameElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const scrubbing = useRef(false);
+  const downOnBackdrop = useRef(false);
   const [elapsed, setElapsed] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const getAnim = (): Animation | undefined => {
+    try {
+      return frameRef.current?.contentDocument?.querySelector('.page-reveal')?.getAnimations()[0];
+    } catch {
+      return undefined;
+    }
+  };
   useEffect(() => {
-    if (startedAt === null) return;
+    if (!open) return;
     let raf = 0;
     const tick = () => {
-      const t = Math.min((performance.now() - startedAt) / 1000, p.dur);
-      setElapsed(t);
-      if (t < p.dur) raf = requestAnimationFrame(tick);
+      const a = getAnim();
+      if (a && !scrubbing.current) {
+        setElapsed(Math.min(Number(a.currentTime ?? 0) / 1000, p.dur));
+        setPlaying(a.playState === 'running');
+      }
+      raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [startedAt, p.dur]);
-  /* 重新加载预览时进度归零 */
-  useEffect(() => {
-    setStartedAt(null);
-    setElapsed(0);
-  }, [nonce]);
-  /* 预览页在扫光开始的那一刻发 reveal-start(HomePage 嵌入模式);iframe 的 load 要等图片全下完,会晚 */
-  useEffect(() => {
-    const on = (e: MessageEvent) => {
-      if (e.origin === location.origin && e.data?.type === 'reveal-start') setStartedAt(performance.now());
-    };
-    window.addEventListener('message', on);
-    return () => window.removeEventListener('message', on);
-  }, []);
+  }, [open, p.dur]);
+  useEffect(() => setElapsed(0), [nonce]);
+  /* 拖动 / 点击进度条:暂停在对应的那一帧 */
+  const seek = (clientX: number) => {
+    const track = trackRef.current;
+    const a = getAnim();
+    if (!track || !a) return;
+    const r = track.getBoundingClientRect();
+    const ratio = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
+    a.pause();
+    a.currentTime = ratio * p.dur * 1000;
+    setElapsed(ratio * p.dur);
+    setPlaying(false);
+  };
+  const togglePlay = () => {
+    const a = getAnim();
+    if (!a) return;
+    if (a.playState === 'running') {
+      a.pause();
+    } else {
+      if (Number(a.currentTime ?? 0) >= p.dur * 1000 - 1) a.currentTime = 0;   /* 播完了就从头 */
+      a.play();
+    }
+  };
 
   /* 参数变了:写 localStorage + <html> 变量,稍等一下自动重播预览 */
   useEffect(() => {
@@ -159,8 +347,12 @@ export default function RevealTuner() {
           /* 蒙层把背后的页面模糊掉,中间一张卡片放调参台;点卡片外面关闭(2026-10-25 用户:不要全屏页) */
           <div
             className="rt-modal"
+            onPointerDown={(e) => {
+              downOnBackdrop.current = e.target === e.currentTarget;
+            }}
             onClick={(e) => {
-              if (e.target === e.currentTarget) setOpen(false);
+              // 按下和松开都在蒙层上才关;从卡片里拖出来松手不算
+              if (e.target === e.currentTarget && downOnBackdrop.current) setOpen(false);
             }}
           >
            <div aria-label="入场扫光参数" aria-modal="true" className="rt-panel" role="dialog">
@@ -176,11 +368,46 @@ export default function RevealTuner() {
                   key={nonce}
                   src={`./?embed=1&r=${nonce}`}
                   style={{ width: PREVIEW_W, height: PREVIEW_H, transform: `translate(-50%, -50%) scale(${scale})` }}
+                  ref={frameRef}
                   title="入场动画预览"
                 />
                 <div className="rt-progress">
-                  <div className="rt-track">
+                  <button aria-label={playing ? '暂停' : '播放'} className="rt-play" type="button" onClick={togglePlay}>
+                    <svg aria-hidden="true" viewBox="0 0 16 16">
+                      {playing ? <path d="M5 3.5v9M11 3.5v9" /> : <path d="M5 3.2v9.6L12.5 8Z" />}
+                    </svg>
+                  </button>
+                  <div
+                    aria-label="播放进度"
+                    aria-valuemax={p.dur}
+                    aria-valuemin={0}
+                    aria-valuenow={Number(elapsed.toFixed(1))}
+                    className="rt-track"
+                    ref={trackRef}
+                    role="slider"
+                    tabIndex={0}
+                    onPointerDown={(e) => {
+                      scrubbing.current = true;
+                      e.currentTarget.setPointerCapture(e.pointerId);
+                      seek(e.clientX);
+                    }}
+                    /* 只有按住鼠标才算拖动:松手事件偶尔丢失时,鼠标经过不会再把进度拉走 */
+                    onPointerMove={(e) => {
+                      if (!(e.buttons & 1)) scrubbing.current = false;
+                      else if (scrubbing.current) seek(e.clientX);
+                    }}
+                    onPointerUp={() => {
+                      scrubbing.current = false;
+                    }}
+                    onPointerCancel={() => {
+                      scrubbing.current = false;
+                    }}
+                    onLostPointerCapture={() => {
+                      scrubbing.current = false;
+                    }}
+                  >
                     <span style={{ width: `${(elapsed / p.dur) * 100}%` }} />
+                    <i style={{ left: `${(elapsed / p.dur) * 100}%` }} />
                   </div>
                   <span className="rt-time">
                     {elapsed.toFixed(1)} / {p.dur.toFixed(1)}s
@@ -188,41 +415,29 @@ export default function RevealTuner() {
                 </div>
               </div>
               <div className="rt-controls">
-                {SLIDERS.map((s) => (
-                  <label className="rt-field" key={s.key}>
-                    <span className="rt-label">
-                      {s.label}
-                      <b>
-                        {p[s.key]}
-                        {s.unit}
-                      </b>
-                    </span>
-                    <input
-                      max={s.max}
-                      min={s.min}
-                      step={s.step}
-                      type="range"
-                      value={p[s.key] as number}
-                      onChange={(e) => setP({ ...p, [s.key]: Number(e.target.value) })}
-                    />
-                    <span className="rt-hint">{s.hint}</span>
-                  </label>
-                ))}
+                <div className="rt-field">
+                  <span className="rt-label">时长</span>
+                  <DurationField value={p.dur} onChange={(v) => setP({ ...p, dur: v })} />
+                  <span className="rt-hint">扫光从开始到全部清楚用多久</span>
+                </div>
+                <div className="rt-field">
+                  <span className="rt-label">方向</span>
+                  <AngleDial value={p.angle} onChange={(v) => setP({ ...p, angle: v })} />
+                  <span className="rt-hint">拖动指针,指向扫光前进的方向</span>
+                </div>
+                <div className="rt-field">
+                  <span className="rt-label">模糊强度</span>
+                  <BlurSwatches value={p.blur} onChange={(v) => setP({ ...p, blur: v })} />
+                  <span className="rt-hint">分界线附近内容有多糊</span>
+                </div>
+                <div className="rt-field">
+                  <span className="rt-label">过渡带</span>
+                  <TransitionBar band={p.band} fade={p.fade} onChange={(band, fade) => setP({ ...p, band, fade })} />
+                  <span className="rt-hint">拖两个把手:模糊区越窄分界越硬;过渡区越宽,空白来得越慢</span>
+                </div>
                 <div className="rt-field">
                   <span className="rt-label">速度曲线</span>
-                  <div className="rt-seg">
-                    {Object.entries(EASES).map(([k, v]) => (
-                      <button
-                        aria-pressed={p.ease === k}
-                        className="rt-btn"
-                        key={k}
-                        type="button"
-                        onClick={() => setP({ ...p, ease: k })}
-                      >
-                        {v.label}
-                      </button>
-                    ))}
-                  </div>
+                  <EaseCards value={p.ease} onChange={(v) => setP({ ...p, ease: v })} />
                 </div>
                 <div className="rt-actions">
                   <button className="rt-btn rt-primary" type="button" onClick={() => setNonce((n) => n + 1)}>
