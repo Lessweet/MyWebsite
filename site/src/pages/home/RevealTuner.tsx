@@ -14,7 +14,7 @@ export type RevealParams = {
   fade: number; // % 空白过渡
 };
 
-export const REVEAL_DEFAULTS: RevealParams = { dur: 3.6, ease: 'inout', angle: 135, blur: 18, band: 10, fade: 20 };
+export const REVEAL_DEFAULTS: RevealParams = { dur: 3.6, ease: 'inout', angle: 135, blur: 18, band: 30, fade: 40 };
 
 const EASES: Record<string, { label: string; css: string }> = {
   inout: { label: '慢进慢出', css: 'cubic-bezier(0.45, 0, 0.2, 1)' },
@@ -23,7 +23,7 @@ const EASES: Record<string, { label: string; css: string }> = {
   in: { label: '先慢后快', css: 'cubic-bezier(0.55, 0, 0.9, 0.4)' },
 };
 
-const KEY = 'reveal-params-v1';
+const KEY = 'reveal-params-v2';   /* v1 存的是旧默认(模糊带 10%、空白 20%),换 key 不再读 */
 
 export function loadRevealParams(): RevealParams {
   try {

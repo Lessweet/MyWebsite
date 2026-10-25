@@ -116,7 +116,7 @@ p, h2 { text-wrap: pretty; }   /* 段落 + 作品标题:避免最后一行只剩
 @property --reveal {
     syntax: '<percentage>';
     inherits: true;   /* 两层伪元素都要读到动画中的值 */
-    initial-value: -32%;
+    initial-value: -72%;
 }
 /* 两层(2026-10-25 用户:一开始不要任何、就是空白):
    ::before 模糊层 —— 分界线一过就开始糊(10% 内糊满);
@@ -140,18 +140,19 @@ p, h2 { text-wrap: pretty; }   /* 段落 + 作品标题:避免最后一行只剩
 .page-reveal::before {
     -webkit-backdrop-filter: blur(var(--rv-blur, 18px));
     backdrop-filter: blur(var(--rv-blur, 18px));
-    -webkit-mask-image: linear-gradient(var(--rv-angle, 135deg), transparent var(--reveal), #000 calc(var(--reveal) + var(--rv-band, 10%)));
-    mask-image: linear-gradient(var(--rv-angle, 135deg), transparent var(--reveal), #000 calc(var(--reveal) + var(--rv-band, 10%)));
+    -webkit-mask-image: linear-gradient(var(--rv-angle, 135deg), transparent var(--reveal), #000 calc(var(--reveal) + var(--rv-band, 30%)));
+    mask-image: linear-gradient(var(--rv-angle, 135deg), transparent var(--reveal), #000 calc(var(--reveal) + var(--rv-band, 30%)));
 }
 .page-reveal::after {
     background: var(--site-bg);
-    -webkit-mask-image: linear-gradient(var(--rv-angle, 135deg), transparent calc(var(--reveal) + var(--rv-band, 10%)), #000 calc(var(--reveal) + var(--rv-band, 10%) + var(--rv-fade, 20%)));
-    mask-image: linear-gradient(var(--rv-angle, 135deg), transparent calc(var(--reveal) + var(--rv-band, 10%)), #000 calc(var(--reveal) + var(--rv-band, 10%) + var(--rv-fade, 20%)));
+    -webkit-mask-image: linear-gradient(var(--rv-angle, 135deg), transparent calc(var(--reveal) + var(--rv-band, 30%)), #000 calc(var(--reveal) + var(--rv-band, 30%) + var(--rv-fade, 40%)));
+    mask-image: linear-gradient(var(--rv-angle, 135deg), transparent calc(var(--reveal) + var(--rv-band, 30%)), #000 calc(var(--reveal) + var(--rv-band, 30%) + var(--rv-fade, 40%)));
 }
 .app-loading .page-reveal { animation-play-state: paused; }
-/* 起点 = -(模糊带 + 空白过渡 + 2%):第一帧整屏都是底色 */
+/* 起点 = -(模糊带 + 空白过渡 + 2%):第一帧整屏都是底色。
+   模糊带 10 → 30%、空白过渡 20 → 40%(2026-10-25 用户:能看出一条分界线,要柔和过渡) */
 @keyframes page-reveal {
-    from { --reveal: calc(0% - var(--rv-band, 10%) - var(--rv-fade, 20%) - 2%); }
+    from { --reveal: calc(0% - var(--rv-band, 30%) - var(--rv-fade, 40%) - 2%); }
     to   { --reveal: 102%; }
 }
 @media (prefers-reduced-motion: reduce) {
