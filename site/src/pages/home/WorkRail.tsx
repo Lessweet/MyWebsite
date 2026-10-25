@@ -75,6 +75,11 @@ export default function WorkRail({ items }: { items: Item[] }) {
     return () => window.removeEventListener('scroll', update);
   }, [wide, blocks]);
 
+  /* 刻度藏起来时(单列滑回介绍区)清掉悬停:藏起来后收不到鼠标离开,再出现时会带着上一张预览卡 */
+  useEffect(() => {
+    if (away) setHover(null);
+  }, [away]);
+
   /* 预览卡高度跟内容走,用过渡从上一张的高度变过去 */
   useLayoutEffect(() => {
     const el = cardInner.current;
@@ -122,6 +127,7 @@ export default function WorkRail({ items }: { items: Item[] }) {
        原来是在上面盖一个灰色圆角框淡出,用户:点了怎么有个灰色框 —— 改成文字本身闪一下,不画任何框。
        用 Web Animations 叠在最上层,不受这些字自己入场动画的影响 */
     const ping = () => {
+      if (reduce) return;   /* 系统设了「减少动态效果」就不闪 */
       b.el.querySelectorAll<HTMLElement>('.work-head, .work-summary').forEach((el) =>
         el.animate([{ opacity: 1 }, { opacity: 0.35 }, { opacity: 1 }], { duration: 700, easing: 'ease-in-out' }),
       );
@@ -135,8 +141,12 @@ export default function WorkRail({ items }: { items: Item[] }) {
       window.removeEventListener('scrollend', arrive);
       ping();
     };
-    window.addEventListener('scrollend', arrive, { once: true });
-    window.setTimeout(arrive, 900);   /* 不支持 scrollend 的浏览器 */
+    /* 能报「滚动结束」的浏览器就等它;不支持的(旧 Safari)按距离估一个时间 —— 固定 900ms 时,
+       从页底滚回第一条这种长距离还没到就闪了 */
+    const from = window.scrollY;
+    const hasScrollEnd = 'onscrollend' in document.documentElement;
+    if (hasScrollEnd) window.addEventListener('scrollend', arrive, { once: true });
+    else setTimeout(arrive, Math.min(1600, 400 + Math.abs(from - target) * 0.4));
   };
 
   if (!wide || blocks.length < 2) return null;

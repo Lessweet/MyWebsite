@@ -99,7 +99,13 @@ function Gzh({ className = '', linkClass }: { className?: string; linkClass: str
      (2026-10-25 用户:支持再次点击收起) */
   const [hover, setHover] = useState(false);
   const [shut, setShut] = useState(false);
+  /* 下面放不下就往上弹(2026-10-25 排查:矮屏手机上联系方式那句在屏幕底部,弹层往下弹大半在屏幕外) */
+  const [up, setUp] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
+  const measure = () => {
+    const r = btnRef.current?.getBoundingClientRect();
+    if (r) setUp(window.innerHeight - r.bottom < 250 && r.top > 280);
+  };
   useEffect(() => {
     if (!open) return;
     const close = () => setOpen(false);
@@ -111,10 +117,11 @@ function Gzh({ className = '', linkClass }: { className?: string; linkClass: str
      .gzh 自身给 z-index,弹层才盖得住后面(折行后)的字 */
   return (
     <span
-      className={`${className} gzh${open && !shut ? ' open' : ''}${shut ? ' shut' : ''}`.trim()}
+      className={`${className} gzh${open && !shut ? ' open' : ''}${shut ? ' shut' : ''}${up ? ' up' : ''}`.trim()}
       /* 只认真鼠标:触屏点按也会先发 mouseenter,不能当成悬停 */
       onPointerEnter={(e) => {
         if (e.pointerType !== 'mouse') return;
+        measure();
         setHover(true);
       }}
       onPointerLeave={(e) => {
@@ -136,6 +143,7 @@ function Gzh({ className = '', linkClass }: { className?: string; linkClass: str
             setShut(true);
             btnRef.current?.blur();   /* 不然 :focus-within 又把弹层顶出来 */
           } else {
+            measure();
             setShut(false);
             setOpen(true);
           }
@@ -188,7 +196,8 @@ export default function HomePage() {
     if (import.meta.env.DEV && IS_EMBED) return;
     const done = () => veil.remove();
     veil.addEventListener('animationend', done, { once: true });
-    const fallback = window.setTimeout(done, 4500);   /* 动画没跑(后台标签等)也别一直挂着 */
+    /* 动画没跑(后台标签等)也别一直挂着。按扫光时长算:写死 4.5s 时,调到更长的时长会在半路把白雾硬切掉 */
+    const fallback = window.setTimeout(done, ENTRANCE.sweep.dur * 1000 + 1000);
     return () => clearTimeout(fallback);
   }, []);
 

@@ -333,6 +333,11 @@ button.text-link { padding: 0; border: 0; background: none; font: inherit; curso
 .contact .gzh:hover .gzh-pop,
 .contact .gzh:focus-within .gzh-pop,
 .contact .gzh.open .gzh-pop { transform: none; }
+/* 下面放不下(联系方式那句在屏幕底部)就往上弹,对齐段落上方(.up 由 HomePage 打开时量出来) */
+.contact .gzh.up .gzh-pop { top: auto; bottom: calc(100% + 8px); transform: translateY(4px); }
+.contact .gzh.up:hover .gzh-pop,
+.contact .gzh.up:focus-within .gzh-pop,
+.contact .gzh.up.open .gzh-pop { transform: none; }
 .text-link {
     color: var(--ink);
     text-decoration: underline dashed var(--mark);
