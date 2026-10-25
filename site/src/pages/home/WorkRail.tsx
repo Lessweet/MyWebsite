@@ -25,7 +25,7 @@ export default function WorkRail({ items }: { items: Item[] }) {
   const [blocks, setBlocks] = useState<Block[]>([]);
   /* 正在看的那条(随滚动自动走) */
   const [current, setCurrent] = useState(0);
-  /* 单列时滑到作品区才出现(2026-10-25 用户:滑到 Feed 时出现并固定在右上角);双栏一打开就在 */
+  /* 单列时第一条作品滑到顶部才出现(2026-10-25 用户:滑到 Feed 时出现并固定在右上角,要等第一个作品到顶部);双栏一打开就在 */
   const [away, setAway] = useState(false);
   const [hover, setHover] = useState<number | null>(null);
   const [cardY, setCardY] = useState(0);
@@ -66,7 +66,9 @@ export default function WorkRail({ items }: { items: Item[] }) {
       if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) c = blocks.length - 1;
       setCurrent(c);
       const twoCol = window.matchMedia('(min-width: 1152px)').matches;
-      setAway(!twoCol && blocks[0].el.getBoundingClientRect().top > vh * 0.4);
+      /* 单列:第一条作品的日期滑到窗口顶部(离顶 57,点刻度定位也落在这)才出现(2026-10-25 用户:等第一个作品到顶部) */
+      const firstHead = blocks[0].el.querySelector('.work-head') ?? blocks[0].el;
+      setAway(!twoCol && firstHead.getBoundingClientRect().top > 60);
     };
     update();
     window.addEventListener('scroll', update, { passive: true });
