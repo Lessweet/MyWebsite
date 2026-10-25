@@ -396,6 +396,12 @@ body.theme-vt *::after {
 .hero-intro b { font-weight: var(--fw-strong); color: var(--ink); }
 /* 电脑上文字段收窄到栏宽 80%(2026-10-23 用户:整栏读起来太宽);Feed 简介同宽(2026-10-23 用户),
    字标行与 Feed 标题、封面仍占满整栏 */
+/* 很窄(< 640,文字宽度跟着窗口变)时用普通断行:pretty 会为了避免末行太短而调整前面几行的断点,
+   拖动窗口时行尾的字会来回跳(2026-10-25 用户:窗口缩小过程中字一会出现一会消失) */
+@media (max-width: 639px) {
+    .hero-intro p,
+    .work-summary { text-wrap: wrap; }
+}
 /* 行宽上限 32em(约 576px,每行约 32 字)。单栏时只有窗口窄到放不下这么宽才铺满整栏、右边与封面对齐
    (2026-10-25 用户:只有很窄的时候才撑满;试过单栏一律撑满,宽一点的窗口行太长) */
 @media (min-width: 601px) and (max-width: 1151px) {
