@@ -516,8 +516,8 @@ body.theme-vt *::after {
     flex-direction: column;
     gap: 80px;   /* 作品之间 56 → 80(2026-10-23 用户) */
     position: relative;
-    /* 时间行到第一条作品顶上的细线:肉眼 72(时间行字形下方自带约 6px,所以 66)。
-       2026-10-25 用户:分割线改成每个作品日期上方的线,和日期一组 */
+    /* 细线在时间行和第一个日期正中间,上下肉眼都是 72(时间行字形下方自带约 6px,所以 66;
+       线到日期见 .work:first-child::before 的 margin-bottom)。2026-10-25 用户:贴着日期、偏上都试过,放回中间 */
     margin-top: 66px;
     padding-top: 0;
     padding-bottom: 96px;
@@ -530,7 +530,7 @@ body.theme-vt *::after {
     content: '';
     display: block;
     height: 1px;
-    margin-bottom: 12px;
+    margin-bottom: 63px;   /* 线到日期肉眼 72(日期 18 / 32 字形上方自带约 9px) */
     background: var(--rule);
     opacity: 0;
     transform: translateY(24px);
