@@ -68,22 +68,6 @@ const MAILTO = `mailto:${MAIL}`;
 
 /* 公众号链接 + 二维码弹层:桌面 hover / 聚焦弹出,触屏点按切换,点页面别处收起。
    介绍段末句与右上角各用一份,各管各的开合 */
-/* 按钮整体弹一下(2026-10-25 用户:公众号 hover 时也要主题键那种弹性动效)。
-   节奏同主题键收回时的弹跳,幅度收小(用户:太夸张;主题键是 0.82 / 1.12 / 0.96 / 1.02)。
-   用 Web Animations,不碰 CSS 里的入场 animation */
-const BOUNCE: Keyframe[] = [
-  { transform: 'scale(1)' },
-  { transform: 'scale(0.95)', offset: 0.18 },
-  { transform: 'scale(1.04)', offset: 0.45 },
-  { transform: 'scale(0.99)', offset: 0.7 },
-  { transform: 'scale(1.005)', offset: 0.86 },
-  { transform: 'scale(1)' },
-];
-function bounce(el: HTMLElement | null) {
-  if (!el?.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  el.animate(BOUNCE, { duration: 520, easing: 'ease-out' });
-}
-
 function Gzh({ className = '', linkClass }: { className?: string; linkClass: string }) {
   const [open, setOpen] = useState(false);
   /* 鼠标悬停也会显示弹层(CSS :hover);shut = 用户点了收起,盖过悬停 / 聚焦,鼠标移开后复位
@@ -107,7 +91,6 @@ function Gzh({ className = '', linkClass }: { className?: string; linkClass: str
       onPointerEnter={(e) => {
         if (e.pointerType !== 'mouse') return;
         setHover(true);
-        bounce(btnRef.current);
       }}
       onPointerLeave={(e) => {
         if (e.pointerType !== 'mouse') return;
@@ -130,7 +113,6 @@ function Gzh({ className = '', linkClass }: { className?: string; linkClass: str
           } else {
             setShut(false);
             setOpen(true);
-            if (!hover) bounce(btnRef.current);   /* 触屏没有悬停,点开时弹一下 */
           }
         }}
       >
