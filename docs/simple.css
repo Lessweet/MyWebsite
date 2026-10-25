@@ -1652,20 +1652,7 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     line-height: 20px;
 }
 body.theme-dark .wr-card { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 6px 20px rgba(0, 0, 0, 0.3); }
-/* 点了刻度、滚到之后那块内容轻轻闪一下(文章作者:目标已在屏幕内时点了没反应,缺一个「你已经在这里了」) */
-.wr-ping {
-    position: absolute;
-    z-index: 3;
-    pointer-events: none;
-    animation: wr-ping 1.2s var(--ease-soft) both;
-}
-@keyframes wr-ping {
-    0%   { box-shadow: 0 0 0 0 transparent; background: transparent; }
-    20%  { box-shadow: 0 0 0 4px color-mix(in srgb, var(--ink) 14%, transparent); background: color-mix(in srgb, var(--ink) 4%, transparent); }
-    100% { box-shadow: 0 0 0 12px transparent; background: transparent; }
-}
 @media (prefers-reduced-motion: reduce) {
     .work-rail, .wr-card-inner { animation: none; }
-    .wr-ping { display: none; }
     .wr-tick > i, .wr-pop, .wr-card { transition: none; }
 }

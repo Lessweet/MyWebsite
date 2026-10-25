@@ -4,7 +4,7 @@
    - 一套样式(2026-10-25 用户:用一套样式,适配用户自动互动、hover 选择):整列只有一个「焦点」——
      悬停时是鼠标指着的那条,其余时候是正在看的那条(随滚动自动走);焦点那根最长、纯黑,紧挨着的上下各一根稍长,其余短的浅灰;
    - 预览卡只有一张,跟着光标上下滑,内容换时高度平滑过渡(文章作者嫌 Codex 的卡片尺寸硬切);
-   - 点刻度或点预览卡(2026-10-25 用户:每个节点的小片可以点击直接定位)都滚到那块内容,到了以后那块轻轻闪一下(文章作者:目标已在屏幕内时点了没反应,缺个「你已经在这里了」);
+   - 点刻度或点预览卡(2026-10-25 用户:每个节点的小片可以点击直接定位)都滚到那块内容,到了以后那条的文字轻轻暗一下再亮回来(文章作者:目标已在屏幕内时点了没反应,缺个「你已经在这里了」);
    - 鼠标离开,焦点回到正在看的那条。
    手机、平板(没有鼠标悬停)不显示;电脑上窗口窄成单列时也显示在右上角。样式见 simple.css .work-rail */
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -108,7 +108,7 @@ export default function WorkRail({ items }: { items: Item[] }) {
   };
   const onLeave = () => setHover(null);
 
-  /* 点击:滚到那块(文字块让日期落在第一条刚打开时的高度,图片块放到视口中间),到了以后那块闪一下 */
+  /* 点击:滚到那条作品(日期落在离窗口顶 57 处),到了以后那条的文字轻轻暗一下再亮回来 */
   const go = (i: number) => {
     const b = blocks[i];
     if (!b) return;
@@ -118,24 +118,13 @@ export default function WorkRail({ items }: { items: Item[] }) {
     const top = docTop(head(b.el)) - 57;
     const target = Math.max(0, Math.min(top, document.documentElement.scrollHeight - window.innerHeight));
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    /* 闪一下:在那块内容上临时盖一个圆角框做动画,不碰内容自己的入场动画 */
+    /* 到了以后那条的日期、标题、简介轻轻暗一下再亮回来,表示「就是这条」。
+       原来是在上面盖一个灰色圆角框淡出,用户:点了怎么有个灰色框 —— 改成文字本身闪一下,不画任何框。
+       用 Web Animations 叠在最上层,不受这些字自己入场动画的影响 */
     const ping = () => {
-      /* 闪日期 + 标题 + 简介那一段 */
-      const h = head(b.el).getBoundingClientRect();
-      const summary = b.el.querySelector('.work-summary')?.getBoundingClientRect();
-      const r = { left: h.left, top: h.top, width: Math.max(h.width, summary?.width ?? 0), height: (summary?.bottom ?? h.bottom) - h.top };
-      const ring = document.createElement('div');
-      ring.className = 'wr-ping';
-      const pad = 12;
-      Object.assign(ring.style, {
-        left: `${r.left + window.scrollX - pad}px`,
-        top: `${r.top + window.scrollY - pad}px`,
-        width: `${r.width + pad * 2}px`,
-        height: `${r.height + pad * 2}px`,
-        borderRadius: '12px',
-      });
-      document.body.appendChild(ring);
-      window.setTimeout(() => ring.remove(), 1300);
+      b.el.querySelectorAll<HTMLElement>('.work-head, .work-summary').forEach((el) =>
+        el.animate([{ opacity: 1 }, { opacity: 0.35 }, { opacity: 1 }], { duration: 700, easing: 'ease-in-out' }),
+      );
     };
     if (Math.abs(window.scrollY - target) < 2) return ping();   /* 已经在这儿了:原地闪一下 */
     window.scrollTo({ top: target, behavior: reduce ? 'auto' : 'smooth' });
