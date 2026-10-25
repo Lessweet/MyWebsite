@@ -1,0 +1,207 @@
+/* 作品导航刻度(2026-10-25 用户:参考 Codex 对话导航栏的「消息摘要刻度」,照文章里的录屏做)。
+   只在宽屏双栏出现,竖排在页面最右边,第一根线和 Feed 第一条日期顶对齐(试过两栏之间、垂直居中)。
+   - 一排短细线,一条作品一根(2026-10-25 用户:一个作品一个节点;试过每张封面图也各一根);
+   - 一套样式(2026-10-25 用户:用一套样式,适配用户自动互动、hover 选择):整列只有一个「焦点」——
+     悬停时是鼠标指着的那条,其余时候是正在看的那条(随滚动自动走);焦点那根最长、纯黑,紧挨着的上下各一根稍长,其余短的浅灰;
+   - 预览卡只有一张,跟着光标上下滑,内容换时高度平滑过渡(文章作者嫌 Codex 的卡片尺寸硬切);
+   - 点刻度或点预览卡(2026-10-25 用户:每个节点的小片可以点击直接定位)都滚到那块内容,到了以后那条的文字轻轻暗一下再亮回来(文章作者:目标已在屏幕内时点了没反应,缺个「你已经在这里了」);
+   - 鼠标离开,焦点回到正在看的那条。
+   手机、平板(没有鼠标悬停)不显示;电脑上窗口窄成单列时也显示在右上角。样式见 simple.css .work-rail */
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+
+type Item = { date: string; title: string; summary?: string };
+type Block = { el: HTMLElement; work: number };
+
+/* 宽屏双栏;或者电脑上(有鼠标悬停)窗口窄成单列时也放在右上角(2026-10-25 用户)。手机、平板不显示 */
+const WIDE = '(min-width: 1152px), (hover: hover) and (pointer: fine) and (min-width: 601px)';
+
+/* 从页面上收集每条作品:滚动定位按它的文字块(.work-head)算,屏幕里有没有按整条作品算 */
+function collectBlocks(): Block[] {
+  return [...document.querySelectorAll<HTMLElement>('.works > .work')].map((el, work) => ({ el, work }));
+}
+
+export default function WorkRail({ items }: { items: Item[] }) {
+  const [wide, setWide] = useState(() => window.matchMedia(WIDE).matches);
+  const [blocks, setBlocks] = useState<Block[]>([]);
+  /* 正在看的那条(随滚动自动走) */
+  const [current, setCurrent] = useState(0);
+  /* 单列时第一条作品滑到顶部才出现(2026-10-25 用户:滑到 Feed 时出现并固定在右上角,要等第一个作品到顶部);双栏一打开就在 */
+  const [away, setAway] = useState(false);
+  const [hover, setHover] = useState<number | null>(null);
+  const [cardY, setCardY] = useState(0);
+  const railRef = useRef<HTMLElement>(null);
+  const tickRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const cardInner = useRef<HTMLDivElement>(null);
+  const [cardH, setCardH] = useState(0);
+
+  useEffect(() => {
+    const mq = window.matchMedia(WIDE);
+    const on = () => setWide(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+
+  /* 页面渲染完再收集(图片的 currentSrc 要等加载挑好尺寸,窗口变化时重收) */
+  useEffect(() => {
+    if (!wide) return;
+    const run = () => setBlocks(collectBlocks());
+    run();
+    const t = window.setTimeout(run, 1500);
+    window.addEventListener('resize', run);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener('resize', run);
+    };
+  }, [wide]);
+
+  useEffect(() => {
+    if (!wide || !blocks.length) return;
+    const update = () => {
+      const vh = window.innerHeight;
+      /* 正在看的那条:顶边过了视口 40% 那条线的最后一条;滚到底就是最后一条 */
+      let c = 0;
+      blocks.forEach((b, i) => {
+        if (b.el.getBoundingClientRect().top <= vh * 0.4) c = i;
+      });
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) c = blocks.length - 1;
+      setCurrent(c);
+      const twoCol = window.matchMedia('(min-width: 1152px)').matches;
+      /* 单列:第一条作品的日期滑到窗口顶部(离顶 57,点刻度定位也落在这)才出现(2026-10-25 用户:等第一个作品到顶部) */
+      const firstHead = blocks[0].el.querySelector('.work-head') ?? blocks[0].el;
+      setAway(!twoCol && firstHead.getBoundingClientRect().top > 60);
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    return () => window.removeEventListener('scroll', update);
+  }, [wide, blocks]);
+
+  /* 刻度藏起来时(单列滑回介绍区)清掉悬停:藏起来后收不到鼠标离开,再出现时会带着上一张预览卡 */
+  useEffect(() => {
+    if (away) setHover(null);
+  }, [away]);
+
+  /* 预览卡高度跟内容走,用过渡从上一张的高度变过去 */
+  useLayoutEffect(() => {
+    const el = cardInner.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setCardH(el.offsetHeight));
+    ro.observe(el);
+    setCardH(el.offsetHeight);
+    return () => ro.disconnect();
+  }, [hover, wide, blocks.length]);
+
+  /* 鼠标在刻度列上移动:离光标最近的那根当作悬停的那根(成为焦点),预览卡跟着它 */
+  const onMove = (clientY: number) => {
+    let best = -1;
+    let bestD = Infinity;
+    tickRefs.current.forEach((t, i) => {
+      if (!t) return;
+      const r = t.getBoundingClientRect();
+      const d = Math.abs(clientY - (r.top + r.height / 2));
+      if (d < bestD) {
+        bestD = d;
+        best = i;
+      }
+    });
+    if (best >= 0) {
+      const t = tickRefs.current[best]!;
+      const rail = railRef.current!.getBoundingClientRect();
+      const r = t.getBoundingClientRect();
+      setCardY(r.top + r.height / 2 - rail.top);
+      setHover(best);
+    }
+  };
+  const onLeave = () => setHover(null);
+
+  /* 点击:滚到那条作品(日期落在离窗口顶 57 处),到了以后那条的文字轻轻暗一下再亮回来 */
+  const go = (i: number) => {
+    const b = blocks[i];
+    if (!b) return;
+    const head = (el: HTMLElement) => el.querySelector<HTMLElement>('.work-head') ?? el;
+    const docTop = (el: HTMLElement) => el.getBoundingClientRect().top + window.scrollY;
+    /* 让这条的日期落在离窗口顶 57 处:和双栏时第一条刚打开页面的位置一样,单列时也照这个 */
+    const top = docTop(head(b.el)) - 57;
+    const target = Math.max(0, Math.min(top, document.documentElement.scrollHeight - window.innerHeight));
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    /* 到了以后那条的日期、标题、简介轻轻暗一下再亮回来,表示「就是这条」。
+       原来是在上面盖一个灰色圆角框淡出,用户:点了怎么有个灰色框 —— 改成文字本身闪一下,不画任何框。
+       用 Web Animations 叠在最上层,不受这些字自己入场动画的影响 */
+    const ping = () => {
+      if (reduce) return;   /* 系统设了「减少动态效果」就不闪 */
+      b.el.querySelectorAll<HTMLElement>('.work-head, .work-summary').forEach((el) =>
+        el.animate([{ opacity: 1 }, { opacity: 0.35 }, { opacity: 1 }], { duration: 700, easing: 'ease-in-out' }),
+      );
+    };
+    if (Math.abs(window.scrollY - target) < 2) return ping();   /* 已经在这儿了:原地闪一下 */
+    window.scrollTo({ top: target, behavior: reduce ? 'auto' : 'smooth' });
+    let done = false;
+    const arrive = () => {
+      if (done) return;
+      done = true;
+      window.removeEventListener('scrollend', arrive);
+      ping();
+    };
+    /* 能报「滚动结束」的浏览器就等它;不支持的(旧 Safari)按距离估一个时间 —— 固定 900ms 时,
+       从页底滚回第一条这种长距离还没到就闪了 */
+    const from = window.scrollY;
+    const hasScrollEnd = 'onscrollend' in document.documentElement;
+    if (hasScrollEnd) window.addEventListener('scrollend', arrive, { once: true });
+    else setTimeout(arrive, Math.min(1600, 400 + Math.abs(from - target) * 0.4));
+  };
+
+  if (!wide || blocks.length < 2) return null;
+
+  const hb = hover != null ? blocks[hover] : null;
+  const focus = hover ?? current;
+  const hw = hb ? items[hb.work] : null;
+
+  return (
+    <nav
+      aria-label="作品导航"
+      aria-hidden={away || undefined}
+      className={`work-rail${hb ? ' is-hover' : ''}${away ? ' is-away' : ''}`}
+      ref={railRef}
+      onPointerLeave={onLeave}
+      onPointerMove={(e) => {
+        /* 鼠标在预览卡上时卡片停住,不跟着换内容,方便点它 */
+        if ((e.target as HTMLElement).closest('.wr-pop')) return;
+        onMove(e.clientY);
+      }}
+    >
+      {blocks.map((b, i) => (
+        <button
+          aria-current={i === current ? 'true' : undefined}
+          aria-label={`${items[b.work]?.date ?? ''} ${items[b.work]?.title ?? ''}`}
+          className={`wr-tick${i === focus ? ' is-focus' : ''}${Math.abs(i - focus) === 1 ? ' is-near' : ''}`}
+          key={i}
+          ref={(el) => {
+            tickRefs.current[i] = el;
+          }}
+          type="button"
+          onBlur={onLeave}
+          onClick={() => go(i)}
+          onFocus={(e) => {
+            const r = e.currentTarget.getBoundingClientRect();
+            onMove(r.top + r.height / 2);
+          }}
+        >
+          <i />
+        </button>
+      ))}
+      {/* 只有一张预览卡:跟着悬停的那根线上下滑,内容换时高度平滑过渡 */}
+      <div aria-hidden="true" className="wr-pop" style={{ top: cardY }} onClick={() => hover != null && go(hover)}>
+        <div className="wr-card" style={{ height: cardH || undefined }}>
+        <div className="wr-card-inner" key={hover ?? -1} ref={cardInner}>
+          {hw && (
+            <>
+              <small>{hw.date}</small>
+              <b>{hw.title}</b>
+              {hw.summary && <span>{hw.summary}</span>}
+            </>
+          )}
+        </div>
+        </div>
+      </div>
+    </nav>
+  );
+}

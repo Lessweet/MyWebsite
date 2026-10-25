@@ -11,7 +11,7 @@ import type { ReactNode } from 'react';
 
 /* 作者所在时区 UTC+8,无夏令时 */
 const MY_TZ = 'Asia/Shanghai';
-const MY_CITY = '北京';
+const MY_CITY = 'Beijing';   /* 英文写法(2026-10-25 用户):Beijing 1:53 PM */
 
 type Status = { period: string; label: string; icon: ReactNode };
 
@@ -69,7 +69,7 @@ const WX_TTL = 30 * 60 * 1000;   /* 30 分钟刷新一次;同一会话内用 ses
 
 type WxKind = 'clear' | 'partly' | 'cloudy' | 'fog' | 'rain' | 'snow' | 'storm';
 const WX_LABEL: Record<WxKind, string> = {
-  clear: '晴', partly: '多云', cloudy: '阴', fog: '雾', rain: '雨', snow: '雪', storm: '雷雨',
+  clear: 'Clear', partly: 'Partly cloudy', cloudy: 'Cloudy', fog: 'Fog', rain: 'Rain', snow: 'Snow', storm: 'Thunderstorm',
 };
 /* WMO 天气码 → 图标类型 */
 function wxKind(code: number): WxKind {
@@ -200,7 +200,7 @@ function myTime(now: Date) {
   const force = new URLSearchParams(location.search).get('hour');
   if (force !== null && /^\d{1,2}$/.test(force) && Number(force) < 24) h = Number(force);
   const h12 = h % 12 === 0 ? 12 : h % 12;
-  return { status: statusOf(h), text: `${h12}:${m}` };
+  return { status: statusOf(h), text: `${h12}:${m} ${h < 12 ? 'AM' : 'PM'}` };
 }
 
 export default function LocalTime() {
@@ -219,14 +219,14 @@ export default function LocalTime() {
     <p className="hero-loc">
       {/* 整行一个入场单元,排在介绍段 / 联系方式之后(HomePage 下发 --d) */}
       <span className="hero-ch">
-        {MY_CITY} {t.status.period}
+        {MY_CITY}
         <span className="loc-time">
           {t.text}
         </span>
         {wx && (
           <svg
             key={`${wx.kind}-${wx.day}`}
-            aria-label={`北京天气:${WX_LABEL[wx.kind]}`}
+            aria-label={`Beijing weather: ${WX_LABEL[wx.kind]}`}
             className="loc-status"
             role="img"
             viewBox="0 0 24 24"

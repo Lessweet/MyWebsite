@@ -10,18 +10,25 @@ import { createPortal } from 'react-dom';
 import NeteaseWordmark from './NeteaseWordmark';
 import { WORKS } from './works';
 import LocalTime from './LocalTime';
+import RevealTuner from './RevealTuner';
+import WorkRail from './WorkRail';
+import { applyEntrance, currentEntrance } from './entrance';
 
+/* 入场方式和参数(2026-10-25 用户:调参台里选用哪一种入场、各自调参数):线上固定默认,本地开发按调参面板存的 */
+const ENTRANCE = currentEntrance();
 /* 入场节拍(soft-blur-in):介绍段 + 联系方式共用一条队列,逐字从左到右连续错峰,
    换行 / 换段处多停一口。2026-10-23 用户嫌慢:15ms/120ms ×1.4(整段约 4.6s)
-   收到 6ms/60ms(整段约 2s 内走完),单字时长见 simple.css .hero-ch。 */
-const INTRO_CHAR_STEP = 6;
-const INTRO_LINE_STEP = 60;
+   收到 6ms/60ms(整段约 2s 内走完),单字时长见 simple.css .hero-ch。现在是 entrance.ts 的字间隔 / 换行停顿 */
+const INTRO_CHAR_STEP = ENTRANCE.stagger.charStep;
+const INTRO_LINE_STEP = ENTRANCE.stagger.lineStep;
 
 
 /* 介绍段拆分:行是折行结果、随视口变,没法在 JSX 里预知 —— 拆成最小折行单元
    (CJK 单字 / 拉丁词,句读并进前一单元防行首标点),挂载后按几何分行、逐行下发 --d。
    {…} 括起的词整组算一个单元、不会被折开(2026-10-23 用户:「被 / 看见」「视 / 觉」「常 / 态」断得难看) */
-function splitIntro(text: string): string[] {
+/* groups = false 时忽略 {…} 词组、照常逐字拆(手机上介绍段要像作品简介一样排满右边,2026-10-25 用户) */
+function splitIntro(text: string, groups = true): string[] {
+  if (!groups) text = text.replace(/[{}]/g, '');
   const raw = text.match(/\{[^}]*\}|[A-Za-z0-9]+|\s+|./g) || [];
   const out: string[] = [];
   let pending = '';
@@ -59,9 +66,27 @@ function staggerWork(el: HTMLElement, base: number) {
     last = base + i * INTRO_CHAR_STEP + line * INTRO_LINE_STEP;
     u.style.setProperty('--d', `${last}ms`);
   });
+  el.style.setProperty('--line-d', `${base}ms`);   /* 日期上方的细线和第一个字同时浮现 */
   el.style.setProperty('--cover-d', `${last + 120}ms`);
   return last + 120;   /* 封面开始浮现的时刻(相对 base 所在的时间零点) */
 }
+
+/* true = 斜向扫光入场(index.html 的 .page-reveal);false = 依次出现(介绍段逐字浮现 + 首屏作品依次入场) */
+const REVEAL_ENTRANCE = ENTRANCE.mode === 'sweep';
+/* 逐段浮现(2026-10-25 用户:照 benji.org 的节奏):整段整段依次浮上来,见 simple.css .bk */
+const BLOCKS_ENTRANCE = ENTRANCE.mode === 'blocks';
+function setBlock(el: Element | null, delay: number) {
+  if (!el) return;
+  el.classList.add('bk');
+  (el as HTMLElement).style.setProperty('--bd', `${delay}ms`);
+}
+/* 介绍区有几段(字标那组算第 0 段,之后每段介绍、城市时间各一段),作品区从哪个时刻开始 */
+function blocksWorksAt() {
+  const n = document.querySelectorAll('.hero-intro > p').length + 1;
+  return n * ENTRANCE.blocks.step + ENTRANCE.blocks.sectionGap;
+}
+/* 调参面板里的预览(?embed=1):不再显示调节按钮 */
+const IS_EMBED = new URLSearchParams(location.search).has('embed');
 
 const MAIL = 'chentongrong1@gmail.com';
 const MAILTO = `mailto:${MAIL}`;
@@ -70,24 +95,58 @@ const MAILTO = `mailto:${MAIL}`;
    介绍段末句与右上角各用一份,各管各的开合 */
 function Gzh({ className = '', linkClass }: { className?: string; linkClass: string }) {
   const [open, setOpen] = useState(false);
+  /* 鼠标悬停也会显示弹层(CSS :hover);shut = 用户点了收起,盖过悬停 / 聚焦,鼠标移开后复位
+     (2026-10-25 用户:支持再次点击收起) */
+  const [hover, setHover] = useState(false);
+  const [shut, setShut] = useState(false);
+  /* 下面放不下就往上弹(2026-10-25 排查:矮屏手机上联系方式那句在屏幕底部,弹层往下弹大半在屏幕外) */
+  const [up, setUp] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const measure = () => {
+    const r = btnRef.current?.getBoundingClientRect();
+    if (r) setUp(window.innerHeight - r.bottom < 250 && r.top > 280);
+  };
   useEffect(() => {
     if (!open) return;
     const close = () => setOpen(false);
     document.addEventListener('click', close);
     return () => document.removeEventListener('click', close);
   }, [open]);
+  const shown = !shut && (open || hover);
   /* 弹层挂在这个单元里:单元入场动画带 filter/transform 会自成层叠上下文,
      .gzh 自身给 z-index,弹层才盖得住后面(折行后)的字 */
   return (
-    <span className={`${className} gzh${open ? ' open' : ''}`.trim()}>
+    <span
+      className={`${className} gzh${open && !shut ? ' open' : ''}${shut ? ' shut' : ''}${up ? ' up' : ''}`.trim()}
+      /* 只认真鼠标:触屏点按也会先发 mouseenter,不能当成悬停 */
+      onPointerEnter={(e) => {
+        if (e.pointerType !== 'mouse') return;
+        measure();
+        setHover(true);
+      }}
+      onPointerLeave={(e) => {
+        if (e.pointerType !== 'mouse') return;
+        setHover(false);
+        setShut(false);
+      }}
+    >
       <span className="gzh-anchor">
       <button
-        aria-expanded={open}
+        aria-expanded={shown}
         className={linkClass}
+        ref={btnRef}
         type="button"
         onClick={(e) => {
           e.stopPropagation();
-          setOpen((v) => !v);
+          if (shown) {
+            setOpen(false);
+            setShut(true);
+            btnRef.current?.blur();   /* 不然 :focus-within 又把弹层顶出来 */
+          } else {
+            measure();
+            setShut(false);
+            setOpen(true);
+          }
         }}
       >
         公众号
@@ -107,7 +166,58 @@ export default function HomePage() {
   /* 首屏一起出现(2026-10-23 用户):静态的字标 / 开关和 React 渲染的内容同一帧显示 ——
      index.html 先给 <html> 挂 app-loading 藏起整页,这里在首次渲染提交后、浏览器绘制前去掉 */
   useLayoutEffect(() => {
-    document.documentElement.classList.remove('app-loading');
+    const root = document.documentElement;
+    /* 斜向渐清入场(REVEAL_ENTRANCE):关掉介绍段逐字 / 按钮入场,首屏只靠扫光;要换回逐字入场把开关设成 false */
+    if (REVEAL_ENTRANCE) root.classList.add('reveal-entrance');
+    /* 不用扫光时,index.html 里那层扫光白雾在首次绘制前就拿掉(不然要等 useEffect,多盖一帧) */
+    else document.querySelector('.page-reveal')?.remove();
+    /* 逐段浮现:顶上那组(字标、主题键)第 0 段,介绍区每段、城市时间依次隔一个段间隔;作品在 Feed 入场里排 */
+    if (BLOCKS_ENTRANCE) {
+      root.classList.add('blocks-entrance');
+      const { step } = ENTRANCE.blocks;
+      setBlock(document.querySelector('.site-logo-link'), 0);
+      document.querySelectorAll('.head-right > .head-links, .head-right > .theme-toggle').forEach((el) => setBlock(el, 0));
+      [...document.querySelectorAll('.hero-intro > p'), document.querySelector('.hero-loc')].forEach((el, i) => setBlock(el, (i + 1) * step));
+    }
+    /* 本地开发:用调参面板存下的入场参数(线上用 simple.css 里的默认值) */
+    if (import.meta.env.DEV) applyEntrance(ENTRANCE);
+    root.classList.remove('app-loading');
+  }, []);
+
+  /* 扫光播完就移除那层白雾(不移除的话透明蒙版下的 backdrop-filter 还会一直算) */
+  useEffect(() => {
+    const veil = document.querySelector<HTMLElement>('.page-reveal');
+    if (!veil) return;
+    if (!REVEAL_ENTRANCE || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      veil.remove();
+      return;
+    }
+    /* 调参面板的预览里留着这层:播完也能拖进度条往回看 */
+    if (import.meta.env.DEV && IS_EMBED) return;
+    const done = () => veil.remove();
+    veil.addEventListener('animationend', done, { once: true });
+    /* 动画没跑(后台标签等)也别一直挂着。按扫光时长算:写死 4.5s 时,调到更长的时长会在半路把白雾硬切掉 */
+    const fallback = window.setTimeout(done, ENTRANCE.sweep.dur * 1000 + 1000);
+    return () => clearTimeout(fallback);
+  }, []);
+
+  /* 页面滚动过才显示顶部边缘渐隐(simple.css .edge-top),回到最顶上就收起 */
+  useEffect(() => {
+    const root = document.documentElement;
+    const on = () => root.classList.toggle('page-scrolled', window.scrollY > 4);
+    on();
+    window.addEventListener('scroll', on, { passive: true });
+    return () => window.removeEventListener('scroll', on);
+  }, []);
+
+  /* 单栏(≤ 1151)介绍段不按词组断行,逐字排(2026-10-25 用户:右边参差;拖动窗口时字来回跳)。
+     原来只在 < 640 逐字,拖过 640 时断行方式一换,行尾的字就跳一下;现在只在单栏 / 双栏切换时变 */
+  const [phoneWrap, setPhoneWrap] = useState(() => window.matchMedia('(max-width: 1151px)').matches);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1151px)');
+    const on = () => setPhoneWrap(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
   }, []);
 
   /* 逐行下发入场延迟:行的判定 = 单元左缘比前一个更靠左(换行、换段都会回退左缘) */
@@ -123,12 +233,12 @@ export default function HomePage() {
        文案变长后抢在介绍段之前) */
     const units = [
       ...p.querySelectorAll('.hero-ch'),
-      ...document.querySelectorAll('.contact .hero-ch, .hero-loc .hero-ch'),
+      ...document.querySelectorAll('.hero-loc .hero-ch'),   /* 联系方式那句现在在 .hero-intro 里,上一行已包含 */
     ];
-    /* 单栏(< 1152)时顶栏在页面最上面:按从上到下的顺序,顶栏三个按钮先出,介绍段晚 PILLS_LEAD 再起步
-       (2026-10-24 用户:试试从上到下);宽屏顶栏在左下角,仍排在介绍区之后 */
+    /* 单栏(< 1152)时主题键在页面最上面,先出;介绍段晚 PILLS_LEAD 再起步(2026-10-24 用户:从上到下)。
+       公众号 / 邮箱单栏时在介绍区下方(2026-10-25),和宽屏一样接在介绍区最后一行后面 */
     const topFirst = window.matchMedia('(max-width: 1151px)').matches;
-    const PILLS_LEAD = 300;
+    const PILLS_LEAD = 200;
     const offset = topFirst ? PILLS_LEAD : 0;
     units.forEach((el, i) => {
       const { left } = el.getBoundingClientRect();
@@ -138,8 +248,16 @@ export default function HomePage() {
       (el as HTMLElement).style.setProperty('--d', `${d}ms`);
       introLastRef.current = d;
     });
-    /* 公众号 / 邮箱 / 主题键三个按钮接在介绍区最后一行后面浮现(2026-10-23 用户:入场也要有动画) */
-    document.documentElement.style.setProperty('--pills-d', `${topFirst ? 0 : introLastRef.current + 150}ms`);
+    /* 公众号 / 邮箱(宽屏还有主题键)接在介绍区最后一行后面浮现(2026-10-23 用户:入场也要有动画) */
+    document.documentElement.style.setProperty('--pills-d', `${introLastRef.current + 150}ms`);
+    /* 介绍区入场播完(最后一个字的延迟 + 动画 560ms)后挂 .intro-done:之后重新生成的字不再播入场。
+       调参面板的预览里不挂:挂了字的入场动画就没了,进度条没法往回拖 */
+    if (import.meta.env.DEV && IS_EMBED) return;
+    const done = window.setTimeout(
+      () => document.documentElement.classList.add('intro-done'),
+      introLastRef.current + ENTRANCE.stagger.dur + 150,
+    );
+    return () => clearTimeout(done);
   }, []);
 
   /* Feed 入场(2026-10-23 用户):介绍段收尾 → 细分割线画出 → 作品依次逐字浮现(同批错开);
@@ -157,7 +275,7 @@ export default function HomePage() {
        删掉联系方式那句后介绍区约 0.5s 就走完,写死的 1.5s 让下面空等了 1 秒(2026-10-23 用户:掉队) */
     const HERO_DONE = introLastRef.current + 300;
     /* 上一条封面开始浮现后,下一条再等这么久开始 */
-    const NEXT_GAP = 400;
+    const NEXT_GAP = ENTRANCE.stagger.workGap;
     /* 排队中的作品:end = 下一条最早可以开始的时刻(该条封面开始浮现 + NEXT_GAP) */
     const pending: { el: HTMLElement; end: number }[] = [];
     /* 分割线在介绍段收尾时画出,第一条作品再晚 DIVIDER_LEAD 跟上 */
@@ -168,6 +286,8 @@ export default function HomePage() {
       /* 双 rAF:先让初始态(透明、下移)绘制一帧,过渡才有起点 */
       raf = requestAnimationFrame(() => (raf = requestAnimationFrame(() => works.classList.add('in'))));
     }
+    /* 逐段浮现、双栏时右栏的排队时刻(performance.now 的绝对时间):下一小段最早什么时候开始 */
+    let blockCursor = 0;
     const io = new IntersectionObserver(
       (entries) => {
         const hits = entries.filter((e) => e.isIntersecting).map((e) => e.target as HTMLElement);
@@ -177,6 +297,7 @@ export default function HomePage() {
            再过 NEXT_GAP 才开始逐字;队列跨批次累计(滚动后新进视口的也排在后面) */
         /* 上面的作品直接显示、不再补播入场(2026-10-23 用户:从底部往上划回去时,上面不要入场动画了):
            一下滑到底、或刷新后停在下面时,上面那些从没进过视口;某条出现时,把它上面还没出现的全部直接亮出来 */
+        let blockBatch = 0;
         const reveal = (el: HTMLElement) => {
           el.classList.add('in', 'instant');
           io.unobserve(el);
@@ -186,6 +307,35 @@ export default function HomePage() {
             if (!above.classList.contains('in')) reveal(above);
           });
           if (el.classList.contains('in')) return;
+          /* 逐段浮现:每条作品整条当一段浮上来(里面的逐字、封面入场都关掉);打开页面就在视口里的
+             接在介绍区后面,之后滚动进来的立刻开始,同一批之间隔两个段间隔 */
+          if (BLOCKS_ENTRANCE) {
+            reveal(el);
+            const { step, sectionGap } = ENTRANCE.blocks;
+            /* 双栏(2026-10-25 用户:单栏很好,双栏右边 Feed 不像逐段、不连贯):右栏和左栏一起从上往下流 ——
+               每条作品拆成 日期 → 标题 → 简介 → 每张封面 一小段一小段地来,段间隔同左栏;
+               首屏在左栏开始后 sectionGap 起步,不再等左栏走完;之后滚动进来的接着排,不和上一批抢 */
+            if (window.matchMedia('(min-width: 1152px)').matches) {
+              const cover = el.querySelector('.work-cover');
+              const covers = cover?.matches('.gallery, .showcase') ? [...cover.querySelectorAll('.gl-item, .sc-pane')] : [cover];
+              const parts = [el.querySelector('.work-year'), el.querySelector('.work-title'), el.querySelector('.work-summary'), ...covers];
+              parts.forEach((part) => {
+                if (!part) return;
+                const at = Math.max(now + (now - t0 < 400 ? sectionGap : 0), blockCursor);
+                setBlock(part, at - now);
+                blockCursor = at + step;
+              });
+              return;
+            }
+            const k = blockBatch++;
+            setBlock(el, (now - t0 < 400 ? blocksWorksAt() : 0) + k * 2 * step);
+            return;
+          }
+          /* 斜向渐清入场时,打开页面就在视口里的作品直接显示,交给扫光;之后滚动进来的照常依次浮现 */
+          if (REVEAL_ENTRANCE && now - t0 < 400) {
+            reveal(el);
+            return;
+          }
           /* 严格依次(2026-10-24 用户:第一条没出完,第二条不能出来):每条都等上一条封面开始浮现、
              再过 NEXT_GAP 才开始。原来滚动进来的最多只等 300ms,首屏同时在视口里的两条会一起开始。
              滑得快时不空等:还在排队、但已经滑出视口上方的作品直接显示,不再挡着后面 */
@@ -266,7 +416,7 @@ export default function HomePage() {
             <b className="hero-name">同容</b>
             ，
           </span>
-          {splitIntro('{研究}{内容}{怎么}{被创作、}{被呈现、}{被看见。}').map((t, i) => (
+          {splitIntro('{研究}{内容}{怎么}{被创作、}{被呈现、}{被看见。}', !phoneWrap).map((t, i) => (
             <span key={`b${i}`} className="hero-ch">{t}</span>
           ))}
           </p>
@@ -318,20 +468,43 @@ export default function HomePage() {
             </span>
             ，
           </span>
-          {splitIntro('{设计}{内容}{产品的}{视觉体验，}{创作者}{平台、}{阅读、}{社区这类，}{做界面、图标系统和动效。}').map(
+          {splitIntro('{设计}{内容}{产品的}{视觉体验，}{创作者}{平台、}{阅读、}{社区这类，}{做界面、图标系统和动效。}', !phoneWrap).map(
             (t, i) => (
               <span key={`c${i}`} className="hero-ch">{t}</span>
             ),
           )}
           </p>
           <p>
-          {splitIntro('{现在我}{边设计、}{边实现，}{AI coding、}{skills、}{PR }{是常态。}{同时，}{把看到的、}{想到的，}{写成}{文章。}').map((t, i) => (
+          {splitIntro('{现在我}{边设计、}{边实现，}{AI coding、}{skills、}{PR }{是常态。}{同时，}{把看到的、}{想到的，}{写成}{文章。}', !phoneWrap).map((t, i) => (
             <span key={`d${i}`} className="hero-ch">{t}</span>
           ))}
+          </p>
+          {/* 联系方式一句话(2026-10-25 用户:单栏时用这句,不用公众号 / 邮箱两个胶囊,底部不再挤一堆);
+              宽屏仍用左下角的胶囊,这句隐藏(simple.css) */}
+          <p className="contact">
+            {/* 链接和前面的字粘成一个单元(「在公众号」「通过邮箱联系我。」):折行时不会以链接开头,
+                否则链接左边的间距会让行首缩进一格 */}
+            {splitIntro('可以').map((t, i) => (   /* 去掉开头的「你」(2026-10-25 用户) */
+              <span key={`e${i}`} className="hero-ch">{t}</span>
+            ))}
+            {/* 外层给 z-index:每个字单元入场带 filter 会自成层叠上下文,二维码弹层才盖得住后面的字 */}
+            <span className="hero-ch gzh-wrap">
+              在<Gzh linkClass="text-link" />
+            </span>
+            {splitIntro('上找到我，或者').map((t, i) => (
+              <span key={`f${i}`} className="hero-ch">{t}</span>
+            ))}
+            <span className="hero-ch">
+              通过<a className="text-link" href={MAILTO} title={MAIL}>邮箱</a>联系我。
+            </span>
           </p>
         </div>
       </header>
       <LocalTime />
+      {/* 入场扫光调参面板:只在本地开发出现(2026-10-25 用户) */}
+      {import.meta.env.DEV && !IS_EMBED && <RevealTuner />}
+      {/* 作品导航刻度:宽屏双栏才出现(2026-10-25 用户:参考 Codex 的消息摘要刻度) */}
+      <WorkRail items={WORKS} />
       </div>
       <section className="works" aria-label="代表作">
         {WORKS.map((w) => (
