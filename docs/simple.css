@@ -624,7 +624,7 @@ body.theme-vt *::after {
     gap: 12px;   /* 日期 → 标题 12(2026-10-25 用户;肉眼约 26。12 / 24 来回试过) */
 }
 .work-year {
-    color: var(--ink);   /* 日期不用浅灰,用正文色(2026-10-25 用户) */
+    color: var(--ink-2);   /* 日期灰色(2026-10-25 用户:试过正文色又改回灰) */
     font-size: var(--fs-body);   /* 日期用正文字号 18 / 32(2026-10-25 用户;14、16、18 来回试过) */
     line-height: var(--lh-body);
     font-variant-numeric: tabular-nums;
