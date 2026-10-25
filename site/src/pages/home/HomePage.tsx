@@ -139,6 +139,15 @@ export default function HomePage() {
     document.documentElement.classList.remove('app-loading');
   }, []);
 
+  /* 页面滚动过才显示顶部边缘模糊(simple.css .edge-top),回到最顶上就收起 */
+  useEffect(() => {
+    const root = document.documentElement;
+    const on = () => root.classList.toggle('page-scrolled', window.scrollY > 4);
+    on();
+    window.addEventListener('scroll', on, { passive: true });
+    return () => window.removeEventListener('scroll', on);
+  }, []);
+
   /* 手机宽度(≤ 600)介绍段不按词组断行,逐字排满(2026-10-25 用户:右边参差,没有段落整块感);
      电脑上仍按词组断句。跨过断点时跟着切换 */
   const [phoneWrap, setPhoneWrap] = useState(() => window.matchMedia('(max-width: 600px)').matches);

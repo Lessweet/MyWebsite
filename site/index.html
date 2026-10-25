@@ -15,7 +15,7 @@
 <!-- v4 简化版(2026-10-23):单页、无 loading、无转场;只加载 simple.css 一份样式。
      老的 style.css / writing.css 仍服务旧的 Blog / Archive / 文章页。 -->
 <style>html { background: #FDFDFC; }</style>
-<link href="simple.css?v=295" rel="stylesheet"/>
+<link href="simple.css?v=297" rel="stylesheet"/>
 <!-- 只用其中的主题函数(applySiteTheme / toggleSiteTheme),不调 initSiteNav -->
 <script src="nav-boot.js?v=19"></script>
 </head>
@@ -37,6 +37,9 @@
 </header>
 <main id="app"></main>
 </div>
+<!-- 屏幕上下边缘的渐进模糊(2026-10-25 用户:滑动时上下都要有,各个浏览器打开都一样) -->
+<div aria-hidden="true" class="edge-blur edge-top"></div>
+<div aria-hidden="true" class="edge-blur edge-bottom"></div>
 <script src="/src/pages/home/main.tsx" type="module"></script>
 </body>
 </html>

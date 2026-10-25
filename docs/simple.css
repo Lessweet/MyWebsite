@@ -106,6 +106,43 @@ p, h2 { text-wrap: pretty; }   /* 段落 + 作品标题:避免最后一行只剩
 
 /* 首屏一起出现:HomePage 渲染完之前整页隐藏(见 site/index.html 顶部脚本与 HomePage 的 useLayoutEffect) */
 .app-loading .page { visibility: hidden; }
+
+/* ── 屏幕上下边缘渐进模糊(2026-10-25 用户:滑动时上下都要有,像 Safari 顶部那样,各浏览器打开都一样)──
+   两条固定在视口上 / 下边缘的遮罩:两层 backdrop-filter(轻 / 重)各配一个渐变蒙版,越靠边越糊,
+   再叠一层淡淡的页面底色,边缘的内容渐渐隐去。z-index 1:盖住随页面滚动的内容,
+   宽屏左栏的固定面板(z 2–3)在它上面,不被模糊 */
+.edge-blur {
+    position: fixed;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    height: 56px;
+    pointer-events: none;
+}
+/* 顶部那条只在页面滚动后出现:在最顶上时不糊住主题键和字标(HomePage 挂 .page-scrolled) */
+.edge-top { top: 0; height: calc(48px + env(safe-area-inset-top, 0px)); opacity: 0; transition: opacity 0.25s ease; }
+.page-scrolled .edge-top { opacity: 1; }
+.edge-bottom { bottom: 0; height: calc(56px + env(safe-area-inset-bottom, 0px)); }
+.edge-blur::before,
+.edge-blur::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+}
+.edge-blur::before {
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+}
+.edge-blur::after {
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    background: color-mix(in srgb, var(--site-bg) 55%, transparent);
+}
+/* 蒙版:轻模糊铺满整条、往内渐隐;重模糊 + 底色只在最靠边的一半 */
+.edge-top::before    { -webkit-mask-image: linear-gradient(to bottom, #000, transparent); mask-image: linear-gradient(to bottom, #000, transparent); }
+.edge-top::after     { -webkit-mask-image: linear-gradient(to bottom, #000, transparent 60%); mask-image: linear-gradient(to bottom, #000, transparent 60%); }
+.edge-bottom::before { -webkit-mask-image: linear-gradient(to top, #000, transparent); mask-image: linear-gradient(to top, #000, transparent); }
+.edge-bottom::after  { -webkit-mask-image: linear-gradient(to top, #000, transparent 60%); mask-image: linear-gradient(to top, #000, transparent 60%); }
 .page {
     max-width: calc(var(--col) + var(--gutter) * 2);
     /* 左对齐、不居中(2026-10-23 用户:单列居中、双栏贴左,切换时跳得太大)——
