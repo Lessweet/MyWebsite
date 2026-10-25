@@ -29,6 +29,7 @@
     --ink-2: #8E8E93;   /* 灰色文字(2026-10-23 用户定色值) */
     --line: rgba(0, 0, 0, 0.1);   /* 细分割线(2026-10-24 用户:试过 benji 的 #F2F2F2,太淡,改回) */
     --btn-line: rgba(0, 0, 0, 0.1);   /* 胶囊 / 主题键边框:保留原来的深度(2026-10-24 用户:#F2F2F2 太淡) */
+    --rule: #F2F2F2;   /* 作品日期上方的细线:同 benji.org 列表分割线(2026-10-25 用户:再浅一点,和他网站里一样) */
     --fill: #F2F2F7;
     --gray-400: #aeaeb2;
     --gray-500: #8e8e93;
@@ -65,6 +66,7 @@ body.theme-dark {
     --ink-2: #8E8E93;
     --line: rgba(255, 255, 255, 0.1);
     --btn-line: rgba(255, 255, 255, 0.1);
+    --rule: rgba(255, 255, 255, 0.07);
     --fill: #2c2c2e;
     --mark: #48484A;
     --cover-bg: linear-gradient(135deg, #3A3036, #36322D);   /* 同色相压暗 */
@@ -528,7 +530,7 @@ body.theme-vt *::after {
     display: block;
     height: 1px;
     margin-bottom: 12px;
-    background: var(--line);
+    background: var(--rule);
     opacity: 0;
     transform: translateY(24px);
     transition: opacity 0.7s var(--ease-soft), transform 0.7s var(--ease-soft);
