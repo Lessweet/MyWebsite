@@ -1125,16 +1125,33 @@ body.theme-dark .rt-toggle:hover { border-color: rgba(255, 255, 255, 0.2); }
 @media (max-width: 1151px) {
     .rt-toggle { position: absolute; top: 24px; right: calc(var(--gutter) + 44px); }
 }
+/* 蒙层:半透明 + 把背后的页面模糊掉;中间卡片放调参台(2026-10-25 用户:不要全屏页) */
 .rt-modal {
     position: fixed;
     inset: 0;
     z-index: 100;
     display: flex;
-    flex-direction: column;
-    background: var(--site-bg);
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.18);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
     color: var(--ink);
     font-size: 14px;
     line-height: 20px;
+}
+body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
+.rt-panel {
+    display: flex;
+    flex-direction: column;
+    width: min(1120px, 100%);
+    height: min(720px, 100%);
+    overflow: hidden;
+    background: var(--site-bg);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18);
 }
 .rt-head {
     display: flex;

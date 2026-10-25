@@ -129,7 +129,14 @@ export default function RevealTuner() {
       )}
       {open &&
         createPortal(
-          <div aria-label="入场扫光参数" aria-modal="true" className="rt-modal" role="dialog">
+          /* 蒙层把背后的页面模糊掉,中间一张卡片放调参台;点卡片外面关闭(2026-10-25 用户:不要全屏页) */
+          <div
+            className="rt-modal"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setOpen(false);
+            }}
+          >
+           <div aria-label="入场扫光参数" aria-modal="true" className="rt-panel" role="dialog">
             <div className="rt-head">
               <h2>入场扫光</h2>
               <button className="rt-btn" type="button" onClick={() => setOpen(false)}>
@@ -195,6 +202,7 @@ export default function RevealTuner() {
                 </div>
               </div>
             </div>
+           </div>
           </div>,
           document.body,
         )}
