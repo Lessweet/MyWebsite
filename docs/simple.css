@@ -1600,6 +1600,11 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
 .wr-tick.is-seen > i { opacity: 0.7; }   /* 正在屏幕里的那几块:深一档,不变长 */
 .work-rail.is-hover .wr-tick > i { opacity: 0.2; }   /* 悬停时其余的线都变浅 */
 .work-rail.is-hover .wr-tick.is-hot > i { opacity: 1; }
+/* 滑动 Feed 时和悬停一模一样(2026-10-25 用户:颜色、长短都一样):正在看的那条 14 纯黑,
+   紧挨着的上下各一根 11,其余 8 浅灰;停下 0.7s 后回到平时 */
+.work-rail.is-scrolling .wr-tick > i { opacity: 0.2; }
+.work-rail.is-scrolling .wr-tick.is-current > i { width: 14px; opacity: 1; }
+.work-rail.is-scrolling .wr-tick.is-near > i { width: 11px; }
 .wr-tick:focus-visible { outline: none; }
 /* 预览卡:刻度左边,只有一张,top 跟着悬停的线走、高度跟内容走,都用过渡。
    外层 .wr-pop 管位置和显隐,右边留 6px 透明的「桥」,鼠标从刻度移到卡片上不会断;

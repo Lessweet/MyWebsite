@@ -26,6 +26,9 @@ export default function WorkRail({ items }: { items: Item[] }) {
   const [wide, setWide] = useState(() => window.matchMedia(WIDE).matches);
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [seen, setSeen] = useState<boolean[]>([]);
+  /* 滑动 Feed 时(2026-10-25 用户:线的颜色和 hover 时一样):正在看的那条纯黑、其余浅灰,停下一会儿再回到平时 */
+  const [current, setCurrent] = useState(0);
+  const [scrolling, setScrolling] = useState(false);
   const [hover, setHover] = useState<number | null>(null);
   const [cardY, setCardY] = useState(0);
   const railRef = useRef<HTMLElement>(null);
@@ -56,6 +59,7 @@ export default function WorkRail({ items }: { items: Item[] }) {
   /* 哪几块在屏幕里(露出来一部分就算):对应的线深一档 */
   useEffect(() => {
     if (!wide || !blocks.length) return;
+    let idle = 0;
     const update = () => {
       const vh = window.innerHeight;
       setSeen(
@@ -64,10 +68,26 @@ export default function WorkRail({ items }: { items: Item[] }) {
           return r.bottom > 0 && r.top < vh;
         }),
       );
+      /* 正在看的那条:顶边过了视口 40% 那条线的最后一条;滚到底就是最后一条 */
+      let c = 0;
+      blocks.forEach((b, i) => {
+        if (b.el.getBoundingClientRect().top <= vh * 0.4) c = i;
+      });
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) c = blocks.length - 1;
+      setCurrent(c);
+    };
+    const onScroll = () => {
+      update();
+      setScrolling(true);
+      clearTimeout(idle);
+      idle = window.setTimeout(() => setScrolling(false), 700);
     };
     update();
-    window.addEventListener('scroll', update, { passive: true });
-    return () => window.removeEventListener('scroll', update);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      clearTimeout(idle);
+      window.removeEventListener('scroll', onScroll);
+    };
   }, [wide, blocks]);
 
   /* 预览卡高度跟内容走,用过渡从上一张的高度变过去 */
@@ -159,7 +179,7 @@ export default function WorkRail({ items }: { items: Item[] }) {
   return (
     <nav
       aria-label="作品导航"
-      className={`work-rail${hb ? ' is-hover' : ''}`}
+      className={`work-rail${hb ? ' is-hover' : ''}${scrolling && !hb ? ' is-scrolling' : ''}`}
       ref={railRef}
       onPointerLeave={onLeave}
       onPointerMove={(e) => {
@@ -172,7 +192,7 @@ export default function WorkRail({ items }: { items: Item[] }) {
         <button
           aria-current={seen[i] && !seen[i - 1] ? 'true' : undefined}
           aria-label={`${items[b.work]?.date ?? ''} ${items[b.work]?.title ?? ''}`}
-          className={`wr-tick${seen[i] ? ' is-seen' : ''}${i === hover ? ' is-hot' : ''}`}
+          className={`wr-tick${seen[i] ? ' is-seen' : ''}${i === hover ? ' is-hot' : ''}${i === current ? ' is-current' : ''}${Math.abs(i - current) === 1 ? ' is-near' : ''}`}
           key={i}
           ref={(el) => {
             tickRefs.current[i] = el;
