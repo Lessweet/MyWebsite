@@ -515,9 +515,9 @@ body.theme-vt *::after {
     gap: 80px;   /* 作品之间 56 → 80(2026-10-23 用户) */
     position: relative;
     /* 分割线上下肉眼都是 72(= 段间距 24 的 3 倍),和顶栏到字标一样(2026-10-25 用户:看着要一样)。
-       文字行自带留白:时间行字形下方约 6px、日期字形上方约 7px,所以盒子数值减掉这部分。宽屏双栏没有这条线,另有覆盖 */
+       文字行自带留白:时间行字形下方约 6px、日期(18 / 32)字形上方约 8px,所以盒子数值减掉这部分。宽屏双栏没有这条线,另有覆盖 */
     margin-top: 66px;
-    padding-top: 65px;
+    padding-top: 64px;
     padding-bottom: 96px;
 }
 /* 介绍段与 Feed 之间的细分割线(2026-10-23 用户:删了又加回):排在入场队列里 ——
@@ -625,8 +625,8 @@ body.theme-vt *::after {
 }
 .work-year {
     color: var(--ink);   /* 日期不用浅灰,用正文色(2026-10-25 用户) */
-    font-size: var(--fs-sm);   /* 日期用小号 --fs-sm / --lh-sm(2026-10-25 用户) */
-    line-height: var(--lh-sm);
+    font-size: var(--fs-body);   /* 日期用正文字号 18 / 32(2026-10-25 用户;14、16、18 来回试过) */
+    line-height: var(--lh-body);
     font-variant-numeric: tabular-nums;
 }
 .work-title { font-size: var(--fs-h2); line-height: var(--lh-h2); }
