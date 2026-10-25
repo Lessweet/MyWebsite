@@ -1,11 +1,11 @@
 /* 作品导航刻度(2026-10-25 用户:参考 Codex 对话导航栏的「消息摘要刻度」,照文章里的录屏做)。
    只在宽屏双栏出现,竖排在页面最右边,第一根线和 Feed 第一条日期顶对齐(试过两栏之间、垂直居中)。
    - 一排短细线,一条作品一根(2026-10-25 用户:一个作品一个节点;试过每张封面图也各一根);
-   - 鼠标沿着刻度划过时整列连续联动(照用户录的 Codex 录屏):悬停那根最长、纯黑,紧挨着的上下各一根长一半,
-     悬停时其余的线都变浅灰;平时线都是短的灰线,正在屏幕里的那几块对应的线深一档(不变长);
+   - 一套样式(2026-10-25 用户:用一套样式,适配用户自动互动、hover 选择):整列只有一个「焦点」——
+     悬停时是鼠标指着的那条,其余时候是正在看的那条(随滚动自动走);焦点那根最长、纯黑,紧挨着的上下各一根稍长,其余短的浅灰;
    - 预览卡只有一张,跟着光标上下滑,内容换时高度平滑过渡(文章作者嫌 Codex 的卡片尺寸硬切);
    - 点刻度或点预览卡(2026-10-25 用户:每个节点的小片可以点击直接定位)都滚到那块内容,到了以后那块轻轻闪一下(文章作者:目标已在屏幕内时点了没反应,缺个「你已经在这里了」);
-   - 鼠标离开立刻回到平时的样子。
+   - 鼠标离开,焦点回到正在看的那条。
    单栏没有悬停、也没地方放,不显示。样式见 simple.css .work-rail */
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
@@ -13,9 +13,6 @@ type Item = { date: string; title: string; summary?: string };
 type Block = { el: HTMLElement; work: number };
 
 const WIDE = '(min-width: 1152px)';
-/* 光标影响多远(px):线距 8,影响到 16 就只带动紧挨着的上下各一根(长一半),再远的不动
-   (2026-10-25 用户:只影响紧挨着的一根;原来 36,上下各约 5 根) */
-const REACH = 16;
 
 /* 从页面上收集每条作品:滚动定位按它的文字块(.work-head)算,屏幕里有没有按整条作品算 */
 function collectBlocks(): Block[] {
@@ -25,10 +22,8 @@ function collectBlocks(): Block[] {
 export default function WorkRail({ items }: { items: Item[] }) {
   const [wide, setWide] = useState(() => window.matchMedia(WIDE).matches);
   const [blocks, setBlocks] = useState<Block[]>([]);
-  const [seen, setSeen] = useState<boolean[]>([]);
-  /* 滑动 Feed 时(2026-10-25 用户:线的颜色和 hover 时一样):正在看的那条纯黑、其余浅灰,停下一会儿再回到平时 */
+  /* 正在看的那条(随滚动自动走) */
   const [current, setCurrent] = useState(0);
-  const [scrolling, setScrolling] = useState(false);
   const [hover, setHover] = useState<number | null>(null);
   const [cardY, setCardY] = useState(0);
   const railRef = useRef<HTMLElement>(null);
@@ -56,18 +51,10 @@ export default function WorkRail({ items }: { items: Item[] }) {
     };
   }, [wide]);
 
-  /* 哪几块在屏幕里(露出来一部分就算):对应的线深一档 */
   useEffect(() => {
     if (!wide || !blocks.length) return;
-    let idle = 0;
     const update = () => {
       const vh = window.innerHeight;
-      setSeen(
-        blocks.map((b) => {
-          const r = b.el.getBoundingClientRect();
-          return r.bottom > 0 && r.top < vh;
-        }),
-      );
       /* 正在看的那条:顶边过了视口 40% 那条线的最后一条;滚到底就是最后一条 */
       let c = 0;
       blocks.forEach((b, i) => {
@@ -76,18 +63,9 @@ export default function WorkRail({ items }: { items: Item[] }) {
       if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) c = blocks.length - 1;
       setCurrent(c);
     };
-    const onScroll = () => {
-      update();
-      setScrolling(true);
-      clearTimeout(idle);
-      idle = window.setTimeout(() => setScrolling(false), 700);
-    };
     update();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => {
-      clearTimeout(idle);
-      window.removeEventListener('scroll', onScroll);
-    };
+    window.addEventListener('scroll', update, { passive: true });
+    return () => window.removeEventListener('scroll', update);
   }, [wide, blocks]);
 
   /* 预览卡高度跟内容走,用过渡从上一张的高度变过去 */
@@ -100,8 +78,7 @@ export default function WorkRail({ items }: { items: Item[] }) {
     return () => ro.disconnect();
   }, [hover, wide, blocks.length]);
 
-  /* 鼠标在刻度列上移动:每根线按离光标的距离算一个 0–1 的「靠近度」,写成 --f(CSS 用它算长度和亮度);
-     离光标最近的那根当作悬停的那根,预览卡跟着它 */
+  /* 鼠标在刻度列上移动:离光标最近的那根当作悬停的那根(成为焦点),预览卡跟着它 */
   const onMove = (clientY: number) => {
     let best = -1;
     let bestD = Infinity;
@@ -109,8 +86,6 @@ export default function WorkRail({ items }: { items: Item[] }) {
       if (!t) return;
       const r = t.getBoundingClientRect();
       const d = Math.abs(clientY - (r.top + r.height / 2));
-      const f = Math.max(0, 1 - d / REACH);   /* 线性衰减:录屏里相邻几根大约 77% / 60% / 40% / 20% 依次变短 */
-      t.style.setProperty('--f', f.toFixed(3));
       if (d < bestD) {
         bestD = d;
         best = i;
@@ -124,10 +99,7 @@ export default function WorkRail({ items }: { items: Item[] }) {
       setHover(best);
     }
   };
-  const onLeave = () => {
-    tickRefs.current.forEach((t) => t?.style.setProperty('--f', '0'));
-    setHover(null);
-  };
+  const onLeave = () => setHover(null);
 
   /* 点击:滚到那块(文字块让日期落在第一条刚打开时的高度,图片块放到视口中间),到了以后那块闪一下 */
   const go = (i: number) => {
@@ -174,12 +146,13 @@ export default function WorkRail({ items }: { items: Item[] }) {
   if (!wide || blocks.length < 2) return null;
 
   const hb = hover != null ? blocks[hover] : null;
+  const focus = hover ?? current;
   const hw = hb ? items[hb.work] : null;
 
   return (
     <nav
       aria-label="作品导航"
-      className={`work-rail${hb ? ' is-hover' : ''}${scrolling && !hb ? ' is-scrolling' : ''}`}
+      className={`work-rail${hb ? ' is-hover' : ''}`}
       ref={railRef}
       onPointerLeave={onLeave}
       onPointerMove={(e) => {
@@ -190,9 +163,9 @@ export default function WorkRail({ items }: { items: Item[] }) {
     >
       {blocks.map((b, i) => (
         <button
-          aria-current={seen[i] && !seen[i - 1] ? 'true' : undefined}
+          aria-current={i === current ? 'true' : undefined}
           aria-label={`${items[b.work]?.date ?? ''} ${items[b.work]?.title ?? ''}`}
-          className={`wr-tick${seen[i] ? ' is-seen' : ''}${i === hover ? ' is-hot' : ''}${i === current ? ' is-current' : ''}${Math.abs(i - current) === 1 ? ' is-near' : ''}`}
+          className={`wr-tick${i === focus ? ' is-focus' : ''}${Math.abs(i - focus) === 1 ? ' is-near' : ''}`}
           key={i}
           ref={(el) => {
             tickRefs.current[i] = el;

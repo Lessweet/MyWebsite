@@ -1576,35 +1576,29 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     animation: hero-fade-in 0.6s ease 0.8s both;   /* 等入场走完再淡出来,不抢首屏 */
 }
 .wr-tick {
-    --f: 0;
     position: relative;
     display: block;
     width: 32px;   /* 正好是页面右内边距:线最长 14px,右边留 10px */
     height: 8px;   /* 一条作品一根,线距 8(2026-10-25 用户:纵向间距太长;原 12) */
     cursor: pointer;
 }
+/* 一套样式(2026-10-25 用户):滚动自动走、鼠标悬停选,都只有一个焦点 ——
+   焦点 14 纯黑,紧挨着的上下各一根 11,其余 8 浅灰;焦点换了,长短和深浅用过渡跟过去 */
 .wr-tick > i {
     /* 绝对定位钉在右边:长短怎么变,右端始终对齐(2026-10-25 用户) */
     position: absolute;
     top: 50%;
     right: 10px;
     margin-top: -0.75px;
-    width: calc(8px + 6px * var(--f));   /* 平时 8,悬停那根 14(2026-10-25 用户;试过 8 → 30、8 → 20、6 → 14) */
+    width: 8px;   /* 试过 6、8;焦点试过 30、20、14 */
     height: 1.5px;
     border-radius: 1px;
     background: var(--ink);
-    opacity: 0.28;
-    /* 跟手要快,但不能一跳一跳:短过渡把逐帧的变化抹平 */
-    transition: width 0.12s ease-out, opacity 0.12s ease-out;
+    opacity: 0.2;
+    transition: width 0.16s ease-out, opacity 0.16s ease-out;
 }
-.wr-tick.is-seen > i { opacity: 0.7; }   /* 正在屏幕里的那几块:深一档,不变长 */
-.work-rail.is-hover .wr-tick > i { opacity: 0.2; }   /* 悬停时其余的线都变浅 */
-.work-rail.is-hover .wr-tick.is-hot > i { opacity: 1; }
-/* 滑动 Feed 时和悬停一模一样(2026-10-25 用户:颜色、长短都一样):正在看的那条 14 纯黑,
-   紧挨着的上下各一根 11,其余 8 浅灰;停下 0.7s 后回到平时 */
-.work-rail.is-scrolling .wr-tick > i { opacity: 0.2; }
-.work-rail.is-scrolling .wr-tick.is-current > i { width: 14px; opacity: 1; }
-.work-rail.is-scrolling .wr-tick.is-near > i { width: 11px; }
+.wr-tick.is-near > i { width: 11px; }
+.wr-tick.is-focus > i { width: 14px; opacity: 1; }
 .wr-tick:focus-visible { outline: none; }
 /* 预览卡:刻度左边,只有一张,top 跟着悬停的线走、高度跟内容走,都用过渡。
    外层 .wr-pop 管位置和显隐,右边留 6px 透明的「桥」,鼠标从刻度移到卡片上不会断;
