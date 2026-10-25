@@ -432,6 +432,14 @@ export default function RevealTuner() {
   const [copied, setCopied] = useState(false);
   const [masked, setMasked] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
+  /* 参数区上下边缘渐隐(2026-10-25 用户:底部渐进过渡,顶部也要):上面滚过才淡、下面到底就不淡 */
+  const controlsRef = useRef<HTMLDivElement>(null);
+  const updateFade = () => {
+    const el = controlsRef.current;
+    if (!el) return;
+    el.toggleAttribute('data-fade-top', el.scrollTop > 1);
+    el.toggleAttribute('data-fade-bottom', el.scrollTop + el.clientHeight < el.scrollHeight - 1);
+  };
   const [scale, setScale] = useState(0.5);
   const frameRef = useRef<HTMLIFrameElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -635,6 +643,16 @@ export default function RevealTuner() {
     return () => ro.disconnect();
   }, [open, view.w, view.h]);
 
+  /* 打开、换入场方式(内容高度变了)、窗口尺寸变化时重算一次渐隐 */
+  useLayoutEffect(() => {
+    if (!open || !controlsRef.current) return;
+    updateFade();
+    const ro = new ResizeObserver(updateFade);
+    ro.observe(controlsRef.current);
+    return () => ro.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, cfg.mode]);
+
   /* 打开时锁住页面滚动,Esc 关闭 */
   useEffect(() => {
     if (!open) return;
@@ -773,7 +791,7 @@ export default function RevealTuner() {
                   </div>
                 </div>
                 <div className="rt-side">
-                <div className="rt-controls">
+                <div className="rt-controls" ref={controlsRef} onScroll={updateFade}>
                   <div className="rt-field">
                     <span className="rt-label">入场方式</span>
                     <ModeCards value={cfg.mode} onChange={(mode) => setCfg({ ...cfg, mode })} />

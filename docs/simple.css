@@ -1242,8 +1242,16 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     gap: 4px;
     padding-top: 16px;
     background: var(--site-bg);
-    box-shadow: 0 -16px 16px -4px var(--site-bg);
 }
+/* 参数区上下边缘渐隐:蒙版两头各一段从透明到不透明;滚过顶部才有上面那段,滚到底就没有下面那段(HomePage 不管,RevealTuner 挂属性) */
+.rt-controls {
+    --rt-fade-top: 0px;
+    --rt-fade-bottom: 0px;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 var(--rt-fade-top), #000 calc(100% - var(--rt-fade-bottom)), transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 var(--rt-fade-top), #000 calc(100% - var(--rt-fade-bottom)), transparent);
+}
+.rt-controls[data-fade-top] { --rt-fade-top: 40px; }
+.rt-controls[data-fade-bottom] { --rt-fade-bottom: 48px; }
 .rt-link {
     margin-right: auto;
     height: 36px;
@@ -1277,7 +1285,9 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
 .rt-primary { background: var(--ink); border-color: var(--ink); color: var(--site-bg); }
 @media (max-width: 760px) {
     .rt-body { grid-template-columns: 1fr; grid-template-rows: 42vh auto; overflow: auto; }
-    .rt-controls { overflow: visible; }
+    /* 窄屏整个弹窗一起滚,参数区不单独滚:不用蒙版,底栏上方用一段底色阴影渐隐 */
+    .rt-controls { overflow: visible; -webkit-mask-image: none; mask-image: none; }
+    .rt-actions { box-shadow: 0 -16px 16px -4px var(--site-bg); }
 }
 /* 预览下方的播放进度条 */
 .rt-progress {
