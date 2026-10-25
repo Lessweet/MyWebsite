@@ -965,7 +965,8 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
     .head-right .theme-toggle { position: absolute; top: 24px; right: var(--gutter); animation-delay: 0ms; }
     /* 二维码弹层向下弹、左对齐到「公众号」,不顶出页面左缘 */
     .head-links .gzh-pop { left: 0; right: auto; }
-    .site-logo-link { order: 1; flex: none; width: 256px; max-width: 100%; margin-top: 56px; }   /* 页面顶端到字标 56,同双栏(2026-10-25 用户) */
+    /* 页面顶端到字标 56,同双栏(2026-10-25 用户)。最宽给右上角主题键(36)+ 间距 8 让位:320 宽的手机上不压住 */
+    .site-logo-link { order: 1; flex: none; width: 256px; max-width: calc(100% - 44px); margin-top: 56px; }
     /* 字标到介绍:和双栏一样(盒子 48,肉眼约 57)。2026-10-25 用户:两种布局要一致,以双栏为准;
        当天试过 24 / 30 / 39 都改回 */
     .home-hero { padding-top: 48px; }
