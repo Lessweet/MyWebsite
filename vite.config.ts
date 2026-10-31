@@ -59,6 +59,14 @@ function hiddenWorks(): Plugin {
     resolveId(id) {
       if (id === ID) return '\0' + ID;
     },
+    /* 改了 site/private/hidden-works.ts:作废虚拟模块并整页刷新(之前只靠 addWatchFile,改了不生效,2026-10-31 修) */
+    handleHotUpdate({ file, server }) {
+      if (file !== join(PRIVATE, 'hidden-works.ts')) return;
+      const mod = server.moduleGraph.getModuleById('\0' + ID);
+      if (mod) server.moduleGraph.invalidateModule(mod);
+      server.ws.send({ type: 'full-reload' });
+      return [];
+    },
     load(id) {
       if (id !== '\0' + ID) return;
       const file = join(PRIVATE, 'hidden-works.ts');
