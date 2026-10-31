@@ -7,18 +7,20 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>VibeUX</title>
-<!-- favicon:气泡环图形(2026-10-23 用户;生成 site/scripts/build-favicon-mark.py)。SVG 跟随浏览器深浅色,PNG 给 Safari 兜底;
-     旧版各页仍用原来的 favicon.png -->
-<link href="favicon-mark.svg?v=2" rel="icon" type="image/svg+xml"/>
-<link href="favicon-mark.png?v=2" rel="icon" type="image/png" sizes="64x64"/>
-<link href="apple-touch-icon-mark.png?v=1" rel="apple-touch-icon"/>
+<!-- favicon:圆脸图标,黑色(2026-10-31 用户;Figma 作品集 187:2072 原为黄色 #F8AE00)。
+     SVG 给支持的浏览器,PNG 给 Safari 兜底;添加到主屏幕用白底黑图(iOS 会把透明底填黑)。旧版各页仍用原来的 favicon.png -->
+<link href="favicon-face.svg?v=1" rel="icon" type="image/svg+xml"/>
+<link href="favicon-face.png?v=1" rel="icon" type="image/png" sizes="64x64"/>
+<link href="apple-touch-icon-face.png?v=1" rel="apple-touch-icon"/>
 <!-- v4 简化版(2026-10-23):单页、无 loading、无转场;只加载 simple.css 一份样式。
      老的 style.css / writing.css 仍服务旧的 Blog / Archive / 文章页。 -->
 <style>html { background: #FDFDFC; }</style>
-<link href="simple.css?v=416" rel="stylesheet"/>
+<link href="simple.css?v=440" rel="stylesheet"/>
 <!-- 只用其中的主题函数(applySiteTheme / toggleSiteTheme),不调 initSiteNav -->
 <script src="nav-boot.js?v=20"></script>
-  <script type="module" crossorigin src="/assets/index-CAnqvV_s.js"></script>
+<link rel="preload" as="image" fetchpriority="high" imagesrcset="writing/assets/works/gallery/wechat-ai-1-960.webp?v=14 960w, writing/assets/works/gallery/wechat-ai-1-1280.webp?v=14 1280w, writing/assets/works/gallery/wechat-ai-1.webp?v=14 1920w" imagesizes="(min-width: 1536px) 448px, (min-width: 1390px) calc(50vw - 320px), (min-width: 1280px) calc(100vw - 624px), (min-width: 830px) calc(50vw - 40px), calc(100vw - 64px)"/>
+<link rel="preload" as="image" fetchpriority="high" imagesrcset="writing/assets/works/gallery/wechat-ai-2-960.webp?v=16 960w, writing/assets/works/gallery/wechat-ai-2-1280.webp?v=16 1280w, writing/assets/works/gallery/wechat-ai-2.webp?v=16 1920w" imagesizes="(min-width: 1536px) 448px, (min-width: 1390px) calc(50vw - 320px), (min-width: 1280px) calc(100vw - 624px), (min-width: 830px) calc(50vw - 40px), calc(100vw - 64px)"/>
+  <script type="module" crossorigin src="/assets/index-Der2YVFL.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/index-BOwIwFzp.js">
   <link rel="modulepreload" crossorigin href="/assets/index-DjOYTj-_.js">
   <link rel="modulepreload" crossorigin href="/assets/NeteaseWordmark-BOc5AwUK.js">
