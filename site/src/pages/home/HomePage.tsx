@@ -12,6 +12,7 @@ import { WORKS } from './works';
 import LocalTime from './LocalTime';
 import RevealTuner from './RevealTuner';
 import DevOutline from './DevOutline';
+import DevRadius from './DevRadius';
 import WorkRail from './WorkRail';
 import { applyEntrance, currentEntrance } from './entrance';
 
@@ -178,7 +179,6 @@ export default function HomePage() {
     if (BLOCKS_ENTRANCE) {
       root.classList.add('blocks-entrance');
       const { step } = ENTRANCE.blocks;
-      setBlock(document.querySelector('.site-logo-link'), 0);
       /* 主题键不参与入场(2026-10-31 用户:和右下角另外两个按钮一样,一打开就固定在那) */
       document.querySelectorAll('.head-right > .head-links').forEach((el) => setBlock(el, 0));
       const introBlocks = [...document.querySelectorAll('.hero-intro > p'), document.querySelector('.hero-loc')];
@@ -508,6 +508,7 @@ export default function HomePage() {
       {/* 入场扫光调参面板:只在本地开发出现(2026-10-25 用户) */}
       {import.meta.env.DEV && !IS_EMBED && <RevealTuner />}
       {import.meta.env.DEV && !IS_EMBED && <DevOutline />}
+      {import.meta.env.DEV && !IS_EMBED && <DevRadius />}
       {/* 作品导航刻度:宽屏双栏才出现(2026-10-25 用户:参考 Codex 的消息摘要刻度) */}
       <WorkRail items={WORKS} />
       </div>
@@ -552,7 +553,7 @@ const sized = (src: string, w: number) => src.replace(/\.webp(\?|$)/, `-${w}.web
 /* 卡片在各布局下的实际显示宽度(两栏:作品区 = 100vw − 624;单栏:100vw − 64 / 手机 − 32;
    每张卡 ≥ 375 才并排,见 simple.css 的容器查询),浏览器据此挑 960 / 1280 / 1920 那张(1280 主要给 3 倍屏手机) */
 const CARD_SIZES =
-  '(min-width: 1536px) 448px, (min-width: 1390px) calc(50vw - 320px), (min-width: 1280px) calc(100vw - 624px), (min-width: 830px) calc(50vw - 40px), calc(100vw - 64px)';
+  '(min-width: 1536px) 448px, (min-width: 1382px) calc(50vw - 316px), (min-width: 1280px) calc(100vw - 624px), (min-width: 822px) calc(50vw - 36px), calc(100vw - 64px)';
 /* 单张通栏时图片占满整栏(2026-10-24):宽屏右栏 = 100vw − 624,单栏 = 100vw − 左右边距 */
 const FULL_SIZES = '(min-width: 1536px) 912px, (min-width: 1280px) calc(100vw - 624px), calc(100vw - 64px)';
 
