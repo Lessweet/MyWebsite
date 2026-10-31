@@ -891,9 +891,9 @@ body.theme-vt *::after {
    左 = 这篇文章报告体的主色珊瑚 #F77353(13% 浅色),右 = 黄色 #F2CF1D(16% 浅色,封面系统的黄,用户定);深色主题取同色压暗 */
 /* 2026-10-25 试过作品集第 5、6 页的「效果背景」(深色底 + 柔光 + 颗粒,图还留在
    writing/assets/works/showcase/bg-article.webp、bg-covers.webp),用户:黑色太重,改回统一浅灰 */
-/* 三屏手机整组缩到 0.75、聚在容器中间,四周多露出背景(2026-10-31 用户:三个页面展示在中间;试过放大 1.5 倍,不对);
+/* 三屏手机整组缩小、聚在容器中间,四周多露出背景(2026-10-31 用户:三个页面展示在中间;试过放大 1.5 倍,不对);
    用独立的 scale 属性,不和 hover 放大的 transform 冲突 */
-.sc-pane-article .sc-phones { scale: 0.75; }
+.sc-pane-article .sc-phones { scale: 0.88; }   /* 0.75 太小 → 0.88(2026-10-31 用户) */
 .sc-pane-article {
     /* 左块(三屏手机)背景照参考图(2026-10-31 用户):模糊的大色块渐变(左上浅青、右上蓝绿、左下草绿、右下橙)
        + 一层白色小方点网格。只用在导出的位图里,深浅色主题一样 */
@@ -949,7 +949,7 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
     height: 27.6em;
     overflow: hidden;
     border: 0.35em solid #fff;
-    border-radius: 1.2em;   /* 手机圆角收小:2em → 1.2em(×0.475 ≈ 6px @560) */
+    border-radius: 0;   /* 直角(2026-10-31 用户;原 1.2em 圆角) */
     background: #fff;
     box-shadow: 0 0.8em 2.4em rgba(0, 0, 0, 0.08);   /* 投影收淡、中性灰(2026-10-24 随浅灰底改),原 0.18 太黑太脏(2026-10-23 用户) */
 }
