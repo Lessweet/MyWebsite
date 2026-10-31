@@ -4,8 +4,11 @@
    - stagger 依次出现:介绍段逐字浮现 → 联系方式 → 首屏作品一条一条浮现(原来的入场);
    - blocks  逐段浮现:照 benji.org 的节奏,一整段一整段轻轻浮上来(字标 → 每段介绍 → 时间 → 作品),
              0.5s、ease、上浮 8px,段与段隔 50ms,作品区前多停 200ms;一秒左右全部到位,察觉不到动画、但有先后。
-   线上用 ENTRANCE_DEFAULTS(和 simple.css 里各变量的默认值一致);
-   本地开发时调参面板(RevealTuner)把选择存在 localStorage,首页按存下的来。 */
+   参数只有一套,存在 entrance.json(2026-10-31 用户:各种宽度、各种设备的入场参数要一致,只维护一套):
+   线上、本地电脑、手机都读它;本地调参面板(RevealTuner)保存时经开发服务器写回这个文件(vite.config.ts entranceStore)。
+   原来调参存在各自浏览器的 localStorage,手机和电脑各是一套、线上又是代码里的默认值 —— 三套不一致。
+   ENTRANCE_DEFAULTS 只是「恢复默认」用的出厂值 */
+import SAVED from './entrance.json';
 
 export type EntranceMode = 'sweep' | 'stagger' | 'blocks';
 
@@ -60,41 +63,52 @@ export const ENTRANCE_MODES: Record<EntranceMode, { label: string; hint: string 
   blocks: { label: '逐段浮现', hint: '一段一段轻轻浮上来,一秒到位' },
 };
 
-const KEY = 'entrance-v1';
-const OLD_KEY = 'reveal-params-v3'; /* 只有扫光那几个参数的旧存档,读进来当扫光参数 */
+const KEY = 'entrance-v1';   /* 旧的浏览器本地存档:读到一次就搬进 entrance.json,然后删掉 */
 
-export function loadEntrance(): EntranceConfig {
+function normalize(c: Partial<EntranceConfig> & Record<string, any>): EntranceConfig {
   const d = ENTRANCE_DEFAULTS;
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (raw) {
-      const c = JSON.parse(raw);
-      return {
-        mode: c.mode === 'stagger' || c.mode === 'blocks' ? c.mode : 'sweep',
-        sweep: { ...d.sweep, ...c.sweep },
-        stagger: { ...d.stagger, ...c.stagger },
-        blocks: { ...d.blocks, ...c.blocks },
-      };
+  return {
+    mode: c.mode === 'stagger' || c.mode === 'blocks' || c.mode === 'sweep' ? c.mode : d.mode,
+    sweep: { ...d.sweep, ...c.sweep },
+    stagger: { ...d.stagger, ...c.stagger },
+    blocks: { ...d.blocks, ...c.blocks },
+  };
+}
+
+/* 首页、调参面板实际用的配置:entrance.json。
+   本地开发时,如果这台浏览器还留着以前存在 localStorage 的调参,先用它、并写回 entrance.json(只搬一次) */
+let loaded: EntranceConfig | null = null;
+export function loadEntrance(): EntranceConfig {
+  if (loaded) return loaded;
+  loaded = readEntrance();
+  return loaded;
+}
+function readEntrance(): EntranceConfig {
+  if (import.meta.env.DEV) {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) {
+        const c = normalize(JSON.parse(raw));
+        localStorage.removeItem(KEY);
+        saveEntrance(c);
+        return c;
+      }
+    } catch {
+      /* 读不到就用文件里的 */
     }
-    const old = localStorage.getItem(OLD_KEY);
-    if (old) return { ...d, sweep: { ...d.sweep, ...JSON.parse(old) } };
-  } catch {
-    /* 隐私模式等读不到就用默认 */
   }
-  return d;
+  return normalize(SAVED as Partial<EntranceConfig>);
 }
 
+/* 调参面板改了就写回 entrance.json(只在本地开发服务器上有这个接口) */
 export function saveEntrance(c: EntranceConfig) {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(c));
-  } catch {
-    /* 存不了也不影响预览 */
-  }
+  if (!import.meta.env.DEV) return;
+  loaded = c;
+  fetch('/__entrance', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(c) }).catch(() => {});
 }
 
-/* 首页实际用的配置:线上固定用默认,本地开发用调参面板存下的 */
 export function currentEntrance(): EntranceConfig {
-  return import.meta.env.DEV ? loadEntrance() : ENTRANCE_DEFAULTS;
+  return loadEntrance();
 }
 
 /* 写进 <html> 的 CSS 变量(只是 CSS 能管的那部分;字间隔、换行停顿、作品间隔由首页脚本在加载时读) */
