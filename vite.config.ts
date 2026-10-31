@@ -42,8 +42,38 @@ const ENTRY_PATHS = new Set(
 /* dev:入口之外的请求(style.css、banner/demo iframe、封面、视频、articles.json …)
    回落到 docs/ 静态文件,URL 与线上完全一致;
    入口路径不回落,避免 docs/ 里旧构建的同名 HTML 遮蔽 dev 页面。 */
+const PRIVATE = resolve(ROOT, 'private');
+const GALLERY_URL = '/writing/assets/works/gallery/';
+
+/* 网易作品只在测试版(本地 dev)展示、不上线(2026-10-31 用户,同右下角三个开发按钮):
+   作品数据在 site/private/hidden-works.ts(.gitignore,只留本地)。dev 时虚拟模块读这个文件,
+   build 时一律导出空数组 —— 线上包里不会有这些作品 */
+function hiddenWorks(): Plugin {
+  const ID = 'virtual:hidden-works';
+  let serving = false;
+  return {
+    name: 'hidden-works',
+    configResolved(c) {
+      serving = c.command === 'serve';
+    },
+    resolveId(id) {
+      if (id === ID) return '\0' + ID;
+    },
+    load(id) {
+      if (id !== '\0' + ID) return;
+      const file = join(PRIVATE, 'hidden-works.ts');
+      if (serving && fs.existsSync(file)) {
+        this.addWatchFile(file);
+        return fs.readFileSync(file, 'utf8');
+      }
+      return 'export const HIDDEN_WORKS = [];';
+    },
+  };
+}
+
 function docsStatic(): Plugin {
   const serve = sirv(DOCS, { dev: true, etag: true });
+  const servePrivate = sirv(join(PRIVATE, 'gallery'), { dev: true, etag: true });
   return {
     name: 'docs-static-fallback',
     apply: 'serve',
@@ -53,6 +83,15 @@ function docsStatic(): Plugin {
         if (ENTRY_PATHS.has(url)) return next();
         const file = join(DOCS, url);
         if (fs.existsSync(file) && fs.statSync(file).isFile()) return serve(req, res, next);
+        /* 网易作品的图只在本地 site/private/gallery/(不进 git、不上线),测试版按线上同一路径取 */
+        if (url.startsWith(GALLERY_URL)) {
+          const name = url.slice(GALLERY_URL.length);
+          const priv = join(PRIVATE, 'gallery', name);
+          if (fs.existsSync(priv) && fs.statSync(priv).isFile()) {
+            req.url = '/' + name;
+            return servePrivate(req, res, next);
+          }
+        }
         next();
       });
     },
@@ -85,7 +124,7 @@ export default defineConfig({
   /* 端口锁死:5173 被 design-gallery(--strictPort)长期占着,不锁的话本站会飘到 5174/5175。
      strictPort = 被占就报错而不是悄悄换一个,本站预览地址永远是 localhost:5174。 */
   server: { port: 5174, strictPort: true },
-  plugins: [react(), docsStatic(), cleanBundles()],
+  plugins: [react(), hiddenWorks(), docsStatic(), cleanBundles()],
   build: {
     outDir: DOCS,
     emptyOutDir: false, // 绝不清空 docs/(CNAME + 全部静态资产)

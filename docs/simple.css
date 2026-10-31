@@ -47,7 +47,7 @@
 
     /* 单栏宽度(benji 为 550);手机两侧留白收到 16px */
     --col: 560px;
-    --gutter: 32px;   /* 页面左右内边距:24 → 32,与宽屏两栏一致(手机 ≤600 仍 16) */
+    --gutter: 32px;   /* 页面左右内边距:24 → 32,所有宽度统一(手机也是) */
 
     --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
     /* 封面 hover 放大 / 收回(2026-10-23 用户):试过 0.6–1.2s、1.02–1.05 倍,定为 0.7s + 1.03 倍,曲线 --ease-soft。
@@ -80,11 +80,8 @@ body.theme-dark {
     --logo-hatch-hover: #aeaeb2;
     --gray-500: #8e8e93;
 }
-/* 左右内边距:手机(≤ 480)16,其余固定 32(2026-10-25 用户:内边距不要随窗口变化;试过 375 → 760 平滑过渡)。
-   原来在 600 / 601 切换,电脑上拖窄窗口会经过那里、文字跳一下;电脑浏览器窗口一般拖不到 500 以下,改在 480 切 */
-@media (max-width: 480px) {
-    :root { --gutter: 16px; }
-}
+/* 断点统一用 Tailwind(2026-10-31 用户):sm 640 / md 768 / xl 1280 / 2xl 1536。
+   左右内边距所有宽度统一 32(2026-10-31 用户:手机上也是;之前手机 < 640 用 16) */
 
 *, *::before, *::after { box-sizing: border-box; }
 * { margin: 0; padding: 0; }
@@ -180,6 +177,11 @@ p, h2 { text-wrap: pretty; }   /* 段落 + 作品标题:避免最后一行只剩
 /* !important:主题键、作品分割线等各自有入场动画规则,逐段浮现时统一换成这一个 */
 .blocks-entrance .bk {
     animation: block-in var(--bk-dur, 500ms) var(--bk-ease, ease) var(--bd, 0ms) both !important;
+}
+/* 单栏逐小段浮现时,日期上方的细线跟日期同一时刻浮现(--line-bd 由 HomePage 下发);
+   比 .work.instant::before 多一层,压过「直接显示」 */
+.blocks-entrance .work.bk-line::before {
+    animation: block-in var(--bk-dur, 500ms) var(--bk-ease, ease) var(--line-bd, 0ms) both !important;
 }
 @keyframes block-in {
     from { opacity: 0; transform: translateY(var(--bk-rise, 8px)); filter: blur(var(--bk-blur, 0px)); }
@@ -399,7 +401,7 @@ button.text-link { padding: 0; border: 0; background: none; font: inherit; curso
 /* 点了收起:盖过悬停 / 聚焦,鼠标移开后由 HomePage 复位(2026-10-25 用户:支持再次点击收起) */
 .gzh.shut .gzh-pop,
 .head-links .gzh.shut .gzh-pop { opacity: 0; visibility: hidden; }
-@media (max-width: 600px) {
+@media (max-width: 639px) {
     /* 手机上「公众号」离左缘只有四个字,居中弹层会顶出屏幕:改为左对齐到词首 */
     .gzh-pop { left: 0; transform: translateY(-4px); }
     .gzh:focus-within .gzh-pop,
@@ -484,21 +486,34 @@ body.theme-vt *::after {
 /* 单栏一律用普通断行(配合 HomePage 单栏不按词组拆):pretty 会为了避免末行太短而调整前面几行的断点,
    拖动窗口时行尾的字会来回跳;在 640 处换断行方式也会跳一下(2026-10-25 用户:窗口缩小过程中字一会出现一会消失)。
    断行方式只在单栏 / 双栏切换时变,那时整页布局本来就变了 */
-@media (max-width: 1151px) {
+@media (max-width: 1279px) {
     .hero-intro p,
     .work-summary { text-wrap: wrap; }
 }
-/* 行宽上限 32em(约 576px,每行约 32 字)。单栏时只有窗口窄到放不下这么宽才铺满整栏、右边与封面对齐
-   (2026-10-25 用户:只有很窄的时候才撑满;试过单栏一律撑满,宽一点的窗口行太长) */
-@media (min-width: 601px) and (max-width: 1151px) {
-    .hero-intro,
-    .contact,
-    .work-summary { max-width: 32em; }
+/* 文字宽度对齐网格(2026-10-31 用户):介绍区、每条作品各自是一张网格,列宽至少 60、槽 16,
+   排几列由栏宽决定(放得下几个 60 就几列),余量平均分给每列,所以网格正好铺满整栏、封面右缘落在网格线上
+   (之前列宽死 60,栏宽除不尽时右边剩一截,封面右缘对不上线)。
+   文字占列数见下 */
+:root { --grid-col: 60px; --grid-gap: 16px; }
+.hero-intro,
+.work {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--grid-col), 1fr));
+    column-gap: var(--grid-gap);
+    align-content: start;
 }
-@media (min-width: 1152px) {
-    .hero-intro,
-    .contact,
-    .work-summary { max-width: min(80%, 32em); }   /* 且每行最多约 32 字:宽屏右栏很宽时不再跟着拉宽(2026-10-23 用户) */
+.hero-intro > *,
+.work > *,
+.work::before { grid-column: 1 / -1; }
+/* 个人介绍固定 6 列,作品简介 8 列,简介比介绍宽(2026-10-31 用户)。宽屏左栏 440 正好 6 列。
+   md(768)以下文字铺满整栏(栏宽 < 704,排 8 列太挤);768 起栏里至少 9 列,两者都排得下 */
+.hero-intro > p { grid-column: 1 / span 6; }
+.work > .work-summary { grid-column: 1 / span 8; }
+/* 竖排(md 768–1279)时介绍和简介上下对齐,统一占 8 列,右边缘落在同一条网格线(2026-10-31 用户);两栏时介绍仍 6 列 */
+@media (min-width: 768px) and (max-width: 1279px) { .hero-intro > p { grid-column: 1 / span 8; } }
+@media (max-width: 767px) {
+    .hero-intro > p,
+    .work > .work-summary { grid-column: 1 / -1; }
 }
 /* 一句一段,段间距 24px */
 .hero-intro p + p { margin-top: 24px; }
@@ -543,7 +558,7 @@ body.theme-vt *::after {
 .head-links > :nth-child(2) .head-link,
 .head-links > .head-link:nth-child(2) { animation-delay: calc(var(--pills-d, 700ms) + 80ms); }
 .head-right .theme-toggle { animation-delay: calc(var(--pills-d, 700ms) + 160ms); }
-/* 单列(< 1152)时 --pills-d = 0:顶栏先出,介绍段随后(从上到下,HomePage 下发;2026-10-24 用户) */
+/* 单列(< 1280)时 --pills-d = 0:顶栏先出,介绍段随后(从上到下,HomePage 下发;2026-10-24 用户) */
 @media (prefers-reduced-motion: reduce) {
     .hero-ch,
     .head-links .head-link,
@@ -702,7 +717,6 @@ body.theme-vt *::after {
 @keyframes rise-in {
     from { opacity: 0; transform: translateY(24px); }
     to   { opacity: 1; transform: none; }
-}
 }
 /* Feed 入场:每条作品进入视口时,日期 → 标题 → 简介逐字 soft-blur 浮现,节拍同介绍段
    (.hero-ch;2026-10-23 用户:原来三段整块浮现不够流畅);文字走完封面再从下往上浮现。
@@ -1040,11 +1054,11 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
 .wx-spin, .wx-drift, .wx-fall, .wx-flash,
 .st-z, .st-steam, .st-squiggle, .st-line { animation: none; }
 
-/* ── 单列(< 1152px,含手机)(2026-10-23 用户:单列时重新安排位置)──
+/* ── 单列(< 1280px,含手机)(2026-10-23 用户:单列时重新安排位置)──
    公众号 / 邮箱 + 主题开关放到页面最顶上一排(2026-10-23 用户):左边两个链接横排,右边开关,
    开关右缘与内容栏(分割线)右端对齐;下面依次是字标 → 介绍区 → 作品。双栏时这一组钉在左下角。
    header 与 #app 用 display:contents 拆开,在 .page 的纵向 flex 里用 order 排序 */
-@media (max-width: 1151px) {
+@media (max-width: 1279px) {
     /* 单列也铺满窗口宽度(2026-10-23 用户:单列时右边空间利用起来),左右内边距仍是 32(手机 16);
        介绍段、作品简介自己有最大行宽,不会被拉太长 */
     .page { display: flex; flex-direction: column; max-width: none; }
@@ -1073,15 +1087,18 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
    右栏 = 作品 Feed,吃满剩余宽度,只有它随页面滚动。
    实现:顶栏 header 与 #app 用 display:contents 拆开;左栏三块各自 position:fixed 定在同一条左边线上,
    网格第一列(320px)只占位;右栏顶部留出与介绍段齐平的空白。分割线只在单列时用,两栏时去掉 */
-@media (min-width: 1152px) {
+@media (min-width: 1280px) {
     .page {
-        --left-x: 32px;   /* 左栏左边线 = 页面左内边距 */
-        --intro-top: 201px;   /* 介绍段顶 = 字标顶 56 + 字标高 97 + 间距 48(肉眼约 57;单栏照这个对齐,2026-10-25 用户) */
-        max-width: none;   /* 不再封顶 1600 居中:左右内边距在任何宽度都固定 32(2026-10-23 用户) */
+        /* 超宽屏整页封顶居中(2026-10-31 用户:不要左右铺满):封顶 = Tailwind 2xl 1536,右栏最宽 1536 − 64 − 560 = 912(12 列),窗口更宽时两边留白、整页居中。左栏三块是 position:fixed,左边线跟着居中后的页面走 */
+        --page-max: 1536px;
+        --left-x: max(32px, calc((100vw - var(--page-max)) / 2 + 32px));   /* 左栏左边线 = 页面左内边距(居中后再加两侧留白) */
+        --intro-top: 169px;   /* 介绍段顶 = 右栏第一条简介顶(2026-10-31 用户:横排左右两块顶部对齐);字标顶 56 + 高 89 + 间距 24,同右栏 标题→简介 24 */
+        max-width: var(--page-max);   /* 2026-10-23 曾去掉 1600 封顶;2026-10-31 用户:超宽屏要封顶居中,1536(2xl) */
+        margin: 0 auto;
         padding: 0 32px;   /* 左右内边距 56 → 32(2026-10-23 用户:可以更少) */
         display: grid;
         /* 左栏固定 440px(2026-10-23 用户:280 → 320 → 340 → 400 → 440),右栏跟随窗口宽度变化(之前试过 1 : 2 比例);
-           栏距固定 120px。双栏从 1152px 起:右栏 = 窗口 − 64 − 560 ≥ 528,比任何手机竖屏(≤ 430)都宽;
+           栏距固定 120px。双栏从 1280px(xl)起:右栏 = 窗口 − 64 − 560 ≥ 656,比任何手机竖屏(≤ 430)都宽;
            再窄就整页改单栏
            (2026-10-23 用户:右边永远要比左边大很多);更窄时改为单列 */
         grid-template-columns: 440px minmax(0, 1fr);   /* 320 → 340 → 400 → 440(2026-10-23 用户) */
@@ -1090,7 +1107,7 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
     }
     .site-head,
     #app { display: contents; }
-    .site-logo-link { position: fixed; top: 56px; left: var(--left-x); width: 256px; z-index: 3; }
+    .site-logo-link { position: fixed; top: 56px; left: var(--left-x); width: 200px; z-index: 3; }   /* 256 → 237 → 200(2026-10-31 用户:再小点);笔画顶齐右栏日期顶 57,介绍段仍齐简介顶 169 */
     .intro-col {
         position: fixed;
         top: var(--intro-top);
@@ -1155,7 +1172,7 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
 body.theme-dark .rt-toggle:hover { border-color: rgba(255, 255, 255, 0.2); }
 .rt-toggle svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
 /* 单栏:主题键悬浮在右上角,调节按钮挨在它左边 */
-@media (max-width: 1151px) {
+@media (max-width: 1279px) {
     .rt-toggle { position: absolute; top: 24px; right: calc(var(--gutter) + 44px); }
 }
 /* 蒙层:半透明 + 把背后的页面模糊掉;中间卡片放调参台(2026-10-25 用户:不要全屏页) */
@@ -1274,7 +1291,7 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
 .rt-btn:hover { border-color: rgba(0, 0, 0, 0.25); }
 .rt-btn[aria-pressed='true'],
 .rt-primary { background: var(--ink); border-color: var(--ink); color: var(--site-bg); }
-@media (max-width: 760px) {
+@media (max-width: 767px) {
     .rt-body { grid-template-columns: 1fr; grid-template-rows: 42vh auto; overflow: auto; }
     /* 窄屏整个弹窗一起滚,参数区不单独滚:不用蒙版,底栏上方用一段底色阴影渐隐 */
     .rt-controls { overflow: visible; -webkit-mask-image: none; mask-image: none; }
@@ -1569,18 +1586,47 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
    越近越长越亮,鼠标划过时像一个跟着走的鼓包。正在看的那块常亮。预览卡只有一张,往左弹。 */
 .work-rail {
     position: fixed;
-    top: 62px;   /* 线在每根 8px 高的格子正中:62 + 4 = 66,对齐日期字顶(实测 66.3) */
-    right: 0;
+    top: 50%;   /* 实际 top 由 WorkRail 下发:单列 = 窗口竖直正中,双栏 = 左栏介绍区下面空白的正中 */
+    /* 贴页面右缘,不贴窗口右缘(2026-10-31 用户):窗口 ≤ 1536 时两者重合;超宽屏整页居中后,刻度跟着页面走,不孤零零挂在窗口边上 */
+    right: max(0px, calc((100vw - 1536px) / 2));
     z-index: 4;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    /* 等入场走完再淡出来,不抢首屏。只填充开始前(backwards):播完后让 .is-away 的透明度说了算 */
-    animation: hero-fade-in 0.6s ease 0.8s backwards;
     transition: opacity 0.25s ease;
 }
-/* 单列时还没滑到作品区:藏起来(滑到 Feed 才出现,2026-10-25 用户) */
+/* 单栏时还没滑到作品区:藏起来(滑到 Feed 才出现,2026-10-25 用户) */
 .work-rail.is-away { opacity: 0; pointer-events: none; }
+/* 刻度一根一根从上往下出现(2026-10-31 用户:和其他入场一样依次出现)。双栏随首屏,单栏每次滑到作品区刻度出现时都播 */
+.work-rail:not(.is-away):not(.is-leaving) .wr-tick {
+    animation: wr-tick-in 0.32s var(--ease-soft) calc(var(--rail-d, 0ms) + var(--i, 0) * 40ms) backwards;
+}
+@keyframes wr-tick-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: none; }
+}
+/* 竖排(单栏、手机):刻度贴着屏幕右缘,从屏幕外往左一根根滑进来(2026-10-31 用户) */
+@media (max-width: 1279px) {
+    .work-rail:not(.is-away):not(.is-leaving) .wr-tick {
+        animation-name: wr-tick-in-x;
+        animation-duration: 0.4s;
+    }
+}
+@keyframes wr-tick-in-x {
+    from { opacity: 0; transform: translateX(24px); }   /* 线离右缘 10、最长 14:挪 24 正好整根在屏幕外 */
+    to   { opacity: 1; transform: none; }
+}
+/* 出场:滑回介绍区时从最下面那根开始,一根根往右滑出屏幕(2026-10-31 用户)。整列不淡出,只是不再接收点按 */
+.work-rail.is-leaving { pointer-events: none; }
+.work-rail.is-leaving .wr-tick {
+    animation: wr-tick-out-x 0.32s var(--ease-soft) calc((var(--n, 8) - 1 - var(--i, 0)) * 40ms) forwards;
+}
+@keyframes wr-tick-out-x {
+    from { opacity: 1; transform: none; }
+    to   { opacity: 0; transform: translateX(24px); }
+}
+/* 单栏不播入场淡入:淡入动画会盖过 .is-away 的 opacity 0,刻度先闪出来再消失(2026-10-31 修);
+   单栏的出现 / 隐藏只靠 opacity 过渡 */
 .wr-tick {
     position: relative;
     display: block;
@@ -1620,17 +1666,19 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     padding-right: 6px;
     opacity: 0;
     pointer-events: none;
-    transform: translate(6px, -14px);   /* 卡片顶边略高于悬停的线,往下展开(刻度在页面顶部,居中会被切) */
+    transform: translate(6px, -50%);   /* 卡片竖直居中对齐悬停的那根线(2026-10-31 用户;刻度原来在页面顶部时是往下展开) */
     transition:
         opacity 0.18s ease,
         transform 0.22s var(--ease-soft),
         top 0.22s var(--ease-soft);
 }
-.work-rail.is-hover .wr-pop { opacity: 1; pointer-events: auto; transform: translate(0, -14px); }
+.work-rail.is-hover .wr-pop { opacity: 1; pointer-events: auto; transform: translate(0, -50%); }
 .wr-card {
-    width: 264px;
+    /* 宽度固定、所有卡片一样(切换不跳):最长那行文字 --wr-text-w(WorkRail 量出)+ 左 12 + 间距 12 + 图 64 + 右 8
+       (2026-10-31 用户:不要换行,宽度以最长文字计算;之前写死 232,长标题会折行) */
+    width: calc(var(--wr-text-w, 146px) + 110px);   /* 整体放大一档(2026-10-31 用户):左 14 + 间距 14 + 图 72 + 右 10 */
     overflow: hidden;
-    border-radius: 12px;
+    border-radius: 14px;
     background: var(--site-bg);
     /* 边框和投影都很淡(2026-10-25 用户:投影太重、边框太深;原 1px 0.1 黑 + 32px 0.12 黑,悬停还更深) */
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 6px 20px rgba(0, 0, 0, 0.05);
@@ -1640,24 +1688,210 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
 }
 .wr-card-inner {
     display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 12px 14px 14px;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 10px 10px 14px;   /* 图片那侧 10,圆角 14 − 10 = 4 与图片圆角同心;文字那侧留 14 */
     animation: hero-fade-in 0.18s ease both;   /* 换内容时淡入,不硬切 */
 }
-.wr-card small { color: var(--ink-2); font-size: 12px; line-height: 16px; }
-.wr-card b { font-size: 15px; line-height: 22px; font-weight: 600; }
-.wr-card span {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
+/* 缩略图(2026-10-31 用户:去掉简介,试小封面):16:9 80×45 → 4:3 64×48,居中裁切;
+   放在右边(用户):先读到日期、标题,文字左缘对齐,图挨着刻度 */
+.wr-thumb {
+    order: 2;
+    flex: none;
+    width: 72px;   /* 64 → 72(4:3,72×54) */
+    aspect-ratio: 4 / 3;
     overflow: hidden;
-    color: var(--ink-2);
-    font-size: 13px;
-    line-height: 20px;
+    border-radius: 4px;
+    background: var(--fill);
 }
+.wr-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.wr-text { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; white-space: nowrap; }
+.wr-measure {
+    position: absolute;
+    top: 0;
+    right: 0;
+    visibility: hidden;
+    pointer-events: none;
+    white-space: nowrap;
+    font-size: 15px;
+    line-height: 22px;
+}
+.wr-measure span { display: block; width: max-content; }
+/* 日期、标题都 14、常规字重、同一颜色(2026-10-31 用户:不区分;之前试过 12 / 16、标题 600、日期灰) */
+.wr-card small { font-size: 15px; line-height: 22px; }   /* 14 → 15(2026-10-31 用户:整体大一点) */
+.wr-card b { font-size: 15px; line-height: 22px; font-weight: 400; }
 body.theme-dark .wr-card { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 6px 20px rgba(0, 0, 0, 0.3); }
+/* 触屏(手机、平板)手指点不准 8px 高的格子:每格加高到 16,线距跟着变大(2026-10-31) */
+@media (pointer: coarse) {
+    .wr-tick { height: 12px; width: 44px; }   /* 线距 16 → 12(2026-10-31 用户:太大;现在是手指划着选,不用点准);触控区往里加宽到 44,线仍贴右边 */
+    /* 手指按住刻度区上下划是选作品,不要带着页面一起滚(2026-10-31 用户) */
+    .work-rail { touch-action: none; }
+}
+/* 双栏:刻度挪到左栏介绍区下面(2026-10-31 用户:右上角不容易察觉,左栏下面空着)。
+   线左端对齐介绍文字左缘,悬停变长往右长;预览卡在高亮那根线右边、竖直居中对齐它。top 由 WorkRail 按介绍区底边下发 */
+@media (min-width: 1280px) {
+    .work-rail {
+        --rail-d: 800ms;   /* 双栏打开页面就在:等首屏入场走一段再出来,不抢首屏 */
+        top: 0;
+        left: var(--left-x);
+        right: auto;
+        align-items: flex-start;
+    }
+    .wr-tick { width: 20px; }   /* 点按区:线最长 14 + 6 */
+    .wr-tick > i { left: 0; right: auto; }
+    .wr-pop {
+        left: 20px;
+        right: auto;
+        padding-left: 6px;   /* 透明的「桥」,鼠标从线移到卡片上不断;线末端到卡片 = 6 + 6 = 12 */
+        padding-right: 0;
+        transform: translate(-6px, -50%);
+    }
+    .work-rail.is-hover .wr-pop { transform: translate(0, -50%); }
+}
 @media (prefers-reduced-motion: reduce) {
-    .work-rail, .wr-card-inner { animation: none; }
+    .work-rail, .wr-card-inner, .work-rail .wr-tick { animation: none !important; }
+    .work-rail.is-leaving { opacity: 0; }
     .wr-tick > i, .wr-pop, .wr-card { transition: none; }
 }
+
+/* ── 大纲模式(DevOutline,只在本地测试版;2026-10-31 用户)──
+   右下角三颗按钮竖排:主题键 / 大纲 / 调参。打开大纲:紫红色页面网格 + 每个元素描边,随窗口实时变 */
+.ol-toggle {
+    position: fixed;
+    right: var(--gutter);
+    bottom: calc(var(--gutter) + 44px);
+    z-index: 60;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    box-sizing: border-box;
+    border: 1px solid rgba(0, 0, 0, 0.16);
+    border-radius: 50%;
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+.ol-toggle svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; }
+.ol-toggle[aria-pressed="true"],
+body.theme-dark .ol-toggle[aria-pressed="true"] { background: #D6248A; border-color: #D6248A; color: #fff; }
+/* 网格 = V4 自己的栏位 + 列宽 ≥ 60 / 槽 16、余量均分铺满整栏(与 .hero-intro / .work 同一套):
+   单列(< 1280)一栏;宽屏(≥ 1280)左栏 440(正好 6 列)+ 栏距 120 + 右栏 Feed。
+   栏外框深色实线,列浅色填充 + 细线 */
+.ol-grid {
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0 var(--gutter);
+    pointer-events: none;
+}
+.ol-region {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--grid-col), 1fr));   /* 与 .hero-intro / .work 同一套 */
+    grid-template-rows: 100%;
+    grid-auto-rows: 100%;
+    column-gap: 16px;
+    overflow: hidden;
+    box-shadow: inset 1px 0 #D6248A, inset -1px 0 #D6248A;
+}
+.ol-region i { background: rgba(214, 36, 138, 0.08); border-left: 1px solid rgba(214, 36, 138, 0.35); border-right: 1px solid rgba(214, 36, 138, 0.35); }
+.ol-region + .ol-region { display: none; }
+@media (min-width: 1280px) {
+    .ol-grid { grid-template-columns: 440px minmax(0, 1fr); column-gap: 120px; padding: 0 32px; max-width: 1536px; margin: 0 auto; }   /* 与 .page 同样封顶居中 */
+    .ol-region + .ol-region { display: grid; }
+}
+/* 每个元素描一圈紫红边(outline 不占位置,不改变布局) */
+.outline-mode .page *,
+.outline-mode .page { outline: 1px solid rgba(214, 36, 138, 0.55); outline-offset: -1px; }
+.outline-mode .page svg *,
+.outline-mode .hero-ch,
+.outline-mode .feed-ch,
+.outline-mode .hero-intro p *,
+.outline-mode .work-title *,
+.outline-mode .work-year * { outline: none; }   /* 逐字入场的小块不描,只看段落 / 块级元素 */
+/* 大纲模式的间距标注:尺寸线 + 数值胶囊,画在页面坐标上(随页面滚动),DevOutline 量好位置下发 */
+.ol-marks { position: absolute; top: 0; left: 0; width: 100%; height: 0; z-index: 56; pointer-events: none; overflow-x: clip; }   /* 横向裁掉:窗口变窄时上一轮的长标注不把页面撑宽 */
+.ol-mark { position: absolute; box-sizing: border-box; }
+.ol-mark-v { width: 9px; margin-left: -4px; border-top: 1px solid #D6248A; border-bottom: 1px solid #D6248A; }
+.ol-mark-v::before { content: ''; position: absolute; left: 4px; top: 0; bottom: 0; border-left: 1px solid #D6248A; }
+.ol-mark-h { height: 9px; margin-top: -4px; border-left: 1px solid #D6248A; border-right: 1px solid #D6248A; }
+.ol-mark-h::before { content: ''; position: absolute; top: 4px; left: 0; right: 0; border-top: 1px solid #D6248A; }
+.ol-mark span {
+    position: absolute;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: #D6248A;
+    color: #fff;
+    font: 500 11px/14px var(--font);
+    white-space: nowrap;
+}
+.ol-mark-v span { left: 9px; top: 50%; transform: translateY(-50%); }
+.ol-mark-h span { left: 50%; top: 10px; transform: translateX(-50%); }
+/* 很短的尺寸线(边距、槽):数字放到线的右边,不居中,免得被窗口边裁掉或压住别的标注 */
+.ol-mark-h.ol-mark-short span { left: calc(100% + 4px); top: -3px; transform: none; }
+/* 大纲按钮悬停提示:当前窗口宽度 + 各断点布局(DevOutline BREAKPOINTS),当前档高亮 */
+.ol-tip {
+    position: absolute;
+    right: calc(100% + 10px);
+    bottom: -8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: max-content;
+    /* 不超出窗口左边(2026-10-31 用户:手机上左边露不出来):最宽 = 窗口 − 两侧边距 − 按钮 36 − 间距 10,放不下就折行 */
+    max-width: calc(100vw - 2 * var(--gutter) - 46px);
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #1c1c1e;
+    color: rgba(255, 255, 255, 0.6);
+    font: 400 12px/18px var(--font);
+    text-align: left;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(4px);
+    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+    pointer-events: none;
+}
+.ol-toggle:hover .ol-tip,
+.ol-toggle:focus-visible .ol-tip { opacity: 1; visibility: visible; transform: none; }
+.ol-tip b { margin-bottom: 4px; color: #fff; font-weight: 500; }
+.ol-tip span { display: flex; gap: 8px; }
+.ol-tip i { width: 56px; flex: none; font-style: normal; }
+.ol-tip .is-on { color: #fff; }
+.ol-tip .is-on i { color: #F06BB6; }
+
+/* ── 测试版工具按钮(主题键 / 大纲 / 调参)(2026-10-31 用户:V4 也按 V5 的做法)──
+   只在本地测试版出现(main.tsx 给 <html> 加 .dev-tools;调参键本来就只在开发环境渲染),线上跟随系统日夜间。
+   三颗竖排浮在窗口右下角最上层,不参与页面排版;右、下间距 = 页面边距 */
+html:not(.dev-tools) .head-right .theme-toggle { display: none; }
+.head-right .theme-toggle { position: fixed; right: var(--gutter); bottom: calc(var(--gutter) + 88px); top: auto; z-index: 60; animation-delay: 0ms; }
+.rt-toggle { position: fixed; right: var(--gutter); bottom: var(--gutter); top: auto; z-index: 60; }
+/* 浮在内容上要看得清:实底 + 深一点的描边 + 轻阴影 */
+.head-right .theme-toggle,
+.rt-toggle,
+.ol-toggle {
+    background: var(--site-bg);
+    border-color: rgba(0, 0, 0, 0.16);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+body.theme-dark .head-right .theme-toggle,
+body.theme-dark .rt-toggle,
+body.theme-dark .ol-toggle {
+    background: #2c2c2e;
+    border-color: rgba(255, 255, 255, 0.18);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+}
+.ol-toggle[aria-pressed="true"],
+body.theme-dark .ol-toggle[aria-pressed="true"] { background: #D6248A; border-color: #D6248A; color: #fff; }
+
+/* 介绍分层(2026-10-31 用户):第一段「现在」用主文字色;第二段履历、第三段联系方式退到灰 --ink-2,与时间行同一层。
+   NetEase 字标、「UI 设计师」手绘线、公众号 / 邮箱链接跟着整段一起变灰,不在灰字里冒出重点 */
+.hero-intro > p:nth-child(n + 2),
+.hero-intro > p:nth-child(n + 2) b,
+.hero-intro > p:nth-child(n + 2) a,
+.hero-intro > p:nth-child(n + 2) .text-link { color: var(--ink-2); }

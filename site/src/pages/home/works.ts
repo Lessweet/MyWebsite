@@ -2,6 +2,8 @@
    date 写成 YYYY / MM,斜杠前后各一个空格(2026-10-23 用户:要带月份;斜杠两边加空格)。
    cover 为站点根相对路径;没有封面时显示灰色占位块。
    排序:最新在前,每年一条(2026-10-23 用户定)。 */
+import { HIDDEN_WORKS } from 'virtual:hidden-works';
+
 export interface Work {
   date: string;
   title: string;
@@ -95,4 +97,6 @@ export const WORKS: Work[] = [
       { src: 'writing/assets/works/gallery/hello-chat-2.webp?v=2', tint: '#EAF0FC' },
     ],
   },
+  /* 网易作品:只在本地测试版接在末尾,线上为空(见 vite.config.ts hiddenWorks) */
+  ...(HIDDEN_WORKS as Work[]),
 ];

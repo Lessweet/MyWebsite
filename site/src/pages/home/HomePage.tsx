@@ -11,6 +11,7 @@ import NeteaseWordmark from './NeteaseWordmark';
 import { WORKS } from './works';
 import LocalTime from './LocalTime';
 import RevealTuner from './RevealTuner';
+import DevOutline from './DevOutline';
 import WorkRail from './WorkRail';
 import { applyEntrance, currentEntrance } from './entrance';
 
@@ -210,11 +211,11 @@ export default function HomePage() {
     return () => window.removeEventListener('scroll', on);
   }, []);
 
-  /* 单栏(≤ 1151)介绍段不按词组断行,逐字排(2026-10-25 用户:右边参差;拖动窗口时字来回跳)。
+  /* 单栏(< 1280)介绍段不按词组断行,逐字排(2026-10-25 用户:右边参差;拖动窗口时字来回跳)。
      原来只在 < 640 逐字,拖过 640 时断行方式一换,行尾的字就跳一下;现在只在单栏 / 双栏切换时变 */
-  const [phoneWrap, setPhoneWrap] = useState(() => window.matchMedia('(max-width: 1151px)').matches);
+  const [phoneWrap, setPhoneWrap] = useState(() => window.matchMedia('(max-width: 1279px)').matches);
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 1151px)');
+    const mq = window.matchMedia('(max-width: 1279px)');
     const on = () => setPhoneWrap(mq.matches);
     mq.addEventListener('change', on);
     return () => mq.removeEventListener('change', on);
@@ -235,9 +236,9 @@ export default function HomePage() {
       ...p.querySelectorAll('.hero-ch'),
       ...document.querySelectorAll('.hero-loc .hero-ch'),   /* 联系方式那句现在在 .hero-intro 里,上一行已包含 */
     ];
-    /* 单栏(< 1152)时主题键在页面最上面,先出;介绍段晚 PILLS_LEAD 再起步(2026-10-24 用户:从上到下)。
+    /* 单栏(< 1280)时主题键在页面最上面,先出;介绍段晚 PILLS_LEAD 再起步(2026-10-24 用户:从上到下)。
        公众号 / 邮箱单栏时在介绍区下方(2026-10-25),和宽屏一样接在介绍区最后一行后面 */
-    const topFirst = window.matchMedia('(max-width: 1151px)').matches;
+    const topFirst = window.matchMedia('(max-width: 1279px)').matches;
     const PILLS_LEAD = 200;
     const offset = topFirst ? PILLS_LEAD : 0;
     units.forEach((el, i) => {
@@ -288,16 +289,15 @@ export default function HomePage() {
     }
     /* 逐段浮现、双栏时右栏的排队时刻(performance.now 的绝对时间):下一小段最早什么时候开始 */
     let blockCursor = 0;
-    const io = new IntersectionObserver(
-      (entries) => {
-        const hits = entries.filter((e) => e.isIntersecting).map((e) => e.target as HTMLElement);
+    /* 进入视口的作品排入场。永远按页面上从上到下的顺序排(IntersectionObserver 给的顺序不保证) */
+    const enter = (hits: HTMLElement[]) => {
+        hits.sort((a, b) => items.indexOf(a) - items.indexOf(b));
         const now = performance.now();
         const base = Math.max(0, HERO_DONE + DIVIDER_LEAD - (now - t0));
         /* 一条一条来(2026-10-23 用户:不要所有作品先统一出文字):下一条等上一条的封面开始浮现、
            再过 NEXT_GAP 才开始逐字;队列跨批次累计(滚动后新进视口的也排在后面) */
         /* 上面的作品直接显示、不再补播入场(2026-10-23 用户:从底部往上划回去时,上面不要入场动画了):
            一下滑到底、或刷新后停在下面时,上面那些从没进过视口;某条出现时,把它上面还没出现的全部直接亮出来 */
-        let blockBatch = 0;
         const reveal = (el: HTMLElement) => {
           el.classList.add('in', 'instant');
           io.unobserve(el);
@@ -307,28 +307,30 @@ export default function HomePage() {
             if (!above.classList.contains('in')) reveal(above);
           });
           if (el.classList.contains('in')) return;
-          /* 逐段浮现:每条作品整条当一段浮上来(里面的逐字、封面入场都关掉);打开页面就在视口里的
-             接在介绍区后面,之后滚动进来的立刻开始,同一批之间隔两个段间隔 */
+          /* 逐段浮现:每条作品拆成小段依次浮上来(里面的逐字、封面入场都关掉),双栏单栏同一套节奏 */
           if (BLOCKS_ENTRANCE) {
             reveal(el);
             const { step, sectionGap } = ENTRANCE.blocks;
             /* 双栏(2026-10-25 用户:单栏很好,双栏右边 Feed 不像逐段、不连贯):右栏和左栏一起从上往下流 ——
                每条作品拆成 日期 → 标题 → 简介 → 每张封面 一小段一小段地来,段间隔同左栏;
                首屏在左栏开始后 sectionGap 起步,不再等左栏走完;之后滚动进来的接着排,不和上一批抢 */
-            if (window.matchMedia('(min-width: 1152px)').matches) {
-              const cover = el.querySelector('.work-cover');
-              const covers = cover?.matches('.gallery, .showcase') ? [...cover.querySelectorAll('.gl-item, .sc-pane')] : [cover];
-              const parts = [el.querySelector('.work-year'), el.querySelector('.work-title'), el.querySelector('.work-summary'), ...covers];
-              parts.forEach((part) => {
-                if (!part) return;
-                const at = Math.max(now + (now - t0 < 400 ? sectionGap : 0), blockCursor);
-                setBlock(part, at - now);
-                blockCursor = at + step;
-              });
-              return;
-            }
-            const k = blockBatch++;
-            setBlock(el, (now - t0 < 400 ? blocksWorksAt() : 0) + k * 2 * step);
+            /* 单栏(2026-10-31 用户:双列的 Feed 入场很好,其他宽度也要一致):同样逐小段地来,
+               只是首屏要排在介绍区后面(介绍区在上面);日期上方那条细线和日期一起浮现 */
+            const twoCol = window.matchMedia('(min-width: 1280px)').matches;
+            const cover = el.querySelector('.work-cover');
+            const covers = cover?.matches('.gallery, .showcase') ? [...cover.querySelectorAll('.gl-item, .sc-pane')] : [cover];
+            const parts = [el.querySelector('.work-year'), el.querySelector('.work-title'), el.querySelector('.work-summary'), ...covers];
+            const lead = now - t0 < 400 ? (twoCol ? sectionGap : blocksWorksAt()) : 0;
+            parts.forEach((part, k) => {
+              if (!part) return;
+              const at = Math.max(now + lead, blockCursor);
+              setBlock(part, at - now);
+              if (k === 0 && !twoCol) {
+                el.classList.add('bk-line');
+                el.style.setProperty('--line-bd', `${at - now}ms`);
+              }
+              blockCursor = at + step;
+            });
             return;
           }
           /* 斜向渐清入场时,打开页面就在视口里的作品直接显示,交给扫光;之后滚动进来的照常依次浮现 */
@@ -352,13 +354,31 @@ export default function HomePage() {
           el.classList.add('in');
           io.unobserve(el);
         });
+    };
+    const io = new IntersectionObserver(
+      (entries) => {
+        /* 点刻度跳转、页面正在平滑滚过去时不排入场(2026-10-31 用户:路过的作品都排进队列,到了以后顺序乱);
+           到了以后由下面的 feed-jump-end 统一排 */
+        if (document.documentElement.classList.contains('feed-jumping')) return;
+        enter(entries.filter((e) => e.isIntersecting).map((e) => e.target as HTMLElement));
       },
       { rootMargin: '0px 0px -40px 0px', threshold: 0.1 },
     );
     items.forEach((el) => io.observe(el));
+    /* 跳转到了:上面路过的直接显示(enter 里处理),屏幕里还没出现的从上到下依次入场,同首次加载 */
+    const onJumpEnd = () => {
+      const vh = window.innerHeight;
+      enter(items.filter((el) => {
+        if (el.classList.contains('in')) return false;
+        const r = el.getBoundingClientRect();
+        return r.top < vh - 40 && r.bottom > 0;
+      }));
+    };
+    window.addEventListener('feed-jump-end', onJumpEnd);
     return () => {
       cancelAnimationFrame(raf);
       io.disconnect();
+      window.removeEventListener('feed-jump-end', onJumpEnd);
     };
   }, []);
 
@@ -419,6 +439,10 @@ export default function HomePage() {
           {splitIntro('{研究}{内容}{怎么}{被创作、}{被呈现、}{被看见。}', !phoneWrap).map((t, i) => (
             <span key={`b${i}`} className="hero-ch">{t}</span>
           ))}
+          {/* 「现在」这段并入第一段(2026-10-31 用户):第一段 = 我是谁 + 现在在做什么,第二段 = 履历 */}
+          {splitIntro('{现在我}{边设计、}{边实现，}{AI coding、}{skills、}{PR }{是常态。}{同时，}{把看到的、}{想到的，}{写成}{文章。}', !phoneWrap).map((t, i) => (
+            <span key={`d${i}`} className="hero-ch">{t}</span>
+          ))}
           </p>
           <p>
           {splitIntro('曾在 ').map((t, i) => (
@@ -434,50 +458,13 @@ export default function HomePage() {
           {splitIntro('担任 ').map((t, i) => (
             <span key={`c0${i}`} className="hero-ch">{t}</span>
           ))}
-          {/* 「UI 设计师」独立成单元:底下垫手绘灰色双笔下划线(2026-08-22 手绘样式,10-23 红改灰);
-              逗号并进单元防行首标点,但不吃下划线 */}
-          <span className="hero-ch hero-intro-unit">
-            <span className="hero-role-mark">
-              UI 设计师
-              {/* 双笔画手绘下划线(2026-08-22 用户:要两条的笔画感):主笔全宽扫过,
-                  第二笔更短、垫在中段下方 —— 快速回锋的双线。两条都是变宽实心笔触
-                  (上下缘不同相位抖动 = 粗细一直在变);preserveAspectRatio none 随词宽拉伸 */}
-              <svg aria-hidden="true" className="hero-role-line" viewBox="0 0 200 24" preserveAspectRatio="none">
-                {/* hover 画笔重描:每笔一张遮罩,沿笔画中线的粗描边按 dashoffset 扫开 ——
-                    笔画本身是变宽实心轮廓、没有可描的中线,只能用遮罩露出来。
-                    两笔各用各的遮罩:中线描边够粗时会盖到邻笔边缘 */}
-                <defs>
-                  <mask id="hero-role-m1" maskUnits="userSpaceOnUse" x="-4" y="0" width="208" height="24">
-                    <path pathLength={1} d="M0 10.2 L203 6.8" />
-                  </mask>
-                  <mask id="hero-role-m2" maskUnits="userSpaceOnUse" x="-4" y="0" width="208" height="24">
-                    <path pathLength={1} d="M19 16.6 L143 15.4" />
-                  </mask>
-                </defs>
-                <path mask="url(#hero-role-m1)" d="M4 7.5 C 30 5.8, 60 8, 90 6.6 C 120 5.4, 155 7.2, 194 5.2 C 197 5, 198 6, 197.5 7.2 C 197 8.6, 194 9.4, 190 9.8 C 158 12, 124 10, 92 11.4 C 62 12.6, 32 11, 7 12.6 C 4.6 12.7, 3.4 11.6, 3.5 10 C 3.6 8.8, 3.8 7.9, 4 7.5 Z" />
-                <path mask="url(#hero-role-m2)" d="M22 15.5 C 50 13.8, 85 15.6, 118 14 C 128 13.5, 136 14.2, 138 15 C 139.5 15.9, 137 16.9, 132 17.3 C 100 19.4, 66 17.4, 35 19 C 28 19.3, 23.5 18.6, 23 17.4 C 22.6 16.6, 22.4 15.9, 22 15.5 Z" />
-              </svg>
-              {/* 画笔:与下划线同框,笔尖跟着遮罩的扫开进度走(轨迹见 writing.css hero-pen-track) */}
-              <span aria-hidden="true" className="hero-role-pen">
-                <span className="hero-role-pen-track">
-                  <svg className="hero-role-pen-icon" viewBox="0 0 24 24">
-                    <path d="M16.2 3.8a2.3 2.3 0 0 1 3.3 0l.7.7a2.3 2.3 0 0 1 0 3.3L8.5 19.5 3 21l1.5-5.5Z" />
-                  </svg>
-                </span>
-              </span>
-            </span>
-            ，
-          </span>
+          {/* 「UI 设计师」用普通字(2026-10-31 用户:去掉手绘下划线);逗号并进单元防行首标点 */}
+          <span className="hero-ch hero-intro-unit">UI 设计师，</span>
           {splitIntro('{设计}{内容}{产品的}{视觉体验，}{创作者}{平台、}{阅读、}{社区这类，}{做界面、图标系统和动效。}', !phoneWrap).map(
             (t, i) => (
               <span key={`c${i}`} className="hero-ch">{t}</span>
             ),
           )}
-          </p>
-          <p>
-          {splitIntro('{现在我}{边设计、}{边实现，}{AI coding、}{skills、}{PR }{是常态。}{同时，}{把看到的、}{想到的，}{写成}{文章。}', !phoneWrap).map((t, i) => (
-            <span key={`d${i}`} className="hero-ch">{t}</span>
-          ))}
           </p>
           {/* 联系方式一句话(2026-10-25 用户:单栏时用这句,不用公众号 / 邮箱两个胶囊,底部不再挤一堆);
               宽屏仍用左下角的胶囊,这句隐藏(simple.css) */}
@@ -503,6 +490,7 @@ export default function HomePage() {
       <LocalTime />
       {/* 入场扫光调参面板:只在本地开发出现(2026-10-25 用户) */}
       {import.meta.env.DEV && !IS_EMBED && <RevealTuner />}
+      {import.meta.env.DEV && !IS_EMBED && <DevOutline />}
       {/* 作品导航刻度:宽屏双栏才出现(2026-10-25 用户:参考 Codex 的消息摘要刻度) */}
       <WorkRail items={WORKS} />
       </div>
@@ -545,9 +533,9 @@ const sized = (src: string, w: number) => src.replace(/\.webp(\?|$)/, `-${w}.web
 /* 卡片在各布局下的实际显示宽度(两栏:作品区 = 100vw − 624;单栏:100vw − 64 / 手机 − 32;
    每张卡 ≥ 375 才并排,见 simple.css 的容器查询),浏览器据此挑 960 / 1280 / 1920 那张(1280 主要给 3 倍屏手机) */
 const CARD_SIZES =
-  '(min-width: 1390px) calc(50vw - 320px), (min-width: 1152px) calc(100vw - 624px), (min-width: 830px) calc(50vw - 40px), calc(100vw - 32px)';
+  '(min-width: 1536px) 448px, (min-width: 1390px) calc(50vw - 320px), (min-width: 1280px) calc(100vw - 624px), (min-width: 830px) calc(50vw - 40px), calc(100vw - 64px)';
 /* 单张通栏时图片占满整栏(2026-10-24):宽屏右栏 = 100vw − 624,单栏 = 100vw − 左右边距 */
-const FULL_SIZES = '(min-width: 1152px) calc(100vw - 624px), (min-width: 601px) calc(100vw - 64px), calc(100vw - 32px)';
+const FULL_SIZES = '(min-width: 1536px) 912px, (min-width: 1280px) calc(100vw - 624px), calc(100vw - 64px)';
 
 function Gallery({ items }: { items: { src: string; tint?: string; zoom?: number }[] }) {
   return (

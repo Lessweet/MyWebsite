@@ -143,14 +143,28 @@ function setSiteTheme(dark) {
     document.documentElement.style.background = dark ? '#1c1c1e' : '#FDFDFC';
 }
 function applySiteTheme() {
-    /* 2026-07-22 改为会话级记忆:每次新会话强制浅色,切换只在当前会话内保持。
-       顺带清掉旧版遗留的 localStorage 跨会话记忆(老访客不再被锁在深色)。 */
+    /* 2026-10-31 用户:整站跟随设备系统的深 / 浅色(prefers-color-scheme),系统切换时页面实时跟着变。
+       线上首页不再有主题键;本地测试版(localhost:5174)保留按钮看效果 —— 手动切过就以 sessionStorage
+       里的选择为准(仅当次会话),不再跟系统。旧版 Blog / Archive 页的主题键同理。
+       历史:2026-07-22 起是「每次新会话强制浅色」;顺带清掉更早的 localStorage 跨会话记忆。 */
+    var picked = null;
     try {
         localStorage.removeItem('site-theme');
-        /* 无论深浅都要调一次:菜单类是取反挂的,默认浅色时若不调,
-           menu-dark 就挂不上,首屏打开菜单会是浅底(应为黑底)。 */
-        setSiteTheme(sessionStorage.getItem('site-theme') === 'dark');
-    } catch (e) { /* 隐私模式等取不到 storage 时静默,维持浅色 */ }
+        picked = sessionStorage.getItem('site-theme');
+    } catch (e) { /* 隐私模式等取不到 storage 时静默,只跟系统 */ }
+    var mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+    /* 无论深浅都要调一次:菜单类是取反挂的,默认浅色时若不调,menu-dark 就挂不上 */
+    setSiteTheme(picked ? picked === 'dark' : !!(mq && mq.matches));
+    if (mq && !applySiteTheme.watching) {
+        applySiteTheme.watching = true;
+        var follow = function () {
+            var p = null;
+            try { p = sessionStorage.getItem('site-theme'); } catch (e) {}
+            if (!p) setSiteTheme(mq.matches);
+        };
+        if (mq.addEventListener) mq.addEventListener('change', follow);
+        else if (mq.addListener) mq.addListener(follow);
+    }
 }
 /* 切换动效:圆形揭开(2026-08-11 用户要求)—— 与手机端全屏菜单「从关闭键的圆
    长出来」同一套语汇。浅色是默认态,深色是「盖上来的那一层」,所以两个方向互为逆动作:
