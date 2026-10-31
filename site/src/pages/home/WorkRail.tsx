@@ -14,14 +14,14 @@ type Item = {
   title: string;
   cover?: string;
   showcase?: { covers: { src: string }[] };
-  gallery?: { src: string; tint?: string }[];
+  gallery?: { src: string }[];
 };
 
 /* 预览卡缩略图(2026-10-31 用户:去掉简介,试一张很小的封面):四图式取第一张(用 960 宽那档,页面上多半已加载过),
    两图式取右侧第一张文章封面,单图取封面本身 */
-function thumbOf(w: Item): { src: string; tint?: string } | null {
+function thumbOf(w: Item): { src: string } | null {
   const g = w.gallery?.find((it) => it.src);
-  if (g) return { src: g.src.replace(/\.webp(\?|$)/, '-960.webp$1'), tint: g.tint };
+  if (g) return { src: g.src.replace(/\.webp(\?|$)/, '-960.webp$1') };
   const c = w.showcase?.covers.find((it) => it.src);
   if (c) return { src: c.src };
   return w.cover ? { src: w.cover } : null;
@@ -31,6 +31,10 @@ type Block = { el: HTMLElement; work: number };
 /* 所有宽度、所有设备都显示(2026-10-31 用户:边距统一 32 后右边有位置放刻度,手机上也要);
    原来手机、平板和 < 640 的窗口不显示。名字沿用 WIDE */
 const WIDE = 'all';
+/* 点刻度跳转的滚动时长(所有设备同一套):基础 450ms + 每像素 0.12ms,最长 1200ms */
+const JUMP_BASE = 450;
+const JUMP_PER_PX = 0.12;
+const JUMP_MAX = 1200;
 
 /* 轻触感(2026-10-31 用户:手机上划刻度要有 iOS 闹钟滚轮那种震动、机械感)。
    安卓 Chrome 有 navigator.vibrate;iOS Safari 没有,借 iOS 18 起「开关」复选框被点时自带的触感:
@@ -84,8 +88,10 @@ export default function WorkRail({ items }: { items: Item[] }) {
   /* 触屏松手已经跳过去了,紧跟着的 click 不再跳第二次 */
   const lastTouchUp = useRef(0);
   const tickRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const cardInner = useRef<HTMLDivElement>(null);
-  const [cardH, setCardH] = useState(0);
+  /* 卡片显示第几件:鼠标离开后保持不变,卡片淡出时内容不跳 */
+  const [reel, setReel] = useState(0);
+  /* 卡片从隐藏到出现那一下不做位移过渡(直接落到位),出现以后上下换作品才跟着刻度滑 */
+  const [jump, setJump] = useState(false);
   /* 卡片固定宽度 = 所有作品里最长那行文字(日期或标题)+ 图 + 间距(2026-10-31 用户:不要换行、切换不跳) */
   const measureRef = useRef<HTMLDivElement>(null);
   const [textW, setTextW] = useState(0);
@@ -124,7 +130,8 @@ export default function WorkRail({ items }: { items: Item[] }) {
       setCurrent(c);
       const twoCol = window.matchMedia('(min-width: 1280px)').matches;
       const firstHead = blocks[0].el.querySelector('.work-head') ?? blocks[0].el;
-      setAway(!twoCol && firstHead.getBoundingClientRect().top > 60);
+      /* 单栏:第一条作品的日期滑到窗口竖直中间就出现(2026-10-31 用户:原来要滑到顶部才出现,太晚) */
+      setAway(!twoCol && firstHead.getBoundingClientRect().top > window.innerHeight / 2);
     };
     update();
     window.addEventListener('scroll', update, { passive: true });
@@ -136,10 +143,9 @@ export default function WorkRail({ items }: { items: Item[] }) {
     const intro = document.querySelector<HTMLElement>('.intro-col');
     const place = () => {
       const railH = railRef.current?.offsetHeight ?? 0;
-      /* 单列(竖排):贴页面右缘、窗口竖直正中(2026-10-31 用户:不放右上角) */
-      if (!intro || !window.matchMedia('(min-width: 1280px)').matches) {
-        return setRailTop(Math.round((window.innerHeight - railH) / 2));
-      }
+      /* 单列(竖排):贴页面右缘、窗口竖直正中,由 CSS 定位(50svh,见 simple.css)。
+         原来这里按 innerHeight 算,iPhone Safari 地址栏收起时 innerHeight 变大,刻度会自己往下挪(2026-10-31 用户) */
+      if (!intro || !window.matchMedia('(min-width: 1280px)').matches) return setRailTop(null);
       /* 放在介绍区底边到窗口底这块空白的正中(2026-10-31 用户:左下空白区域的一半位置);
          窗口矮、空白不够时至少离介绍区 48 */
       const introBottom = intro.getBoundingClientRect().bottom;
@@ -170,16 +176,6 @@ export default function WorkRail({ items }: { items: Item[] }) {
     document.fonts?.ready.then(fit);
   }, [items, wide, blocks.length]);
 
-  /* 预览卡高度跟内容走,用过渡从上一张的高度变过去;宽度固定(2026-10-31 用户:按内容变宽窄,切换时跳) */
-  useLayoutEffect(() => {
-    const el = cardInner.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => setCardH(el.offsetHeight));
-    ro.observe(el);
-    setCardH(el.offsetHeight);
-    return () => ro.disconnect();
-  }, [hover, wide, blocks.length]);
-
   /* 鼠标在刻度列上移动:离光标最近的那根当作悬停的那根(成为焦点),预览卡跟着它 */
   const onMove = (clientY: number) => {
     let best = -1;
@@ -197,7 +193,12 @@ export default function WorkRail({ items }: { items: Item[] }) {
       const t = tickRefs.current[best]!;
       const rail = railRef.current!.getBoundingClientRect();
       const r = t.getBoundingClientRect();
+      if (hoverRef.current == null) {
+        setJump(true);
+        requestAnimationFrame(() => requestAnimationFrame(() => setJump(false)));
+      }
       setCardY(r.top + r.height / 2 - rail.top);
+      setReel(best);
       if (touching.current && hoverRef.current !== best) haptic();
       hoverRef.current = best;
       setHover(best);
@@ -224,35 +225,49 @@ export default function WorkRail({ items }: { items: Item[] }) {
     /* 滚过去的路上不排入场,到了再从上到下排(HomePage 的 feed-jump-end) */
     const root = document.documentElement;
     root.classList.add('feed-jumping');
-    window.scrollTo({ top: target, behavior: reduce ? 'auto' : 'smooth' });
     let done = false;
+    let raf = 0;
+    const stopEvents = ['wheel', 'touchstart', 'keydown'] as const;
     const arrive = () => {
       if (done) return;
       done = true;
-      window.removeEventListener('scrollend', arrive);
+      cancelAnimationFrame(raf);
+      stopEvents.forEach((ev) => window.removeEventListener(ev, arrive));
       root.classList.remove('feed-jumping');
       window.dispatchEvent(new Event('feed-jump-end'));
     };
-    /* 能报「滚动结束」的浏览器就等它;不支持的(旧 Safari)按距离估一个时间 —— 固定 900ms 时,
-       从页底滚回第一条这种长距离还没到就开始排入场 */
+    /* 自己控制滚动(2026-10-31 用户:手机上定位过去特别快 —— 浏览器自带的平滑滚动各家速度不同,
+       电脑 Chrome 长距离约 1.3s,iPhone 只要 0.3s)。所有设备同一套:时长按距离算、最长 JUMP_MAX,先加速后减速。
+       途中滚轮 / 手指 / 键盘一动就停在原地,不和人抢 */
     const from = window.scrollY;
-    const hasScrollEnd = 'onscrollend' in document.documentElement;
-    if (hasScrollEnd) window.addEventListener('scrollend', arrive, { once: true });
-    else setTimeout(arrive, Math.min(1600, 400 + Math.abs(from - target) * 0.4));
+    const dist = target - from;
+    const dur = reduce ? 0 : Math.min(JUMP_MAX, JUMP_BASE + Math.abs(dist) * JUMP_PER_PX);
+    if (!dur) {
+      window.scrollTo(0, target);
+      return arrive();
+    }
+    stopEvents.forEach((ev) => window.addEventListener(ev, arrive, { passive: true }));
+    const t0 = performance.now();
+    const step = (now: number) => {
+      const t = Math.min(1, (now - t0) / dur);
+      const e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;   /* 慢进慢出 */
+      window.scrollTo(0, from + dist * e);
+      if (t < 1) raf = requestAnimationFrame(step);
+      else arrive();
+    };
+    raf = requestAnimationFrame(step);
   };
 
   if (!wide || blocks.length < 2) return null;
 
   const hb = hover != null ? blocks[hover] : null;
   const focus = hover ?? current;
-  const hw = hb ? items[hb.work] : null;
-  const thumb = hw ? thumbOf(hw) : null;
 
   return (
     <nav
       aria-label="作品导航"
       aria-hidden={away || undefined}
-      className={`work-rail${hb ? ' is-hover' : ''}${away ? (shownOnce ? ' is-leaving' : ' is-away') : ''}`}
+      className={`work-rail${hb ? ' is-hover' : ''}${jump ? ' is-jump' : ''}${away ? (shownOnce ? ' is-leaving' : ' is-away') : ''}`}
       ref={railRef}
       style={{ ...(railTop != null ? { top: railTop } : {}), '--n': blocks.length } as CSSProperties}
       onPointerLeave={onLeave}
@@ -310,27 +325,27 @@ export default function WorkRail({ items }: { items: Item[] }) {
           <i />
         </button>
       ))}
-      {/* 只有一张预览卡:跟着悬停的那根线上下滑,内容换时高度平滑过渡 */}
+      {/* 只有一张预览卡(2026-10-31 用户:极简容器):白色卡片跟着刻度上下移,里面的内容直接换成那一件,
+          不滚动、不淡入(试过转轮式整列跟着滚,用户:动静更大) */}
       <div aria-hidden="true" className="wr-pop" style={{ top: cardY }} onClick={() => hover != null && go(hover)}>
-        <div
-          className="wr-card"
-          style={{ height: cardH || undefined, ...(textW ? { '--wr-text-w': `${textW}px` } : {}) } as CSSProperties}
-        >
-        <div className="wr-card-inner" key={hover ?? -1} ref={cardInner}>
-          {hw && (
-            <>
-              {thumb && (
-                <span className="wr-thumb" style={thumb.tint ? { background: thumb.tint } : undefined}>
-                  <img alt="" decoding="async" src={thumb.src} />
+        <div className="wr-card" style={(textW ? { '--wr-text-w': `${textW}px` } : {}) as CSSProperties}>
+          {(() => {
+            const w = blocks[reel] ? items[blocks[reel].work] : null;
+            const thumb = w ? thumbOf(w) : null;
+            return (
+              <div className="wr-row">
+                {thumb && (
+                  <span className="wr-thumb">
+                    <img alt="" decoding="async" src={thumb.src} />
+                  </span>
+                )}
+                <span className="wr-text">
+                  <small>{w?.date}</small>
+                  <b>{w?.title}</b>
                 </span>
-              )}
-              <span className="wr-text">
-                <small>{hw.date}</small>
-                <b>{hw.title}</b>
-              </span>
-            </>
-          )}
-        </div>
+              </div>
+            );
+          })()}
         </div>
         {/* 量宽度用:所有作品的日期、标题各一行,不显示 */}
         <div className="wr-measure" ref={measureRef}>

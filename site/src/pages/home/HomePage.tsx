@@ -4,7 +4,7 @@
  * hover 微交互)→ 联系方式一句话 → 城市 + 时间(LocalTime)→ 细分割线 → 代表作单列 Feed(works.ts)。
  * 样式全部在 docs/simple.css。
  */
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ImgHTMLAttributes } from 'react';
 import type { CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import NeteaseWordmark from './NeteaseWordmark';
@@ -179,7 +179,8 @@ export default function HomePage() {
       root.classList.add('blocks-entrance');
       const { step } = ENTRANCE.blocks;
       setBlock(document.querySelector('.site-logo-link'), 0);
-      document.querySelectorAll('.head-right > .head-links, .head-right > .theme-toggle').forEach((el) => setBlock(el, 0));
+      /* 主题键不参与入场(2026-10-31 用户:和右下角另外两个按钮一样,一打开就固定在那) */
+      document.querySelectorAll('.head-right > .head-links').forEach((el) => setBlock(el, 0));
       const introBlocks = [...document.querySelectorAll('.hero-intro > p'), document.querySelector('.hero-loc')];
       introBlocks.forEach((el, i) => setBlock(el, (i + 1) * step));
       /* 单栏:介绍区和作品区之间的细线接在城市时间后面一段出现,算介绍区收尾(2026-10-31 用户:原来跟第一条作品的日期一起,太晚) */
@@ -190,7 +191,8 @@ export default function HomePage() {
       }
     }
     /* 本地开发:用调参面板存下的入场参数(线上用 simple.css 里的默认值) */
-    if (import.meta.env.DEV) applyEntrance(ENTRANCE);
+    /* 入场参数(entrance.json)写进 CSS 变量:线上、本地、手机都用同一套 */
+    applyEntrance(ENTRANCE);
     root.classList.remove('app-loading');
   }, []);
 
@@ -510,7 +512,7 @@ export default function HomePage() {
       <WorkRail items={WORKS} />
       </div>
       <section className="works" aria-label="代表作">
-        {WORKS.map((w) => (
+        {WORKS.map((w, wi) => (
           <article className="work" key={w.title}>
             {/* 年份与标题同一行(2026-10-23 用户) */}
             <div className="work-head">
@@ -519,13 +521,15 @@ export default function HomePage() {
             </div>
             {w.summary && <p className="work-summary">{feedChars(w.summary, !phoneWrap)}</p>}
             {/* hover 封面区域时图放大到 1.05(同 Signal 的 Feed 卡片);只认封面区域,不认整条(2026-10-23 用户) */}
-            {w.gallery ? (
-              <Gallery items={w.gallery} />
+            {RENDER_SHOWCASE && w.showcase ? (
+              <Showcase {...w.showcase} />
+            ) : w.gallery ? (
+              <Gallery eager={wi === 0} items={w.gallery} />
             ) : w.showcase ? (
               <Showcase {...w.showcase} />
             ) : (
               <div className="work-cover">
-                {w.cover && <img alt="" decoding="async" loading="lazy" src={w.cover} />}
+                {w.cover && <CoverImg alt="" decoding="async" loading="lazy" src={w.cover} />}
               </div>
             )}
           </article>
@@ -552,20 +556,51 @@ const CARD_SIZES =
 /* 单张通栏时图片占满整栏(2026-10-24):宽屏右栏 = 100vw − 624,单栏 = 100vw − 左右边距 */
 const FULL_SIZES = '(min-width: 1536px) 912px, (min-width: 1280px) calc(100vw - 624px), calc(100vw - 64px)';
 
-function Gallery({ items }: { items: { src: string; tint?: string; zoom?: number }[] }) {
+/* 封面图:加载中露出格子的浅灰底,图加载完再淡入(2026-10-31 用户:真正的素材加载完才淡入;
+   试过每个作品一个主题色,用户:有重复、浅灰更克制)。已经在缓存里的图一挂上就是完成状态,直接显示、不淡入 */
+/* 本地测试版看加载态:网址加 ?mock-loading,每张封面故意晚 2–4 秒才算加载完(2026-10-31 用户:mock 加载态看看) */
+/* 两图式封面用代码拼,但网站上用导出的整张位图(2026-10-31 用户:任何作品的加载态都是 16:9 整图)。
+   本地加 ?render-showcase 显示代码拼的原版,给 site/scripts/build-work-showcase-bitmap.mjs 截图导出 */
+const RENDER_SHOWCASE = import.meta.env.DEV && new URLSearchParams(location.search).has('render-showcase');
+const MOCK_LOADING = import.meta.env.DEV && new URLSearchParams(location.search).has('mock-loading');
+function CoverImg(props: ImgHTMLAttributes<HTMLImageElement>) {
+  const [loaded, setLoaded] = useState(false);
+  const done = () => {
+    if (MOCK_LOADING) window.setTimeout(() => setLoaded(true), 2000 + Math.random() * 2000);
+    else setLoaded(true);
+  };
+  return (
+    <img
+      {...props}
+      className={`${props.className ?? ''}${loaded ? ' is-loaded' : ''}`.trim() || undefined}
+      ref={(el) => {
+        if (!MOCK_LOADING && el && el.complete && el.naturalWidth > 0 && !loaded) {
+          el.classList.add('is-instant');
+          setLoaded(true);
+        }
+      }}
+      onLoad={done}
+    />
+  );
+}
+
+/* eager:第一件作品的封面立即加载、优先下载(index.html 里还有一份预加载,见 vite.config.ts coverPreload);
+   其他作品保持延迟加载,滑到附近才下载 */
+function Gallery({ items, eager = false }: { items: { src: string; zoom?: number }[]; eager?: boolean }) {
   return (
     <div className="work-cover gallery">
       {items.map((it, i) => (
         <div
           className="gl-item"
           key={it.src || i}
-          style={{ '--i': i, '--z': it.zoom ?? 1, ...(it.tint ? { background: it.tint } : {}) } as CSSProperties}
+          style={{ '--i': i, '--z': it.zoom ?? 1 } as CSSProperties}
         >
           {it.src && (
-            <img
+            <CoverImg
               alt=""
               decoding="async"
-              loading="lazy"
+              fetchPriority={eager ? 'high' : undefined}
+              loading={eager ? 'eager' : 'lazy'}
               sizes={items.length === 1 || (items.length === 3 && i === 0) ? FULL_SIZES : CARD_SIZES}
               src={it.src}
               srcSet={`${sized(it.src, 960)} 960w, ${sized(it.src, 1280)} 1280w, ${it.src} 1920w`}
@@ -589,7 +624,7 @@ function Showcase({ phones, covers, tint }: { phones: string[]; covers: Cover[];
               {/* 不画状态栏和灵动岛(2026-10-23 用户);没有截图时画占位线条 */}
               {src ? (
                 /* 手机截图在页面上最宽约 170px,一般挑 400 宽那张 */
-                <img alt="" decoding="async" loading="lazy" sizes="180px" src={src} srcSet={`${sized(src, 400)} 400w, ${src} 750w`} />
+                <CoverImg alt="" decoding="async" loading="lazy" sizes="180px" src={src} srcSet={`${sized(src, 400)} 400w, ${src} 750w`} />
               ) : (
                 <div className="sc-skel">
                   <span /><span /><span /><span /><span /><span />
@@ -603,13 +638,15 @@ function Showcase({ phones, covers, tint }: { phones: string[]; covers: Cover[];
         <div aria-hidden="true" className="sc-inner">
           {/* 横排两行、左右越出容器(2026-10-23 用户):按顺序上行多一张(7 张 → 4 / 3);
               两行居中,张数一奇一偶自然错开半张 */}
+          {/* 每行 5 张,隔行错开半张;整组倾斜视角铺满容器,边缘被容器裁掉(2026-10-31 用户)。
+              中间 3 行是 15 张原创封面(顺序见 works.ts);上下各多一行(重复第 3 行 / 第 1 行),倾斜后左上、右下两个角也铺满,不留白 */}
           <div className="sc-covers">
-            {[covers.slice(0, Math.ceil(covers.length / 2)), covers.slice(Math.ceil(covers.length / 2))].map((row, r) => (
+            {[-1, 0, 1, 2, 3].map((r) => Array.from({ length: 5 }, (_, k) => covers[(((r * 5 + k) % covers.length) + covers.length) % covers.length])).map((row, r) => (
               <div className="sc-row" key={r}>
                 {row.map((c, i) =>
-                  /* 封面下方的文章标题 2026-10-23 用户又去掉了(title 留在数据里备用);没有素材时是占位块 */
+                  /* 封面下方的文章标题 2026-10-23 用户去掉了(title 留在数据里备用);没有素材时是占位块 */
                   c.src ? (
-                    <img alt="" className="sc-cover" decoding="async" key={c.src} loading="lazy" src={c.src} />
+                    <CoverImg alt="" className="sc-cover" decoding="async" key={`${c.src}-${i}`} loading="lazy" src={c.src} />
                   ) : (
                     <span className="sc-cover sc-cover-skel" key={i} />
                   ),

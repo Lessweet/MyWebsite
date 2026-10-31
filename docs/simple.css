@@ -30,7 +30,7 @@
     --line: rgba(0, 0, 0, 0.1);   /* 细分割线(2026-10-24 用户:试过 benji 的 #F2F2F2,太淡,改回) */
     --btn-line: rgba(0, 0, 0, 0.1);   /* 胶囊 / 主题键边框:保留原来的深度(2026-10-24 用户:#F2F2F2 太淡) */
     --rule: #F2F2F2;   /* 作品日期上方的细线:同 benji.org 列表分割线(2026-10-25 用户:再浅一点,和他网站里一样) */
-    --fill: #F2F2F7;
+    --fill: #F2F1EE;   /* 浅灰底(加载占位、封面底、小块底色):#F2F2F7 偏蓝太冷 → 暖一点的中性灰,同页面暖白底 #FDFDFC(2026-10-31 用户) */
     --gray-400: #aeaeb2;
     --gray-500: #8e8e93;
     --gray-600: #636366;
@@ -42,8 +42,8 @@
     /* 装饰线色:UI 设计师手绘下划线 + 公众号/邮箱虚线下划线共用,刻意很浅 */
     --mark: #C7C7CC;
     --cover-bg: linear-gradient(135deg, #EDD9E3, #F8EEE3);   /* 公众号封面卡片底色 */
-    --sc-article-bg: #F2F2F4;   /* 两个展示块统一浅灰(2026-10-24 用户;原珊瑚浅底 #FEEDE9 / 黄浅底 #FDF7DB) */
-    --sc-covers-bg: #F2F2F4;
+    --sc-article-bg: var(--fill);   /* 两个展示块统一浅灰,用同一个 --fill(2026-10-31;原 #F2F2F4,更早是珊瑚 #FEEDE9 / 黄 #FDF7DB) */
+    --sc-covers-bg: var(--fill);
 
     /* 单栏宽度(benji 为 550);手机两侧留白收到 16px */
     --col: 560px;
@@ -79,8 +79,8 @@ body.theme-dark {
     --fill: #2c2c2e;
     --mark: #48484A;
     --cover-bg: linear-gradient(135deg, #3A3036, #36322D);   /* 同色相压暗 */
-    --sc-article-bg: #2C2C2E;
-    --sc-covers-bg: #2C2C2E;
+    --sc-article-bg: var(--fill);
+    --sc-covers-bg: var(--fill);
     --gray-400: #636366;   /* 深色下斜线 / 虚线压暗,不抢正面实线 */
     --logo-ink: #f5f5f7;
     --logo-ink-hover: #fff;
@@ -769,7 +769,7 @@ body.theme-vt *::after {
     aspect-ratio: 16 / 9;
     overflow: hidden;
     border-radius: 12px;   /* 8 → 12(2026-10-23 用户) */
-    background: var(--fill);
+    background: var(--fill);   /* 加载中统一浅灰 */
 }
 .gallery .gl-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
 /* --z = 图在格子里的放大倍数(works.ts 的 zoom,居中裁切);hover 只放大鼠标所在那一张,在 --z 基础上再 × --cover-zoom-scale */
@@ -826,6 +826,11 @@ body.theme-vt *::after {
     background: var(--fill);
 }
 .work-cover img { width: 100%; height: 100%; object-fit: cover; }
+/* 加载态(2026-10-31 用户):格子底统一浅灰(--fill;试过每个作品一个主题色,用户:有重复、浅灰更克制),图加载完(.is-loaded,HomePage CoverImg)再淡入;
+   已在缓存里的图(.is-instant)直接显示 */
+.work-cover img { opacity: 0; }
+.work-cover img.is-loaded { opacity: 1; }
+.work-cover img.is-loaded:not(.is-instant) { animation: hero-fade-in 0.5s ease both; }
 /* 封面 hover(同 Signal 的 Feed 卡片):框不动、不溢出,里面的图放大到 --cover-zoom-scale(1.03),
    0.6s 配不过冲的缓出曲线;只有鼠标在封面区域内才触发(2026-10-23 用户) */
 .work-cover img { transition: var(--cover-zoom); }
@@ -886,7 +891,17 @@ body.theme-vt *::after {
    左 = 这篇文章报告体的主色珊瑚 #F77353(13% 浅色),右 = 黄色 #F2CF1D(16% 浅色,封面系统的黄,用户定);深色主题取同色压暗 */
 /* 2026-10-25 试过作品集第 5、6 页的「效果背景」(深色底 + 柔光 + 颗粒,图还留在
    writing/assets/works/showcase/bg-article.webp、bg-covers.webp),用户:黑色太重,改回统一浅灰 */
-.sc-pane-article { background: var(--sc-article-bg); }
+.sc-pane-article {
+    /* 左块(三屏手机)背景照参考图(2026-10-31 用户):模糊的大色块渐变(左上浅青、右上蓝绿、左下草绿、右下橙)
+       + 一层白色小方点网格。只用在导出的位图里,深浅色主题一样 */
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3Crect width='3' height='3' fill='white' fill-opacity='0.3'/%3E%3C/svg%3E") 0 0 / 0.26em 0.26em,   /* 波点定为 0.26em 密排小点(2026-10-31 用户;试过 0.72 / 0.5 / 0.36 / 0.18em,以及 4px 稀疏版,都改回这个) */
+        radial-gradient(60% 70% at 12% 8%, #BFE9F0 0%, rgba(191, 233, 240, 0) 70%),
+        radial-gradient(55% 65% at 85% 18%, #3E9DB8 0%, rgba(62, 157, 184, 0) 72%),
+        radial-gradient(60% 70% at 18% 95%, #7FAF45 0%, rgba(127, 175, 69, 0) 72%),
+        radial-gradient(45% 55% at 96% 100%, #F59E66 0%, rgba(245, 158, 102, 0) 75%),
+        linear-gradient(180deg, #7CC2C9 0%, #86B65C 100%);
+}
 .sc-pane-covers  { background: var(--sc-covers-bg); }
 /* 流动渐变底(MeshBg.tsx)+ 同款 SVG 噪点叠层 */
 .mesh-bg, .mesh-grain {
@@ -953,26 +968,33 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
    封面用定稿的 16:9 素材原比例(2026-10-23 用户:试过 4:3,改回 16:9),不带标题。
    图高 = (容器高 15.5em − 上下各 1.6em − 行距 0.8em)/ 2 ≈ 5.75em,宽 = 高 × 16/9 ≈ 10.2em;静态 */
 .sc-covers {
+    /* 倾斜排列(2026-10-31 用户):整组平面旋转、放大铺满容器,四边被 .sc-pane 裁掉。
+       每张 6.4em(容器 27.6em 宽;导出 1920 宽时约 445px,和 384 的原图接近,不发糊) */
+    --sc-tile: 6.4em;
+    --sc-gap: 0.165em;   /* 素材间距:1440 宽页面上看是 4px(容器 400 宽 → 1em ≈ 14.5px,再 × 放大 1.68;2026-10-31 用户) */
     position: absolute;
-    inset: 1.6em 0;
+    inset: 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 1.2em;   /* 封面之间 0.8 → 1.2em(2026-10-23 用户:间距增多),行距同列距 */
+    align-items: center;
+    gap: var(--sc-gap);
+    transform: rotate(8deg) scale(1.68);   /* 平面顺时针转 8°,不加透视(2026-10-31 用户;试过 15°、10°、透视后仰 + 逆时针 12°);放大 1.68 = 1.12 × 1.5 */
 }
 .sc-row {
     display: flex;
     justify-content: center;
-    gap: 1.2em;
+    gap: var(--sc-gap);
 }
+.sc-row:nth-child(even) { transform: translateX(calc((var(--sc-tile) + var(--sc-gap)) / 2)); }   /* 隔行错开半张 */
 .showcase .sc-cover {
     display: block;
     flex: none;
-    width: 10.2em;
+    width: var(--sc-tile);
     height: auto;
     aspect-ratio: 16 / 9;
     object-fit: cover;
-    border-radius: 0.57em;   /* 与手机圆角一致(1.2em × 0.475,560 宽时约 5.7px;2026-10-23 用户) */
+    border-radius: 0;   /* 直角(2026-10-31 用户) */
     background: var(--fill);
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1596,7 +1618,11 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
    越近越长越亮,鼠标划过时像一个跟着走的鼓包。正在看的那块常亮。预览卡只有一张,往左弹。 */
 .work-rail {
     position: fixed;
-    top: 50%;   /* 实际 top 由 WorkRail 下发:单列 = 窗口竖直正中,双栏 = 左栏介绍区下面空白的正中 */
+    /* 单列:窗口竖直正中。用 svh(地址栏展开时的屏幕高度),iPhone Safari 地址栏收起 / 展开时不跟着动(2026-10-31 修);
+       双栏的 top 由 WorkRail 下发(左栏介绍区下面空白的正中),同时把这里的 transform 清掉 */
+    top: 50%;
+    top: 50svh;
+    transform: translateY(-50%);
     /* 贴页面右缘,不贴窗口右缘(2026-10-31 用户):窗口 ≤ 1536 时两者重合;超宽屏整页居中后,刻度跟着页面走,不孤零零挂在窗口边上 */
     right: max(0px, calc((100vw - 1536px) / 2));
     z-index: 4;
@@ -1692,17 +1718,20 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     background: var(--site-bg);
     /* 边框和投影都很淡(2026-10-25 用户:投影太重、边框太深;原 1px 0.1 黑 + 32px 0.12 黑,悬停还更深) */
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 6px 20px rgba(0, 0, 0, 0.05);
+    --wr-row-h: 74px;   /* 一行 = 图 54 + 上下各 10 */
+    height: var(--wr-row-h);   /* 所有作品一样大:换作品时卡片只移动、不变尺寸 */
     color: var(--ink);
     cursor: pointer;
-    transition: height 0.22s var(--ease-soft);
 }
-.wr-card-inner {
+.wr-row {
     display: flex;
     align-items: center;
     gap: 14px;
-    padding: 10px 10px 10px 14px;   /* 图片那侧 10,圆角 14 − 10 = 4 与图片圆角同心;文字那侧留 14 */
-    animation: hero-fade-in 0.18s ease both;   /* 换内容时淡入,不硬切 */
+    height: var(--wr-row-h);
+    padding: 0 10px 0 14px;   /* 图片那侧 10,圆角 14 − 10 = 4 与图片圆角同心;文字那侧留 14 */
 }
+/* 卡片刚出现那一下直接落位,不从上次的位置滑过来 */
+.work-rail.is-jump .wr-pop { transition: none; }
 /* 缩略图(2026-10-31 用户:去掉简介,试小封面):16:9 80×45 → 4:3 64×48,居中裁切;
    放在右边(用户):先读到日期、标题,文字左缘对齐,图挨着刻度 */
 .wr-thumb {
@@ -1741,6 +1770,7 @@ body.theme-dark .wr-card { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 6p
    线左端对齐介绍文字左缘,悬停变长往右长;预览卡在高亮那根线右边、竖直居中对齐它。top 由 WorkRail 按介绍区底边下发 */
 @media (min-width: 1280px) {
     .work-rail {
+        transform: none;
         --rail-d: 800ms;   /* 双栏打开页面就在:等首屏入场走一段再出来,不抢首屏 */
         top: 0;
         left: var(--left-x);
@@ -1759,9 +1789,9 @@ body.theme-dark .wr-card { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 6p
     .work-rail.is-hover .wr-pop { transform: translate(0, -50%); }
 }
 @media (prefers-reduced-motion: reduce) {
-    .work-rail, .wr-card-inner, .work-rail .wr-tick { animation: none !important; }
+    .work-rail, .work-rail .wr-tick { animation: none !important; }
     .work-rail.is-leaving { opacity: 0; }
-    .wr-tick > i, .wr-pop, .wr-card { transition: none; }
+    .wr-tick > i, .wr-pop { transition: none; }
 }
 
 /* ── 大纲模式(DevOutline,只在本地测试版;2026-10-31 用户)──
@@ -1879,7 +1909,7 @@ body.theme-dark .ol-toggle[aria-pressed="true"] { background: #D6248A; border-co
    只在本地测试版出现(main.tsx 给 <html> 加 .dev-tools;调参键本来就只在开发环境渲染),线上跟随系统日夜间。
    三颗竖排浮在窗口右下角最上层,不参与页面排版;右、下间距 = 页面边距 */
 html:not(.dev-tools) .head-right .theme-toggle { display: none; }
-.head-right .theme-toggle { position: fixed; right: var(--gutter); bottom: calc(var(--gutter) + 88px); top: auto; z-index: 60; animation-delay: 0ms; }
+.head-right .theme-toggle { position: fixed; right: var(--gutter); bottom: calc(var(--gutter) + 88px); top: auto; z-index: 60; animation: none !important; }   /* 不入场,同另外两个按钮(2026-10-31 用户) */
 .rt-toggle { position: fixed; right: var(--gutter); bottom: var(--gutter); top: auto; z-index: 60; }
 /* 浮在内容上要看得清:实底 + 深一点的描边 + 轻阴影 */
 .head-right .theme-toggle,

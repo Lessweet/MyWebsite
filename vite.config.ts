@@ -71,6 +71,67 @@ function hiddenWorks(): Plugin {
   };
 }
 
+/* 入场动画参数只有一套(2026-10-31 用户):本地调参面板保存时 POST 到这里,写回 site/src/pages/home/entrance.json
+   (线上、电脑、手机都读这个文件)。只在开发服务器上有 */
+function entranceStore(): Plugin {
+  const file = resolve(ROOT, 'src/pages/home/entrance.json');
+  return {
+    name: 'entrance-store',
+    apply: 'serve',
+    configureServer(server) {
+      /* 写文件不触发热更新(调参中途页面不刷新);写完把模块缓存作废,其他设备刷新时拿到新参数 */
+      server.watcher.unwatch(file);
+      server.middlewares.use('/__entrance', (req, res) => {
+        if (req.method !== 'POST') {
+          res.statusCode = 405;
+          return res.end();
+        }
+        let body = '';
+        req.on('data', (c) => (body += c));
+        req.on('end', () => {
+          try {
+            const next = JSON.stringify(JSON.parse(body), null, 2) + '\n';
+            if (!fs.existsSync(file) || fs.readFileSync(file, 'utf8') !== next) {
+              fs.writeFileSync(file, next);
+              server.moduleGraph.getModulesByFile(file)?.forEach((m) => server.moduleGraph.invalidateModule(m));
+            }
+            res.statusCode = 204;
+          } catch {
+            res.statusCode = 400;
+          }
+          res.end();
+        });
+      });
+    },
+  };
+}
+
+/* 首屏封面预加载(2026-10-31 用户:初次打开基本都是占位图):封面图是页面脚本跑起来后才生成的,
+   网慢时要等脚本下载执行完(实测 4G 约 1.5s)才开始下载。这里在首页 HTML 的 <head> 里直接写预加载,
+   图和脚本同时开始下。图片地址、尺寸档从 works.ts 第一件作品的 gallery、HomePage.tsx 的 CARD_SIZES 读,只维护那一份 */
+function coverPreload(): Plugin {
+  return {
+    name: 'cover-preload',
+    transformIndexHtml: {
+      order: 'pre',
+      handler(html, ctx) {
+        if (!/(^|\/)index\.html$/.test(ctx.filename) || /classic|blog|archive|writing/.test(ctx.filename)) return html;
+        const works = fs.readFileSync(resolve(ROOT, 'src/pages/home/works.ts'), 'utf8');
+        const home = fs.readFileSync(resolve(ROOT, 'src/pages/home/HomePage.tsx'), 'utf8');
+        const block = works.slice(works.indexOf('gallery: ['), works.indexOf(']', works.indexOf('gallery: [')));
+        const srcs = [...block.matchAll(/src: '([^']+)'/g)].map((m) => m[1]);
+        const sizes = /const CARD_SIZES =\s*'([^']+)'/.exec(home)?.[1];
+        if (!srcs.length || !sizes) return html;
+        const sized = (src: string, w: number) => src.replace(/\.webp(\?|$)/, `-${w}.webp$1`);
+        const links = srcs
+          .map((src) => `<link rel="preload" as="image" fetchpriority="high" imagesrcset="${sized(src, 960)} 960w, ${sized(src, 1280)} 1280w, ${src} 1920w" imagesizes="${sizes}"/>`)
+          .join('\n');
+        return html.replace('</head>', `${links}\n</head>`);
+      },
+    },
+  };
+}
+
 function docsStatic(): Plugin {
   const serve = sirv(DOCS, { dev: true, etag: true });
   const servePrivate = sirv(join(PRIVATE, 'gallery'), { dev: true, etag: true });
@@ -124,7 +185,7 @@ export default defineConfig({
   /* 端口锁死:5173 被 design-gallery(--strictPort)长期占着,不锁的话本站会飘到 5174/5175。
      strictPort = 被占就报错而不是悄悄换一个,本站预览地址永远是 localhost:5174。 */
   server: { port: 5174, strictPort: true },
-  plugins: [react(), hiddenWorks(), docsStatic(), cleanBundles()],
+  plugins: [react(), hiddenWorks(), entranceStore(), coverPreload(), docsStatic(), cleanBundles()],
   build: {
     outDir: DOCS,
     emptyOutDir: false, // 绝不清空 docs/(CNAME + 全部静态资产)
