@@ -30,7 +30,8 @@ const INTRO_LINE_STEP = ENTRANCE.stagger.lineStep;
 /* groups = false 时忽略 {…} 词组、照常逐字拆(手机上介绍段要像作品简介一样排满右边,2026-10-25 用户) */
 function splitIntro(text: string, groups = true): string[] {
   if (!groups) text = text.replace(/[{}]/g, '');
-  const raw = text.match(/\{[^}]*\}|[A-Za-z0-9]+|\s+|./g) || [];
+  /* 英文词、数字(含小数点、百分号,如 2.5%)各算一个单元,不在中间断开 */
+  const raw = text.match(/\{[^}]*\}|[A-Za-z0-9]+(?:\.[0-9]+)?%?|\s+|./g) || [];
   const out: string[] = [];
   let pending = '';
   for (const t of raw) {
@@ -51,8 +52,9 @@ function splitIntro(text: string, groups = true): string[] {
 
 /* Feed 文字也逐字 soft-blur 入场,节拍与介绍段相同(2026-10-23 用户:三段整块浮现
    不如 hero 流畅)。日期、标题、简介拆成 .feed-ch,封面等文字走完再浮现 */
-function feedChars(text: string) {
-  return splitIntro(text).map((t, i) => (
+/* groups:按 {…} 词组断行(手机、横排);false 时去掉花括号逐字(电脑竖排),同介绍段 */
+function feedChars(text: string, groups = false) {
+  return splitIntro(text, groups).map((t, i) => (
     <span key={i} className="feed-ch">{t}</span>
   ));
 }
@@ -178,7 +180,14 @@ export default function HomePage() {
       const { step } = ENTRANCE.blocks;
       setBlock(document.querySelector('.site-logo-link'), 0);
       document.querySelectorAll('.head-right > .head-links, .head-right > .theme-toggle').forEach((el) => setBlock(el, 0));
-      [...document.querySelectorAll('.hero-intro > p'), document.querySelector('.hero-loc')].forEach((el, i) => setBlock(el, (i + 1) * step));
+      const introBlocks = [...document.querySelectorAll('.hero-intro > p'), document.querySelector('.hero-loc')];
+      introBlocks.forEach((el, i) => setBlock(el, (i + 1) * step));
+      /* 单栏:介绍区和作品区之间的细线接在城市时间后面一段出现,算介绍区收尾(2026-10-31 用户:原来跟第一条作品的日期一起,太晚) */
+      const firstWork = document.querySelector<HTMLElement>('.works > .work');
+      if (firstWork && !window.matchMedia('(min-width: 1280px)').matches) {
+        firstWork.classList.add('bk-line');
+        firstWork.style.setProperty('--line-bd', `${(introBlocks.length + 1) * step}ms`);
+      }
     }
     /* 本地开发:用调参面板存下的入场参数(线上用 simple.css 里的默认值) */
     if (import.meta.env.DEV) applyEntrance(ENTRANCE);
@@ -213,9 +222,12 @@ export default function HomePage() {
 
   /* 单栏(< 1280)介绍段不按词组断行,逐字排(2026-10-25 用户:右边参差;拖动窗口时字来回跳)。
      原来只在 < 640 逐字,拖过 640 时断行方式一换,行尾的字就跳一下;现在只在单栏 / 双栏切换时变 */
-  const [phoneWrap, setPhoneWrap] = useState(() => window.matchMedia('(max-width: 1279px)').matches);
+  /* 手机、平板(触屏)例外,仍按词组断行(2026-10-31 用户:手机上要考虑换行的最优解 ——
+     逐字排会把「被呈|现」「AI|coding」拆开):屏幕宽度固定,没有拖窗口时字来回跳的问题 */
+  const PHONE_WRAP = '(max-width: 1279px) and (pointer: fine)';
+  const [phoneWrap, setPhoneWrap] = useState(() => window.matchMedia(PHONE_WRAP).matches);
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 1279px)');
+    const mq = window.matchMedia(PHONE_WRAP);
     const on = () => setPhoneWrap(mq.matches);
     mq.addEventListener('change', on);
     return () => mq.removeEventListener('change', on);
@@ -325,7 +337,8 @@ export default function HomePage() {
               if (!part) return;
               const at = Math.max(now + lead, blockCursor);
               setBlock(part, at - now);
-              if (k === 0 && !twoCol) {
+              /* 细线跟日期一起;第一条的细线已经在首屏随介绍区排过了 */
+              if (k === 0 && !twoCol && items.indexOf(el) > 0) {
                 el.classList.add('bk-line');
                 el.style.setProperty('--line-bd', `${at - now}ms`);
               }
@@ -440,7 +453,7 @@ export default function HomePage() {
             <span key={`b${i}`} className="hero-ch">{t}</span>
           ))}
           {/* 「现在」这段并入第一段(2026-10-31 用户):第一段 = 我是谁 + 现在在做什么,第二段 = 履历 */}
-          {splitIntro('{现在我}{边设计、}{边实现，}{AI coding、}{skills、}{PR }{是常态。}{同时，}{把看到的、}{想到的，}{写成}{文章。}', !phoneWrap).map((t, i) => (
+          {splitIntro('{现在我}{边设计、}{边实现，}{AI coding、}{skills、}{PR 是常态。}{同时，}{把看到的、}{想到的，}{写成}{文章。}', !phoneWrap).map((t, i) => (
             <span key={`d${i}`} className="hero-ch">{t}</span>
           ))}
           </p>
@@ -460,7 +473,7 @@ export default function HomePage() {
           ))}
           {/* 「UI 设计师」用普通字(2026-10-31 用户:去掉手绘下划线);逗号并进单元防行首标点 */}
           <span className="hero-ch hero-intro-unit">UI 设计师，</span>
-          {splitIntro('{设计}{内容}{产品的}{视觉体验，}{创作者}{平台、}{阅读、}{社区这类，}{做界面、图标系统和动效。}', !phoneWrap).map(
+          {splitIntro('{设计内容}{产品的}{视觉体验，}{创作者平台、}{阅读、}{社区这类，}{做界面、}{图标系统和动效。}', !phoneWrap).map(
             (t, i) => (
               <span key={`c${i}`} className="hero-ch">{t}</span>
             ),
@@ -478,11 +491,13 @@ export default function HomePage() {
             <span className="hero-ch gzh-wrap">
               在<Gzh linkClass="text-link" />
             </span>
-            {splitIntro('上找到我，或者').map((t, i) => (
+            {splitIntro('{上找到我，}', !phoneWrap).map((t, i) => (
               <span key={`f${i}`} className="hero-ch">{t}</span>
             ))}
+            {/* 「或者通过邮箱联系我。」一整块(2026-10-31 用户:手机换行要最优):手机上一行放不下整句时,
+                正好在逗号处断成两行,不会剩「或者」或「联系我。」单独一截 */}
             <span className="hero-ch">
-              通过<a className="text-link" href={MAILTO} title={MAIL}>邮箱</a>联系我。
+              或者通过<a className="text-link" href={MAILTO} title={MAIL}>邮箱</a>联系我。
             </span>
           </p>
         </div>
@@ -502,7 +517,7 @@ export default function HomePage() {
               <p className="work-year">{feedChars(w.date)}</p>
               <h2 className="work-title">{feedChars(w.title)}</h2>
             </div>
-            {w.summary && <p className="work-summary">{feedChars(w.summary)}</p>}
+            {w.summary && <p className="work-summary">{feedChars(w.summary, !phoneWrap)}</p>}
             {/* hover 封面区域时图放大到 1.05(同 Signal 的 Feed 卡片);只认封面区域,不认整条(2026-10-23 用户) */}
             {w.gallery ? (
               <Gallery items={w.gallery} />

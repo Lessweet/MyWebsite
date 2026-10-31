@@ -4,6 +4,8 @@
    排序:最新在前,每年一条(2026-10-23 用户定)。 */
 import { HIDDEN_WORKS } from 'virtual:hidden-works';
 
+/* summary 里的 {…} 是断行词组(2026-10-31 用户:手机换行要最优):手机和横排按词组断行,词不会被拆到两行;
+   电脑竖排去掉花括号逐字排(拖窗口时行尾不跳)。改简介时照这个格式把词或短语括起来,标点跟在 } 后面 */
 export interface Work {
   date: string;
   title: string;
@@ -37,7 +39,7 @@ export const WORKS: Work[] = [
        mp-md2html 发草稿箱;mp-cover 出封面。控制在 2~3 行(2026-10-23 用户)。
        末句原为「封面也由 skill 生成,毛玻璃卡片配 shader 流动渐变」,用户改成讲成套视觉元素 skill */
     summary:
-      '把公众号「AI设计师阿东」的写作做成一套 Claude Code 工作流：抓素材、找选题、按自己的写作规范起稿，到润色、排版、发草稿箱，每一步都是一个 skill；视觉也做成了成套的 skill，包括封面、icon、banner、引用样式这类个性化元素。',
+      '{把公众号}{「AI设计师阿东」}{的写作}{做成一套 }{Claude Code }{工作流：}{抓素材、}{找选题、}{按自己的}{写作规范}{起稿，}{到润色、}{排版、}{发草稿箱，}{每一步}{都是一个 }{skill；}{视觉也}{做成了}{成套的 }{skill，}{包括封面、}{icon、}{banner、}{引用样式}{这类}{个性化}{元素。}',
     /* 原创文章封面三行,行与行反向自动平移、循环(2026-10-23 用户);
        中间一行放「AI 设计工作流 / Shader & Motion / SKILLS / DESIGN SIGNAL」 */
     showcase: {
@@ -70,7 +72,7 @@ export const WORKS: Work[] = [
     /* 简介(2026-10-23):按四张图的内容写 —— 总览画板「AI 创意海报 / UI 视觉辅助 / 生成式 UI / Co Design」
        及其工具清单(ChatGPT Image2 / 即梦 / LiblibAI、ClaudeCode / Codex、Cursor / FigmaMake) */
     summary:
-      '把 AI 用进 App 视觉设计：海报和设计字体用 ChatGPT Image2、即梦、LiblibAI 多方向并行出稿，拟物图标、主题插图、视觉动效也交给 AI 生成；界面用 Claude Code、Cursor、Figma Make 直接生成，再沉淀成 Design Skill 复用。',
+      '{把 AI }{用进 App }{视觉设计：}{海报和}{设计字体}{用 }{ChatGPT Image2、}{即梦、}{LiblibAI }{多方向}{并行出稿，}{拟物图标、}{主题插图、}{视觉动效}{也交给 AI }{生成；}{界面用 }{Claude Code、}{Cursor、}{Figma Make }{直接生成，}{再沉淀成 }{Design Skill }{复用。}',
     /* 四图(2026-10-23 用户:下面用四图) */
     gallery: [
       /* Figma「作品集」画板 2333:16551(原图存 site/assets/figma/),导出 3840×2160 → 1600×900 webp */
@@ -90,7 +92,7 @@ export const WORKS: Work[] = [
     /* 简介(2026-10-23):按 Figma 画板内容写 —— 封面写明设计范围「产品体验 / 交互 / 视觉 / 动效设计」,
        界面合集里有语音键、声音角色(年轻的女教师)、中英文对话、按周订阅页 */
     summary:
-      'Hello Chat 是一款 AI 语音聊天 App：点一下语音键就能开口聊，可以切换不同的声音角色，中英文都能对话。我负责从产品体验、交互到视觉和动效的整套设计，包括按周订阅的付费页。',
+      '{Hello Chat }{是一款 }{AI 语音聊天 }{App：}{点一下}{语音键}{就能}{开口聊，}{可以切换}{不同的}{声音角色，}{中英文}{都能对话。}{我负责从}{产品体验、}{交互到}{视觉和动效的}{整套设计，}{包括}{按周订阅的}{付费页。}',
     /* 两张并排(2026-10-23 用户):Figma 画板 2304:14351 封面 + 2304:14348 界面合集,由 site/scripts/build-work-gallery.py 生成 */
     gallery: [
       { src: 'writing/assets/works/gallery/hello-chat-1.webp', tint: '#111111' },

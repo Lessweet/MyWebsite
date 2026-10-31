@@ -48,6 +48,15 @@
     /* 单栏宽度(benji 为 550);手机两侧留白收到 16px */
     --col: 560px;
     --gutter: 32px;   /* 页面左右内边距:24 → 32,所有宽度统一(手机也是) */
+    /* 字标和介绍段的位置:横排、竖排共用这一套,只在这里改(2026-10-31 用户:只维护一套间距规则)。
+       字标宽 200(256 → 237 → 200 试过),顶 56;介绍段顶 169 = 横排右栏第一条简介的顶,左右两块顶部对齐;
+       字标到介绍的距离由这三个数算出来(约 37) */
+    --logo-top: 56px;
+    --logo-w: 200px;
+    --logo-h: calc(var(--logo-w) * 322 / 848);   /* 字标 SVG 848 × 322 */
+    --intro-top: 169px;
+    /* 区块间距:「介绍」和「作品」两大块之间。横排 = 两栏的栏距,竖排 = 介绍区到第一条作品(2026-10-31 用户:同一个值,只改这里) */
+    --section-gap: 120px;
 
     --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
     /* 封面 hover 放大 / 收回(2026-10-23 用户):试过 0.6–1.2s、1.02–1.05 倍,定为 0.7s + 1.03 倍,曲线 --ease-soft。
@@ -485,8 +494,9 @@ body.theme-vt *::after {
    字标行与 Feed 标题、封面仍占满整栏 */
 /* 单栏一律用普通断行(配合 HomePage 单栏不按词组拆):pretty 会为了避免末行太短而调整前面几行的断点,
    拖动窗口时行尾的字会来回跳;在 640 处换断行方式也会跳一下(2026-10-25 用户:窗口缩小过程中字一会出现一会消失)。
-   断行方式只在单栏 / 双栏切换时变,那时整页布局本来就变了 */
-@media (max-width: 1279px) {
+   断行方式只在单栏 / 双栏切换时变,那时整页布局本来就变了。
+   手机、平板(触屏)不会拖窗口,照常用 pretty 避免末行只剩两三个字(2026-10-31 用户:手机换行要最优) */
+@media (max-width: 1279px) and (pointer: fine) {
     .hero-intro p,
     .work-summary { text-wrap: wrap; }
 }
@@ -703,7 +713,7 @@ body.theme-vt *::after {
     content: '';
     display: block;
     height: 1px;
-    margin-bottom: 63px;   /* 线到日期肉眼 72(日期 18 / 32 字形上方自带约 9px) */
+    margin-bottom: 8px;   /* 线到日期 63 → 8(2026-10-31 用户);日期 18 / 32 字形上方自带约 7px,肉眼约 15 */
     background: var(--rule);
     opacity: 0;
 }
@@ -1074,12 +1084,13 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
     /* 二维码弹层向下弹、左对齐到「公众号」,不顶出页面左缘 */
     .head-links .gzh-pop { left: 0; right: auto; }
     /* 页面顶端到字标 56,同双栏(2026-10-25 用户)。最宽给右上角主题键(36)+ 间距 8 让位:320 宽的手机上不压住 */
-    .site-logo-link { order: 1; flex: none; width: 256px; max-width: calc(100% - 44px); margin-top: 56px; }
-    /* 字标到介绍:和双栏一样(盒子 48,肉眼约 57)。2026-10-25 用户:两种布局要一致,以双栏为准;
-       当天试过 24 / 30 / 39 都改回 */
-    .home-hero { padding-top: 48px; }
+    /* 字标大小、字标到介绍都和双栏完全一样(2026-10-31 用户:要和大屏一样):宽 200,顶 56,介绍段顶同在 169 */
+    .site-logo-link { order: 1; flex: none; width: var(--logo-w); max-width: calc(100% - 44px); margin-top: var(--logo-top); }
+    .home-hero { padding-top: calc(var(--intro-top) - var(--logo-top) - var(--logo-h)); }   /* 介绍段顶落在 --intro-top,同双栏 */
     .intro-col { order: 2; }
-    .works { order: 4; }   /* 时间行 → 细线仍是 .works 的 margin-top 66(肉眼 72) */
+    /* 介绍区 → 第一条作品 = 区块间距 120,同双栏的栏距(2026-10-31 用户:竖排时介绍这一组不够整体,66 → 112 → 120):
+       组内近、组间远;双栏左右分开,单栏上下分开 */
+    .works { order: 4; margin-top: var(--section-gap); }
 }
 
 /* ── 宽屏两栏(2026-10-23 用户:电脑上单列浪费空间)──
@@ -1092,7 +1103,6 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
         /* 超宽屏整页封顶居中(2026-10-31 用户:不要左右铺满):封顶 = Tailwind 2xl 1536,右栏最宽 1536 − 64 − 560 = 912(12 列),窗口更宽时两边留白、整页居中。左栏三块是 position:fixed,左边线跟着居中后的页面走 */
         --page-max: 1536px;
         --left-x: max(32px, calc((100vw - var(--page-max)) / 2 + 32px));   /* 左栏左边线 = 页面左内边距(居中后再加两侧留白) */
-        --intro-top: 169px;   /* 介绍段顶 = 右栏第一条简介顶(2026-10-31 用户:横排左右两块顶部对齐);字标顶 56 + 高 89 + 间距 24,同右栏 标题→简介 24 */
         max-width: var(--page-max);   /* 2026-10-23 曾去掉 1600 封顶;2026-10-31 用户:超宽屏要封顶居中,1536(2xl) */
         margin: 0 auto;
         padding: 0 32px;   /* 左右内边距 56 → 32(2026-10-23 用户:可以更少) */
@@ -1102,12 +1112,12 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
            再窄就整页改单栏
            (2026-10-23 用户:右边永远要比左边大很多);更窄时改为单列 */
         grid-template-columns: 440px minmax(0, 1fr);   /* 320 → 340 → 400 → 440(2026-10-23 用户) */
-        column-gap: 120px;   /* 栏距固定 120:右栏起点不再随窗口宽度变化(2026-10-23 用户;原 10vw,夹在 80–192) */
+        column-gap: var(--section-gap);   /* 栏距固定 120:右栏起点不再随窗口宽度变化(2026-10-23 用户;原 10vw,夹在 80–192) */
         align-items: start;
     }
     .site-head,
     #app { display: contents; }
-    .site-logo-link { position: fixed; top: 56px; left: var(--left-x); width: 200px; z-index: 3; }   /* 256 → 237 → 200(2026-10-31 用户:再小点);笔画顶齐右栏日期顶 57,介绍段仍齐简介顶 169 */
+    .site-logo-link { position: fixed; top: var(--logo-top); left: var(--left-x); width: var(--logo-w); z-index: 3; }
     .intro-col {
         position: fixed;
         top: var(--intro-top);
@@ -1801,7 +1811,7 @@ body.theme-dark .ol-toggle[aria-pressed="true"] { background: #D6248A; border-co
 .ol-region i { background: rgba(214, 36, 138, 0.08); border-left: 1px solid rgba(214, 36, 138, 0.35); border-right: 1px solid rgba(214, 36, 138, 0.35); }
 .ol-region + .ol-region { display: none; }
 @media (min-width: 1280px) {
-    .ol-grid { grid-template-columns: 440px minmax(0, 1fr); column-gap: 120px; padding: 0 32px; max-width: 1536px; margin: 0 auto; }   /* 与 .page 同样封顶居中 */
+    .ol-grid { grid-template-columns: 440px minmax(0, 1fr); column-gap: var(--section-gap); padding: 0 32px; max-width: 1536px; margin: 0 auto; }   /* 与 .page 同样封顶居中 */
     .ol-region + .ol-region { display: grid; }
 }
 /* 每个元素描一圈紫红边(outline 不占位置,不改变布局) */
