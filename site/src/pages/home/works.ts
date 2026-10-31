@@ -45,7 +45,7 @@ export const WORKS: Work[] = [
     /* 网站上用整张位图(2026-10-31 用户:任何作品的加载态都是 16:9 整图):由下面的 showcase 拼图导出,
        改了拼图跑 node site/scripts/build-work-showcase-bitmap.mjs 重新导出(导出时页面加 ?render-showcase 显示拼图原版) */
     gallery: [
-      { src: 'writing/assets/works/gallery/wechat-ai-1.webp?v=15' },
+      { src: 'writing/assets/works/gallery/wechat-ai-1.webp?v=16' },
       { src: 'writing/assets/works/gallery/wechat-ai-2.webp?v=16' },
     ],
     showcase: {
