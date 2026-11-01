@@ -16,6 +16,9 @@ import DevRadius from './DevRadius';
 import WorkRail from './WorkRail';
 import { applyEntrance, currentEntrance } from './entrance';
 
+/* 双栏布局 2026-11-01 起停用(用户:所有宽度都用单栏、居中);判断双栏的地方都读这个,永远不成立 */
+const TWO_COL = 'not all';
+
 /* 入场方式和参数(2026-10-25 用户:调参台里选用哪一种入场、各自调参数):线上固定默认,本地开发按调参面板存的 */
 const ENTRANCE = currentEntrance();
 /* 入场节拍(soft-blur-in):介绍段 + 联系方式共用一条队列,逐字从左到右连续错峰,
@@ -185,7 +188,7 @@ export default function HomePage() {
       introBlocks.forEach((el, i) => setBlock(el, (i + 1) * step));
       /* 单栏:介绍区和作品区之间的细线接在城市时间后面一段出现,算介绍区收尾(2026-10-31 用户:原来跟第一条作品的日期一起,太晚) */
       const firstWork = document.querySelector<HTMLElement>('.works > .work');
-      if (firstWork && !window.matchMedia('(min-width: 1280px)').matches) {
+      if (firstWork && !window.matchMedia(TWO_COL).matches) {
         firstWork.classList.add('bk-line');
         firstWork.style.setProperty('--line-bd', `${(introBlocks.length + 1) * step}ms`);
       }
@@ -226,7 +229,8 @@ export default function HomePage() {
      原来只在 < 640 逐字,拖过 640 时断行方式一换,行尾的字就跳一下;现在只在单栏 / 双栏切换时变 */
   /* 手机、平板(触屏)例外,仍按词组断行(2026-10-31 用户:手机上要考虑换行的最优解 ——
      逐字排会把「被呈|现」「AI|coding」拆开):屏幕宽度固定,没有拖窗口时字来回跳的问题 */
-  const PHONE_WRAP = '(max-width: 1279px) and (pointer: fine)';
+  /* 2026-11-01 起所有宽度都按词组断行(用户:电脑上逐字断行很奇怪,「现|在」「同|时」被拆开);逐字排停用 */
+  const PHONE_WRAP = 'not all';
   const [phoneWrap, setPhoneWrap] = useState(() => window.matchMedia(PHONE_WRAP).matches);
   useEffect(() => {
     const mq = window.matchMedia(PHONE_WRAP);
@@ -252,7 +256,7 @@ export default function HomePage() {
     ];
     /* 单栏(< 1280)时主题键在页面最上面,先出;介绍段晚 PILLS_LEAD 再起步(2026-10-24 用户:从上到下)。
        公众号 / 邮箱单栏时在介绍区下方(2026-10-25),和宽屏一样接在介绍区最后一行后面 */
-    const topFirst = window.matchMedia('(max-width: 1279px)').matches;
+    const topFirst = window.matchMedia('all').matches;
     const PILLS_LEAD = 200;
     const offset = topFirst ? PILLS_LEAD : 0;
     units.forEach((el, i) => {
@@ -330,7 +334,7 @@ export default function HomePage() {
                首屏在左栏开始后 sectionGap 起步,不再等左栏走完;之后滚动进来的接着排,不和上一批抢 */
             /* 单栏(2026-10-31 用户:双列的 Feed 入场很好,其他宽度也要一致):同样逐小段地来,
                只是首屏要排在介绍区后面(介绍区在上面);日期上方那条细线和日期一起浮现 */
-            const twoCol = window.matchMedia('(min-width: 1280px)').matches;
+            const twoCol = window.matchMedia(TWO_COL).matches;
             const cover = el.querySelector('.work-cover');
             const covers = cover?.matches('.gallery, .showcase') ? [...cover.querySelectorAll('.gl-item, .sc-pane')] : [cover];
             const parts = [el.querySelector('.work-year'), el.querySelector('.work-title'), el.querySelector('.work-summary'), ...covers];
@@ -403,6 +407,8 @@ export default function HomePage() {
   /* 顶栏是 index.html 的静态标记,脚本运行时已经在页面里:首次渲染就直接拿到,
      公众号 / 邮箱与其他内容同一帧出现(2026-10-23 用户:原来等 effect 再取,晚了一拍) */
   const [headSlot] = useState<HTMLElement | null>(() => document.getElementById('head-links'));
+
+
 
   return (
     <>
@@ -553,9 +559,9 @@ const sized = (src: string, w: number) => src.replace(/\.webp(\?|$)/, `-${w}.web
 /* 卡片在各布局下的实际显示宽度(两栏:作品区 = 100vw − 624;单栏:100vw − 64 / 手机 − 32;
    每张卡 ≥ 375 才并排,见 simple.css 的容器查询),浏览器据此挑 960 / 1280 / 1920 那张(1280 主要给 3 倍屏手机) */
 const CARD_SIZES =
-  '(min-width: 1536px) 448px, (min-width: 1382px) calc(50vw - 316px), (min-width: 1280px) calc(100vw - 624px), (min-width: 822px) calc(50vw - 36px), calc(100vw - 64px)';
+  '(min-width: 960px) 444px, (min-width: 822px) calc(50vw - 36px), calc(100vw - 64px)';
 /* 单张通栏时图片占满整栏(2026-10-24):宽屏右栏 = 100vw − 624,单栏 = 100vw − 左右边距 */
-const FULL_SIZES = '(min-width: 1536px) 912px, (min-width: 1280px) calc(100vw - 624px), calc(100vw - 64px)';
+const FULL_SIZES = '(min-width: 960px) 896px, calc(100vw - 64px)';
 
 /* 封面图:加载中露出格子的浅灰底,图加载完再淡入(2026-10-31 用户:真正的素材加载完才淡入;
    试过每个作品一个主题色,用户:有重复、浅灰更克制)。已经在缓存里的图一挂上就是完成状态,直接显示、不淡入 */

@@ -51,9 +51,13 @@
     --gutter: 32px;   /* 页面左右内边距:24 → 32,所有宽度统一(手机也是) */
     /* 页顶到介绍段第一行:横排、竖排共用(2026-10-31 用户:只维护一套间距规则)。
        CTR 字标去掉后,介绍段直接从顶上开始,横排时和右栏第一条作品的日期齐平(57) */
-    --intro-top: 57px;
+    --intro-top: 120px;   /* 页顶 → 简介 57 → 120,同区块间距(2026-11-01 用户) */
     /* 区块间距:「介绍」和「作品」两大块之间。横排 = 两栏的栏距,竖排 = 介绍区到第一条作品(2026-10-31 用户:同一个值,只改这里) */
     --section-gap: 120px;
+    /* 作品 / 内容区最宽:双栏右栏、单栏整栏都是 896 = Tailwind max-w-4xl(2026-11-01 用户;原 912 是倒推出来的,不在 Tailwind 刻度上) */
+    --content-max: 896px;
+    /* 双栏左栏宽 = 个人介绍最宽 */
+    --intro-w: 440px;
 
     --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
     /* 封面 hover 放大 / 收回(2026-10-23 用户):试过 0.6–1.2s、1.02–1.05 倍,定为 0.7s + 1.03 倍,曲线 --ease-soft。
@@ -493,15 +497,12 @@ body.theme-vt *::after {
    拖动窗口时行尾的字会来回跳;在 640 处换断行方式也会跳一下(2026-10-25 用户:窗口缩小过程中字一会出现一会消失)。
    断行方式只在单栏 / 双栏切换时变,那时整页布局本来就变了。
    手机、平板(触屏)不会拖窗口,照常用 pretty 避免末行只剩两三个字(2026-10-31 用户:手机换行要最优) */
-@media (max-width: 1279px) and (pointer: fine) {
-    .hero-intro p,
-    .work-summary { text-wrap: wrap; }
-}
+/* 2026-11-01 起各种设备都用 pretty(用户:断句奇怪),不再给电脑单独关掉 */
 /* 文字宽度对齐网格(2026-10-31 用户):介绍区、每条作品各自是一张网格,列宽至少 60、槽 16,
    排几列由栏宽决定(放得下几个 60 就几列),余量平均分给每列,所以网格正好铺满整栏、封面右缘落在网格线上
    (之前列宽死 60,栏宽除不尽时右边剩一截,封面右缘对不上线)。
    文字占列数见下 */
-:root { --grid-col: 60px; --grid-gap: 8px; }   /* 网格槽 16 → 8,和封面图缝同一个值(2026-10-31 用户:试试) */
+:root { --grid-col: 60px; --grid-gap: 8px; --text-cols: 10; }   /* 网格槽 16 → 8,和封面图缝同一个值(2026-10-31);--text-cols = 个人介绍、作品简介占几列,本地「调节」面板可拖 */
 .hero-intro,
 .work {
     display: grid;
@@ -514,10 +515,9 @@ body.theme-vt *::after {
 .work::before { grid-column: 1 / -1; }
 /* 个人介绍固定 6 列,作品简介 8 列,简介比介绍宽(2026-10-31 用户)。宽屏左栏 440 正好 6 列。
    md(768)以下文字铺满整栏(栏宽 < 704,排 8 列太挤);768 起栏里至少 9 列,两者都排得下 */
-.hero-intro > p { grid-column: 1 / span 6; }
-.work > .work-summary { grid-column: 1 / span 10; }   /* 槽 8 后列变多变窄:8 → 10 列,阅读宽度和原来差不多 */
+.hero-intro > p { grid-column: 1 / span var(--text-cols); }   /* 个人介绍占 10 列,右缘落在网格线上(2026-11-01 用户) */
+.work > .work-summary { grid-column: 1 / span var(--text-cols); }   /* 作品简介和个人介绍一样占 10 列(2026-11-01 用户) */
 /* 竖排(md 768–1279)时介绍和简介上下对齐,统一占 8 列,右边缘落在同一条网格线(2026-10-31 用户);两栏时介绍仍 6 列 */
-@media (min-width: 768px) and (max-width: 1279px) { .hero-intro > p { grid-column: 1 / span 10; } }
 @media (max-width: 767px) {
     .hero-intro > p,
     .work > .work-summary { grid-column: 1 / -1; }
@@ -1086,14 +1086,15 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
 .wx-spin, .wx-drift, .wx-fall, .wx-flash,
 .st-z, .st-steam, .st-squiggle, .st-line { animation: none; }
 
-/* ── 单列(< 1280px,含手机)(2026-10-23 用户:单列时重新安排位置)──
+/* ── 单列(2026-11-01 起所有宽度都是单列、内容最宽 896 居中;原来只在 < 1280,≥ 1280 双栏)──
    公众号 / 邮箱 + 主题开关放到页面最顶上一排(2026-10-23 用户):左边两个链接横排,右边开关,
    开关右缘与内容栏(分割线)右端对齐;下面依次是字标 → 介绍区 → 作品。双栏时这一组钉在左下角。
    header 与 #app 用 display:contents 拆开,在 .page 的纵向 flex 里用 order 排序 */
-@media (max-width: 1279px) {
+@media all {   /* 原「< 1280 单栏」;2026-11-01 用户:所有宽度都用单栏 */
     /* 单列也铺满窗口宽度(2026-10-23 用户:单列时右边空间利用起来),左右内边距仍是 32(手机 16);
        介绍段、作品简介自己有最大行宽,不会被拉太长 */
-    .page { display: flex; flex-direction: column; max-width: none; }
+    /* 内容最宽 --content-max(2026-11-01 用户:单栏也和双栏右栏一样),窗口里水平居中(用户:居中) */
+    .page { display: flex; flex-direction: column; max-width: calc(var(--content-max) + var(--gutter) * 2); margin: 0 auto; }
     .site-head,
     #app { display: contents; }
     /* 公众号 / 邮箱挪到介绍区下方(2026-10-25 用户:和宽屏一样,先介绍再联系方式);
@@ -1118,10 +1119,11 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
    右栏 = 作品 Feed,吃满剩余宽度,只有它随页面滚动。
    实现:顶栏 header 与 #app 用 display:contents 拆开;左栏三块各自 position:fixed 定在同一条左边线上,
    网格第一列(320px)只占位;右栏顶部留出与介绍段齐平的空白。分割线只在单列时用,两栏时去掉 */
-@media (min-width: 1280px) {
+@media not all {   /* 原「≥ 1280 双栏」,2026-11-01 起不用(所有宽度单栏居中),规则先留着 */
     .page {
         /* 超宽屏整页封顶居中(2026-10-31 用户:不要左右铺满):封顶 = Tailwind 2xl 1536,右栏最宽 1536 − 64 − 560 = 912(12 列),窗口更宽时两边留白、整页居中。左栏三块是 position:fixed,左边线跟着居中后的页面走 */
-        --page-max: 1536px;
+        /* 整页封顶 = 左栏 + 栏距 + 右栏最宽 + 两侧边距 = 440 + 120 + 896 + 64 = 1520,由这几个共用变量算出 */
+        --page-max: calc(var(--intro-w) + var(--section-gap) + var(--content-max) + var(--gutter) * 2);
         --left-x: max(32px, calc((100vw - var(--page-max)) / 2 + 32px));   /* 左栏左边线 = 页面左内边距(居中后再加两侧留白) */
         max-width: var(--page-max);   /* 2026-10-23 曾去掉 1600 封顶;2026-10-31 用户:超宽屏要封顶居中,1536(2xl) */
         margin: 0 auto;
@@ -1131,7 +1133,7 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
            栏距固定 120px。双栏从 1280px(xl)起:右栏 = 窗口 − 64 − 560 ≥ 656,比任何手机竖屏(≤ 430)都宽;
            再窄就整页改单栏
            (2026-10-23 用户:右边永远要比左边大很多);更窄时改为单列 */
-        grid-template-columns: 440px minmax(0, 1fr);   /* 320 → 340 → 400 → 440(2026-10-23 用户) */
+        grid-template-columns: var(--intro-w) minmax(0, 1fr);   /* 320 → 340 → 400 → 440(2026-10-23 用户) */
         column-gap: var(--section-gap);   /* 栏距固定 120:右栏起点不再随窗口宽度变化(2026-10-23 用户;原 10vw,夹在 80–192) */
         align-items: start;
     }
@@ -1142,7 +1144,7 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
         position: fixed;
         top: var(--intro-top);
         left: var(--left-x);
-        width: 440px;
+        width: var(--intro-w);
         /* 窗口矮时介绍区自己滚,不压到左下角那一排按钮。预留 = 按钮离底 36 + 按钮高 36 + 至少留 48
            (2026-10-24:原来留 104,窗口高 700 时就多出 1px 内部滚动) */
         max-height: calc(100vh - var(--intro-top) - 120px);
@@ -1202,7 +1204,7 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
 body.theme-dark .rt-toggle:hover { border-color: rgba(255, 255, 255, 0.2); }
 .rt-toggle svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
 /* 单栏:主题键悬浮在右上角,调节按钮挨在它左边 */
-@media (max-width: 1279px) {
+@media all {   /* 原「< 1280 单栏」;2026-11-01 用户:所有宽度都用单栏 */
     .rt-toggle { position: absolute; top: 24px; right: calc(var(--gutter) + 44px); }
 }
 /* 蒙层:半透明 + 把背后的页面模糊掉;中间卡片放调参台(2026-10-25 用户:不要全屏页) */
@@ -1622,7 +1624,7 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     top: 50svh;
     transform: translateY(-50%);
     /* 贴页面右缘,不贴窗口右缘(2026-10-31 用户):窗口 ≤ 1536 时两者重合;超宽屏整页居中后,刻度跟着页面走,不孤零零挂在窗口边上 */
-    right: max(0px, calc((100vw - 1536px) / 2));
+    right: max(0px, calc((100vw - var(--intro-w) - var(--section-gap) - var(--content-max) - var(--gutter) * 2) / 2));
     z-index: 4;
     display: flex;
     flex-direction: column;
@@ -1640,7 +1642,7 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     to   { opacity: 1; transform: none; }
 }
 /* 竖排(单栏、手机):刻度贴着屏幕右缘,从屏幕外往左一根根滑进来(2026-10-31 用户) */
-@media (max-width: 1279px) {
+@media all {   /* 原「< 1280 单栏」;2026-11-01 用户:所有宽度都用单栏 */
     .work-rail:not(.is-away):not(.is-leaving) .wr-tick {
         animation-name: wr-tick-in-x;
         animation-duration: 0.4s;
@@ -1766,7 +1768,7 @@ body.theme-dark .wr-card { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 6p
 }
 /* 双栏:刻度挪到左栏介绍区下面(2026-10-31 用户:右上角不容易察觉,左栏下面空着)。
    线左端对齐介绍文字左缘,悬停变长往右长;预览卡在高亮那根线右边、竖直居中对齐它。top 由 WorkRail 按介绍区底边下发 */
-@media (min-width: 1280px) {
+@media not all {   /* 原「≥ 1280 双栏」,2026-11-01 起不用(所有宽度单栏居中),规则先留着 */
     .work-rail {
         transform: none;
         --rail-d: 800ms;   /* 双栏打开页面就在:等首屏入场走一段再出来,不抢首屏 */
@@ -1838,8 +1840,8 @@ body.theme-dark .ol-toggle[aria-pressed="true"] { background: #D6248A; border-co
 }
 .ol-region i { background: rgba(214, 36, 138, 0.08); border-left: 1px solid rgba(214, 36, 138, 0.35); border-right: 1px solid rgba(214, 36, 138, 0.35); }
 .ol-region + .ol-region { display: none; }
-@media (min-width: 1280px) {
-    .ol-grid { grid-template-columns: 440px minmax(0, 1fr); column-gap: var(--section-gap); padding: 0 32px; max-width: 1536px; margin: 0 auto; }   /* 与 .page 同样封顶居中 */
+@media not all {   /* 原「≥ 1280 双栏」,2026-11-01 起不用(所有宽度单栏居中),规则先留着 */
+    .ol-grid { grid-template-columns: var(--intro-w) minmax(0, 1fr); column-gap: var(--section-gap); padding: 0 32px; max-width: calc(var(--intro-w) + var(--section-gap) + var(--content-max) + var(--gutter) * 2); margin: 0 auto; }   /* 与 .page 同样封顶居中 */
     .ol-region + .ol-region { display: grid; }
 }
 /* 每个元素描一圈紫红边(outline 不占位置,不改变布局) */
@@ -1927,12 +1929,7 @@ body.theme-dark .ol-toggle {
 .ol-toggle[aria-pressed="true"],
 body.theme-dark .ol-toggle[aria-pressed="true"] { background: #D6248A; border-color: #D6248A; color: #fff; }
 
-/* 介绍分层(2026-10-31 用户):第一段「现在」用主文字色;第二段履历、第三段联系方式退到灰 --ink-2,与时间行同一层。
-   NetEase 字标、「UI 设计师」手绘线、公众号 / 邮箱链接跟着整段一起变灰,不在灰字里冒出重点 */
-.hero-intro > p:nth-child(n + 2),
-.hero-intro > p:nth-child(n + 2) b,
-.hero-intro > p:nth-child(n + 2) a,
-.hero-intro > p:nth-child(n + 2) .text-link { color: var(--ink-2); }
+/* 介绍三段都用主文字色 --ink(2026-11-01 用户:第二、三段也改成黑色;之前 10-31 是第二、三段退到灰 --ink-2) */
 
 /* 「调节」入口(DevRadius,只在本地测试版):右下角最下面一颗,合并了封面圆角、悬停放大和入场调参台
    (2026-10-31 用户:入口越来越多,合并);入场调参台自己的按钮藏起来,由面板里的「入场动画…」打开 */
@@ -1967,8 +1964,8 @@ body.theme-dark .rd-toggle:not([aria-expanded="true"]) { background: #2c2c2e; bo
     font: 400 12px/18px var(--font);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
-.rd-knob + .rd-knob { margin-top: 14px; }
-.rd-head { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.rd-knob + .rd-knob { margin-top: 20px; }   /* 组内紧、组间松,分块更清楚(2026-11-01 用户):组间 14 → 20 */
+.rd-head { display: flex; justify-content: space-between; margin-bottom: 4px; }   /* 组内 8 → 4 */
 .rd-head b { color: #fff; font-weight: 500; font-variant-numeric: tabular-nums; }
 .rd-panel input[type="range"] {
     /* 自绘滑杆(2026-10-31 用户:系统样式不好看):细轨道 4px,已填部分白色,圆形白色小手柄 */
@@ -2003,7 +2000,7 @@ body.theme-dark .rd-toggle:not([aria-expanded="true"]) { background: #2c2c2e; bo
 .rd-panel input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.15); }
 .rd-panel input[type="range"]:focus-visible { outline: none; }
 .rd-panel input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px rgba(240, 107, 182, 0.6); }
-.rd-presets { display: flex; gap: 4px; margin-top: 8px; }
+.rd-presets { display: flex; gap: 4px; margin-top: 4px; }   /* 组内 8 → 4 */
 .rd-presets button {
     flex: 1;
     height: 24px;
@@ -2019,8 +2016,8 @@ body.theme-dark .rd-toggle:not([aria-expanded="true"]) { background: #2c2c2e; bo
 .rd-link {
     display: block;
     width: 100%;
-    margin-top: 14px;
-    padding: 8px 0 0;
+    margin-top: 20px;
+    padding: 12px 0 0;
     border: 0;
     border-top: 1px solid rgba(255, 255, 255, 0.12);
     background: none;
@@ -2030,4 +2027,38 @@ body.theme-dark .rd-toggle:not([aria-expanded="true"]) { background: #2c2c2e; bo
     cursor: pointer;
 }
 .rd-link:hover { color: #F06BB6; }
+/* 文字颜色:一行 = 名称 + 色值 + 色块(点色块弹系统取色器) */
+.rd-color { display: flex; align-items: center; gap: 8px; margin-top: 20px; cursor: pointer; }
+.rd-color + .rd-color { margin-top: 8px; }
+.rd-color span { flex: 1; }
+.rd-color b { color: #fff; font-weight: 500; font-variant-numeric: tabular-nums; }
+.rd-color input[type="color"] { width: 24px; height: 24px; padding: 0; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: none; cursor: pointer; }
+.rd-color input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+.rd-color input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 5px; }
+.rd-color input[type="color"]::-moz-color-swatch { border: 0; border-radius: 5px; }
+.rd-reset { margin-top: 4px; padding: 0; border: 0; background: none; color: rgba(255, 255, 255, 0.5); font: inherit; cursor: pointer; }
+.rd-reset:hover { color: #F06BB6; }
+/* 「编辑文字」开关 */
+.rd-edit { display: flex; align-items: center; width: 100%; margin-top: 20px; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
+.rd-edit span { flex: 1; text-align: left; }
+.rd-edit i { position: relative; width: 28px; height: 16px; border-radius: 8px; background: rgba(255, 255, 255, 0.16); transition: background 0.2s; }
+.rd-edit i::after { content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; transition: transform 0.2s var(--ease-soft); }
+.rd-edit[aria-pressed="true"] i { background: #D6248A; }
+.rd-edit[aria-pressed="true"] i::after { transform: translateX(12px); }
+/* 编辑中:可改的文字悬停时出虚线框,点进去实线框 */
+body.dev-editing [contenteditable] { outline: 1px dashed transparent; outline-offset: 4px; border-radius: 2px; cursor: text; transition: outline-color 0.15s; }
+body.dev-editing [contenteditable]:hover { outline-color: rgba(214, 36, 138, 0.5); }
+body.dev-editing [contenteditable]:focus { outline: 1px solid #D6248A; }
+/* 编辑中:文字平时拆成不能断开的词组 / 逐字小块(为了按词组换行和入场动画),往里打字会撑成一长条不换行。
+   编辑时临时恢复成普通文字,随打随自动换行(2026-11-01 用户) */
+body.dev-editing [contenteditable] :is(.hero-ch, .feed-ch, .hero-intro-unit) { display: inline; white-space: normal; }
+
+
+/* 单栏内容封顶 --content-max 后,刻度和大纲网格跟着内容区的右缘走,不挂在窗口最右边 */
+@media all {   /* 原「< 1280 单栏」;2026-11-01 用户:所有宽度都用单栏 */
+    .work-rail { right: 0; }   /* 刻度贴窗口最右边(2026-11-01 用户),不跟内容区 */
+    .ol-grid { max-width: calc(var(--content-max) + var(--gutter) * 2); margin: 0 auto; }
+}
+
+
 
