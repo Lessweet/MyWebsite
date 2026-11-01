@@ -3,14 +3,16 @@ import { createPortal } from 'react-dom';
 
 /* 测试版「调节」入口(2026-10-31 用户:右下角入口越来越多,合并成一个):
    右下角最下面一颗,点开小面板 ——
-   - 封面圆角(--cover-radius)、悬停放大(--cover-zoom-scale)、文字占列(--text-cols,个人介绍和作品简介一起):拖滑杆实时改,不挡页面,边拖边看;
+   - 封面圆角(--cover-radius)、悬停放大(--cover-zoom-scale)、文字占列(--text-cols,个人介绍和作品简介一起)、网格槽 = 封面图缝(--grid-gap)、字重(--fw,重点字 = 正文 + 100):拖滑杆实时改,不挡页面,边拖边看;
    - 文字颜色(主文字 / 灰色文字,只改浅色主题)、「编辑文字」开关(个人简介、日期、标题、作品简介直接点进去改,只改预览,刷新恢复);
    - 「入场动画…」打开原来的入场调参台(RevealTuner,它自己的按钮藏起来了)。
    值存在 localStorage,刷新保留;定下来后把数值告诉 Claude 写进 simple.css(默认值和 simple.css 一致) */
 type Knob = { key: string; label: string; cssVar: string; min: number; max: number; step: number; def: number; unit: string; presets: number[] };
 const KNOBS: Knob[] = [
-  { key: 'dev-cover-radius', label: '封面圆角', cssVar: '--cover-radius', min: 0, max: 64, step: 1, def: 32, unit: 'px', presets: [8, 16, 24, 32, 48] },
+  { key: 'dev-cover-radius-b', label: '封面圆角', cssVar: '--cover-radius', min: 0, max: 64, step: 1, def: 32, unit: 'px', presets: [8, 16, 24, 32, 48] },
   { key: 'dev-cover-zoom', label: '悬停放大', cssVar: '--cover-zoom-scale', min: 1, max: 1.1, step: 0.005, def: 1.02, unit: '×', presets: [1, 1.02, 1.03, 1.05, 1.08] },
+  { key: 'dev-grid-gap', label: '网格槽 / 图缝', cssVar: '--grid-gap', min: 0, max: 32, step: 1, def: 8, unit: 'px', presets: [4, 8, 12, 16, 24] },
+  { key: 'dev-fw-b', label: '字重(正文)', cssVar: '--fw', min: 200, max: 500, step: 100, def: 400, unit: '', presets: [200, 300, 400, 500] },
   { key: 'dev-text-cols', label: '文字占列', cssVar: '--text-cols', min: 4, max: 13, step: 1, def: 10, unit: '列', presets: [6, 7, 8, 9, 10] },
 ];
 
@@ -126,7 +128,7 @@ export default function DevRadius() {
   }, [drafts]);
 
   const set = (i: number, v: number) => setVals((a) => a.map((x, j) => (j === i ? v : x)));
-  const fmt = (k: Knob, v: number) => (k.unit === 'px' ? `${v}px` : k.unit === '列' ? `${v} 列` : `${v.toFixed(3).replace(/0+$/, '').replace(/\.$/, '')}×`);
+  const fmt = (k: Knob, v: number) => (k.unit === 'px' ? `${v}px` : k.unit === '列' ? `${v} 列` : k.unit === '' ? `${v} / 重点 ${v + 100}` : `${v.toFixed(3).replace(/0+$/, '').replace(/\.$/, '')}×`);
 
   return createPortal(
     <div className="rd-wrap">
