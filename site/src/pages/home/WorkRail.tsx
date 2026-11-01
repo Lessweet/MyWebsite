@@ -9,6 +9,9 @@
    所有宽度都显示:双栏在左栏介绍区下面,单栏贴页面右缘、窗口竖直正中;手机上点刻度直接跳过去。样式见 simple.css .work-rail */
 import { type CSSProperties, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
+/* 双栏布局 2026-11-01 起停用(用户:所有宽度都用单栏、居中);判断双栏的地方都读这个,永远不成立 */
+const TWO_COL = 'not all';
+
 type Item = {
   date: string;
   title: string;
@@ -71,7 +74,7 @@ export default function WorkRail({ items }: { items: Item[] }) {
   const [current, setCurrent] = useState(-1);
   /* 单栏(竖排、手机)时第一条作品滑到顶部才出现(2026-10-25 用户;10-31 试过一直显示,用户:小屏和手机还是要原来的出现时机);
      双栏一打开就在 */
-  const [away, setAway] = useState(() => !window.matchMedia('(min-width: 1280px)').matches);
+  const [away, setAway] = useState(() => !window.matchMedia(TWO_COL).matches);
   /* 出现过一次以后再藏起来,刻度要一根根往右滑出去(2026-10-31 用户);从没出现过时直接是藏着的 */
   const [shownOnce, setShownOnce] = useState(false);
   useEffect(() => {
@@ -128,7 +131,7 @@ export default function WorkRail({ items }: { items: Item[] }) {
       });
       if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) c = blocks.length - 1;
       setCurrent(c);
-      const twoCol = window.matchMedia('(min-width: 1280px)').matches;
+      const twoCol = window.matchMedia(TWO_COL).matches;
       const firstHead = blocks[0].el.querySelector('.work-head') ?? blocks[0].el;
       /* 单栏:第一条作品的日期滑到窗口竖直中间就出现(2026-10-31 用户:原来要滑到顶部才出现,太晚) */
       setAway(!twoCol && firstHead.getBoundingClientRect().top > window.innerHeight / 2);
@@ -145,7 +148,7 @@ export default function WorkRail({ items }: { items: Item[] }) {
       const railH = railRef.current?.offsetHeight ?? 0;
       /* 单列(竖排):贴页面右缘、窗口竖直正中,由 CSS 定位(50svh,见 simple.css)。
          原来这里按 innerHeight 算,iPhone Safari 地址栏收起时 innerHeight 变大,刻度会自己往下挪(2026-10-31 用户) */
-      if (!intro || !window.matchMedia('(min-width: 1280px)').matches) return setRailTop(null);
+      if (!intro || !window.matchMedia(TWO_COL).matches) return setRailTop(null);
       /* 放在介绍区底边到窗口底这块空白的正中(2026-10-31 用户:左下空白区域的一半位置);
          窗口矮、空白不够时至少离介绍区 48 */
       const introBottom = intro.getBoundingClientRect().bottom;
