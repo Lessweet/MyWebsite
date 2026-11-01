@@ -26,7 +26,7 @@
 
     --site-bg: #FDFDFC;
     --ink: #3A3A3C;   /* 主文字:#111 太深 → #333 → #3A3A3C(2026-10-23 用户) */
-    --ink-2: #AEAEB2;   /* 灰色文字 #8E8E93 → #AEAEB2 更浅(2026-11-01 用户:换个更灰的色值);深色主题不变 */
+    --ink-2: #8E8E93;   /* 灰色文字(2026-10-23 用户定色值;11-01 试过更浅的 #AEAEB2,改回) */
     --line: rgba(0, 0, 0, 0.1);   /* 细分割线(2026-10-24 用户:试过 benji 的 #F2F2F2,太淡,改回) */
     --btn-line: rgba(0, 0, 0, 0.1);   /* 胶囊 / 主题键边框:保留原来的深度(2026-10-24 用户:#F2F2F2 太淡) */
     --rule: #F2F2F2;   /* 作品日期上方的细线:同 benji.org 列表分割线(2026-10-25 用户:再浅一点,和他网站里一样) */
@@ -51,7 +51,7 @@
     --gutter: 32px;   /* 页面左右内边距:24 → 32,所有宽度统一(手机也是) */
     /* 页顶到介绍段第一行:横排、竖排共用(2026-10-31 用户:只维护一套间距规则)。
        CTR 字标去掉后,介绍段直接从顶上开始,横排时和右栏第一条作品的日期齐平(57) */
-    --intro-top: 120px;   /* 页顶 → 简介 57 → 120,同区块间距(2026-11-01 用户) */
+    --intro-top: 120px;   /* 页顶 → 简介 57 → 120,同区块间距(2026-11-01 用户;试过 160 改回) */
     /* 区块间距:「介绍」和「作品」两大块之间。横排 = 两栏的栏距,竖排 = 介绍区到第一条作品(2026-10-31 用户:同一个值,只改这里) */
     --section-gap: 120px;
     /* 作品 / 内容区最宽:双栏右栏、单栏整栏都是 896 = Tailwind max-w-4xl(2026-11-01 用户;原 912 是倒推出来的,不在 Tailwind 刻度上) */
@@ -71,24 +71,24 @@
     --theme-wipe-dur: 0.52s;
 }
 body.theme-dark {
-    --site-bg: #1c1c1e;
-    --ink: #f5f5f7;
-    --ink-2: #8E8E93;
+    --site-bg: #232325;   /* 深色背景 #1c1c1e → #232325,提亮一点不那么黑(2026-11-01 用户:深色太黑);nav-boot.js 里同步 */
+    --ink: #D1D1D6;   /* 深色主文字 #f5f5f7 → #D1D1D6,降一档亮度不刺眼(2026-11-01 用户:深色模式文字太亮) */
+    --ink-2: #6C6C70;   /* 深色整体降一档(2026-11-01 用户:不只主文字):#8E8E93 → #6C6C70 */
     --line: rgba(255, 255, 255, 0.1);
     --btn-line: rgba(255, 255, 255, 0.1);
     --rule: rgba(255, 255, 255, 0.07);
     --fill: #2c2c2e;
-    --mark: #48484A;
+    --mark: #3A3A3C;
     --cover-bg: linear-gradient(135deg, #3A3036, #36322D);   /* 同色相压暗 */
     --sc-article-bg: var(--fill);
     --sc-covers-bg: var(--fill);
-    --gray-400: #636366;   /* 深色下斜线 / 虚线压暗,不抢正面实线 */
-    --logo-ink: #f5f5f7;
-    --logo-ink-hover: #fff;
-    --logo-hatch: #636366;
-    --logo-dash: #8e8e93;
-    --logo-hatch-hover: #aeaeb2;
-    --gray-500: #8e8e93;
+    --gray-400: #48484A;   /* 深色下斜线 / 虚线压暗,不抢正面实线 */
+    --logo-ink: #D1D1D6;
+    --logo-ink-hover: #f5f5f7;
+    --logo-hatch: #48484A;
+    --logo-dash: #6c6c70;
+    --logo-hatch-hover: #8e8e93;
+    --gray-500: #6c6c70;
 }
 /* 断点统一用 Tailwind(2026-10-31 用户):sm 640 / md 768 / xl 1280 / 2xl 1536。
    左右内边距所有宽度统一 32(2026-10-31 用户:手机上也是;之前手机 < 640 用 16) */
@@ -106,6 +106,19 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
+/* 深色背景加一层很淡的斜向渐变,有点质感、不是一块平面黑(2026-11-01 用户:试一下)。
+   左上略亮 → 中间 = --site-bg → 右下略暗,上下各只差 4–5 级亮度,顶 / 底的渐隐条(用纯 --site-bg)接上去看不出边。
+   固定在视口上(::before + fixed),滚动不跟着动;iPhone Safari 不支持 background-attachment: fixed,所以用伪元素 */
+body.theme-dark { background: transparent; }
+body.theme-dark::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(135deg, #2A2A2D 0%, #232325 50%, #1D1D1F 100%);
+    pointer-events: none;
+}
+
 a { color: inherit; text-decoration: none; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
 img { display: block; max-width: 100%; }
@@ -524,6 +537,9 @@ body.theme-vt *::after {
 }
 /* 一句一段,段间距 24px */
 .hero-intro p + p { margin-top: 24px; }
+/* 开头那行只有头像 + 名字:头像贴左缘,不留左边距 */
+.hero-who .hero-intro-avatar { margin-left: 0; }
+.hero-intro .hero-who .hero-name { margin-left: 0.4em; }   /* 头像到「同容」再宽一点:0.1em → 0.4em(2026-11-01 用户) */
 .hero-intro .hero-netease-logo {
     display: inline-block;
     height: 0.7em;
@@ -1004,10 +1020,11 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
 /* ── 介绍段末行:城市 + 时间 + 时段状态图标(LocalTime.tsx);整行同一个灰 --ink-2 ── */
 .hero-loc {
     margin-top: 24px;
-    color: var(--ink-2);
+    color: #AEAEB2;   /* 北京时间这一行单独更浅(2026-11-01 用户);日期等其他灰字仍 --ink-2 #8E8E93 */
     font-size: var(--fs-sm);   /* 小号 --fs-sm(现为 16) */
     line-height: var(--lh-sm);
 }
+body.theme-dark .hero-loc { color: #545458; }   /* 深色下也比日期(#6C6C70)再暗一档,和浅色时比日期更浅一档对应(2026-11-01 用户) */
 .loc-time {
     display: inline-block;
     margin-left: 0.25em;
@@ -1710,41 +1727,71 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
 }
 .work-rail.is-hover .wr-pop { opacity: 1; pointer-events: auto; transform: translate(0, -50%); }
 .wr-card {
-    /* 宽度固定、所有卡片一样(切换不跳):最长那行文字 --wr-text-w(WorkRail 量出)+ 左 12 + 间距 12 + 图 64 + 右 8
-       (2026-10-31 用户:不要换行,宽度以最长文字计算;之前写死 232,长标题会折行) */
-    width: calc(var(--wr-text-w, 146px) + 110px);   /* 整体放大一档(2026-10-31 用户):左 14 + 间距 14 + 图 72 + 右 10 */
+    /* 竖排卡片(2026-11-01 用户:参考 iOS 小组件 —— 上图下文,底色白灰毛玻璃)。
+       宽度固定、所有作品一样(切换不跳):最长那行文字 --wr-text-w(WorkRail 量出)+ 左右各 14,最少 220;
+       图片宽跟卡片走、比例固定,所以高度也都一样 */
+    width: max(264px, calc(var(--wr-text-w, 146px) + 28px));   /* 偏横版;整体缩小(2026-11-01 用户:电脑上太大):最少 264,文字 + 左右各 14 */
     overflow: hidden;
-    border-radius: 14px;
-    background: var(--site-bg);
-    /* 边框和投影都很淡(2026-10-25 用户:投影太重、边框太深;原 1px 0.1 黑 + 32px 0.12 黑,悬停还更深) */
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 6px 20px rgba(0, 0, 0, 0.05);
-    --wr-row-h: 74px;   /* 一行 = 图 54 + 上下各 10 */
-    height: var(--wr-row-h);   /* 所有作品一样大:换作品时卡片只移动、不变尺寸 */
-    color: var(--ink);
+    border-radius: 24px;   /* 28 → 24,跟着卡片缩小 */
+    /* 白灰毛玻璃:半透明浅灰底 + 背后内容模糊;细白描边当高光,投影很淡 */
+    /* 底色 = 白灰毛玻璃里混入 30% 封面主色 --wr-tint(WorkRail 从缩略图算出,2026-11-01 用户) */
+    /* 底色直接用封面主色(WorkRail 算出并压暗到白字可读),微透 + 毛玻璃(2026-11-01 用户:白字、过渡要顺) */
+    background: color-mix(in srgb, var(--wr-tint, rgb(72, 72, 74)) 92%, transparent);
+    transition: background-color 0.22s ease;
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14), 0 0 0 1px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.12);   /* 投影收紧不扩散、但要看得出:8/24 0.08 → 4/12 0.12(2026-11-01 用户) */
+    color: #fff;
     cursor: pointer;
 }
 .wr-row {
     display: flex;
-    align-items: center;
-    gap: 14px;
-    height: var(--wr-row-h);
-    padding: 0 10px 0 14px;   /* 图片那侧 10,圆角 14 − 10 = 4 与图片圆角同心;文字那侧留 14 */
+    flex-direction: column;
+    /* 图铺满左、右、下三边(2026-11-01 用户:参考小组件),只有文字留内边距 */
+    position: relative;
+    isolation: isolate;   /* 模糊底(-1)、色层(::before 0)、图、文字的叠放只在卡片里排 */
+    padding: 0;
 }
 /* 卡片刚出现那一下直接落位,不从上次的位置滑过来 */
 .work-rail.is-jump .wr-pop { transition: none; }
 /* 缩略图(2026-10-31 用户:去掉简介,试小封面):16:9 80×45 → 4:3 64×48,居中裁切;
    放在右边(用户):先读到日期、标题,文字左缘对齐,图挨着刻度 */
 .wr-thumb {
+    /* 竖排:图在下(2026-11-01 用户:先读日期、标题),占满卡片宽(左右各留 6),16:10 居中裁切 */
     order: 2;
-    flex: none;
-    width: 72px;   /* 64 → 72(4:3,72×54) */
-    aspect-ratio: 4 / 3;
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 7;   /* 16:10 → 16:7,卡片整体偏横 */
     overflow: hidden;
-    border-radius: 4px;
-    background: var(--fill);
+    margin-top: 12px;   /* 文字到图 4 → 16 → 12(缩小)(2026-11-01 用户:文字离下面再远一点);渐变从这里开始 */
+    /* 图片上沿渐变淡出到卡片底色,不要硬边(2026-11-01 用户:与背景过渡渐变);圆角交给卡片裁切 */
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.000) 0%, rgba(0, 0, 0, 0.034) 9%, rgba(0, 0, 0, 0.126) 18%, rgba(0, 0, 0, 0.259) 27%, rgba(0, 0, 0, 0.417) 36%, rgba(0, 0, 0, 0.583) 44%, rgba(0, 0, 0, 0.741) 53%, rgba(0, 0, 0, 0.874) 62%, rgba(0, 0, 0, 0.966) 71%, rgba(0, 0, 0, 1.000) 80%);
+    mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.000) 0%, rgba(0, 0, 0, 0.034) 9%, rgba(0, 0, 0, 0.126) 18%, rgba(0, 0, 0, 0.259) 27%, rgba(0, 0, 0, 0.417) 36%, rgba(0, 0, 0, 0.583) 44%, rgba(0, 0, 0, 0.741) 53%, rgba(0, 0, 0, 0.874) 62%, rgba(0, 0, 0, 0.966) 71%, rgba(0, 0, 0, 1.000) 80%);   /* 平滑曲线取点不分段(用户:有一条线);只做上沿淡入;下沿不加渐变(2026-11-01 用户:底部不要渐变) */
 }
+.wr-bg {
+    position: absolute;
+    inset: -30%;
+    z-index: -1;   /* 最底层:色层和图都在它上面 */
+    background: center / cover no-repeat;
+    filter: blur(28px) saturate(1.5) brightness(0.8);
+    transform: translateZ(0);
+}
+/* 白字区压一层淡黑,越往下越淡,浅色封面上白字也看得清 */
+.wr-row::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.320) 0%, rgba(0, 0, 0, 0.309) 9%, rgba(0, 0, 0, 0.280) 18%, rgba(0, 0, 0, 0.237) 27%, rgba(0, 0, 0, 0.187) 36%, rgba(0, 0, 0, 0.133) 44%, rgba(0, 0, 0, 0.083) 53%, rgba(0, 0, 0, 0.040) 62%, rgba(0, 0, 0, 0.011) 71%, rgba(0, 0, 0, 0.000) 80%);
+    pointer-events: none;
+}
+/* 作品指定了顶部底色(works.ts 的 thumbTint → --wr-top):顶部用这个色,往下渐变到透明接图片 */
+.wr-card[style*="--wr-top"] .wr-row::before {
+    background: linear-gradient(to bottom, color-mix(in srgb, var(--wr-top) 100%, transparent) 10%, color-mix(in srgb, var(--wr-top) 97%, transparent) 18%, color-mix(in srgb, var(--wr-top) 87%, transparent) 27%, color-mix(in srgb, var(--wr-top) 74%, transparent) 35%, color-mix(in srgb, var(--wr-top) 58%, transparent) 43%, color-mix(in srgb, var(--wr-top) 42%, transparent) 52%, color-mix(in srgb, var(--wr-top) 26%, transparent) 60%, color-mix(in srgb, var(--wr-top) 13%, transparent) 68%, color-mix(in srgb, var(--wr-top) 3%, transparent) 77%, color-mix(in srgb, var(--wr-top) 0%, transparent) 85%);
+}
+.wr-thumb { position: relative; z-index: 0; }
 .wr-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.wr-text { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; white-space: nowrap; }
+.wr-text { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 14px 14px 0; white-space: nowrap; position: relative; z-index: 1; }   /* 文字距卡片上、左、右都是 14 */
 .wr-measure {
     position: absolute;
     top: 0;
@@ -1752,14 +1799,17 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
     visibility: hidden;
     pointer-events: none;
     white-space: nowrap;
-    font-size: 15px;
-    line-height: 22px;
+    font-size: 13px;
+    line-height: 18px;
 }
 .wr-measure span { display: block; width: max-content; }
+.wr-measure span:nth-child(even) { font-size: 15px; line-height: 22px; font-weight: 600; }   /* 标题行按卡片里的标题字号量宽 */
 /* 日期、标题都 14、常规字重、同一颜色(2026-10-31 用户:不区分;之前试过 12 / 16、标题 600、日期灰) */
-.wr-card small { font-size: 15px; line-height: 22px; }   /* 14 → 15(2026-10-31 用户:整体大一点) */
-.wr-card b { font-size: 15px; line-height: 22px; font-weight: 400; }
-body.theme-dark .wr-card { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 6px 20px rgba(0, 0, 0, 0.3); }
+.wr-card small { font-size: 13px; line-height: 18px; color: rgba(255, 255, 255, 0.72); }   /* 日期白色略透,标题纯白(2026-11-01 用户:白字) */
+.wr-card b { font-size: 15px; line-height: 22px; font-weight: 600; }   /* 标题加粗;17 → 15 跟着卡片整体缩小(2026-11-01 用户:电脑上太大),仍比日期大 2 */
+body.theme-dark .wr-card small { color: rgba(255, 255, 255, 0.55); }   /* 深色下卡片文字也降一档 */
+body.theme-dark .wr-card b { color: rgba(255, 255, 255, 0.85); }
+body.theme-dark .wr-card { background: color-mix(in srgb, var(--wr-tint, rgb(44, 44, 46)) 92%, transparent); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 2px 8px rgba(0, 0, 0, 0.3); }
 /* 触屏(手机、平板)手指点不准 8px 高的格子:每格加高到 16,线距跟着变大(2026-10-31) */
 @media (pointer: coarse) {
     .wr-tick { height: 12px; width: 44px; }   /* 线距 16 → 12(2026-10-31 用户:太大;现在是手指划着选,不用点准);触控区往里加宽到 44,线仍贴右边 */
@@ -1788,10 +1838,75 @@ body.theme-dark .wr-card { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 6p
     }
     .work-rail.is-hover .wr-pop { transform: translate(0, -50%); }
 }
+/* 电脑(宽屏 + 鼠标):横版 —— 左文字、右图;图铺满右、上、下三边,往左渐变淡出接模糊底(2026-11-01 用户:电脑上横版,视觉风格一致)。
+   手机仍是上文字下图的竖版 */
+@media (min-width: 768px) and (pointer: fine) {
+    .wr-card { width: calc(var(--wr-text-w, 146px) + 32px + 156px); }   /* 文字 + 左右各 16 + 图区 156 */
+    .wr-row { flex-direction: row; align-items: center; height: 120px; }   /* 96 → 120(2026-11-01 用户:再高一点) */
+    .wr-text { padding: 0 16px; }
+    .wr-thumb {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 220px;   /* 比图区宽一点,左边那段渐变叠在文字后面;跟着卡片加高 190 → 220 */
+        margin: 0;
+        aspect-ratio: auto;
+        -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 0.000) 0%, rgba(0, 0, 0, 0.034) 9%, rgba(0, 0, 0, 0.126) 18%, rgba(0, 0, 0, 0.259) 27%, rgba(0, 0, 0, 0.417) 36%, rgba(0, 0, 0, 0.583) 44%, rgba(0, 0, 0, 0.741) 53%, rgba(0, 0, 0, 0.874) 62%, rgba(0, 0, 0, 0.966) 71%, rgba(0, 0, 0, 1.000) 80%);
+        mask-image: linear-gradient(to right, rgba(0, 0, 0, 0.000) 0%, rgba(0, 0, 0, 0.034) 9%, rgba(0, 0, 0, 0.126) 18%, rgba(0, 0, 0, 0.259) 27%, rgba(0, 0, 0, 0.417) 36%, rgba(0, 0, 0, 0.583) 44%, rgba(0, 0, 0, 0.741) 53%, rgba(0, 0, 0, 0.874) 62%, rgba(0, 0, 0, 0.966) 71%, rgba(0, 0, 0, 1.000) 80%);
+    }
+    .wr-row::before { background: linear-gradient(to right, rgba(0, 0, 0, 0.320) 0%, rgba(0, 0, 0, 0.309) 9%, rgba(0, 0, 0, 0.280) 18%, rgba(0, 0, 0, 0.237) 27%, rgba(0, 0, 0, 0.187) 36%, rgba(0, 0, 0, 0.133) 44%, rgba(0, 0, 0, 0.083) 53%, rgba(0, 0, 0, 0.040) 62%, rgba(0, 0, 0, 0.011) 71%, rgba(0, 0, 0, 0.000) 80%); }
+    .wr-card[style*="--wr-top"] .wr-row::before {
+        background: linear-gradient(to right, color-mix(in srgb, var(--wr-top) 100%, transparent) 10%, color-mix(in srgb, var(--wr-top) 97%, transparent) 18%, color-mix(in srgb, var(--wr-top) 87%, transparent) 27%, color-mix(in srgb, var(--wr-top) 74%, transparent) 35%, color-mix(in srgb, var(--wr-top) 58%, transparent) 43%, color-mix(in srgb, var(--wr-top) 42%, transparent) 52%, color-mix(in srgb, var(--wr-top) 26%, transparent) 60%, color-mix(in srgb, var(--wr-top) 13%, transparent) 68%, color-mix(in srgb, var(--wr-top) 3%, transparent) 77%, color-mix(in srgb, var(--wr-top) 0%, transparent) 85%);
+    }
+}
+/* 手机(窄屏或触屏):选作品时卡片在屏幕正中;后面一层全屏模糊盖住页面,刻度和卡片在它上面(2026-11-01 用户) */
+.wr-scrim { display: none; }
+@media (max-width: 767px), (pointer: coarse) {
+    .wr-scrim {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 3;   /* 刻度 .work-rail 是 4 */
+        background: rgba(253, 253, 252, 0.4);
+        -webkit-backdrop-filter: blur(16px);
+        backdrop-filter: blur(16px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.22s ease;
+    }
+    .wr-scrim.is-on { opacity: 1; }
+    body.theme-dark .wr-scrim { background: rgba(28, 28, 30, 0.4); }
+    /* 刻度贴屏幕右缘、竖直居中;卡片相对刻度定位:右缘挪到屏幕正中(right 50vw)再往右平移自身一半 → 水平居中;top 50% = 屏幕正中 */
+    .wr-pop {
+        top: 50% !important;
+        right: 50vw;
+        padding-right: 0;
+        transform: translate(50%, -50%) scale(1.2);
+    }
+    /* 手机上卡片整体放大 1.25 倍(2026-11-01 用户:手机上可以大一点);尺寸参数还是电脑那一套,只是整体缩放 */
+    .work-rail.is-hover .wr-pop { transform: translate(50%, -50%) scale(1.25); }
+    /* 换作品时卡片带一点弹性的缩放(2026-11-01 用户:模仿 iPhone 控制中心切页):
+       从 0.9 放大,略冲过 1 再落回;卡片以作品为 key,换作品就重新播一次 */
+    /* 一段连续的回弹曲线(back-out),不再分几段关键帧,不会一顿一顿(2026-11-01 用户:缩放有卡顿) */
+    .wr-card { animation: wr-swap 0.42s cubic-bezier(0.34, 1.45, 0.64, 1) both; will-change: transform; }
+    /* 手机上横版(试过 1:1 竖版,用户改回)。图片区 16:9 = 素材原比例,不裁上下(16:7 时底部像被切掉);
+       文字到图 16;标题大两号 15 → 17(2026-11-01 用户) */
+    .wr-thumb { margin-top: 16px; aspect-ratio: 16 / 9; }
+    .wr-card b { font-size: 17px; line-height: 24px; }
+    /* 手机上不要投影(2026-11-01 用户):后面已经有模糊层托着,只留一圈细白边 */
+    .wr-card, body.theme-dark .wr-card { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14); }
+}
+@keyframes wr-swap {
+    from { transform: scale(0.92); opacity: 0.5; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .work-rail, .work-rail .wr-tick { animation: none !important; }
     .work-rail.is-leaving { opacity: 0; }
     .wr-tick > i, .wr-pop { transition: none; }
+    .wr-card { animation: none; }
 }
 
 /* ── 大纲模式(DevOutline,只在本地测试版;2026-10-31 用户)──

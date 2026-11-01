@@ -432,13 +432,11 @@ export default function HomePage() {
             全部间距都在单元字符串里 —— JSX 元素之间不放裸文本。 */}
         {/* 一句一段(2026-10-23 用户;打招呼与「做什么」合成一句),段间距 24px 见 simple.css */}
         <div className="hero-intro" ref={introRef}>
-          <p>
+          {/* 开头单独一行:头像 + 名字(2026-11-01 用户:开头改为两行);去掉「我是」和逗号,下一段从「研究…」起 */}
+          <p className="hero-who">
           {/* 开场白(2026-08-22):「UI 设计师」与后文重复已删,换成打招呼 ——
               与头像 say-hi 笔画呼应;头衔只留「曾在 NetEase 担任 UI 设计师」那处。
               2026-10-23 用户删掉开头的「Hi，」,直接从「我是」起句 */}
-          {splitIntro('我是 ').map((t, i) => (
-            <span key={`a${i}`} className="hero-ch">{t}</span>
-          ))}
           <span className="hero-ch hero-intro-unit hero-name-unit">
             <span aria-label="同容 头像" className="hero-intro-avatar" role="img">
               <img alt="" src="writing/assets/tongrong-avatar.svg?v=2" />
@@ -455,8 +453,9 @@ export default function HomePage() {
             </span>
             {/* 名字用正文字体 + 中粗(2026-10-23 用户:手写名 SVG 不好看,停用;TongrongName.tsx 保留备用) */}
             <b className="hero-name">同容</b>
-            ，
           </span>
+          </p>
+          <p>
           {splitIntro('{研究}{内容}{怎么}{被创作、}{被呈现、}{被看见。}', !phoneWrap).map((t, i) => (
             <span key={`b${i}`} className="hero-ch">{t}</span>
           ))}
