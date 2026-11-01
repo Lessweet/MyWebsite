@@ -17,8 +17,8 @@ const KNOBS: Knob[] = [
 /* 文字颜色(2026-11-01 用户:想直接调文字颜色):只改浅色主题的 --ink / --ink-2;深色主题保持 simple.css 原值 */
 type Swatch = { key: string; label: string; cssVar: string; def: string };
 const SWATCHES: Swatch[] = [
-  { key: 'dev-ink', label: '主文字', cssVar: '--ink', def: '#3A3A3C' },
-  { key: 'dev-ink-2', label: '灰色文字', cssVar: '--ink-2', def: '#8E8E93' },
+  { key: 'dev-ink-b', label: '主文字', cssVar: '--ink', def: '#3A3A3C' },
+  { key: 'dev-ink-2b', label: '灰色文字', cssVar: '--ink-2', def: '#AEAEB2' },
 ];
 /* 「编辑文字」打开后能直接点进去改的文字(只改本页预览,刷新恢复) */
 const EDITABLE = '.hero-intro > p, .work-year, .work-title, .work-summary';
@@ -68,18 +68,23 @@ export default function DevRadius() {
       });
     };
     apply();
-    SWATCHES.forEach((c, i) => {
-      try {
-        if (colors[i].toLowerCase() === c.def.toLowerCase()) localStorage.removeItem(c.key);
-        else localStorage.setItem(c.key, colors[i]);
-      } catch {
-        /* 存不了只是不记忆 */
-      }
-    });
     const mo = new MutationObserver(apply);
     mo.observe(body, { attributes: true, attributeFilter: ['class'] });
     return () => mo.disconnect();
   }, [colors]);
+
+  /* 只在用户自己动取色器 / 点恢复时写 localStorage;热更新改了默认色时不把旧值当成「调过」存下来(2026-11-01 bug) */
+  const saveColors = (next: string[]) => {
+    setColors(next);
+    SWATCHES.forEach((c, i) => {
+      try {
+        if (next[i].toLowerCase() === c.def.toLowerCase()) localStorage.removeItem(c.key);
+        else localStorage.setItem(c.key, next[i]);
+      } catch {
+        /* 存不了只是不记忆 */
+      }
+    });
+  };
 
   /* 改过的文字存进 localStorage(按第几段记),刷新、页面热更新后自动填回(2026-11-01 用户:刷新后打的字没了) */
   const [drafts, setDrafts] = useState<Record<string, string>>(() => {
@@ -162,13 +167,13 @@ export default function DevRadius() {
                 value={colors[i]}
                 onChange={(e) => {
                   const v = e.target.value;
-                  setColors((a) => a.map((x, j) => (j === i ? v : x)));
+                  saveColors(colors.map((x, j) => (j === i ? v : x)));
                 }}
               />
             </label>
           ))}
           {colors.some((v, i) => v.toLowerCase() !== SWATCHES[i].def.toLowerCase()) && (
-            <button className="rd-reset" type="button" onClick={() => setColors(SWATCHES.map((c) => c.def))}>
+            <button className="rd-reset" type="button" onClick={() => saveColors(SWATCHES.map((c) => c.def))}>
               颜色恢复默认
             </button>
           )}
