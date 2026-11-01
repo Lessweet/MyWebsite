@@ -230,6 +230,7 @@ export default function HomePage() {
   /* 手机、平板(触屏)例外,仍按词组断行(2026-10-31 用户:手机上要考虑换行的最优解 ——
      逐字排会把「被呈|现」「AI|coding」拆开):屏幕宽度固定,没有拖窗口时字来回跳的问题 */
   /* 2026-11-01 起所有宽度都按词组断行(用户:电脑上逐字断行很奇怪,「现|在」「同|时」被拆开);逐字排停用 */
+  /* 2026-11-02 试过手机单独逐字排,用户:不用单独适配,所有设备统一按词组 */
   const PHONE_WRAP = 'not all';
   const [phoneWrap, setPhoneWrap] = useState(() => window.matchMedia(PHONE_WRAP).matches);
   useEffect(() => {
