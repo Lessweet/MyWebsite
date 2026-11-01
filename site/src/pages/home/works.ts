@@ -28,6 +28,10 @@ export interface Work {
      有它就不用 cover / showcase */
   /* zoom:图在格子里放大几倍、居中裁切(展示范围更小);不写 = 1 */
   gallery?: { src: string; zoom?: number }[];
+  /* 刻度预览卡的缩略图(不写就用封面第一张);卡片上叠了标题,挑不带大字的图 */
+  thumb?: string;
+  /* 预览卡顶部底色(不写 = 图片自己的模糊版压一层淡黑);浅色封面配白字时用 */
+  thumbTint?: string;
 }
 
 export const WORKS: Work[] = [
@@ -44,6 +48,8 @@ export const WORKS: Work[] = [
        中间一行放「AI 设计工作流 / Shader & Motion / SKILLS / DESIGN SIGNAL」 */
     /* 网站上用整张位图(2026-10-31 用户:任何作品的加载态都是 16:9 整图):由下面的 showcase 拼图导出,
        改了拼图跑 node site/scripts/build-work-showcase-bitmap.mjs 重新导出(导出时页面加 ?render-showcase 显示拼图原版) */
+    thumb: 'writing/assets/works/gallery/wechat-ai-1-1280.webp',   /* 刻度预览卡用的图:不带大标题字(2026-11-01 用户) */
+    thumbTint: '#2E8C9A',   /* 预览卡底色:模糊自身发脏,指定干净色(2026-11-01 用户) */
     gallery: [
       { src: 'writing/assets/works/gallery/wechat-ai-1.webp?v=17' },
       { src: 'writing/assets/works/gallery/wechat-ai-2.webp?v=16' },
@@ -92,6 +98,7 @@ export const WORKS: Work[] = [
     summary:
       '{把 AI }{用进 App }{视觉设计：}{海报和}{设计字体}{用 }{ChatGPT Image2、}{即梦、}{LiblibAI }{多方向}{并行出稿，}{拟物图标、}{主题插图、}{视觉动效}{也交给 AI }{生成；}{界面用 }{Claude Code、}{Cursor、}{Figma Make }{直接生成，}{再沉淀成 }{Design Skill }{复用。}',
     /* 四图(2026-10-23 用户:下面用四图) */
+    thumb: 'writing/assets/works/gallery/ai-visual-2-1280.webp',   /* 刻度预览卡用的图:不带大标题字(2026-11-01 用户) */
     gallery: [
       /* Figma「作品集」画板 2333:16551(原图存 site/assets/figma/),导出 3840×2160 → 1600×900 webp */
       { src: 'writing/assets/works/gallery/ai-visual-1.webp' },
@@ -112,6 +119,8 @@ export const WORKS: Work[] = [
     summary:
       '{Hello Chat }{是一款 }{AI 语音聊天 }{App：}{点一下}{语音键}{就能}{开口聊，}{可以切换}{不同的}{声音角色，}{中英文}{都能对话。}{我负责从}{产品体验、}{交互到}{视觉和动效的}{整套设计，}{包括}{按周订阅的}{付费页。}',
     /* 两张并排(2026-10-23 用户):Figma 画板 2304:14351 封面 + 2304:14348 界面合集,由 site/scripts/build-work-gallery.py 生成 */
+    thumb: 'writing/assets/works/gallery/hello-chat-2-1280.webp',   /* 刻度预览卡用的图:不带大标题字(2026-11-01 用户) */
+    thumbTint: '#3D6BE5',   /* 预览卡顶部蓝色(2026-11-01 用户) */
     gallery: [
       { src: 'writing/assets/works/gallery/hello-chat-1.webp' },
       { src: 'writing/assets/works/gallery/hello-chat-2.webp?v=2' },

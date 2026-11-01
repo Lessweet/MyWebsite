@@ -8,6 +8,7 @@
    - 鼠标离开,焦点回到正在看的那条。
    所有宽度都显示:双栏在左栏介绍区下面,单栏贴页面右缘、窗口竖直正中;手机上点刻度直接跳过去。样式见 simple.css .work-rail */
 import { type CSSProperties, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 /* 双栏布局 2026-11-01 起停用(用户:所有宽度都用单栏、居中);判断双栏的地方都读这个,永远不成立 */
 const TWO_COL = 'not all';
@@ -18,16 +19,66 @@ type Item = {
   cover?: string;
   showcase?: { covers: { src: string }[] };
   gallery?: { src: string }[];
+  thumb?: string;
+  thumbTint?: string;
 };
 
 /* 预览卡缩略图(2026-10-31 用户:去掉简介,试一张很小的封面):四图式取第一张(用 960 宽那档,页面上多半已加载过),
    两图式取右侧第一张文章封面,单图取封面本身 */
 function thumbOf(w: Item): { src: string } | null {
+  if (w.thumb) return { src: w.thumb };   /* 作品单独指定的预览图优先 */
   const g = w.gallery?.find((it) => it.src);
   if (g) return { src: g.src.replace(/\.webp(\?|$)/, '-960.webp$1') };
   const c = w.showcase?.covers.find((it) => it.src);
   if (c) return { src: c.src };
   return w.cover ? { src: w.cover } : null;
+}
+/* 预览卡底色取封面主色(2026-11-01 用户):缩略图缩到 24×24,按饱和度加权求平均(灰黑白的像素权重低),
+   结果缓存;同源图片才能读像素,读不了就不加色 */
+const tintCache = new Map<string, string>();
+function coverTint(src: string): Promise<string | null> {
+  const hit = tintCache.get(src);
+  if (hit) return Promise.resolve(hit);
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.decoding = 'async';
+    img.onload = () => {
+      try {
+        const n = 24;
+        const cv = document.createElement('canvas');
+        cv.width = n;
+        cv.height = n;
+        const ctx = cv.getContext('2d', { willReadFrequently: true });
+        if (!ctx) return resolve(null);
+        ctx.drawImage(img, 0, 0, n, n);
+        /* 看整张图取色相(按饱和度加权的向量平均),饱和度、明度统一定死,8 张卡色调协调、不发浑(2026-11-01 用户:背景色不好看) */
+        const d = ctx.getImageData(0, 0, n, n).data;
+        let x = 0, y = 0, wsum = 0, ssum = 0, cnt = 0;
+        for (let i = 0; i < d.length; i += 4) {
+          const R = d[i] / 255, G = d[i + 1] / 255, B = d[i + 2] / 255;
+          const mx = Math.max(R, G, B), mn = Math.min(R, G, B), ch = mx - mn;
+          cnt++;
+          if (ch < 0.08) continue;
+          let h = mx === R ? ((G - B) / ch) % 6 : mx === G ? (B - R) / ch + 2 : (R - G) / ch + 4;
+          h *= Math.PI / 3;
+          const w = ch * ch;
+          x += Math.cos(h) * w;
+          y += Math.sin(h) * w;
+          wsum += w;
+          ssum += ch;
+        }
+        const chroma = ssum / cnt;   // 平均彩度:太低说明以黑白灰为主
+        const hue = ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+        const c = wsum === 0 || chroma < 0.04 ? 'hsl(240, 3%, 22%)' : `hsl(${Math.round(hue)}, 38%, 36%)`;
+        tintCache.set(src, c);
+        resolve(c);
+      } catch {
+        resolve(null);
+      }
+    };
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
 }
 type Block = { el: HTMLElement; work: number };
 
@@ -98,6 +149,20 @@ export default function WorkRail({ items }: { items: Item[] }) {
   /* 卡片固定宽度 = 所有作品里最长那行文字(日期或标题)+ 图 + 间距(2026-10-31 用户:不要换行、切换不跳) */
   const measureRef = useRef<HTMLDivElement>(null);
   const [textW, setTextW] = useState(0);
+  const [tints, setTints] = useState<Record<string, string>>({});
+  useEffect(() => {
+    let alive = true;
+    items.forEach((w) => {
+      const t = thumbOf(w);
+      if (t)
+        coverTint(t.src).then((c) => {
+          if (alive && c) setTints((m) => (m[t.src] === c ? m : { ...m, [t.src]: c }));
+        });
+    });
+    return () => {
+      alive = false;
+    };
+  }, [items]);
 
   useEffect(() => {
     const mq = window.matchMedia(WIDE);
@@ -267,6 +332,10 @@ export default function WorkRail({ items }: { items: Item[] }) {
   const focus = hover ?? current;
 
   return (
+    <>
+    {/* 手机:选作品时全屏模糊层盖住页面,刻度和卡片浮在上面(2026-11-01 用户);电脑上不显示(CSS 控制)。
+        刻度容器有 transform,fixed 子元素会跟着它走,所以挂到 body 上 */}
+    {createPortal(<div aria-hidden="true" className={`wr-scrim${hb ? ' is-on' : ''}`} />, document.body)}
     <nav
       aria-label="作品导航"
       aria-hidden={away || undefined}
@@ -331,12 +400,17 @@ export default function WorkRail({ items }: { items: Item[] }) {
       {/* 只有一张预览卡(2026-10-31 用户:极简容器):白色卡片跟着刻度上下移,里面的内容直接换成那一件,
           不滚动、不淡入(试过转轮式整列跟着滚,用户:动静更大) */}
       <div aria-hidden="true" className="wr-pop" style={{ top: cardY }} onClick={() => hover != null && go(hover)}>
-        <div className="wr-card" style={(textW ? { '--wr-text-w': `${textW}px` } : {}) as CSSProperties}>
+        {(() => {
+          const w = blocks[reel] ? items[blocks[reel].work] : null;
+          const thumb = w ? thumbOf(w) : null;
+          const tint = thumb ? tints[thumb.src] : undefined;
+          return (
+        <div className="wr-card" key={reel} style={{ ...(textW ? { '--wr-text-w': `${textW}px` } : {}), ...(tint ? { '--wr-tint': tint } : {}), ...(w?.thumbTint ? { '--wr-top': w.thumbTint } : {}) } as CSSProperties}>
           {(() => {
-            const w = blocks[reel] ? items[blocks[reel].work] : null;
-            const thumb = w ? thumbOf(w) : null;
             return (
               <div className="wr-row">
+                {/* 底:同一张图放大 + 高斯模糊铺满卡片,图片上沿淡出时接的是它自己的模糊版,过渡天然连续(2026-11-01 用户:过渡不柔和) */}
+                {thumb && <span aria-hidden="true" className="wr-bg" style={{ backgroundImage: `url(${thumb.src})` }} />}
                 {thumb && (
                   <span className="wr-thumb">
                     <img alt="" decoding="async" src={thumb.src} />
@@ -350,11 +424,14 @@ export default function WorkRail({ items }: { items: Item[] }) {
             );
           })()}
         </div>
+          );
+        })()}
         {/* 量宽度用:所有作品的日期、标题各一行,不显示 */}
         <div className="wr-measure" ref={measureRef}>
           {items.flatMap((w, i) => [<span key={`d${i}`}>{w.date}</span>, <span key={`t${i}`}>{w.title}</span>])}
         </div>
       </div>
     </nav>
+    </>
   );
 }

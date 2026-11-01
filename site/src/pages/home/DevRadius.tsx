@@ -18,10 +18,10 @@ const KNOBS: Knob[] = [
 type Swatch = { key: string; label: string; cssVar: string; def: string };
 const SWATCHES: Swatch[] = [
   { key: 'dev-ink-b', label: '主文字', cssVar: '--ink', def: '#3A3A3C' },
-  { key: 'dev-ink-2b', label: '灰色文字', cssVar: '--ink-2', def: '#AEAEB2' },
+  { key: 'dev-ink-2b', label: '灰色文字', cssVar: '--ink-2', def: '#8E8E93' },
 ];
 /* 「编辑文字」打开后能直接点进去改的文字(只改本页预览,刷新恢复) */
-const EDITABLE = '.hero-intro > p, .work-year, .work-title, .work-summary';
+const EDITABLE = '.hero-intro > p:not(.hero-who), .work-year, .work-title, .work-summary';
 const DRAFT_KEY = 'dev-text-drafts';
 
 function readColor(c: Swatch) {
