@@ -20,7 +20,33 @@ const W = 1920;
 const SQUARE = `
   .work-cover.showcase .sc-pane { aspect-ratio: 4 / 3 !important; }
   .sc-pane-article .sc-phones { scale: 1.16 !important; gap: 0.9em !important; }   /* 三页间距 1.6 → 0.9em(2026-11-02 用户:再小),整组略放大 */
-  .sc-covers { transform: rotate(8deg) scale(1.45) !important; }   /* 1.8 → 1.45(2026-11-02 用户:缩小一点、看到更多) */
+  /* 封面改成规整网格(2026-11-02 用户:改为网格布局;之前是倾斜 8° 错位铺满):
+     不旋转、不错位,3 列 × 4 行 16:9,四周留边、格间同图缝,正好排满 4:3 */
+  /* 网格占的面积 = 左图三屏手机那一组(左右各约 7.8%、上下各约 13.2%,2026-11-02 用户:面积和第一张一样);
+     格子按这块面积均分,图居中裁切 */
+  .sc-covers { transform: none !important; display: grid !important; inset: 13.2% 7.85% !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(4, minmax(0, 1fr)); gap: 0.45em !important; }
+  .showcase .sc-cover { aspect-ratio: auto !important; width: 100% !important; height: 100% !important; min-height: 0; object-fit: cover; }
+  .sc-row { display: contents !important; }
+  .sc-row:first-child, .sc-row:nth-child(5) { display: none !important; }
+  .sc-row:nth-child(4) .sc-cover:nth-child(n + 3) { display: none !important; }   /* 只放 12 张 */
+  /* 摆放(2026-11-02 用户):浅色波点放中间;两张黑底按原来的位置(Codebase 第二行右、Design Signal 左下);SKILLS 不放左下。
+     星座 / SKILLS / Claude Code ; Code added / 浅色波点 / Codebase ; AI Mode / 拼贴 / VIBEDESIGN ; Design Signal / 青色界面 / AI Slop */
+  .sc-row:nth-child(2) .sc-cover:nth-child(2) { order: 1; }
+  .sc-row:nth-child(2) .sc-cover:nth-child(3) { order: 2; }
+  .sc-row:nth-child(2) .sc-cover:nth-child(4) { order: 3; }
+  .sc-row:nth-child(3) .sc-cover:nth-child(4) { order: 4; }
+  .sc-row:nth-child(2) .sc-cover:nth-child(1) { order: 5; }
+  .sc-row:nth-child(3) .sc-cover:nth-child(1) { order: 6; }
+  .sc-row:nth-child(2) .sc-cover:nth-child(5) { order: 7; }
+  .sc-row:nth-child(3) .sc-cover:nth-child(3) { order: 8; }
+  .sc-row:nth-child(3) .sc-cover:nth-child(2) { order: 9; }
+  .sc-row:nth-child(3) .sc-cover:nth-child(5) { order: 10; }
+  .sc-row:nth-child(4) .sc-cover:nth-child(1) { order: 11; }
+  .sc-row:nth-child(4) .sc-cover:nth-child(2) { order: 12; }
+  .sc-row:nth-child(even) { transform: none !important; }
+  /* 封面网格的底和左图一样:柔和青绿渐变 + 白色小方点(2026-11-02 用户) */
+  .sc-pane-covers { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3Crect width='3' height='3' fill='white' fill-opacity='0.3'/%3E%3C/svg%3E") 0 0 / 0.26em 0.26em, radial-gradient(60% 70% at 12% 8%, #E5F2F3 0%, rgba(229, 242, 243, 0) 70%), radial-gradient(55% 65% at 85% 18%, #B3D1D7 0%, rgba(179, 209, 215, 0) 72%), radial-gradient(60% 70% at 18% 95%, #C4D5B4 0%, rgba(196, 213, 180, 0) 72%), radial-gradient(45% 55% at 96% 100%, #F0D5C2 0%, rgba(240, 213, 194, 0) 75%), linear-gradient(180deg, #CDE2E4 0%, #CEDCC0 100%); !important; }
 `;
 
 const browser = await chromium.launch({ channel: 'chrome' });
