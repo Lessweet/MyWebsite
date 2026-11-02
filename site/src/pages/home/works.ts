@@ -59,7 +59,7 @@ export const WORKS: Work[] = [
     thumbTint: '#2E8C9A',   /* 预览卡底色:模糊自身发脏,指定干净色(2026-11-01 用户) */
     gallery: [
       { src: 'writing/assets/works/gallery/wechat-ai-1-43.webp?v=5' },   /* 16:9 原版 wechat-ai-1.webp?v=17 */
-      { src: 'writing/assets/works/gallery/wechat-ai-2-43.webp?v=2' },   /* 16:9 原版 wechat-ai-2.webp?v=16 */
+      { src: 'writing/assets/works/gallery/wechat-ai-2-43.webp?v=11' },   /* 16:9 原版 wechat-ai-2.webp?v=16 */
     ],
     showcase: {
       phones: [
