@@ -30,6 +30,9 @@ export interface Work {
   gallery?: { src: string; zoom?: number }[];
   /* 刻度预览卡的缩略图(不写就用封面第一张);卡片上叠了标题,挑不带大字的图 */
   thumb?: string;
+  /* ratio:封面每张图的比例(不写 = 16:9);link: 'gzh' = 点封面弹公众号二维码 */
+  ratio?: string;
+  link?: 'gzh';
   /* 预览卡顶部底色(不写 = 图片自己的模糊版压一层淡黑);浅色封面配白字时用 */
   thumbTint?: string;
 }
@@ -37,7 +40,11 @@ export interface Work {
 export const WORKS: Work[] = [
   {
     date: 'July 2026',   /* 英文月份 + 年(2026-10-24 用户:用 June 2024 这种格式) */
-    title: '公众号 AI 设计内容',
+    title: 'AI design 内容写作',   /* 原「公众号 AI 设计内容」(2026-11-02 用户;试过加「工作流」又删掉) */
+    /* 两张封面各自 4:3(2026-11-02 用户:先试正方形,改 4:3;图是用拼图按 4:3 重新排版导出的,见 site/scripts/build-work-showcase-43.mjs);
+       点封面弹出公众号二维码(用户:点击跳转到公众号 —— 公众号没有网页主页,用扫码关注) */
+    ratio: '4 / 3',
+    link: 'gzh',
     /* 2026-10-23 用户:改从「怎么用 AI 提升创作 / 写作」讲。事实依据 aiadong_mp 的 Claude.md 工具链:
        yt-detail / scout / mp-writing(规范 + fewshot 范文)/ title / mp-polish / article-template /
        mp-md2html 发草稿箱;mp-cover 出封面。控制在 2~3 行(2026-10-23 用户)。
@@ -51,8 +58,8 @@ export const WORKS: Work[] = [
     thumb: 'writing/assets/works/gallery/wechat-ai-1-1280.webp',   /* 刻度预览卡用的图:不带大标题字(2026-11-01 用户) */
     thumbTint: '#2E8C9A',   /* 预览卡底色:模糊自身发脏,指定干净色(2026-11-01 用户) */
     gallery: [
-      { src: 'writing/assets/works/gallery/wechat-ai-1.webp?v=17' },
-      { src: 'writing/assets/works/gallery/wechat-ai-2.webp?v=16' },
+      { src: 'writing/assets/works/gallery/wechat-ai-1-43.webp?v=5' },   /* 16:9 原版 wechat-ai-1.webp?v=17 */
+      { src: 'writing/assets/works/gallery/wechat-ai-2-43.webp?v=2' },   /* 16:9 原版 wechat-ai-2.webp?v=16 */
     ],
     showcase: {
       phones: [
@@ -96,7 +103,7 @@ export const WORKS: Work[] = [
     /* 简介(2026-10-23):按四张图的内容写 —— 总览画板「AI 创意海报 / UI 视觉辅助 / 生成式 UI / Co Design」
        及其工具清单(ChatGPT Image2 / 即梦 / LiblibAI、ClaudeCode / Codex、Cursor / FigmaMake) */
     summary:
-      '{把 AI }{用进 App }{视觉设计：}{海报和}{设计字体}{用 }{ChatGPT Image2、}{即梦、}{LiblibAI }{多方向}{并行出稿，}{拟物图标、}{主题插图、}{视觉动效}{也交给 AI }{生成；}{界面用 }{Claude Code、}{Cursor、}{Figma Make }{直接生成，}{再沉淀成 }{Design Skill }{复用。}',
+      '{2025 年}{一整年}{把 AI 工具}{用进 App }{视觉设计工作：}{海报和}{设计字体}{用 }{ChatGPT Image2、}{即梦、}{LiblibAI }{多方向}{并行出稿，}{拟物图标、}{主题插图、}{视觉动效}{也交给 AI }{生成；}{界面用 }{Claude Code、}{Cursor、}{Figma Make }{直接生成，}{再沉淀成 }{Design Skill }{复用。}',
     /* 四图(2026-10-23 用户:下面用四图) */
     thumb: 'writing/assets/works/gallery/ai-visual-2-1280.webp',   /* 刻度预览卡用的图:不带大标题字(2026-11-01 用户) */
     gallery: [

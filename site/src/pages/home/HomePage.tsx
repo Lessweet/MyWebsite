@@ -531,7 +531,7 @@ export default function HomePage() {
             {RENDER_SHOWCASE && w.showcase ? (
               <Showcase {...w.showcase} />
             ) : w.gallery ? (
-              <Gallery eager={wi === 0} items={w.gallery} />
+              <Gallery eager={wi === 0} items={w.gallery} link={w.link} ratio={w.ratio} />
             ) : w.showcase ? (
               <Showcase {...w.showcase} />
             ) : (
@@ -593,9 +593,47 @@ function CoverImg(props: ImgHTMLAttributes<HTMLImageElement>) {
 
 /* eager:第一件作品的封面立即加载、优先下载(index.html 里还有一份预加载,见 vite.config.ts coverPreload);
    其他作品保持延迟加载,滑到附近才下载 */
-function Gallery({ items, eager = false }: { items: { src: string; zoom?: number }[]; eager?: boolean }) {
+function Gallery({
+  items,
+  eager = false,
+  link,
+  ratio,
+}: {
+  items: { src: string; zoom?: number }[];
+  eager?: boolean;
+  link?: 'gzh';
+  ratio?: string;
+}) {
+  const [qr, setQr] = useState(false);
+  useEffect(() => {
+    if (!qr) return;
+    const close = (e: KeyboardEvent) => e.key === 'Escape' && setQr(false);
+    document.addEventListener('keydown', close);
+    return () => document.removeEventListener('keydown', close);
+  }, [qr]);
   return (
-    <div className="work-cover gallery">
+    <>
+    {/* 点封面弹公众号二维码(2026-11-02 用户:点击跳转到公众号;公众号没有网页主页,电脑上扫码、手机上长按识别) */}
+    {link === 'gzh' &&
+      qr &&
+      createPortal(
+        <div className="gzh-modal" role="dialog" aria-label="公众号二维码" onClick={() => setQr(false)}>
+          <div className="gzh-modal__card" onClick={(e) => e.stopPropagation()}>
+            <img alt="公众号二维码" height={200} src="qrcode-gzh-360.webp?v=2" width={200} />
+            <p>
+              微信扫码关注
+              <br />
+              <span className="gzh-modal__name">「AI设计师阿东」</span>
+            </p>
+          </div>
+        </div>,
+        document.body,
+      )}
+    <div
+      className={`work-cover gallery${link ? ' gallery--link' : ''}`}
+      style={ratio ? ({ '--gl-ratio': ratio } as CSSProperties) : undefined}
+      {...(link === 'gzh' ? { role: 'button', tabIndex: 0, 'aria-label': '打开公众号二维码', onClick: () => setQr(true), onKeyDown: (e: React.KeyboardEvent) => (e.key === 'Enter' || e.key === ' ') && setQr(true) } : {})}
+    >
       {items.map((it, i) => (
         <div
           className="gl-item"
@@ -616,6 +654,7 @@ function Gallery({ items, eager = false }: { items: { src: string; zoom?: number
         </div>
       ))}
     </div>
+    </>
   );
 }
 

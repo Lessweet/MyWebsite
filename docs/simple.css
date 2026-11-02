@@ -24,13 +24,13 @@
     --fw: 400;   /* 正文 400(2026-11-02 试过整体细一档 300,用户改回);本地调节面板可拖 */
     --fw-strong: calc(var(--fw) + 100);   /* 重点字永远比正文粗一档(现在 400);本地调节面板拖「字重」时一起变 */
 
-    --site-bg: #FDFDFC;
+    --site-bg: #F8F7F4;   /* 页面底 #FDFDFC → #F8F7F4,一点点暖灰(2026-11-02 用户);nav-boot.js、index.html 同步 */
     --ink: #3A3A3C;   /* 主文字:#111 太深 → #333 → #3A3A3C(2026-10-23 用户) */
     --ink-2: #8E8E93;   /* 灰色文字(2026-10-23 用户定色值;11-01 试过更浅的 #AEAEB2,改回) */
     --line: rgba(0, 0, 0, 0.1);   /* 细分割线(2026-10-24 用户:试过 benji 的 #F2F2F2,太淡,改回) */
     --btn-line: rgba(0, 0, 0, 0.1);   /* 胶囊 / 主题键边框:保留原来的深度(2026-10-24 用户:#F2F2F2 太淡) */
-    --rule: #F2F2F2;   /* 作品日期上方的细线:同 benji.org 列表分割线(2026-10-25 用户:再浅一点,和他网站里一样) */
-    --fill: #F2F1EE;   /* 浅灰底(加载占位、封面底、小块底色):#F2F2F7 偏蓝太冷 → 暖一点的中性灰,同页面暖白底 #FDFDFC(2026-10-31 用户) */
+    --rule: #E8E7E3;   /* 页面底换暖灰后原 #F2F2F2 看不见了 → #E8E7E3(2026-11-02 用户) */ /* 原:   /* 作品日期上方的细线:同 benji.org 列表分割线(2026-10-25 用户:再浅一点,和他网站里一样) */
+    --fill: #EFEEEA;   /* 跟着页面底加深一点,和底色仍拉开 */ /* 原 #F2F1EE:   /* 浅灰底(加载占位、封面底、小块底色):#F2F2F7 偏蓝太冷 → 暖一点的中性灰,同页面暖白底 #FDFDFC(2026-10-31 用户) */
     --gray-400: #aeaeb2;
     --gray-500: #8e8e93;
     --gray-600: #636366;
@@ -515,7 +515,7 @@ body.theme-vt *::after {
    排几列由栏宽决定(放得下几个 60 就几列),余量平均分给每列,所以网格正好铺满整栏、封面右缘落在网格线上
    (之前列宽死 60,栏宽除不尽时右边剩一截,封面右缘对不上线)。
    文字占列数见下 */
-:root { --grid-col: 60px; --grid-gap: 8px; --text-cols: 10; }   /* 网格槽 = 封面图缝 8(2026-11-02 试过 16 改回);两者共用(用户:别拆开);--text-cols = 个人介绍、作品简介占几列,本地「调节」面板可拖 */
+:root { --grid-col: 60px; --grid-gap: 16px; --text-cols: 10; }   /* 网格槽 = 封面图缝 16(2026-11-02 用户;同日试过 16 → 8,再改 16);两者共用(用户:别拆开);--text-cols = 个人介绍、作品简介占几列,本地「调节」面板可拖 */
 .hero-intro,
 .work {
     display: grid;
@@ -913,11 +913,11 @@ body.theme-vt *::after {
        + 一层白色小方点网格。只用在导出的位图里,深浅色主题一样 */
     background:
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3Crect width='3' height='3' fill='white' fill-opacity='0.3'/%3E%3C/svg%3E") 0 0 / 0.26em 0.26em,   /* 波点定为 0.26em 密排小点(2026-10-31 用户;试过 0.72 / 0.5 / 0.36 / 0.18em,以及 4px 稀疏版,都改回这个) */
-        radial-gradient(60% 70% at 12% 8%, #BFE9F0 0%, rgba(191, 233, 240, 0) 70%),
-        radial-gradient(55% 65% at 85% 18%, #3E9DB8 0%, rgba(62, 157, 184, 0) 72%),
-        radial-gradient(60% 70% at 18% 95%, #7FAF45 0%, rgba(127, 175, 69, 0) 72%),
-        radial-gradient(45% 55% at 96% 100%, #F59E66 0%, rgba(245, 158, 102, 0) 75%),
-        linear-gradient(180deg, #7CC2C9 0%, #86B65C 100%);
+        radial-gradient(60% 70% at 12% 8%, #E5F2F3 0%, rgba(229, 242, 243, 0) 70%),
+        radial-gradient(55% 65% at 85% 18%, #B3D1D7 0%, rgba(179, 209, 215, 0) 72%),
+        radial-gradient(60% 70% at 18% 95%, #C4D5B4 0%, rgba(196, 213, 180, 0) 72%),
+        radial-gradient(45% 55% at 96% 100%, #F0D5C2 0%, rgba(240, 213, 194, 0) 75%),
+        linear-gradient(180deg, #CDE2E4 0%, #CEDCC0 100%);   /* 整体降饱和、提亮(2026-11-02 用户:太艳 → 更浅更柔和 → 又太浅,取两轮中间);原 #7CC2C9 → #86B65C,四团色 #BFE9F0 / #3E9DB8 / #7FAF45 / #F59E66 */
 }
 .sc-pane-covers  { background: var(--sc-covers-bg); }
 /* 流动渐变底(MeshBg.tsx)+ 同款 SVG 噪点叠层 */
@@ -1032,6 +1032,17 @@ body.theme-dark .hero-loc { color: #545458; }   /* 深色下也比日期(#6C6C70
     font-variant-numeric: tabular-nums;
 }
 
+/* 手绘墨线天气(LocalTime InkWeather,2026-11-02):跟在时间后面,大小配 16 号小字(24,同原图标位置),颜色跟文字同一个灰 */
+.loc-ink {
+    display: inline-block;
+    /* 盒子 = 一整行高(--lh-sm 28),和文字行上下对齐,不溢出(2026-11-02 用户:布局没对齐);
+       viewBox 裁掉图标四周空白,图形本身约 28 大(24 太小看不出) */
+    width: 24px;   /* 28 → 24(2026-11-02 用户) */
+    height: 24px;
+    margin: 2px 0 2px 6px;   /* 上下各 2,和 28 的文字行上下对齐 */
+    vertical-align: top;
+    overflow: visible;
+}
 /* 时段状态图标:灰色线条,各带一个小循环动效 */
 .loc-status {
     display: inline-block;
@@ -1708,6 +1719,19 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
 .work-rail.is-hover .wr-tick.is-near > i { width: 11px; }
 .work-rail.is-hover .wr-tick.is-focus > i { width: 14px; }
 .wr-tick:focus-visible { outline: none; }
+/* 刻度点(2026-11-02 用户:试一版圆点,每个都是圆点;本地调节面板「刻度样式」切换,<html data-rail="dot">):
+   直径 4 的圆点(4 → 8 → 6 → 4,2026-11-02 用户),右缘和刻度线一样对齐;平时只用深浅标出当前那条,悬停时焦点放大 1.75、相邻 1.35(同刻度线的长短逻辑) */
+[data-rail="dot"] .wr-tick { height: 10px; }   /* 点直径 4,点距 10,电脑手机一样(2026-11-02 用户;试过 12 / 8) */
+[data-rail="dot"] .wr-tick > i {
+    width: 4px;
+    height: 4px;
+    margin-top: -2px;
+    right: 10px;
+    border-radius: 50%;
+    transition: transform 0.16s ease-out, opacity 0.16s ease-out;
+}
+[data-rail="dot"] .work-rail.is-hover .wr-tick.is-near > i { width: 4px; transform: scale(1.5); }   /* 相邻 1.35 → 1.5(2026-11-02 用户) */
+[data-rail="dot"] .work-rail.is-hover .wr-tick.is-focus > i { width: 4px; transform: scale(1.8); }   /* 当前 1.75 → 1.9 → 1.8(2026-11-02 用户) */
 /* 预览卡:刻度左边,只有一张,top 跟着悬停的线走、高度跟内容走,都用过渡。
    外层 .wr-pop 管位置和显隐,右边留 6px 透明的「桥」,鼠标从刻度移到卡片上不会断;
    卡片可以点,点了滚到那块内容(2026-10-25 用户) */
@@ -2185,3 +2209,52 @@ body.dev-editing [contenteditable] :is(.hero-ch, .feed-ch, .hero-intro-unit) { d
 
 
 
+
+/* 单件作品可改封面比例(works.ts ratio → --gl-ratio,2026-11-02 用户:「AI design 内容写作」两张图 4:3) */
+.work-cover.gallery > .gl-item { aspect-ratio: var(--gl-ratio, 16 / 9); }
+/* 可点的封面:手形 + 公众号二维码弹窗 */
+.work-cover.gallery--link { cursor: pointer; }
+.work-cover.gallery--link:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; border-radius: var(--cover-radius); }
+.gzh-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    background: rgba(0, 0, 0, 0.32);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    animation: gzh-modal-in 0.2s ease both;
+}
+.gzh-modal__card {
+    padding: 24px 24px 20px;
+    border-radius: 20px;
+    background: #fff;
+    color: #3A3A3C;
+    text-align: center;
+    font-size: 15px;
+    line-height: 22px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+    animation: gzh-card-in 0.32s var(--ease-soft) both;
+}
+.gzh-modal__card img { display: block; width: 200px; height: 200px; margin: 0 auto 12px; }
+@keyframes gzh-modal-in { from { opacity: 0; } }
+@keyframes gzh-card-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } }
+@media (pointer: coarse) {
+    [data-rail="dot"] .wr-tick { height: 10px; }   /* 触屏同电脑,点距 10 */
+}
+.gzh-modal__name { color: #8E8E93; }   /* 第二行公众号名用灰色(2026-11-02 用户);弹窗固定白底,不随主题 */
+
+/* 手绘墨线刻度(2026-11-02 用户:圆点等都偏普通,试手绘墨线):刻度线加粗到 2.5、长短各不一样像手画的,
+   套 WorkRail 里的 #wr-ink 滤镜(边缘抖 + 沸腾);当前那根更长更深,悬停规则同刻度线 */
+.wr-ink-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+[data-rail="ink"] .wr-tick { height: 9px; filter: url(#wr-ink); }
+[data-rail="ink"] .wr-tick > i { height: 2px; margin-top: -1px; border-radius: 2px; width: 9px; opacity: 0.28; }
+[data-rail="ink"] .wr-tick:nth-child(3n + 1) > i { width: 7px; }
+[data-rail="ink"] .wr-tick:nth-child(3n + 2) > i { width: 10px; }
+[data-rail="ink"] .wr-tick.is-focus > i { width: 13px; opacity: 1; }
+[data-rail="ink"] .work-rail.is-hover .wr-tick.is-near > i { width: 12px; }
+[data-rail="ink"] .work-rail.is-hover .wr-tick.is-focus > i { width: 17px; }
+@media (prefers-reduced-motion: reduce) {
+    [data-rail="ink"] .wr-tick { filter: none; }
+}
