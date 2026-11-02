@@ -11,7 +11,7 @@ type Knob = { key: string; label: string; cssVar: string; min: number; max: numb
 const KNOBS: Knob[] = [
   { key: 'dev-cover-radius-b', label: '封面圆角', cssVar: '--cover-radius', min: 0, max: 64, step: 1, def: 32, unit: 'px', presets: [8, 16, 24, 32, 48] },
   { key: 'dev-cover-zoom', label: '悬停放大', cssVar: '--cover-zoom-scale', min: 1, max: 1.1, step: 0.005, def: 1.02, unit: '×', presets: [1, 1.02, 1.03, 1.05, 1.08] },
-  { key: 'dev-grid-gap', label: '网格槽 / 图缝', cssVar: '--grid-gap', min: 0, max: 32, step: 1, def: 8, unit: 'px', presets: [4, 8, 12, 16, 24] },
+  { key: 'dev-grid-gap-b', label: '网格槽 / 图缝', cssVar: '--grid-gap', min: 0, max: 32, step: 1, def: 16, unit: 'px', presets: [4, 8, 12, 16, 24] },
   { key: 'dev-fw-b', label: '字重(正文)', cssVar: '--fw', min: 200, max: 500, step: 100, def: 400, unit: '', presets: [200, 300, 400, 500] },
   { key: 'dev-text-cols', label: '文字占列', cssVar: '--text-cols', min: 4, max: 13, step: 1, def: 10, unit: '列', presets: [6, 7, 8, 9, 10] },
 ];
@@ -25,6 +25,14 @@ const SWATCHES: Swatch[] = [
 /* 「编辑文字」打开后能直接点进去改的文字(只改本页预览,刷新恢复) */
 const EDITABLE = '.hero-intro > p:not(.hero-who), .work-year, .work-title, .work-summary';
 const DRAFT_KEY = 'dev-text-drafts';
+
+/* 刻度样式:线 / 圆点 / 手绘墨线(2026-11-02 用户:试过胶囊、空心环、菱形、竖条,都不要) */
+const RAIL_STYLES = [
+  { key: 'line', short: '线', label: '刻度线' },
+  { key: 'dot', short: '点', label: '圆点' },
+  { key: 'ink', short: '墨线', label: '手绘墨线' },
+] as const;
+type RailStyle = (typeof RAIL_STYLES)[number]['key'];
 
 function readColor(c: Swatch) {
   try {
@@ -59,6 +67,24 @@ export default function DevRadius() {
       }
     });
   }, [vals]);
+  /* 作品刻度样式:线 / 点(2026-11-02 用户:试一版圆点,加个调节器选)。写在 <html data-rail> 上,CSS 按它切换 */
+  const [rail, setRail] = useState<RailStyle>(() => {
+    try {
+      const v = localStorage.getItem('dev-rail-style') as RailStyle | null;
+      return v && RAIL_STYLES.some((r) => r.key === v) ? v : 'ink';   /* 本地测试版默认墨线;线上没有这个面板,默认刻度线(2026-11-02 用户) */
+    } catch {
+      return 'line';
+    }
+  });
+  useEffect(() => {
+    document.documentElement.dataset.rail = rail;
+    try {
+      if (rail === 'ink') localStorage.removeItem('dev-rail-style');
+      else localStorage.setItem('dev-rail-style', rail);
+    } catch {
+      /* 存不了只是不记忆 */
+    }
+  }, [rail]);
   const [colors, setColors] = useState(() => SWATCHES.map(readColor));
   useEffect(() => {
     const body = document.body;
@@ -159,6 +185,19 @@ export default function DevRadius() {
               </div>
             </div>
           ))}
+          <div className="rd-knob">
+            <div className="rd-head">
+              <span>刻度样式</span>
+              <b>{RAIL_STYLES.find((r) => r.key === rail)?.label}</b>
+            </div>
+            <div className="rd-presets">
+              {RAIL_STYLES.map((r) => (
+                <button aria-pressed={rail === r.key} key={r.key} type="button" onClick={() => setRail(r.key)}>
+                  {r.short}
+                </button>
+              ))}
+            </div>
+          </div>
           {SWATCHES.map((c, i) => (
             <label className="rd-color" key={c.key}>
               <span>{c.label}</span>

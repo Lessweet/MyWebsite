@@ -137,6 +137,45 @@ function wxIcon(kind: WxKind, day: boolean): ReactNode {
   }
 }
 
+/* 手绘墨线天气插画(2026-11-02 用户:北京时间这段改成手绘插画,用 icon 页 Organic「手绘墨线」风格画天气):
+   试过放右边放大 + 手绘地平线 + 彩色墨,用户改回:跟在时间后面、小字大小、和文字同一个灰。同一套天气线稿,套墨线滤镜(线条微抖 + 每 0.56s 轻轻「沸腾」+ 墨色颗粒),每种天气一个墨色。
+   false = 回到原来那个灰色小图标 */
+const INK_WEATHER = true;
+function InkWeather({ kind, day }: { kind: WxKind; day: boolean }) {
+  const id = `ink-wx-${kind}-${day ? 'd' : 'n'}`;
+  return (
+    <svg aria-label={`Beijing weather: ${WX_LABEL[kind]}`} className="loc-ink" role="img" viewBox="7 7 34 34">
+      <title>{WX_LABEL[kind]}</title>
+      <defs>
+        <filter colorInterpolationFilters="sRGB" height="130%" id={id} width="130%" x="-15%" y="-15%">
+          <feTurbulence baseFrequency="0.075" numOctaves={2} result="wob" seed={17} type="fractalNoise" />
+          <feDisplacementMap in="SourceGraphic" in2="wob" result="bent" scale={2.6} xChannelSelector="R" yChannelSelector="G" />
+          <feTurbulence baseFrequency="0.16" numOctaves={1} result="boil" seed={57} type="fractalNoise">
+            <animate attributeName="seed" calcMode="discrete" dur="0.56s" repeatCount="indefinite" values="57;60;63;66" />
+          </feTurbulence>
+          <feDisplacementMap in="bent" in2="boil" result="alive" scale={2.2} xChannelSelector="G" yChannelSelector="R" />   {/* 沸腾 0.9 → 2.2:缩到小字大小后看不出动,加强(2026-11-02 用户) */}
+          <feGaussianBlur in="alive" result="soft" stdDeviation={0.46} />
+          <feTurbulence baseFrequency="0.24" numOctaves={2} result="grain" seed={28} type="fractalNoise">
+            <animate attributeName="seed" calcMode="discrete" dur="0.56s" repeatCount="indefinite" values="28;31;34;37" />
+          </feTurbulence>
+          <feColorMatrix in="grain" result="grainA" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0" />
+          <feComposite in="soft" in2="grainA" k1={0} k2={1} k3={0.6} k4={-0.285} operator="arithmetic" result="mix" />
+          <feComponentTransfer in="mix" result="cut">
+            <feFuncA intercept={-6.6} slope={16} type="linear" />
+          </feComponentTransfer>
+          <feFlood style={{ floodColor: 'currentColor' }} />
+          <feComposite in2="cut" operator="in" />
+        </filter>
+      </defs>
+      <g filter={`url(#${id})`}>
+        <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.4} transform="translate(7.2 7.2) scale(1.4)">
+          {wxIcon(kind, day)}
+        </g>
+      </g>
+    </svg>
+  );
+}
+
 type Wx = { kind: WxKind; day: boolean };
 function readCache(): Wx | null {
   try {
@@ -223,7 +262,8 @@ export default function LocalTime() {
         <span className="loc-time">
           {t.text}
         </span>
-        {wx && (
+        {wx && INK_WEATHER && <InkWeather kind={wx.kind} day={wx.day} />}
+        {wx && !INK_WEATHER && (
           <svg
             key={`${wx.kind}-${wx.day}`}
             aria-label={`Beijing weather: ${WX_LABEL[wx.kind]}`}

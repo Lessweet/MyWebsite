@@ -336,6 +336,22 @@ export default function WorkRail({ items }: { items: Item[] }) {
     {/* 手机:选作品时全屏模糊层盖住页面,刻度和卡片浮在上面(2026-11-01 用户);电脑上不显示(CSS 控制)。
         刻度容器有 transform,fixed 子元素会跟着它走,所以挂到 body 上 */}
     {createPortal(<div aria-hidden="true" className={`wr-scrim${hb ? ' is-on' : ''}`} />, document.body)}
+    {/* 手绘墨线刻度用的滤镜(2026-11-02 用户:刻度试手绘墨线,和天气图标、icon 页 Organic 同一套):
+        线条边缘抖一下 + 每 0.56s 轻轻「沸腾」,颜色保持原来的深浅;只在 data-rail="ink" 时用上 */}
+    <svg aria-hidden="true" className="wr-ink-defs" height="0" width="0">
+      <filter colorInterpolationFilters="sRGB" height="500%" id="wr-ink" width="160%" x="-30%" y="-200%">
+        <feTurbulence baseFrequency="0.22" numOctaves={2} result="wob" seed={9} type="fractalNoise" />
+        <feDisplacementMap in="SourceGraphic" in2="wob" result="bent" scale={1.5} xChannelSelector="R" yChannelSelector="G" />
+        <feTurbulence baseFrequency="0.3" numOctaves={1} result="boil" seed={41} type="fractalNoise">
+          <animate attributeName="seed" calcMode="discrete" dur="0.56s" repeatCount="indefinite" values="41;44;47;50" />
+        </feTurbulence>
+        <feDisplacementMap in="bent" in2="boil" result="alive" scale={1.1} xChannelSelector="G" yChannelSelector="R" />
+        <feGaussianBlur in="alive" result="soft" stdDeviation={0.25} />
+        <feComponentTransfer in="soft">
+          <feFuncA intercept={-0.6} slope={3} type="linear" />
+        </feComponentTransfer>
+      </filter>
+    </svg>
     <nav
       aria-label="作品导航"
       aria-hidden={away || undefined}
