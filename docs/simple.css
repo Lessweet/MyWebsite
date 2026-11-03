@@ -879,7 +879,7 @@ body.theme-dark .work::after { background: color-mix(in srgb, var(--work-tint, #
 }
 .work-title { font-size: var(--fs-h2); line-height: var(--lh-h2); }
 .work-title { font-weight: var(--fw-strong); }   /* 600 → 500 → 400(11-02 整体细一档),配 28 号(2026-11-02 用户:字号大一点、字重小一点);之前 10-24 是 500 → 600 */
-.work-summary { margin-top: 12px;   /* 标题 → 简介 24 → 12(2026-11-02 用户:减半) */ font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--ink-soft); }   /* 字号 18 / 32 → 16 / 28,同北京时间那一行(2026-11-03 用户,卡片 / Feed 两种模式都是) */   /* 作品简介灰色(2026-11-02 用户),见 --ink-soft */   /* 标题到简介 24,与日期 → 标题等距(2026-10-25 用户:12 太密,改回 24);简介 18 / 32,与个人介绍同号 */   /* 左缘与日期对齐(2026-10-23 用户:不缩进到标题) */
+.work-summary { margin-top: 20px;   /* 标题 → 简介 24 → 12(2026-11-02 用户:减半)→ 20(2026-11-03 用户,同日期 → 标题) */ font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--ink-soft); }   /* 字号 18 / 32 → 16 / 28,同北京时间那一行(2026-11-03 用户,卡片 / Feed 两种模式都是) */   /* 作品简介灰色(2026-11-02 用户),见 --ink-soft */   /* 标题到简介 24,与日期 → 标题等距(2026-10-25 用户:12 太密,改回 24);简介 18 / 32,与个人介绍同号 */   /* 左缘与日期对齐(2026-10-23 用户:不缩进到标题) */
 .work-cover {
     margin-top: 36px;   /* 简介到封面 36(2026-10-24 用户;之前 16 → 24 → 32 → 40 → 48 来回试过) */
     aspect-ratio: 16 / 9;
@@ -2314,6 +2314,6 @@ html[data-mode="feed"] .works { gap: 80px; margin-top: var(--section-gap); }
 html[data-mode="feed"] .work { padding: 0; margin-inline: 0; }
 html[data-mode="feed"] .work::after { visibility: hidden; }   /* 不用 display: none,切回卡片模式时底卡入场动画不重播 */
 html[data-mode="feed"] .work > .work-summary { color: var(--ink-soft); }
-html[data-mode="feed"] .work > .work-head { flex-direction: column; align-items: stretch; gap: 12px; }   /* 日期 → 标题 24 → 12,与标题 → 简介同为 12(2026-11-03 用户) */   /* Feed 日期在标题上方(11-03 试过放标题行右边,用户改回);stretch:卡片模式的上下居中在竖排里会变成水平居中 */
+html[data-mode="feed"] .work > .work-head { flex-direction: column; align-items: stretch; gap: 20px; }   /* 日期 → 标题 24 → 12 → 20,与标题 → 简介同为 20(2026-11-03 用户) */   /* Feed 日期在标题上方(11-03 试过放标题行右边,用户改回);stretch:卡片模式的上下居中在竖排里会变成水平居中 */
 html[data-mode="feed"] .work > .work-head > .work-year { order: 0; }
 html[data-mode="feed"] .work > .work-summary + .work-cover { margin-top: 36px; }
