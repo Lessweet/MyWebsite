@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-mode="feed"><!-- 作品排版:线上用 Feed 模式(2026-11-03 用户);本地调节面板可切卡片模式 -->
 <head>
 <!-- 首屏一起出现(2026-10-23 用户):静态的字标 / 开关先藏着,等 HomePage 渲染完同一帧去掉 app-loading 再一起显示;
      脚本万一 3 秒还没跑完也先显示出来,不留白屏 -->
@@ -15,10 +15,10 @@
 <link href="apple-touch-icon-half-ink.png?v=6" rel="apple-touch-icon"/>
 <!-- v4 简化版(2026-10-23):单页、无 loading、无转场;只加载 simple.css 一份样式。
      老的 style.css / writing.css 仍服务旧的 Blog / Archive / 文章页。 -->
-<style>html { background: #F8F7F4; }</style>
-<link href="simple.css?v=566" rel="stylesheet"/>
+<style>html { background: #FDFDFC; }</style>
+<link href="simple.css?v=584" rel="stylesheet"/>
 <!-- 只用其中的主题函数(applySiteTheme / toggleSiteTheme),不调 initSiteNav -->
-<script src="nav-boot.js?v=22"></script>
+<script src="nav-boot.js?v=23"></script>
 </head>
 <body>
 <script>applySiteTheme();   /* 首绘前应用本会话记忆的深/浅色 */</script>

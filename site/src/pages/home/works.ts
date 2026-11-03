@@ -35,12 +35,15 @@ export interface Work {
   link?: 'gzh';
   /* 预览卡顶部底色(不写 = 图片自己的模糊版压一层淡黑);浅色封面配白字时用 */
   thumbTint?: string;
+  /* 作品卡片底色用的主题色(页面上只取它很淡的一层;不写 = thumbTint,再没有 = 中性灰);2026-11-03 用户 */
+  bg?: string;
 }
 
 export const WORKS: Work[] = [
   {
     date: 'July 2026',   /* 英文月份 + 年(2026-10-24 用户:用 June 2024 这种格式) */
     title: 'AI design 内容写作',   /* 原「公众号 AI 设计内容」(2026-11-02 用户;试过加「工作流」又删掉) */
+    bg: '#2E8C9A',   /* 卡片主题色:封面的青绿 */
     /* 两张封面各自 4:3(2026-11-02 用户:先试正方形,改 4:3;图是用拼图按 4:3 重新排版导出的,见 site/scripts/build-work-showcase-43.mjs);
        点封面弹出公众号二维码(用户:点击跳转到公众号 —— 公众号没有网页主页,用扫码关注) */
     ratio: '4 / 3',
@@ -100,6 +103,7 @@ export const WORKS: Work[] = [
   {
     date: 'December 2025',
     title: 'AI 辅助生成视觉设计',   /* 2026-10-23 用户:原「2021 内容创作者平台 App 端 Web 端整体设计体验轻量化」 */
+    bg: '#6B5CF0',   /* 卡片主题色:封面的蓝紫 */
     /* 简介(2026-10-23):按四张图的内容写 —— 总览画板「AI 创意海报 / UI 视觉辅助 / 生成式 UI / Co Design」
        及其工具清单(ChatGPT Image2 / 即梦 / LiblibAI、ClaudeCode / Codex、Cursor / FigmaMake) */
     summary:

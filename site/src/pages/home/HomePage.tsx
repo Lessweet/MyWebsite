@@ -520,7 +520,7 @@ export default function HomePage() {
       </div>
       <section className="works" aria-label="代表作">
         {WORKS.map((w, wi) => (
-          <article className="work" key={w.title}>
+          <article className="work" key={w.title} style={{ '--work-tint': w.bg ?? w.thumbTint ?? '#8E8E93' } as CSSProperties}>
             {/* 年份与标题同一行(2026-10-23 用户) */}
             <div className="work-head">
               <p className="work-year">{feedChars(w.date)}</p>

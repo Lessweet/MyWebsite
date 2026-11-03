@@ -9,11 +9,12 @@ import { createPortal } from 'react-dom';
    值存在 localStorage,刷新保留;定下来后把数值告诉 Claude 写进 simple.css(默认值和 simple.css 一致) */
 type Knob = { key: string; label: string; cssVar: string; min: number; max: number; step: number; def: number; unit: string; presets: number[] };
 const KNOBS: Knob[] = [
-  { key: 'dev-cover-radius-b', label: '封面圆角', cssVar: '--cover-radius', min: 0, max: 64, step: 1, def: 32, unit: 'px', presets: [8, 16, 24, 32, 48] },
+  { key: 'dev-cover-radius-b', label: '封面圆角', cssVar: '--cover-radius', min: 0, max: 64, step: 1, def: 8, unit: 'px', presets: [8, 16, 24, 32, 48] },
   { key: 'dev-cover-zoom', label: '悬停放大', cssVar: '--cover-zoom-scale', min: 1, max: 1.1, step: 0.005, def: 1.02, unit: '×', presets: [1, 1.02, 1.03, 1.05, 1.08] },
+  { key: 'dev-work-pad', label: '卡片内边距', cssVar: '--work-pad', min: 0, max: 48, step: 1, def: 20, unit: 'px', presets: [8, 12, 16, 20, 24] },   /* 卡片模式的作品底卡;圆角自动 = 封面圆角 + 内边距(2026-11-03 用户) */
   { key: 'dev-grid-gap-b', label: '网格槽 / 图缝', cssVar: '--grid-gap', min: 0, max: 32, step: 1, def: 16, unit: 'px', presets: [4, 8, 12, 16, 24] },
   { key: 'dev-fw-b', label: '字重(正文)', cssVar: '--fw', min: 200, max: 500, step: 100, def: 400, unit: '', presets: [200, 300, 400, 500] },
-  { key: 'dev-text-cols', label: '文字占列', cssVar: '--text-cols', min: 4, max: 13, step: 1, def: 10, unit: '列', presets: [6, 7, 8, 9, 10] },
+  { key: 'dev-text-cols', label: '文字占列', cssVar: '--text-cols', min: 4, max: 13, step: 1, def: 8, unit: '列', presets: [6, 7, 8, 9, 10] },
 ];
 
 /* 文字颜色(2026-11-01 用户:想直接调文字颜色):只改浅色主题的 --ink / --ink-2;深色主题保持 simple.css 原值 */
@@ -34,6 +35,13 @@ const RAIL_STYLES = [
 ] as const;
 type RailStyle = (typeof RAIL_STYLES)[number]['key'];
 
+/* 作品排版:卡片(默认,2026-11-03 新样式)/ Feed(v4.6 线上样式)。写在 <html data-mode> 上,CSS 按它切换 */
+const LAYOUT_MODES = [
+  { key: 'card', short: '卡片', label: '卡片模式' },
+  { key: 'feed', short: 'Feed', label: 'Feed 模式' },
+] as const;
+type LayoutMode = (typeof LAYOUT_MODES)[number]['key'];
+
 function readColor(c: Swatch) {
   try {
     return localStorage.getItem(c.key) || c.def;
@@ -46,7 +54,8 @@ function read(k: Knob) {
   try {
     const raw = localStorage.getItem(k.key);
     const v = Number(raw);
-    return raw !== null && Number.isFinite(v) ? v : k.def;
+    /* 超出滑杆范围的值当成坏值丢掉(2026-11-03:加滑杆时数组顺序变了,热更新把字重 400 存进了网格槽) */
+    return raw !== null && Number.isFinite(v) && v >= k.min && v <= k.max ? v : k.def;
   } catch {
     return k.def;
   }
@@ -85,6 +94,24 @@ export default function DevRadius() {
       /* 存不了只是不记忆 */
     }
   }, [rail]);
+  const [mode, setMode] = useState<LayoutMode>(() => {
+    try {
+      return localStorage.getItem('dev-layout-mode') === 'feed' ? 'feed' : 'card';
+    } catch {
+      return 'card';
+    }
+  });
+  useEffect(() => {
+    const root = document.documentElement;
+    if (mode === 'feed') root.dataset.mode = 'feed';
+    else delete root.dataset.mode;
+    try {
+      if (mode === 'card') localStorage.removeItem('dev-layout-mode');
+      else localStorage.setItem('dev-layout-mode', mode);
+    } catch {
+      /* 存不了只是不记忆 */
+    }
+  }, [mode]);
   const [colors, setColors] = useState(() => SWATCHES.map(readColor));
   useEffect(() => {
     const body = document.body;
@@ -185,6 +212,19 @@ export default function DevRadius() {
               </div>
             </div>
           ))}
+          <div className="rd-knob">
+            <div className="rd-head">
+              <span>作品排版</span>
+              <b>{LAYOUT_MODES.find((m) => m.key === mode)?.label}</b>
+            </div>
+            <div className="rd-presets">
+              {LAYOUT_MODES.map((m) => (
+                <button aria-pressed={mode === m.key} key={m.key} type="button" onClick={() => setMode(m.key)}>
+                  {m.short}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="rd-knob">
             <div className="rd-head">
               <span>刻度样式</span>

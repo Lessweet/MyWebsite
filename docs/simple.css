@@ -24,13 +24,13 @@
     --fw: 400;   /* 正文 400(2026-11-02 试过整体细一档 300,用户改回);本地调节面板可拖 */
     --fw-strong: calc(var(--fw) + 100);   /* 重点字永远比正文粗一档(现在 400);本地调节面板拖「字重」时一起变 */
 
-    --site-bg: #F8F7F4;   /* 页面底 #FDFDFC → #F8F7F4,一点点暖灰(2026-11-02 用户);nav-boot.js、index.html 同步 */
+    --site-bg: #FDFDFC;   /* 页面底:11-02 试过暖灰 #F8F7F4,11-03 卡片模式改回近白(用户);Feed 模式同样近白;nav-boot.js、index.html 同步 */
     --ink: #3A3A3C;   /* 主文字:#111 太深 → #333 → #3A3A3C(2026-10-23 用户) */
     --ink-2: #8E8E93;   /* 灰色文字(2026-10-23 用户定色值;11-01 试过更浅的 #AEAEB2,改回) */
     --line: rgba(0, 0, 0, 0.1);   /* 细分割线(2026-10-24 用户:试过 benji 的 #F2F2F2,太淡,改回) */
     --btn-line: rgba(0, 0, 0, 0.1);   /* 胶囊 / 主题键边框:保留原来的深度(2026-10-24 用户:#F2F2F2 太淡) */
     --rule: #E8E7E3;   /* 页面底换暖灰后原 #F2F2F2 看不见了 → #E8E7E3(2026-11-02 用户) */ /* 原:   /* 作品日期上方的细线:同 benji.org 列表分割线(2026-10-25 用户:再浅一点,和他网站里一样) */
-    --fill: #EFEEEA;   /* 跟着页面底加深一点,和底色仍拉开 */ /* 原 #F2F1EE:   /* 浅灰底(加载占位、封面底、小块底色):#F2F2F7 偏蓝太冷 → 暖一点的中性灰,同页面暖白底 #FDFDFC(2026-10-31 用户) */
+    --fill: #F2F1EE;   /* 页面底改回近白,占位色跟着回 #F2F1EE(2026-11-03) */ /* 暖灰时 #EFEEEA:   /* 跟着页面底加深一点,和底色仍拉开 */ /* 原 #F2F1EE:   /* 浅灰底(加载占位、封面底、小块底色):#F2F2F7 偏蓝太冷 → 暖一点的中性灰,同页面暖白底 #FDFDFC(2026-10-31 用户) */
     --gray-400: #aeaeb2;
     --gray-500: #8e8e93;
     --gray-600: #636366;
@@ -42,7 +42,7 @@
     /* 装饰线色:UI 设计师手绘下划线 + 公众号/邮箱虚线下划线共用,刻意很浅 */
     --mark: #C7C7CC;
     --cover-bg: linear-gradient(135deg, #EDD9E3, #F8EEE3);   /* 公众号封面卡片底色 */
-    --cover-radius: 32px;   /* 作品封面圆角:单图 / 四图每格 / 两图式每块共用(8 → 12 → 16 → 24 → 32,2026-10-31 用户);本地测试版右下角可以拖着调 */
+    --cover-radius: 8px;   /* 32 → 8(2026-11-03 用户,两种模式都是;卡片模式底卡圆角随之 = 8 + 内边距) */   /* 作品封面圆角:单图 / 四图每格 / 两图式每块共用(8 → 12 → 16 → 24 → 32,2026-10-31 用户);本地测试版右下角可以拖着调 */
     --sc-article-bg: var(--fill);   /* 两个展示块统一浅灰,用同一个 --fill(2026-10-31;原 #F2F2F4,更早是珊瑚 #FEEDE9 / 黄 #FDF7DB) */
     --sc-covers-bg: var(--fill);
 
@@ -515,7 +515,7 @@ body.theme-vt *::after {
    排几列由栏宽决定(放得下几个 60 就几列),余量平均分给每列,所以网格正好铺满整栏、封面右缘落在网格线上
    (之前列宽死 60,栏宽除不尽时右边剩一截,封面右缘对不上线)。
    文字占列数见下 */
-:root { --grid-col: 60px; --grid-gap: 16px; --text-cols: 10; }   /* 网格槽 = 封面图缝 16(2026-11-02 用户;同日试过 16 → 8,再改 16);两者共用(用户:别拆开);--text-cols = 个人介绍、作品简介占几列,本地「调节」面板可拖 */
+:root { --grid-col: 60px; --grid-gap: 16px; --text-cols: 8; }   /* 文字占列 10 → 8(2026-11-03 用户,卡片 / Feed 两种模式都是) */   /* 网格槽 = 封面图缝 16(2026-11-02 用户;同日试过 16 → 8,再改 16);两者共用(用户:别拆开);--text-cols = 个人介绍、作品简介占几列,本地「调节」面板可拖 */
 .hero-intro,
 .work {
     display: grid;
@@ -711,11 +711,11 @@ body.theme-vt *::after {
 .works {
     display: flex;
     flex-direction: column;
-    gap: 80px;   /* 作品之间 56 → 80(2026-10-23 用户) */
+    gap: 32px;   /* 作品之间 56 → 80(2026-10-23 用户);加了底卡后卡与卡隔 32,内容到内容仍约 80(32 + 上下内边距 24×2) */
     position: relative;
     /* 细线在时间行和第一个日期正中间,上下肉眼都是 72(时间行字形下方自带约 6px,所以 66;
        线到日期见 .work:first-child::before 的 margin-bottom)。2026-10-25 用户:贴着日期、偏上都试过,放回中间 */
-    margin-top: 66px;
+    margin-top: 48px;   /* 分割线去掉后(2026-11-03),介绍段 → 第一张卡 48 */
     padding-top: 0;
     padding-bottom: 96px;
 }
@@ -731,6 +731,9 @@ body.theme-vt *::after {
     background: var(--rule);
     opacity: 0;
 }
+/* 卡片模式不要这条线(2026-11-03 用户),改成每个作品一张圆角底卡(见下 .work::after)。
+   用 visibility + 高度 0 藏,不用 display: none:切回 Feed 模式时 display 从 none 恢复会让入场动画重播(用户反馈) */
+html:not([data-mode="feed"]) .work:first-child::before { visibility: hidden; height: 0; margin-bottom: 0; }
 .work.in::before { opacity: 1; animation: rise-in 0.7s var(--ease-soft) var(--line-d, 0ms) both; }
 .work.instant::before { animation: none; }
 @media (prefers-reduced-motion: reduce) {
@@ -738,6 +741,51 @@ body.theme-vt *::after {
 }
 /* 作品区的上浮入场用 animation 不用 transition(2026-10-25):播完 transition 就从页面的动画列表里消失,
    调参面板的进度条没法往回拖;animation 填充到结尾、一直在,能任意拖到某一帧 */
+/* 每个作品一张圆角底卡(2026-11-03 用户):颜色 = 作品主题色(--work-tint,HomePage 按 works.ts 的 bg 下发)淡淡一层;
+   圆角与封面同心 = 封面圆角 + 内边距;左右向外扩出内边距,内容仍与个人介绍左缘对齐、宽度不变 */
+:root { --work-pad: 20px; }   /* 底卡内边距 24 → 16 → 20(2026-11-03 用户;本地调节面板可拖);圆角跟着 = 封面圆角 + 20 */
+.work {
+    padding: var(--work-pad);
+    margin-inline: calc(-1 * var(--work-pad));
+    position: relative;
+    isolation: isolate;
+}
+/* 底卡画在 ::after 上,跟这条作品一起入场(2026-11-03 用户:卡片也要跟着入场动画):
+   时机 = 这条作品第一个字开始浮现的时刻(--line-d,HomePage staggerWork 下发),同原来日期上方那条线 */
+.work::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: calc(var(--cover-radius) + var(--work-pad));
+    background: color-mix(in srgb, var(--work-tint, #8E8E93) 12%, #fff);   /* 7% → 12%(2026-11-03 用户:太淡) */
+    opacity: 0;
+    pointer-events: none;
+}
+.work.in::after { opacity: 1; animation: rise-in 0.9s var(--ease-soft) var(--line-d, 0ms) both; }
+.work.instant::after { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+    .work::after { opacity: 1; animation: none; }
+}
+/* 卡片模式:作品简介用主文字黑色(2026-11-03 用户;Feed 模式仍是中间灰);简介 → 封面 36 → 24(用户:间距太大) */
+.work > .work-summary { color: var(--ink); }
+.work > .work-summary + .work-cover { margin-top: 24px; }
+/* 卡片模式:日期挪到标题行右边(2026-11-03 用户);窄屏放不下时日期折到标题下面 */
+.work > .work-head {   /* 多一层父级:压过后面 .work-head 的竖排 */
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;   /* 日期和标题上下居中对齐(baseline 对齐时小字看着偏下;2026-11-03 用户:水平对齐) */
+    justify-content: space-between;
+    column-gap: 16px;
+    row-gap: 4px;
+}
+.work > .work-head > .work-year { order: 2; }
+/* 小屏(< 640)放不下一行:日期挪到标题上方,竖排(2026-11-03 用户) */
+@media (max-width: 639px) {
+    .work > .work-head { flex-direction: column; align-items: flex-start; row-gap: 8px; }
+    .work > .work-head > .work-year { order: 0; }
+}
+body.theme-dark .work::after { background: color-mix(in srgb, var(--work-tint, #8E8E93) 18%, #2A2A2D); }
 @keyframes rise-in {
     from { opacity: 0; transform: translateY(24px); }
     to   { opacity: 1; transform: none; }
@@ -831,7 +879,7 @@ body.theme-vt *::after {
 }
 .work-title { font-size: var(--fs-h2); line-height: var(--lh-h2); }
 .work-title { font-weight: var(--fw-strong); }   /* 600 → 500 → 400(11-02 整体细一档),配 28 号(2026-11-02 用户:字号大一点、字重小一点);之前 10-24 是 500 → 600 */
-.work-summary { margin-top: 12px;   /* 标题 → 简介 24 → 12(2026-11-02 用户:减半) */ font-size: var(--fs-body); line-height: var(--lh-body); color: var(--ink-soft); }   /* 作品简介灰色(2026-11-02 用户),见 --ink-soft */   /* 标题到简介 24,与日期 → 标题等距(2026-10-25 用户:12 太密,改回 24);简介 18 / 32,与个人介绍同号 */   /* 左缘与日期对齐(2026-10-23 用户:不缩进到标题) */
+.work-summary { margin-top: 12px;   /* 标题 → 简介 24 → 12(2026-11-02 用户:减半) */ font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--ink-soft); }   /* 字号 18 / 32 → 16 / 28,同北京时间那一行(2026-11-03 用户,卡片 / Feed 两种模式都是) */   /* 作品简介灰色(2026-11-02 用户),见 --ink-soft */   /* 标题到简介 24,与日期 → 标题等距(2026-10-25 用户:12 太密,改回 24);简介 18 / 32,与个人介绍同号 */   /* 左缘与日期对齐(2026-10-23 用户:不缩进到标题) */
 .work-cover {
     margin-top: 36px;   /* 简介到封面 36(2026-10-24 用户;之前 16 → 24 → 32 → 40 → 48 来回试过) */
     aspect-ratio: 16 / 9;
@@ -1140,7 +1188,7 @@ body.theme-dark .hero-loc { color: #545458; }   /* 深色下也比日期(#6C6C70
     .intro-col { order: 2; }
     /* 介绍区 → 第一条作品 = 区块间距 120,同双栏的栏距(2026-10-31 用户:竖排时介绍这一组不够整体,66 → 112 → 120):
        组内近、组间远;双栏左右分开,单栏上下分开 */
-    .works { order: 4; margin-top: var(--section-gap); }
+    .works { order: 4; margin-top: calc(var(--section-gap) - var(--work-pad)); }   /* 减去作品底卡的上内边距:日期离介绍仍是 120(2026-11-03 加底卡) */
 }
 
 /* ── 宽屏两栏(2026-10-23 用户:电脑上单列浪费空间)──
@@ -2258,3 +2306,14 @@ body.dev-editing [contenteditable] :is(.hero-ch, .feed-ch, .hero-intro-unit) { d
 @media (prefers-reduced-motion: reduce) {
     [data-rail="ink"] .wr-tick { filter: none; }
 }
+
+/* ── 两种作品排版(2026-11-03 用户:本地调节面板可切):
+   卡片模式 = 默认(上面的规则:每个作品一张主题色淡底圆角卡,日期在标题右边,页面底近白);
+   Feed 模式 = <html data-mode="feed">,还原 v4.6 线上排版(底色同卡片模式的近白,2026-11-03 用户):无底卡、日期在标题上方、第一个日期上方一条细线 ── */
+html[data-mode="feed"] .works { gap: 80px; margin-top: var(--section-gap); }
+html[data-mode="feed"] .work { padding: 0; margin-inline: 0; }
+html[data-mode="feed"] .work::after { visibility: hidden; }   /* 不用 display: none,切回卡片模式时底卡入场动画不重播 */
+html[data-mode="feed"] .work > .work-summary { color: var(--ink-soft); }
+html[data-mode="feed"] .work > .work-head { flex-direction: column; align-items: stretch; gap: 12px; }   /* 日期 → 标题 24 → 12,与标题 → 简介同为 12(2026-11-03 用户) */   /* Feed 日期在标题上方(11-03 试过放标题行右边,用户改回);stretch:卡片模式的上下居中在竖排里会变成水平居中 */
+html[data-mode="feed"] .work > .work-head > .work-year { order: 0; }
+html[data-mode="feed"] .work > .work-summary + .work-cover { margin-top: 36px; }
