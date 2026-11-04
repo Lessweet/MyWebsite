@@ -11,8 +11,7 @@ const DOCS = resolve(__dirname, 'docs');
 
 /* 文章 slug 从 site/writing/ 实际入口文件推导(入口由 extract-articles.mjs 生成,
    与 docs/writing/article-<slug>.html 一一对应),不再维护手写清单 */
-const ARTICLE_SLUGS = fs
-  .readdirSync(resolve(ROOT, 'writing'))
+const ARTICLE_SLUGS = (fs.existsSync(resolve(ROOT, 'writing')) ? fs.readdirSync(resolve(ROOT, 'writing')) : [])
   .filter((f) => /^article-[\w-]+\.html$/.test(f))
   .map((f) => f.slice('article-'.length, -'.html'.length))
   .sort();
@@ -30,6 +29,10 @@ const ALL_ENTRIES: Record<string, string> = {
 const entries = Object.fromEntries(
   Object.entries(ALL_ENTRIES).filter(([, p]) => fs.existsSync(p)),
 );
+
+/* 线上只有首页(2026-11-03 用户:文章整个不上线)。文章、Blog、Archive、旧版首页只在本地测试版(dev)里看,
+   素材和正文都在 .gitignore 里、不进仓库;build 只打首页 */
+const BUILD_ENTRIES = { index: entries.index };
 
 /* dev 下由 Vite 处理(而非回落到 docs/ 旧文件)的 URL 路径 */
 const ENTRY_PATHS = new Set(
@@ -198,16 +201,7 @@ export default defineConfig({
     outDir: DOCS,
     emptyOutDir: false, // 绝不清空 docs/(CNAME + 全部静态资产)
     rollupOptions: {
-      input: entries,
-      output: {
-        /* 全部文章正文片段进同一共享 chunk:阅读器内切换文章零网络请求。
-           只圈 fragments(约 670KB)—— 注册表 articles.ts / articleShell.ts 是几 KB 的
-           元数据,曾跟着一起进这个 chunk,结果 Blog / 首页只为读卡片元数据就要等整个
-           正文包下完才首绘,冷缓存下长时间白屏(2026-08-23 用户线上实测)。 */
-        manualChunks(id) {
-          if (id.includes('/src/content/fragments')) return 'article-content';
-        },
-      },
+      input: BUILD_ENTRIES,
     },
   },
 });

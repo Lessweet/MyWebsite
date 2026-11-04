@@ -454,6 +454,8 @@ export default function HomePage() {
             </span>
             {/* 名字用正文字体 + 中粗(2026-10-23 用户:手写名 SVG 不好看,停用;TongrongName.tsx 保留备用) */}
             <b className="hero-name">同容</b>
+            {/* 英文名跟在中文名后:常规粗细 + 浅灰,主次分开(2026-11-04 用户选 A 方案) */}
+            <span className="hero-name-en" lang="en">Toren</span>
           </span>
           </p>
           <p>

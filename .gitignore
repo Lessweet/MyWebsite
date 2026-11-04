@@ -38,3 +38,26 @@ site/assets/
 
 # 暂不展示的作品(文字、图片、专用脚本):只留本地(2026-10-24)
 site/private/
+
+# 线上只放首页(2026-11-03 用户:文章、旧页面、旧视频都只留本地,GitHub 只放线上版)。
+# docs/ 默认全部不进仓库,只放行首页实际用到的文件(按线上首页实测请求清点)。
+# 首页要新用 docs/ 里的文件时,在这里加一行 ! 放行。
+/docs/*
+!/docs/CNAME
+!/docs/index.html
+!/docs/assets/
+!/docs/simple.css
+!/docs/nav-boot.js
+!/docs/favicon-half-ink.svg
+!/docs/favicon-half-ink.png
+!/docs/apple-touch-icon-half-ink.png
+!/docs/qrcode-gzh-360.webp
+!/docs/writing/
+/docs/writing/*
+!/docs/writing/assets/
+/docs/writing/assets/*
+!/docs/writing/assets/works/
+!/docs/writing/assets/tongrong-avatar.svg
+# 文章正文、清单和入口(只给本地测试版用)
+/site/writing/
+/site/src/content/

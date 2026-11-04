@@ -2,8 +2,8 @@
 #
 # 分工(与本地发布流程对齐):
 #   本地(人/Claude):render.py 出详情页静态 HTML + 资源 → articles.ts 登记 → commit + push
-#   本机器人:extract-articles(提取片段/生成入口)→ build-card-covers(卡片 webp)
-#            → npm run build(React 壳回写 docs/)→ 有变化就以 bot 身份补一个提交
+#   本机器人:npm run build(首页 React 壳回写 docs/)→ 有变化就以 bot 身份补一个提交
+#   文章(写作栏目)2026-11-03 起只留本地测试版、不进仓库,所以这里不再提取文章、不再生成文章卡片封面
 #
 # 说明:
 # - Pages 是 legacy 模式,从 main 的 docs/ 直接托管,所以 build 产物提交回仓库即上线。
@@ -38,18 +38,8 @@ jobs:
           node-version: 20
           cache: npm
 
-      # build-card-covers.mjs 依赖 cwebp
-      - name: Install cwebp
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq webp
-
       - name: Install dependencies
         run: npm ci
-
-      - name: Extract article fragments
-        run: node site/scripts/extract-articles.mjs
-
-      - name: Build card covers
-        run: node site/scripts/build-card-covers.mjs
 
       - name: Build site
         run: npm run build
@@ -62,6 +52,6 @@ jobs:
           if git diff --cached --quiet; then
             echo '构建产物无变化,跳过提交'
           else
-            git commit -m 'bot: 自动构建(extract + card covers + vite build)[skip ci]'
+            git commit -m 'bot: 自动构建(vite build)[skip ci]'
             git push
           fi

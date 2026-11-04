@@ -39,8 +39,6 @@
     --logo-dash: #636366;        /* 字标虚线 */
     --logo-hatch-hover: #48484A; /* hover:斜线 #8e8e93 → #48484A,虚线 → --logo-ink,实线 → 纯黑 */
     --logo-ink-hover: #000;
-    /* 装饰线色:UI 设计师手绘下划线 + 公众号/邮箱虚线下划线共用,刻意很浅 */
-    --mark: #C7C7CC;
     --cover-bg: linear-gradient(135deg, #EDD9E3, #F8EEE3);   /* 公众号封面卡片底色 */
     --cover-radius: 8px;   /* 32 → 8(2026-11-03 用户,两种模式都是;卡片模式底卡圆角随之 = 8 + 内边距) */   /* 作品封面圆角:单图 / 四图每格 / 两图式每块共用(8 → 12 → 16 → 24 → 32,2026-10-31 用户);本地测试版右下角可以拖着调 */
     --sc-article-bg: var(--fill);   /* 两个展示块统一浅灰,用同一个 --fill(2026-10-31;原 #F2F2F4,更早是珊瑚 #FEEDE9 / 黄 #FDF7DB) */
@@ -78,7 +76,6 @@ body.theme-dark {
     --btn-line: rgba(255, 255, 255, 0.1);
     --rule: rgba(255, 255, 255, 0.07);
     --fill: #2c2c2e;
-    --mark: #3A3A3C;
     --cover-bg: linear-gradient(135deg, #3A3036, #36322D);   /* 同色相压暗 */
     --sc-article-bg: var(--fill);
     --sc-covers-bg: var(--fill);
@@ -592,6 +589,7 @@ body.theme-vt *::after {
 /* 头像 + 右上 say-hi 三笔;名字与头像之间留一点空 */
 .hero-intro .hero-name { margin-left: 0.1em; }
 .hero-name-unit { position: relative; }
+.hero-name-en { margin-left: 0.3em; font-weight: 400; color: var(--ink-soft); }
 .hero-intro-avatar {
     display: inline-block;
     border-radius: 50%;
@@ -1069,11 +1067,10 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
 /* ── 介绍段末行:城市 + 时间 + 时段状态图标(LocalTime.tsx);整行同一个灰 --ink-2 ── */
 .hero-loc {
     margin-top: 24px;
-    color: #AEAEB2;   /* 北京时间这一行单独更浅(2026-11-01 用户);日期等其他灰字仍 --ink-2 #8E8E93 */
+    color: var(--ink-2);   /* 和作品日期同一个灰(2026-11-04 用户:色值太多,收一收);原单独更浅 #AEAEB2 */
     font-size: var(--fs-sm);   /* 小号 --fs-sm(现为 16) */
     line-height: var(--lh-sm);
 }
-body.theme-dark .hero-loc { color: #545458; }   /* 深色下也比日期(#6C6C70)再暗一档,和浅色时比日期更浅一档对应(2026-11-01 用户) */
 .loc-time {
     display: inline-block;
     margin-left: 0.25em;
@@ -2119,11 +2116,13 @@ body.theme-dark .ol-toggle[aria-pressed="true"] { background: #D6248A; border-co
 
 /* 中间灰 --ink-soft:主文字和灰色各一半(浅色约 #646467,深色约 #9E9EA3)。作品简介、个人介绍第二三段共用(2026-11-02 用户)。
    写在 body 上:深色主题的 --ink / --ink-2 也写在 body 上,这样两套主题各自混 */
-body { --ink-soft: color-mix(in srgb, var(--ink) 50%, var(--ink-2)); }
+body { --ink-soft: color-mix(in srgb, var(--ink) 50%, var(--ink-2));
+    --mark: var(--ink-2);   /* 公众号 / 邮箱虚线用灰色文字 --ink-2,比文字浅一档(2026-11-04 用户:色值太多,收一收);原浅色 #C7C7CC、深色 #3A3A3C */
+}
 .hero-intro > p:nth-child(n + 3),
 .hero-intro > p:nth-child(n + 3) b,
 .hero-intro > p:nth-child(n + 3) a,
-.hero-intro > p:nth-child(n + 3) .text-link { color: var(--ink-soft); }
+.hero-intro > p:nth-child(n + 3) .text-link { color: var(--ink); }   /* 第二、三段(曾在…、可以在…)和第一段同为主文字色 --ink(2026-11-04 用户;试过 --ink-2 灰);原 --ink-soft */
 /* 介绍三段都用主文字色 --ink(2026-11-01 用户:第二、三段也改成黑色;之前 10-31 是第二、三段退到灰 --ink-2) */
 
 /* 「调节」入口(DevRadius,只在本地测试版):右下角最下面一颗,合并了封面圆角、悬停放大和入场调参台
