@@ -51,6 +51,9 @@ site/private/
 !/docs/favicon-half-ink.svg
 !/docs/favicon-half-ink.png
 !/docs/apple-touch-icon-half-ink.png
+!/docs/favicon-half-iso.svg
+!/docs/favicon-half-iso.png
+!/docs/apple-touch-icon-half-iso.png
 !/docs/qrcode-gzh-360.webp
 !/docs/writing/
 /docs/writing/*
