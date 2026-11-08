@@ -15,9 +15,10 @@ import DevOutline from './DevOutline';
 import DevRadius from './DevRadius';
 import WorkRail from './WorkRail';
 import { applyEntrance, currentEntrance } from './entrance';
+import { useLayoutMorph } from './layoutMorph';
 
-/* 双栏布局 2026-11-01 起停用(用户:所有宽度都用单栏、居中);判断双栏的地方都读这个,永远不成立 */
-const TWO_COL = 'not all';
+/* 双栏布局:横屏且 ≥ 1280(2026-11-01 停用,2026-11-08 用户:横款大屏改回 2 列);和 simple.css 的双栏媒体查询一致 */
+const TWO_COL = '(min-width: 1280px) and (orientation: landscape)';
 
 /* 入场方式和参数(2026-10-25 用户:调参台里选用哪一种入场、各自调参数):线上固定默认,本地开发按调参面板存的 */
 const ENTRANCE = currentEntrance();
@@ -170,6 +171,7 @@ function Gzh({ className = '', linkClass }: { className?: string; linkClass: str
 }
 
 export default function HomePage() {
+  useLayoutMorph();   /* 单栏 ⇄ 双栏切换时块平滑移过去(2026-11-08 用户) */
   /* 首屏一起出现(2026-10-23 用户):静态的字标 / 开关和 React 渲染的内容同一帧显示 ——
      index.html 先给 <html> 挂 app-loading 藏起整页,这里在首次渲染提交后、浏览器绘制前去掉 */
   useLayoutEffect(() => {
@@ -257,7 +259,7 @@ export default function HomePage() {
     ];
     /* 单栏(< 1280)时主题键在页面最上面,先出;介绍段晚 PILLS_LEAD 再起步(2026-10-24 用户:从上到下)。
        公众号 / 邮箱单栏时在介绍区下方(2026-10-25),和宽屏一样接在介绍区最后一行后面 */
-    const topFirst = window.matchMedia('all').matches;
+    const topFirst = !window.matchMedia(TWO_COL).matches;
     const PILLS_LEAD = 200;
     const offset = topFirst ? PILLS_LEAD : 0;
     units.forEach((el, i) => {
@@ -344,8 +346,9 @@ export default function HomePage() {
               if (!part) return;
               const at = Math.max(now + lead, blockCursor);
               setBlock(part, at - now);
-              /* 细线跟日期一起;第一条的细线已经在首屏随介绍区排过了 */
-              if (k === 0 && !twoCol && items.indexOf(el) > 0) {
+              /* 细线跟日期一起。单栏第一条的细线已经在首屏随介绍区排过了;
+                 双栏每条(含第一条)都跟着自己的日期依次浮现(2026-11-08 用户) */
+              if (k === 0 && (twoCol || items.indexOf(el) > 0)) {
                 el.classList.add('bk-line');
                 el.style.setProperty('--line-bd', `${at - now}ms`);
               }

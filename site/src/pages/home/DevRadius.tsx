@@ -35,12 +35,20 @@ const RAIL_STYLES = [
 ] as const;
 type RailStyle = (typeof RAIL_STYLES)[number]['key'];
 
-/* 作品排版:卡片(默认,2026-11-03 新样式)/ Feed(v4.6 线上样式)。写在 <html data-mode> 上,CSS 按它切换 */
+/* 作品排版:Feed(线上默认,index.html 写死 data-mode="feed")/ 卡片(2026-11-03 新样式)。写在 <html data-mode> 上,CSS 按它切换 */
 const LAYOUT_MODES = [
   { key: 'card', short: '卡片', label: '卡片模式' },
   { key: 'feed', short: 'Feed', label: 'Feed 模式' },
 ] as const;
 type LayoutMode = (typeof LAYOUT_MODES)[number]['key'];
+
+/* 天气图标风格:2.5D 线条(线上,2026-11-08 用户换成图标实验页那套)/ 手绘墨线。
+   写在 <html data-wx="ink"> 上(LocalTime 两套都渲染、CSS 按它显示一套);favicon 不跟着切,线上仍是墨线 */
+const WX_STYLES = [
+  { key: 'ink', short: '墨线', label: '手绘墨线' },
+  { key: 'iso', short: '2.5D', label: '2.5D 线条' },
+] as const;
+type WxStyle = (typeof WX_STYLES)[number]['key'];
 
 function readColor(c: Swatch) {
   try {
@@ -63,6 +71,15 @@ function read(k: Knob) {
 
 export default function DevRadius() {
   const [open, setOpen] = useState(false);
+  /* 点页面空白处关掉面板(2026-11-08 用户);点面板里面、调节按钮自己不算 */
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: PointerEvent) => {
+      if (!(e.target as Element).closest?.('.rd-wrap')) setOpen(false);
+    };
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
+  }, [open]);
   const [vals, setVals] = useState(() => KNOBS.map(read));
   useEffect(() => {
     KNOBS.forEach((k, i) => {
@@ -96,9 +113,10 @@ export default function DevRadius() {
   }, [rail]);
   const [mode, setMode] = useState<LayoutMode>(() => {
     try {
-      return localStorage.getItem('dev-layout-mode') === 'feed' ? 'feed' : 'card';
+      /* 线上是 Feed(site/index.html 的 data-mode="feed");本地没存过就跟线上一样(2026-11-08 用户:线上默认不是卡片式) */
+      return localStorage.getItem('dev-layout-mode') === 'card' ? 'card' : 'feed';
     } catch {
-      return 'card';
+      return 'feed';
     }
   });
   useEffect(() => {
@@ -106,12 +124,30 @@ export default function DevRadius() {
     if (mode === 'feed') root.dataset.mode = 'feed';
     else delete root.dataset.mode;
     try {
-      if (mode === 'card') localStorage.removeItem('dev-layout-mode');
+      if (mode === 'feed') localStorage.removeItem('dev-layout-mode');
       else localStorage.setItem('dev-layout-mode', mode);
     } catch {
       /* 存不了只是不记忆 */
     }
   }, [mode]);
+  const [wxStyle, setWxStyle] = useState<WxStyle>(() => {
+    try {
+      return localStorage.getItem('dev-wx-style') === 'ink' ? 'ink' : 'iso';
+    } catch {
+      return 'iso';
+    }
+  });
+  useEffect(() => {
+    const root = document.documentElement;
+    if (wxStyle === 'ink') root.dataset.wx = 'ink';
+    else delete root.dataset.wx;
+    try {
+      if (wxStyle === 'iso') localStorage.removeItem('dev-wx-style');
+      else localStorage.setItem('dev-wx-style', wxStyle);
+    } catch {
+      /* 存不了只是不记忆 */
+    }
+  }, [wxStyle]);
   const [colors, setColors] = useState(() => SWATCHES.map(readColor));
   useEffect(() => {
     const body = document.body;
@@ -183,111 +219,185 @@ export default function DevRadius() {
   const set = (i: number, v: number) => setVals((a) => a.map((x, j) => (j === i ? v : x)));
   const fmt = (k: Knob, v: number) => (k.unit === 'px' ? `${v}px` : k.unit === '列' ? `${v} 列` : k.unit === '' ? `${v} / 重点 ${v + 100}` : `${v.toFixed(3).replace(/0+$/, '').replace(/\.$/, '')}×`);
 
+  /* 一个滑杆:标题 + 当前值,细轨道;常用值是轨道上的小刻度点,点一下跳过去(2026-11-08 用户:面板密密麻麻一堆堆 → 去掉下面整排按钮) */
+  const knob = (i: number) => {
+    const k = KNOBS[i];
+    const pct = (v: number) => ((v - k.min) / (k.max - k.min)) * 100;
+    return (
+      <div className="rd-knob" key={k.key}>
+        <div className="rd-head">
+          <span>{k.label}</span>
+          <b>{fmt(k, vals[i])}</b>
+        </div>
+        <div className="rd-track">
+          <input
+            aria-label={k.label}
+            max={k.max}
+            min={k.min}
+            step={k.step}
+            style={{ '--p': `${pct(vals[i])}%` } as CSSProperties}
+            type="range"
+            value={vals[i]}
+            onChange={(e) => {
+              /* 吸附(2026-11-08 用户:默认点不好滑到):拖到常用值附近(整条的 4% 以内)就吸到那个值上 */
+              const raw = Number(e.target.value);
+              const near = k.presets.find((v) => Math.abs(v - raw) <= (k.max - k.min) * 0.04);
+              set(i, near ?? raw);
+            }}
+          />
+          {k.presets.map((v) => (
+            <button
+              aria-label={`${k.label} ${v}`}
+              aria-pressed={v === vals[i]}
+              className="rd-tick"
+              key={v}
+              style={{ left: `calc(6px + (100% - 12px) * ${pct(v) / 100})` }}   /* 手柄 12px 只在「轨道宽 − 12」里走,刻度点按同样的范围放,才和手柄中心对齐 */
+              title={String(v)}
+              type="button"
+              onClick={() => set(i, v)}
+            >
+              <span>{v}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+  /* 分段选择:一行,左名称、右一组紧凑按钮,选中 = 白底黑字 */
+  const seg = <K extends string>(label: string, opts: readonly { key: K; short: string }[], cur: K, pick: (k: K) => void) => (
+    <div className="rd-row">
+      <span>{label}</span>
+      <div className="rd-seg" role="group" aria-label={label}>
+        {opts.map((m) => (
+          <button aria-pressed={cur === m.key} key={m.key} type="button" onClick={() => pick(m.key)}>
+            {m.short}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  /* 恢复默认 = 线上参数(2026-11-08 用户):滑杆、颜色回 simple.css 的值;Feed 模式(index.html 写死的)、墨线天气图标、刻度线(线上没有 data-rail,就是刻度线;
+     本地测试版默认的是墨线刻度,这里要明确切回「线」);编辑文字关掉。改过的文字草稿不动(那是内容不是参数) */
+  const isLive =
+    KNOBS.every((k, i) => vals[i] === k.def) &&
+    mode === 'feed' &&
+    wxStyle === 'iso' &&
+    rail === 'line' &&
+    !editing &&
+    colors.every((v, i) => v.toLowerCase() === SWATCHES[i].def.toLowerCase());
+  /* 和线上不一样的参数,一项一行(2026-11-08 用户:底部加「确认修改(n)」)。
+     点确认不直接改代码:把清单复制下来,粘贴给 Claude,由它写进 simple.css / 代码里的默认值再提交(同面板顶部的约定) */
+  const changes: string[] = [
+    ...KNOBS.flatMap((k, i) => (vals[i] === k.def ? [] : [`${k.label}:${fmt(k, k.def)} → ${fmt(k, vals[i])}`])),
+    ...(mode === 'feed' ? [] : [`作品排版:Feed 模式 → ${LAYOUT_MODES.find((m) => m.key === mode)?.label}`]),
+    ...(wxStyle === 'iso' ? [] : [`图标风格:2.5D 线条 → ${WX_STYLES.find((m) => m.key === wxStyle)?.label}`]),
+    ...(rail === 'line' ? [] : [`刻度样式:刻度线 → ${RAIL_STYLES.find((r) => r.key === rail)?.label}`]),
+    ...SWATCHES.flatMap((c, i) => (colors[i].toLowerCase() === c.def.toLowerCase() ? [] : [`${c.label}:${c.def} → ${colors[i].toUpperCase()}`])),
+  ];
+  const [copied, setCopied] = useState(false);
+  const confirm = async () => {
+    const text = `把调节面板里这些改动写进线上默认:\n${changes.map((c) => `- ${c}`).join('\n')}`;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      window.prompt('复制下面这段发给 Claude', text);   /* 剪贴板不让写时兜底 */
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  const resetAll = () => {
+    setVals(KNOBS.map((k) => k.def));
+    setMode('feed');
+    setWxStyle('ink');
+    setRail('line');
+    setEditing(false);
+    saveColors(SWATCHES.map((c) => c.def));
+  };
+
   return createPortal(
     <div className="rd-wrap">
       {open && (
         <div className="rd-panel" role="dialog" aria-label="调节">
-          {KNOBS.map((k, i) => (
-            <div className="rd-knob" key={k.key}>
-              <div className="rd-head">
-                <span>{k.label}</span>
-                <b>{fmt(k, vals[i])}</b>
-              </div>
-              <input
-                aria-label={k.label}
-                max={k.max}
-                min={k.min}
-                step={k.step}
-                style={{ '--p': `${((vals[i] - k.min) / (k.max - k.min)) * 100}%` } as CSSProperties}
-                type="range"
-                value={vals[i]}
-                onChange={(e) => set(i, Number(e.target.value))}
-              />
-              <div className="rd-presets">
-                {k.presets.map((v) => (
-                  <button aria-pressed={v === vals[i]} key={v} type="button" onClick={() => set(i, v)}>
-                    {v}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
-          <div className="rd-knob">
-            <div className="rd-head">
-              <span>作品排版</span>
-              <b>{LAYOUT_MODES.find((m) => m.key === mode)?.label}</b>
-            </div>
-            <div className="rd-presets">
-              {LAYOUT_MODES.map((m) => (
-                <button aria-pressed={mode === m.key} key={m.key} type="button" onClick={() => setMode(m.key)}>
-                  {m.short}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="rd-knob">
-            <div className="rd-head">
-              <span>刻度样式</span>
-              <b>{RAIL_STYLES.find((r) => r.key === rail)?.label}</b>
-            </div>
-            <div className="rd-presets">
-              {RAIL_STYLES.map((r) => (
-                <button aria-pressed={rail === r.key} key={r.key} type="button" onClick={() => setRail(r.key)}>
-                  {r.short}
-                </button>
-              ))}
-            </div>
-          </div>
-          {SWATCHES.map((c, i) => (
-            <label className="rd-color" key={c.key}>
-              <span>{c.label}</span>
-              <b>{colors[i].toUpperCase()}</b>
-              <input
-                aria-label={c.label}
-                type="color"
-                value={colors[i]}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  saveColors(colors.map((x, j) => (j === i ? v : x)));
-                }}
-              />
-            </label>
-          ))}
-          {colors.some((v, i) => v.toLowerCase() !== SWATCHES[i].def.toLowerCase()) && (
-            <button className="rd-reset" type="button" onClick={() => saveColors(SWATCHES.map((c) => c.def))}>
-              颜色恢复默认
+          <section className="rd-sec">
+            <h4>卡片</h4>
+            {[0, 1, 2].map(knob)}
+          </section>
+          <section className="rd-sec">
+            <h4>排版</h4>
+            {[3, 4, 5].map(knob)}
+          </section>
+          <section className="rd-sec">
+            <h4>样式</h4>
+            {seg('作品排版', LAYOUT_MODES, mode, setMode)}
+            {seg('图标风格', WX_STYLES, wxStyle, setWxStyle)}
+            {seg('刻度样式', RAIL_STYLES, rail, setRail)}
+          </section>
+          <section className="rd-sec">
+            <h4>颜色</h4>
+            {SWATCHES.map((c, i) => (
+              <label className="rd-row rd-color" key={c.key}>
+                <span>{c.label}</span>
+                <b>{colors[i].toUpperCase()}</b>
+                <input
+                  aria-label={c.label}
+                  type="color"
+                  value={colors[i]}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    saveColors(colors.map((x, j) => (j === i ? v : x)));
+                  }}
+                />
+              </label>
+            ))}
+            {colors.some((v, i) => v.toLowerCase() !== SWATCHES[i].def.toLowerCase()) && (
+              <button className="rd-reset" type="button" onClick={() => saveColors(SWATCHES.map((c) => c.def))}>
+                颜色恢复默认
+              </button>
+            )}
+          </section>
+          <section className="rd-sec rd-foot">
+            <button aria-pressed={editing} className="rd-row rd-edit" type="button" onClick={() => setEditing((e) => !e)}>
+              <span>编辑文字</span>
+              <i aria-hidden="true" />
             </button>
-          )}
-          <button aria-pressed={editing} className="rd-edit" type="button" onClick={() => setEditing((e) => !e)}>
-            <span>编辑文字</span>
-            <i aria-hidden="true" />
-          </button>
-          {Object.keys(drafts).length > 0 && (
+            {Object.keys(drafts).length > 0 && (
+              <button
+                className="rd-reset"
+                type="button"
+                onClick={() => {
+                  try {
+                    localStorage.removeItem(DRAFT_KEY);
+                  } catch {
+                    /* 忽略 */
+                  }
+                  location.reload();
+                }}
+              >
+                文字恢复原文({Object.keys(drafts).length} 段改过)
+              </button>
+            )}
             <button
-              className="rd-reset"
+              className="rd-row rd-link"
               type="button"
               onClick={() => {
-                try {
-                  localStorage.removeItem(DRAFT_KEY);
-                } catch {
-                  /* 忽略 */
-                }
-                location.reload();
+                setOpen(false);
+                document.querySelector<HTMLButtonElement>('.rt-toggle')?.click();
               }}
             >
-              文字恢复原文({Object.keys(drafts).length} 段改过)
+              <span>入场动画</span>
+              <i aria-hidden="true">→</i>
             </button>
-          )}
-          <button
-            className="rd-link"
-            type="button"
-            onClick={() => {
-              setOpen(false);
-              document.querySelector<HTMLButtonElement>('.rt-toggle')?.click();
-            }}
-          >
-            入场动画…
-          </button>
+            <div className="rd-actions">
+              <button className="rd-restore" disabled={isLive} type="button" onClick={resetAll}>
+                恢复默认
+              </button>
+              <button className="rd-confirm" disabled={!changes.length} title={changes.join('\n')} type="button" onClick={confirm}>
+                {copied ? '已复制,发给 Claude' : '确认修改'}
+                {!copied && changes.length > 0 && <i>{changes.length}</i>}
+              </button>
+            </div>
+          </section>
         </div>
       )}
       <button aria-expanded={open} aria-label="调节" className="rd-toggle" title="调节" type="button" onClick={() => setOpen((o) => !o)}>

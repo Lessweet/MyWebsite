@@ -725,7 +725,7 @@ body.theme-vt *::after {
     content: '';
     display: block;
     height: 1px;
-    margin-bottom: 8px;   /* 线到日期 63 → 8(2026-10-31 用户);日期 18 / 32 字形上方自带约 7px,肉眼约 15 */
+    margin-bottom: 20px;   /* 线到日期 63 → 8(2026-10-31)→ 20(2026-11-08 用户);日期字形上方自带约 7px,肉眼约 27 */
     background: var(--rule);
     opacity: 0;
 }
@@ -1079,7 +1079,7 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
 
 /* 手绘墨线天气(LocalTime InkWeather,2026-11-02):跟在时间后面,大小配 16 号小字(24,同原图标位置),颜色跟文字同一个灰 */
 .loc-ink {
-    display: inline-block;
+    display: none;   /* 线上默认 2.5D(2026-11-08 用户);本地调节面板选「墨线」时 <html data-wx="ink"> 才显示 */
     /* 盒子 = 一整行高(--lh-sm 28),和文字行上下对齐,不溢出(2026-11-02 用户:布局没对齐);
        viewBox 裁掉图标四周空白,图形本身约 28 大(24 太小看不出) */
     width: 24px;   /* 28 → 24(2026-11-02 用户) */
@@ -1088,6 +1088,25 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
     vertical-align: top;
     overflow: visible;
 }
+/* 2.5D 极简线条天气(LocalTime IsoWeather,2026-11-05):和墨线同一个位置、同样大小、同一个灰;
+   2026-11-08 用户:换成 AI-design-news 图标实验页的 2.5D 天气,线上默认这一套 */
+.loc-iso {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    margin: 2px 0 2px 6px;
+    vertical-align: top;
+    overflow: visible;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 0.8;   /* 0.8 太粗(2026-11-05)→ 0.5 → 换成实验页那套后太细 → 1 → 0.6 → 1 → 0.8(2026-11-08 用户) */
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+html[data-wx="ink"] .loc-ink { display: inline-block; }
+html[data-wx="ink"] .loc-iso { display: none; }
+.iso-edge { stroke-width: 0.65; stroke-dasharray: 1.4 1.1; }   /* 虚线节奏同图标实验页(线宽 1 时 3 / 2.4,按 24 盒子换算) */   /* 背面轮廓 + 侧棱:细虚线;侧面不填色(同 AI-design-news 的 2.5D 线稿) */
+.iso-front { fill: var(--site-bg); }   /* 正面填底色,挡住身后的虚线 */
 /* 时段状态图标:灰色线条,各带一个小循环动效 */
 .loc-status {
     display: inline-block;
@@ -1120,8 +1139,11 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
 }
 .wx-flash { animation: wx-flash 2.4s steps(1, end) infinite; }
 @keyframes wx-flash { 0%, 70%, 80%, 100% { opacity: 1; } 75% { opacity: 0.2; } }
+/* 2.5D 太阳的光芒:不转(转起来挤出方向也跟着歪),一圈小圆点轻轻呼吸(2026-11-08) */
+.wx-rays { transform-box: view-box; transform-origin: 10.8px 10.8px; animation: wx-rays 3s ease-in-out infinite alternate; }
+@keyframes wx-rays { from { transform: scale(0.94); opacity: 0.75; } to { transform: scale(1.04); opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
-    .wx-spin, .wx-drift, .wx-fall, .wx-flash { animation: none; }
+    .wx-spin, .wx-drift, .wx-fall, .wx-flash, .wx-rays { animation: none; }
 }
 @keyframes st-z {
     0%   { opacity: 0; transform: translate(-1px, 2px); }
@@ -1157,14 +1179,43 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
 }
 /* 城市时间后面的天气 / 状态图标一律静止(2026-10-23 用户:icon 没必要加动效)。
    上面的动画规则先留着,删掉这一条即可恢复 */
-.wx-spin, .wx-drift, .wx-fall, .wx-flash,
+.wx-spin, .wx-drift, .wx-fall, .wx-flash, .wx-rays,
+.wx-ray, .wx-breathe, .wx-float, .wx-peek, .wx-puff, .wx-fog, .wx-bob, .wx-snow, .wx-shake, .wx-bolt,
 .st-z, .st-steam, .st-squiggle, .st-line { animation: none; }
+/* 2.5D 天气加动效(2026-11-08 用户:动效加上;同图标实验页 design/lab/icons.html,幅度约加大一倍 —— 用户:不明显)。
+   墨线那套仍静止(上一条);这里限定在 .loc-iso 里,优先级更高 */
+.loc-iso g, .loc-iso path, .loc-iso circle { transform-box: fill-box; transform-origin: center; }
+/* 光芒:8 个小圆点绕太阳中心(10.8, 10.8)慢慢转,转 45° 正好接上下一个点,无缝循环。
+   原来一个个忽大忽小,看着乱(2026-11-08 用户:这个动效不好);小圆点是平面的,转起来没有挤出方向的问题 */
+.loc-iso .wx-ray { transform-box: view-box; transform-origin: 10.8px 10.8px; animation: wx-ray 4s linear infinite; }
+@keyframes wx-ray { to { transform: rotate(45deg); } }
+.loc-iso .wx-breathe { animation: wx-breathe 3.2s ease-in-out infinite; }
+@keyframes wx-breathe { 0%, 100% { transform: scale(.94); } 50% { transform: scale(1.05); } }
+.loc-iso .wx-float { animation: wx-float 4s ease-in-out infinite; }
+@keyframes wx-float { 0%, 100% { transform: translateY(1px); } 50% { transform: translateY(-1.6px); } }
+.loc-iso .wx-peek { animation: wx-peek 5s ease-in-out infinite; }
+@keyframes wx-peek { 0%, 100% { transform: translate(1.2px, 1.2px); } 45%, 60% { transform: translate(-1.4px, -1.8px); } }
+.loc-iso .wx-drift { animation: wx-iso-drift 5s ease-in-out infinite alternate; }
+@keyframes wx-iso-drift { from { transform: translateX(-1.6px); } to { transform: translateX(1.6px); } }
+.loc-iso .wx-puff { transform-origin: 50% 100%; animation: wx-puff 3.6s ease-in-out infinite; }
+@keyframes wx-puff { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.08, .9); } }
+.loc-iso .wx-fog { animation: wx-fog 4.2s ease-in-out infinite alternate; animation-delay: calc(var(--i) * -2.1s); }
+@keyframes wx-fog { from { transform: translateX(-2.2px); opacity: .45; } to { transform: translateX(2.2px); opacity: 1; } }
+.loc-iso .wx-bob { animation: wx-bob 3s ease-in-out infinite; }
+@keyframes wx-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.3px); } }
+.loc-iso .wx-fall { animation: wx-iso-fall 1.3s cubic-bezier(.5, 0, .9, .6) infinite both; animation-delay: calc(var(--i) * .43s); }
+@keyframes wx-iso-fall { 0% { transform: translate(.8px, -2.5px); opacity: 0; } 25% { opacity: 1; } 100% { transform: translate(-1px, 3.5px); opacity: 0; } }
+.loc-iso .wx-snow { animation: wx-snow 3.2s linear infinite both; animation-delay: calc(var(--i) * -1.07s); }
+@keyframes wx-snow { 0% { transform: translate(0, -3px); opacity: 0; } 15% { opacity: 1; } 35% { transform: translate(1.2px, -.6px); } 60% { transform: translate(-1px, 1.6px); } 85% { opacity: 1; } 100% { transform: translate(.6px, 3.6px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+    .loc-iso * { animation: none !important; }
+}
 
 /* ── 单列(2026-11-01 起所有宽度都是单列、内容最宽 896 居中;原来只在 < 1280,≥ 1280 双栏)──
    公众号 / 邮箱 + 主题开关放到页面最顶上一排(2026-10-23 用户):左边两个链接横排,右边开关,
    开关右缘与内容栏(分割线)右端对齐;下面依次是字标 → 介绍区 → 作品。双栏时这一组钉在左下角。
    header 与 #app 用 display:contents 拆开,在 .page 的纵向 flex 里用 order 排序 */
-@media all {   /* 原「< 1280 单栏」;2026-11-01 用户:所有宽度都用单栏 */
+@media not all and (min-width: 1280px) and (orientation: landscape) {   /* 单栏:除「横屏大屏」以外的所有宽度(2026-11-08 用户:横款大屏改回双栏) */
     /* 单列也铺满窗口宽度(2026-10-23 用户:单列时右边空间利用起来),左右内边距仍是 32(手机 16);
        介绍段、作品简介自己有最大行宽,不会被拉太长 */
     /* 内容最宽 --content-max(2026-11-01 用户:单栏也和双栏右栏一样),窗口里水平居中(用户:居中) */
@@ -1193,7 +1244,7 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
    右栏 = 作品 Feed,吃满剩余宽度,只有它随页面滚动。
    实现:顶栏 header 与 #app 用 display:contents 拆开;左栏三块各自 position:fixed 定在同一条左边线上,
    网格第一列(320px)只占位;右栏顶部留出与介绍段齐平的空白。分割线只在单列时用,两栏时去掉 */
-@media not all {   /* 原「≥ 1280 双栏」,2026-11-01 起不用(所有宽度单栏居中),规则先留着 */
+@media (min-width: 1280px) and (orientation: landscape) {   /* 双栏:横屏且 ≥ 1280(2026-11-01 停用,2026-11-08 用户:横款大屏改回 2 列、左边简介) */
     .page {
         /* 超宽屏整页封顶居中(2026-10-31 用户:不要左右铺满):封顶 = Tailwind 2xl 1536,右栏最宽 1536 − 64 − 560 = 912(12 列),窗口更宽时两边留白、整页居中。左栏三块是 position:fixed,左边线跟着居中后的页面走 */
         /* 整页封顶 = 左栏 + 栏距 + 右栏最宽 + 两侧边距 = 440 + 120 + 896 + 64 = 1520,由这几个共用变量算出 */
@@ -1202,6 +1253,7 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
         max-width: var(--page-max);   /* 2026-10-23 曾去掉 1600 封顶;2026-10-31 用户:超宽屏要封顶居中,1536(2xl) */
         margin: 0 auto;
         padding: 0 32px;   /* 左右内边距 56 → 32(2026-10-23 用户:可以更少) */
+        padding-right: 56px;   /* 右边多留 24 给刻度(刻度贴窗口右缘,线最长 24),卡片不被压住(2026-11-08) */
         display: grid;
         /* 左栏固定 440px(2026-10-23 用户:280 → 320 → 340 → 400 → 440),右栏跟随窗口宽度变化(之前试过 1 : 2 比例);
            栏距固定 120px。双栏从 1280px(xl)起:右栏 = 窗口 − 64 − 560 ≥ 656,比任何手机竖屏(≤ 430)都宽;
@@ -1216,7 +1268,9 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
 
     .intro-col {
         position: fixed;
-        top: var(--intro-top);
+        /* 面板往上多 16、再用 padding 推回去:头像右上角的手绘三笔伸出首行顶,面板是自己滚动的(overflow 会裁),不留这一截就被切掉(2026-11-08 用户) */
+        top: calc(var(--intro-top) - 16px);
+        padding-top: 16px;
         left: var(--left-x);
         width: var(--intro-w);
         /* 窗口矮时介绍区自己滚,不压到左下角那一排按钮。预留 = 按钮离底 36 + 按钮高 36 + 至少留 48
@@ -1248,13 +1302,19 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
     .head-links .gzh.open .gzh-pop { transform: none; }
     /* 右栏第一条与左上角字标顶边视觉对齐(2026-10-23 用户;原来对齐介绍段 --intro-top 201):
        字标线条顶在 y≈57;日期 16 / 28 的数字顶比行框顶低约 8.5px。算出来是 48,用户看过 52 → 定为 57(数字顶 ≈ 65.5) */
-    .works { grid-column: 2; margin-top: 0; padding-top: 57px; }   /* 日期 18 / 32 的字顶 ≈ 65,同之前用户看定的位置 */
+    /* 右栏 Feed 顶 = 左栏介绍第一段(「研究内容…」)的顶:介绍顶 + 头像名字那一行 + 段间距 24(2026-11-08 用户示意)。
+       卡片模式对齐卡片上沿,Feed 模式对齐日期那一行;Feed 模式自带的 margin-top 120 也清掉(用 :root 压过文件后面那条 html[data-mode="feed"] .works) */
+    .works,
+    :root[data-mode="feed"] .works { grid-column: 2; margin-top: 0; padding-top: calc(var(--intro-top) + var(--lh-body) + 24px); }
+    /* 左栏只有 440 宽、排 6 列网格,介绍段占满左栏;按单栏的 8 列排会超出左栏被裁掉(2026-11-08) */
+    .intro-col .hero-intro > p { grid-column: 1 / -1; }
+    /* 北京时间钉在左下角(2026-11-08 用户),左对齐左栏;行高 28、离底 36 → 行中线离底 50,与右下角圆按钮(高 36、离底 32)的中线齐平 */
+    .hero-loc { position: fixed; left: var(--left-x); bottom: 36px; margin: 0; z-index: 3; }
     .intro-col .home-hero { padding-top: 0; }   /* 介绍段首行与右栏第一条作品顶部齐平 */
     /* 左栏是自己滚动的固定面板:联系方式那句在面板底部,二维码弹层往下弹会被面板裁掉、还撑出可滚动的空白,
        改为往上弹(2026-10-25) */
     .contact .gzh-pop { top: auto; bottom: calc(100% + 8px); transform: translateY(4px); }
-    /* 双栏时不要第一个作品日期上方那条细线(2026-10-25 用户:双列时完整,不需要) */
-    .work:first-child::before { display: none; }
+    /* Feed 模式第一条日期上方那条细线:双栏也要,同单列(2026-11-08 用户;10-25 曾在双栏去掉) */
     .hero-intro,
     .contact { max-width: none; }
 }
@@ -1278,7 +1338,7 @@ body.theme-dark .mesh-bg { filter: brightness(0.55) saturate(0.9); }
 body.theme-dark .rt-toggle:hover { border-color: rgba(255, 255, 255, 0.2); }
 .rt-toggle svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
 /* 单栏:主题键悬浮在右上角,调节按钮挨在它左边 */
-@media all {   /* 原「< 1280 单栏」;2026-11-01 用户:所有宽度都用单栏 */
+@media not all and (min-width: 1280px) and (orientation: landscape) {   /* 单栏:除「横屏大屏」以外的所有宽度(2026-11-08 用户:横款大屏改回双栏) */
     .rt-toggle { position: absolute; top: 24px; right: calc(var(--gutter) + 44px); }
 }
 /* 蒙层:半透明 + 把背后的页面模糊掉;中间卡片放调参台(2026-10-25 用户:不要全屏页) */
@@ -1693,12 +1753,11 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
 .work-rail {
     position: fixed;
     /* 单列:窗口竖直正中。用 svh(地址栏展开时的屏幕高度),iPhone Safari 地址栏收起 / 展开时不跟着动(2026-10-31 修);
-       双栏的 top 由 WorkRail 下发(左栏介绍区下面空白的正中),同时把这里的 transform 清掉 */
+       单栏 / 双栏同一套(2026-11-08 用户) */
     top: 50%;
     top: 50svh;
     transform: translateY(-50%);
-    /* 贴页面右缘,不贴窗口右缘(2026-10-31 用户):窗口 ≤ 1536 时两者重合;超宽屏整页居中后,刻度跟着页面走,不孤零零挂在窗口边上 */
-    right: max(0px, calc((100vw - var(--intro-w) - var(--section-gap) - var(--content-max) - var(--gutter) * 2) / 2));
+    right: 0;   /* 贴窗口最右边(2026-11-01 用户),单栏 / 双栏一样(2026-11-08) */
     z-index: 4;
     display: flex;
     flex-direction: column;
@@ -1707,20 +1766,9 @@ body.theme-dark .rt-modal { background: rgba(0, 0, 0, 0.4); }
 }
 /* 单栏时还没滑到作品区:藏起来(滑到 Feed 才出现,2026-10-25 用户) */
 .work-rail.is-away { opacity: 0; pointer-events: none; }
-/* 刻度一根一根从上往下出现(2026-10-31 用户:和其他入场一样依次出现)。双栏随首屏,单栏每次滑到作品区刻度出现时都播 */
+/* 刻度贴着屏幕右缘,每次滑到作品区出现时从屏幕外往左一根根滑进来(2026-10-31 用户);单栏 / 双栏同一套(2026-11-08 用户) */
 .work-rail:not(.is-away):not(.is-leaving) .wr-tick {
-    animation: wr-tick-in 0.32s var(--ease-soft) calc(var(--rail-d, 0ms) + var(--i, 0) * 40ms) backwards;
-}
-@keyframes wr-tick-in {
-    from { opacity: 0; transform: translateY(4px); }
-    to   { opacity: 1; transform: none; }
-}
-/* 竖排(单栏、手机):刻度贴着屏幕右缘,从屏幕外往左一根根滑进来(2026-10-31 用户) */
-@media all {   /* 原「< 1280 单栏」;2026-11-01 用户:所有宽度都用单栏 */
-    .work-rail:not(.is-away):not(.is-leaving) .wr-tick {
-        animation-name: wr-tick-in-x;
-        animation-duration: 0.4s;
-    }
+    animation: wr-tick-in-x 0.4s var(--ease-soft) calc(var(--rail-d, 0ms) + var(--i, 0) * 40ms) backwards;
 }
 @keyframes wr-tick-in-x {
     from { opacity: 0; transform: translateX(24px); }   /* 线离右缘 10、最长 14:挪 24 正好整根在屏幕外 */
@@ -1886,28 +1934,6 @@ body.theme-dark .wr-card { background: color-mix(in srgb, var(--wr-tint, rgb(44,
     /* 手指按住刻度区上下划是选作品,不要带着页面一起滚(2026-10-31 用户) */
     .work-rail { touch-action: none; }
 }
-/* 双栏:刻度挪到左栏介绍区下面(2026-10-31 用户:右上角不容易察觉,左栏下面空着)。
-   线左端对齐介绍文字左缘,悬停变长往右长;预览卡在高亮那根线右边、竖直居中对齐它。top 由 WorkRail 按介绍区底边下发 */
-@media not all {   /* 原「≥ 1280 双栏」,2026-11-01 起不用(所有宽度单栏居中),规则先留着 */
-    .work-rail {
-        transform: none;
-        --rail-d: 800ms;   /* 双栏打开页面就在:等首屏入场走一段再出来,不抢首屏 */
-        top: 0;
-        left: var(--left-x);
-        right: auto;
-        align-items: flex-start;
-    }
-    .wr-tick { width: 20px; }   /* 点按区:线最长 14 + 6 */
-    .wr-tick > i { left: 0; right: auto; }
-    .wr-pop {
-        left: 20px;
-        right: auto;
-        padding-left: 6px;   /* 透明的「桥」,鼠标从线移到卡片上不断;线末端到卡片 = 6 + 6 = 12 */
-        padding-right: 0;
-        transform: translate(-6px, -50%);
-    }
-    .work-rail.is-hover .wr-pop { transform: translate(0, -50%); }
-}
 /* 电脑(宽屏 + 鼠标):横版 —— 左文字、右图;图铺满右、上、下三边,往左渐变淡出接模糊底(2026-11-01 用户:电脑上横版,视觉风格一致)。
    手机仍是上文字下图的竖版 */
 @media (min-width: 768px) and (pointer: fine) {
@@ -2025,7 +2051,7 @@ body.theme-dark .ol-toggle[aria-pressed="true"] { background: #D6248A; border-co
 }
 .ol-region i { background: rgba(214, 36, 138, 0.08); border-left: 1px solid rgba(214, 36, 138, 0.35); border-right: 1px solid rgba(214, 36, 138, 0.35); }
 .ol-region + .ol-region { display: none; }
-@media not all {   /* 原「≥ 1280 双栏」,2026-11-01 起不用(所有宽度单栏居中),规则先留着 */
+@media (min-width: 1280px) and (orientation: landscape) {   /* 双栏:横屏且 ≥ 1280(2026-11-01 停用,2026-11-08 用户:横款大屏改回 2 列、左边简介) */
     .ol-grid { grid-template-columns: var(--intro-w) minmax(0, 1fr); column-gap: var(--section-gap); padding: 0 32px; max-width: calc(var(--intro-w) + var(--section-gap) + var(--content-max) + var(--gutter) * 2); margin: 0 auto; }   /* 与 .page 同样封顶居中 */
     .ol-region + .ol-region { display: grid; }
 }
@@ -2037,7 +2063,9 @@ body.theme-dark .ol-toggle[aria-pressed="true"] { background: #D6248A; border-co
 .outline-mode .feed-ch,
 .outline-mode .hero-intro p *,
 .outline-mode .work-title *,
-.outline-mode .work-year * { outline: none; }   /* 逐字入场的小块不描,只看段落 / 块级元素 */
+.outline-mode .work-year *,
+.outline-mode .theme-toggle,
+.outline-mode .theme-toggle * { outline: none; }   /* 逐字入场的小块不描,只看段落 / 块级元素;右下角日夜按钮是工具不是排版,也不描(2026-11-08 用户) */
 /* 大纲模式的间距标注:尺寸线 + 数值胶囊,画在页面坐标上(随页面滚动),DevOutline 量好位置下发 */
 .ol-marks { position: absolute; top: 0; left: 0; width: 100%; height: 0; z-index: 56; pointer-events: none; overflow-x: clip; }   /* 横向裁掉:窗口变窄时上一轮的长标注不把页面撑宽 */
 .ol-mark { position: absolute; box-sizing: border-box; }
@@ -2059,23 +2087,27 @@ body.theme-dark .ol-toggle[aria-pressed="true"] { background: #D6248A; border-co
 /* 很短的尺寸线(边距、槽):数字放到线的右边,不居中,免得被窗口边裁掉或压住别的标注 */
 .ol-mark-h.ol-mark-short span { left: calc(100% + 4px); top: -3px; transform: none; }
 /* 大纲按钮悬停提示:当前窗口宽度 + 各断点布局(DevOutline BREAKPOINTS),当前档高亮 */
+/* 大纲按钮的断点提示:和调节面板同一套(2026-11-08 用户):毛玻璃底、淡色小标题、发丝线分隔;
+   当前档整行浅底提亮,名称列不折行;正文限宽,长句自己折成两行,不拉成一长条 */
 .ol-tip {
     position: absolute;
-    right: calc(100% + 10px);
+    right: calc(100% + 12px);
     bottom: -8px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    width: max-content;
-    /* 不超出窗口左边(2026-10-31 用户:手机上左边露不出来):最宽 = 窗口 − 两侧边距 − 按钮 36 − 间距 10,放不下就折行 */
-    max-width: calc(100vw - 2 * var(--gutter) - 46px);
-    padding: 10px 12px;
-    border-radius: 8px;
-    background: #1c1c1e;
-    color: rgba(255, 255, 255, 0.6);
+    width: 380px;
+    /* 不超出窗口左边(2026-10-31 用户:手机上左边露不出来):最宽 = 窗口 − 两侧边距 − 按钮 36 − 间距 12 */
+    max-width: calc(100vw - 2 * var(--gutter) - 48px);
+    box-sizing: border-box;
+    padding: 12px 8px 8px;
+    border-radius: 16px;
+    background: rgba(28, 28, 30, 0.74);
+    -webkit-backdrop-filter: blur(24px) saturate(1.6);
+    backdrop-filter: blur(24px) saturate(1.6);
+    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.16), 0 16px 48px rgba(0, 0, 0, 0.24);
+    color: rgba(255, 255, 255, 0.86);
     font: 400 12px/18px var(--font);
     text-align: left;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
     opacity: 0;
     visibility: hidden;
     transform: translateX(4px);
@@ -2084,11 +2116,13 @@ body.theme-dark .ol-toggle[aria-pressed="true"] { background: #D6248A; border-co
 }
 .ol-toggle:hover .ol-tip,
 .ol-toggle:focus-visible .ol-tip { opacity: 1; visibility: visible; transform: none; }
-.ol-tip b { margin-bottom: 4px; color: #fff; font-weight: 500; }
-.ol-tip span { display: flex; gap: 8px; }
-.ol-tip i { width: 56px; flex: none; font-style: normal; }
-.ol-tip .is-on { color: #fff; }
-.ol-tip .is-on i { color: #F06BB6; }
+.ol-tip b { display: flex; justify-content: space-between; align-items: baseline; padding: 0 8px 10px; margin-bottom: 4px; border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.5); font-weight: 400; font-variant-numeric: tabular-nums; }
+.ol-tip b em { font-style: normal; font-size: 11px; font-weight: 500; letter-spacing: 0.04em; color: rgba(255, 255, 255, 0.4); }
+.ol-tip > span { display: flex; gap: 12px; padding: 6px 8px; border-radius: 8px; color: rgba(255, 255, 255, 0.5); }
+.ol-tip > span i { width: 64px; flex: none; font-style: normal; white-space: nowrap; color: rgba(255, 255, 255, 0.4); font-variant-numeric: tabular-nums; }
+.ol-tip > span small { flex: 1; font-size: inherit; }
+.ol-tip > span.is-on { background: rgba(255, 255, 255, 0.08); color: #fff; }
+.ol-tip > span.is-on i { color: #fff; font-weight: 500; }
 
 /* ── 测试版工具按钮(主题键 / 大纲 / 调参)(2026-10-31 用户:V4 也按 V5 的做法)──
    只在本地测试版出现(main.tsx 给 <html> 加 .dev-tools;调参键本来就只在开发环境渲染),线上跟随系统日夜间。
@@ -2146,99 +2180,156 @@ html.dev-tools .rt-toggle { visibility: hidden; pointer-events: none; }
 .rd-toggle[aria-expanded="true"] { background: #D6248A; border-color: #D6248A; color: #fff; }
 .rd-toggle svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
 body.theme-dark .rd-toggle:not([aria-expanded="true"]) { background: #2c2c2e; border-color: rgba(255, 255, 255, 0.18); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45); }
+/* 调节面板(2026-11-08 用户:没有设计感、密密麻麻一堆堆 → 重排):
+   分四组(卡片 / 排版 / 样式 / 颜色)+ 底部工具,组标题淡色小字、组间发丝线 + 留白;
+   滑杆下面不再挂整排按钮,常用值是轨道上的小刻度点;模式切换是一行「名称 + 紧凑分段」,选中白底黑字,粉色只留给开关;
+   毛玻璃底(纯黑太硬),太高时面板里自己滚 */
 .rd-panel {
     position: absolute;
-    right: calc(100% + 10px);
+    right: calc(100% + 12px);
     bottom: 0;
-    width: 220px;
-    padding: 12px;
-    border-radius: 12px;
-    background: #1c1c1e;
-    color: rgba(255, 255, 255, 0.7);
+    width: 248px;
+    max-height: calc(100vh - var(--gutter) * 2);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    box-sizing: border-box;
+    padding: 4px 16px;
+    border-radius: 16px;
+    background: rgba(28, 28, 30, 0.74);   /* 0.58 在浅色页面上发灰发闷、白字不清楚 → 0.74 */
+    -webkit-backdrop-filter: blur(24px) saturate(1.6);
+    backdrop-filter: blur(24px) saturate(1.6);
+    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.16), 0 16px 48px rgba(0, 0, 0, 0.24);
+    color: rgba(255, 255, 255, 0.86);
     font: 400 12px/18px var(--font);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
-.rd-knob + .rd-knob { margin-top: 20px; }   /* 组内紧、组间松,分块更清楚(2026-11-01 用户):组间 14 → 20 */
-.rd-head { display: flex; justify-content: space-between; margin-bottom: 4px; }   /* 组内 8 → 4 */
-.rd-head b { color: #fff; font-weight: 500; font-variant-numeric: tabular-nums; }
+.rd-panel::-webkit-scrollbar { display: none; }
+.rd-sec { padding: 14px 0; }
+.rd-sec + .rd-sec { border-top: 0.5px solid rgba(255, 255, 255, 0.1); }
+.rd-sec h4 { margin: 0 0 10px; font-size: 11px; font-weight: 500; letter-spacing: 0.04em; color: rgba(255, 255, 255, 0.4); }
+.rd-knob + .rd-knob { margin-top: 12px; }
+.rd-head { display: flex; justify-content: space-between; margin-bottom: 2px; }
+.rd-head b, .rd-row b { color: rgba(255, 255, 255, 0.5); font-weight: 400; font-variant-numeric: tabular-nums; }
+/* 滑杆:发丝细轨 2px,拖过的一段白、其余淡白;手柄 12px 白点 + 半透明光环 */
+.rd-track { position: relative; }
 .rd-panel input[type="range"] {
-    /* 自绘滑杆(2026-10-31 用户:系统样式不好看):细轨道 4px,已填部分白色,圆形白色小手柄 */
     -webkit-appearance: none;
     appearance: none;
     display: block;
     width: 100%;
-    height: 16px;
+    height: 20px;
     margin: 0;
     background: transparent;
     cursor: pointer;
+    position: relative;
+    z-index: 1;
 }
 .rd-panel input[type="range"]::-webkit-slider-runnable-track {
-    height: 4px;
-    border-radius: 2px;
-    background: linear-gradient(to right, #fff 0 var(--p, 50%), rgba(255, 255, 255, 0.16) var(--p, 50%) 100%);
+    height: 2px;
+    border-radius: 1px;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.9) 0 var(--p, 50%), rgba(255, 255, 255, 0.14) var(--p, 50%) 100%);
 }
-.rd-panel input[type="range"]::-moz-range-track { height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.16); }
-.rd-panel input[type="range"]::-moz-range-progress { height: 4px; border-radius: 2px; background: #fff; }
+.rd-panel input[type="range"]::-moz-range-track { height: 2px; border-radius: 1px; background: rgba(255, 255, 255, 0.14); }
+.rd-panel input[type="range"]::-moz-range-progress { height: 2px; border-radius: 1px; background: rgba(255, 255, 255, 0.9); }
 .rd-panel input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
     margin-top: -5px;
     border: 0;
     border-radius: 50%;
     background: #fff;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-    transition: transform 0.15s ease;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.14), 0 1px 3px rgba(0, 0, 0, 0.3);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
-.rd-panel input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4); }
-.rd-panel input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.15); }
+.rd-panel input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.14), 0 1px 3px rgba(0, 0, 0, 0.3); }
+.rd-panel input[type="range"]:hover::-webkit-slider-thumb { transform: scale(1.15); }
+.rd-panel input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.25); box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.16), 0 1px 3px rgba(0, 0, 0, 0.3); }
 .rd-panel input[type="range"]:focus-visible { outline: none; }
 .rd-panel input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px rgba(240, 107, 182, 0.6); }
-.rd-presets { display: flex; gap: 4px; margin-top: 4px; }   /* 组内 8 → 4 */
-.rd-presets button {
-    flex: 1;
-    height: 24px;
+/* 常用值刻度点:轨道下方一排小点,点一下跳过去;当前值那颗亮 */
+/* 常用值刻度点:轨道下方一排小点,点一下跳过去;当前值那颗亮。点击区 20 × 18(点本身 3px,太小不好点);
+   悬停到这一行时,点下面淡淡显出数值(2026-11-08 用户:默认点不好滑到) */
+.rd-tick {
+    position: absolute;
+    top: 14px;
+    width: 20px;
+    height: 18px;
+    margin-left: -10px;
     padding: 0;
     border: 0;
-    border-radius: 6px;
-    background: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.7);
-    font: inherit;
-    cursor: pointer;
-}
-.rd-presets button[aria-pressed="true"] { background: #D6248A; color: #fff; }
-.rd-link {
-    display: block;
-    width: 100%;
-    margin-top: 20px;
-    padding: 12px 0 0;
-    border: 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
     background: none;
-    color: #fff;
-    font: inherit;
-    text-align: left;
     cursor: pointer;
+    z-index: 2;
 }
-.rd-link:hover { color: #F06BB6; }
-/* 文字颜色:一行 = 名称 + 色值 + 色块(点色块弹系统取色器) */
-.rd-color { display: flex; align-items: center; gap: 8px; margin-top: 20px; cursor: pointer; }
-.rd-color + .rd-color { margin-top: 8px; }
-.rd-color span { flex: 1; }
-.rd-color b { color: #fff; font-weight: 500; font-variant-numeric: tabular-nums; }
-.rd-color input[type="color"] { width: 24px; height: 24px; padding: 0; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: none; cursor: pointer; }
+.rd-tick::before { content: ""; position: absolute; left: 50%; top: 5px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: rgba(255, 255, 255, 0.28); transition: background 0.15s, transform 0.15s; }
+.rd-tick:hover::before { background: rgba(255, 255, 255, 0.8); transform: scale(1.4); }
+.rd-tick[aria-pressed="true"]::before { background: #fff; }
+.rd-tick span { position: absolute; left: 50%; top: 11px; transform: translateX(-50%); font-size: 10px; line-height: 12px; color: rgba(255, 255, 255, 0.45); white-space: nowrap; opacity: 0; transition: opacity 0.15s ease; pointer-events: none; }
+.rd-knob:hover .rd-tick span { opacity: 1; }
+.rd-tick[aria-pressed="true"] span { color: #fff; }
+.rd-knob { padding-bottom: 14px; }   /* 给刻度点和悬停数值留位置 */
+/* 一行:左名称,右控件 */
+.rd-row { display: flex; align-items: center; gap: 8px; min-height: 28px; }
+.rd-row > span { flex: 1; text-align: left; }
+.rd-row + .rd-row { margin-top: 6px; }
+/* 分段按钮:一条浅底胶囊,选中那格白底黑字 */
+.rd-seg { display: flex; padding: 2px; border-radius: 8px; background: rgba(255, 255, 255, 0.07); }
+.rd-seg button {
+    min-width: 40px;
+    height: 22px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: rgba(255, 255, 255, 0.6);
+    font: inherit;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+.rd-seg button:not([aria-pressed="true"]):hover { color: #fff; }
+.rd-seg button[aria-pressed="true"] { background: rgba(255, 255, 255, 0.92); color: #1c1c1e; font-weight: 500; }
+/* 颜色 */
+.rd-color { cursor: pointer; }
+.rd-color input[type="color"] { width: 20px; height: 20px; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.3); }
 .rd-color input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-.rd-color input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 5px; }
-.rd-color input[type="color"]::-moz-color-swatch { border: 0; border-radius: 5px; }
-.rd-reset { margin-top: 4px; padding: 0; border: 0; background: none; color: rgba(255, 255, 255, 0.5); font: inherit; cursor: pointer; }
+.rd-color input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 50%; }
+.rd-color input[type="color"]::-moz-color-swatch { border: 0; border-radius: 50%; }
+.rd-reset { margin-top: 6px; padding: 0; border: 0; background: none; color: rgba(255, 255, 255, 0.45); font: inherit; cursor: pointer; }
 .rd-reset:hover { color: #F06BB6; }
-/* 「编辑文字」开关 */
-.rd-edit { display: flex; align-items: center; width: 100%; margin-top: 20px; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
-.rd-edit span { flex: 1; text-align: left; }
+/* 底部工具:编辑文字开关、入场动画入口 */
+.rd-foot { padding-bottom: 12px; }
+.rd-edit, .rd-link { width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
 .rd-edit i { position: relative; width: 28px; height: 16px; border-radius: 8px; background: rgba(255, 255, 255, 0.16); transition: background 0.2s; }
 .rd-edit i::after { content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; transition: transform 0.2s var(--ease-soft); }
 .rd-edit[aria-pressed="true"] i { background: #D6248A; }
 .rd-edit[aria-pressed="true"] i::after { transform: translateX(12px); }
+.rd-link i { font-style: normal; color: rgba(255, 255, 255, 0.45); transition: transform 0.15s ease, color 0.15s ease; }
+.rd-link:hover i { color: #fff; transform: translateX(2px); }
+/* 底部两颗按钮(2026-11-08 用户):左「恢复默认」= 回线上参数(次要,浅底);右「确认修改 n」= 把改动清单复制给 Claude(主要,白底黑字),
+   n = 和线上不一样的参数有几项;没有改动时两颗都灰掉 */
+.rd-actions { display: flex; flex-direction: column-reverse; gap: 8px; margin-top: 14px; }   /* 上下两颗通栏(2026-11-08 用户):确认修改在上、恢复默认在下(DOM 里恢复默认在前,用 column-reverse 排) */
+.rd-restore, .rd-confirm {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    height: 32px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 8px;
+    font: inherit;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+}
+.rd-restore { background: rgba(255, 255, 255, 0.1); color: #fff; }
+.rd-restore:hover:not(:disabled) { background: rgba(255, 255, 255, 0.18); }
+.rd-confirm { background: rgba(255, 255, 255, 0.92); color: #1c1c1e; font-weight: 500; }
+.rd-confirm:hover:not(:disabled) { background: #fff; }
+.rd-confirm i { min-width: 16px; height: 16px; padding: 0 4px; box-sizing: border-box; border-radius: 8px; background: #D6248A; color: #fff; font: 500 10px/16px var(--font); font-style: normal; font-variant-numeric: tabular-nums; }
+.rd-restore:disabled, .rd-confirm:disabled { background: rgba(255, 255, 255, 0.04); color: rgba(255, 255, 255, 0.35); font-weight: 400; cursor: default; }
 /* 编辑中:可改的文字悬停时出虚线框,点进去实线框 */
 body.dev-editing [contenteditable] { outline: 1px dashed transparent; outline-offset: 4px; border-radius: 2px; cursor: text; transition: outline-color 0.15s; }
 body.dev-editing [contenteditable]:hover { outline-color: rgba(214, 36, 138, 0.5); }
@@ -2249,8 +2340,7 @@ body.dev-editing [contenteditable] :is(.hero-ch, .feed-ch, .hero-intro-unit) { d
 
 
 /* 单栏内容封顶 --content-max 后,刻度和大纲网格跟着内容区的右缘走,不挂在窗口最右边 */
-@media all {   /* 原「< 1280 单栏」;2026-11-01 用户:所有宽度都用单栏 */
-    .work-rail { right: 0; }   /* 刻度贴窗口最右边(2026-11-01 用户),不跟内容区 */
+@media not all and (min-width: 1280px) and (orientation: landscape) {   /* 单栏:除「横屏大屏」以外的所有宽度(2026-11-08 用户:横款大屏改回双栏) */
     .ol-grid { max-width: calc(var(--content-max) + var(--gutter) * 2); margin: 0 auto; }
 }
 

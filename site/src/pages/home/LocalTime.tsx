@@ -5,9 +5,10 @@
    2026-10-23 用户:右边的图标改为天气 —— 取北京实时天气(Open-Meteo,免 key),
    按天气码显示 晴 / 多云 / 阴 / 雾 / 雨 / 雪 / 雷雨(晴和多云分白天黑夜);
    取不到天气时不显示图标。时段图标(SLEEP…WRITE)先留着不用。
-   预览某种天气:地址栏加 ?wx=rain(clear / partly / cloudy / fog / rain / snow / storm)。 */
-import { useEffect, useState } from 'react';
+   预览某种天气:地址栏加 ?wx=rain(clear / partly / cloudy / fog / rain / snow / storm);再加 &night 看夜间版。 */
+import { type CSSProperties, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
+import { WX_ISO } from './wxIso';
 
 /* 作者所在时区 UTC+8,无夏令时 */
 const MY_TZ = 'Asia/Shanghai';
@@ -176,6 +177,29 @@ function InkWeather({ kind, day }: { kind: WxKind; day: boolean }) {
   );
 }
 
+/* 2.5D 线稿天气(2026-11-08 用户:用 AI-design-news 图标实验页 design/lab/icons.html 的 2.5D 天气替换,线上默认用这套)。
+   几何在 wxIso.ts(实验页导出);正面 = 实线 + 填页面底色(挡住身后的线),背面轮廓 + 侧棱 = 等距细虚线。
+   本地调节面板「图标风格」还能切回墨线(写在 <html data-wx="ink">) */
+const nth = (i?: string) => (i === undefined ? undefined : ({ '--i': +i }) as CSSProperties);
+function IsoWeather({ kind, day }: { kind: WxKind; day: boolean }) {
+  const key = (kind === 'clear' || kind === 'partly') && !day ? `${kind}-night` : kind;
+  return (
+    <svg aria-label={`Beijing weather: ${WX_LABEL[kind]}`} className="loc-iso" role="img" viewBox="0 0 24 24">
+      <title>{WX_LABEL[kind]}</title>
+      {WX_ISO[key].map((p, i) =>
+        p.raw ? (
+          <g dangerouslySetInnerHTML={{ __html: p.raw }} key={i} />
+        ) : (
+          <g className={p.cls} key={i} style={nth(p.i)}>
+            <path className="iso-edge" d={p.edges} />
+            <path className="iso-front" d={p.face} fillRule="evenodd" />
+          </g>
+        ),
+      )}
+    </svg>
+  );
+}
+
 type Wx = { kind: WxKind; day: boolean };
 function readCache(): Wx | null {
   try {
@@ -190,7 +214,7 @@ function readCache(): Wx | null {
 function useBeijingWeather(): Wx | null {
   const force = new URLSearchParams(location.search).get('wx') as WxKind | null;
   const [wx, setWx] = useState<Wx | null>(() =>
-    force && force in WX_LABEL ? { kind: force, day: true } : readCache(),
+    force && force in WX_LABEL ? { kind: force, day: !new URLSearchParams(location.search).has('night') } : readCache(),
   );
   useEffect(() => {
     if (force && force in WX_LABEL) return;
@@ -263,6 +287,7 @@ export default function LocalTime() {
           {t.text}
         </span>
         {wx && INK_WEATHER && <InkWeather kind={wx.kind} day={wx.day} />}
+        {wx && <IsoWeather kind={wx.kind} day={wx.day} />}
         {wx && !INK_WEATHER && (
           <svg
             key={`${wx.kind}-${wx.day}`}

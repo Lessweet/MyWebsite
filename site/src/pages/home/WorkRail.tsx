@@ -10,8 +10,7 @@
 import { type CSSProperties, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-/* 双栏布局 2026-11-01 起停用(用户:所有宽度都用单栏、居中);判断双栏的地方都读这个,永远不成立 */
-const TWO_COL = 'not all';
+/* 刻度不分单栏 / 双栏,只有一套:贴右边、窗口竖直正中,第一条作品滑到窗口中间才出现(2026-11-08 用户:不管几列都在右边,不要两套) */
 
 type Item = {
   date: string;
@@ -123,9 +122,8 @@ export default function WorkRail({ items }: { items: Item[] }) {
   const [blocks, setBlocks] = useState<Block[]>([]);
   /* 正在看的那条(随滚动自动走) */
   const [current, setCurrent] = useState(-1);
-  /* 单栏(竖排、手机)时第一条作品滑到顶部才出现(2026-10-25 用户;10-31 试过一直显示,用户:小屏和手机还是要原来的出现时机);
-     双栏一打开就在 */
-  const [away, setAway] = useState(() => !window.matchMedia(TWO_COL).matches);
+  /* 第一条作品滑到窗口中间才出现(2026-10-25 用户;10-31 试过一直显示,用户:小屏和手机还是要原来的出现时机) */
+  const [away, setAway] = useState(true);
   /* 出现过一次以后再藏起来,刻度要一根根往右滑出去(2026-10-31 用户);从没出现过时直接是藏着的 */
   const [shownOnce, setShownOnce] = useState(false);
   useEffect(() => {
@@ -133,8 +131,6 @@ export default function WorkRail({ items }: { items: Item[] }) {
   }, [away]);
   const [hover, setHover] = useState<number | null>(null);
   const [cardY, setCardY] = useState(0);
-  /* 双栏时刻度放在左栏介绍区下面(2026-10-31 用户:右上角不容易察觉);top 跟着介绍区底边算 */
-  const [railTop, setRailTop] = useState<number | null>(null);
   const railRef = useRef<HTMLElement>(null);
   /* 手指按在刻度区上拖动中(触屏):焦点跟手指走,松手跳过去 */
   const touching = useRef(false);
@@ -196,39 +192,15 @@ export default function WorkRail({ items }: { items: Item[] }) {
       });
       if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) c = blocks.length - 1;
       setCurrent(c);
-      const twoCol = window.matchMedia(TWO_COL).matches;
       const firstHead = blocks[0].el.querySelector('.work-head') ?? blocks[0].el;
       /* 单栏:第一条作品的日期滑到窗口竖直中间就出现(2026-10-31 用户:原来要滑到顶部才出现,太晚) */
-      setAway(!twoCol && firstHead.getBoundingClientRect().top > window.innerHeight / 2);
+      setAway(firstHead.getBoundingClientRect().top > window.innerHeight / 2);
     };
     update();
     window.addEventListener('scroll', update, { passive: true });
     return () => window.removeEventListener('scroll', update);
   }, [wide, blocks]);
 
-  useEffect(() => {
-    if (!wide || !blocks.length) return;
-    const intro = document.querySelector<HTMLElement>('.intro-col');
-    const place = () => {
-      const railH = railRef.current?.offsetHeight ?? 0;
-      /* 单列(竖排):贴页面右缘、窗口竖直正中,由 CSS 定位(50svh,见 simple.css)。
-         原来这里按 innerHeight 算,iPhone Safari 地址栏收起时 innerHeight 变大,刻度会自己往下挪(2026-10-31 用户) */
-      if (!intro || !window.matchMedia(TWO_COL).matches) return setRailTop(null);
-      /* 放在介绍区底边到窗口底这块空白的正中(2026-10-31 用户:左下空白区域的一半位置);
-         窗口矮、空白不够时至少离介绍区 48 */
-      const introBottom = intro.getBoundingClientRect().bottom;
-      const top = Math.max(introBottom + 48, introBottom + (window.innerHeight - introBottom - railH) / 2);
-      setRailTop(Math.round(top));
-    };
-    place();
-    const ro = new ResizeObserver(place);
-    if (intro) ro.observe(intro);
-    window.addEventListener('resize', place);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener('resize', place);
-    };
-  }, [wide, blocks]);
 
 
   /* 刻度藏起来时(单栏滑回介绍区)清掉悬停:藏起来后收不到鼠标离开,再出现时会带着上一张预览卡 */
@@ -357,7 +329,7 @@ export default function WorkRail({ items }: { items: Item[] }) {
       aria-hidden={away || undefined}
       className={`work-rail${hb ? ' is-hover' : ''}${jump ? ' is-jump' : ''}${away ? (shownOnce ? ' is-leaving' : ' is-away') : ''}`}
       ref={railRef}
-      style={{ ...(railTop != null ? { top: railTop } : {}), '--n': blocks.length } as CSSProperties}
+      style={{ '--n': blocks.length } as CSSProperties}
       onPointerLeave={onLeave}
       onPointerDown={(e) => {
         /* 触屏:按下就进入「划刻度」,手指上下滑焦点跟着走(同电脑悬停),每过一根震一下 */

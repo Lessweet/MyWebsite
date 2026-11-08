@@ -12,7 +12,8 @@ const KEY = 'dev-outline';
 const BREAKPOINTS: { min: number; name: string; rule: string }[] = [
   { min: 0, name: '< 640', rule: '单列 · 边距 32 · 列宽 ≥ 60 均分铺满 · 文字铺满 · 封面上下排' },
   { min: 640, name: 'sm 640', rule: '单列 · 边距 32 · 文字铺满 · 封面上下排' },
-  { min: 768, name: 'md 768', rule: '单列 · 内容最宽 896 居中(所有更宽的窗口都一样)· 介绍、简介都 10 列 · 窗口 ≥ 822 封面并排' },
+  { min: 768, name: 'md 768', rule: '单列 · 内容最宽 896 居中 · 介绍、简介都 10 列 · 窗口 ≥ 822 封面并排' },
+  { min: 1280, name: 'xl 1280 横屏', rule: '双栏 · 左栏简介 440 钉住不动 · 栏距 120 · 右栏作品最宽 896 · 整页最宽 1520 居中(竖屏仍单列)' },
 ];
 
 /* 一条标注:竖向(v)或横向(h)的尺寸线,label 写数值 */
@@ -191,13 +192,15 @@ export default function DevOutline() {
         </svg>
         {/* 悬停提示:当前窗口宽度落在哪个断点、各断点下的布局 */}
         <span className="ol-tip" role="tooltip">
+          {/* 和调节面板同一套样式(2026-11-08 用户):淡色小标题 + 当前窗口宽,下面每档一行,当前档整行提亮 */}
           <b>
-            窗口 {vw}px · {current.name}
+            <em>断点</em>
+            窗口 {vw}px
           </b>
           {BREAKPOINTS.map((b) => (
             <span className={b === current ? 'is-on' : undefined} key={b.min}>
               <i>{b.name}</i>
-              {b.rule}
+              <small>{b.rule}</small>
             </span>
           ))}
         </span>
