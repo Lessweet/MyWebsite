@@ -18,6 +18,7 @@ type Item = {
   cover?: string;
   showcase?: { covers: { src: string }[] };
   gallery?: { src: string }[];
+  projects?: { gallery: { src: string }[] }[];
   thumb?: string;
   thumbTint?: string;
 };
@@ -26,7 +27,7 @@ type Item = {
    两图式取右侧第一张文章封面,单图取封面本身 */
 function thumbOf(w: Item): { src: string } | null {
   if (w.thumb) return { src: w.thumb };   /* 作品单独指定的预览图优先 */
-  const g = w.gallery?.find((it) => it.src);
+  const g = (w.gallery ?? w.projects?.flatMap((p) => p.gallery))?.find((it) => it.src);
   if (g) return { src: g.src.replace(/\.webp(\?|$)/, '-960.webp$1') };
   const c = w.showcase?.covers.find((it) => it.src);
   if (c) return { src: c.src };
