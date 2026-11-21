@@ -768,6 +768,10 @@ html:not([data-mode="feed"]) .work:first-child::before { visibility: hidden; hei
 /* 卡片模式:作品简介用主文字黑色(2026-11-03 用户;Feed 模式仍是中间灰);简介 → 封面 36 → 24(用户:间距太大) */
 .work > .work-summary { color: var(--ink); }
 .work > .work-summary + .work-cover { margin-top: 24px; }
+/* 子项目小标题(2026-11-20 用户:一条作品下面分几个项目):简介 → 小标题 24,小标题 → 图 12,上一组图 → 下一个小标题 32 */
+.work > .work-sub { margin-top: 24px; font-size: var(--fs-sm); line-height: var(--lh-sm); font-weight: var(--fw-strong); color: var(--ink); }
+.work > .work-sub + .work-cover { margin-top: 12px; }
+.work > .work-cover + .work-sub { margin-top: 32px; }
 /* 卡片模式:日期挪到标题行右边(2026-11-03 用户);窄屏放不下时日期折到标题下面 */
 .work > .work-head {   /* 多一层父级:压过后面 .work-head 的竖排 */
     flex-direction: row;

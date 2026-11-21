@@ -6,6 +6,8 @@ import { HIDDEN_WORKS } from 'virtual:hidden-works';
 
 /* summary 里的 {…} 是断行词组(2026-10-31 用户:手机换行要最优):手机和横排按词组断行,词不会被拆到两行;
    电脑竖排去掉花括号逐字排(拖窗口时行尾不跳)。改简介时照这个格式把词或短语括起来,标点跟在 } 后面 */
+export type GalleryItem = { src: string; zoom?: number };
+
 export interface Work {
   date: string;
   title: string;
@@ -27,7 +29,10 @@ export interface Work {
   /* 「四图式」(2026-10-23 用户):两行两列、每张 16:9;src 为空 = 占位块(浅灰底)。
      有它就不用 cover / showcase */
   /* zoom:图在格子里放大几倍、居中裁切(展示范围更小);不写 = 1 */
-  gallery?: { src: string; zoom?: number }[];
+  gallery?: GalleryItem[];
+  /* 子项目(2026-11-20 用户):一条作品下面分几个项目,每个一行小标题 + 自己的一组图(张数规则同 gallery);
+     有它就不用 gallery */
+  projects?: { title: string; gallery: GalleryItem[] }[];
   /* 刻度预览卡的缩略图(不写就用封面第一张);卡片上叠了标题,挑不带大字的图 */
   thumb?: string;
   /* ratio:封面每张图的比例(不写 = 16:9);link: 'gzh' = 点封面弹公众号二维码 */
@@ -110,16 +115,22 @@ export const WORKS: Work[] = [
       '{2025 年}{一整年}{把 AI 工具}{用进 App }{视觉设计工作：}{海报和}{设计字体}{用 }{ChatGPT Image2、}{即梦、}{LiblibAI }{多方向}{并行出稿，}{拟物图标、}{主题插图、}{视觉动效}{也交给 AI }{生成；}{界面用 }{Claude Code、}{Cursor、}{Figma Make }{直接生成，}{再沉淀成 }{Design Skill }{复用。}',
     /* 四图(2026-10-23 用户:下面用四图) */
     thumb: 'writing/assets/works/gallery/ai-visual-2-1280.webp',   /* 刻度预览卡用的图:不带大标题字(2026-11-01 用户) */
-    gallery: [
+    /* 2026-11-20 用户:下面分两个项目 —— 影视拍摄小程序(原来的四图)、公益主题 H5(两张):
+       第一张 Figma 画板 2110:12252「H5 辅助元素生成」(角标改字见 fix-h5-corners.py);
+       第二张从画板 2120:11129 / 2151:12353 / 2228:11003 挑出页面拼成(11-21 用户只留 6 张,斜放铺满),见 build-h5-pages-collage.py(2026-11-21) */
+    projects: [
+      { title: '影视拍摄小程序', gallery: [
       /* Figma「作品集」画板 2333:16551(原图存 site/assets/figma/),导出 3840×2160 → 1600×900 webp */
       { src: 'writing/assets/works/gallery/ai-visual-1.webp' },
-      /* 整张 Figma 画板 2506:13621(新时代 / 不仅是守望 两台手机),由 site/scripts/build-work-gallery.py 生成 */
-      { src: 'writing/assets/works/gallery/ai-visual-2.webp?v=3' },
+      /* 整张 Figma 画板 1972:11500「3-03」(2026-11-20 用户替换,原为 2506:13621 两台手机),由 site/scripts/build-work-gallery.py 生成 */
+      { src: 'writing/assets/works/gallery/ai-visual-2.webp?v=4' },
       /* 单张 Figma 画板 2337:18711(热门剧目 3D 图标 + 手机界面);原为四个拼 2×2 再放大 1.4,
          2026-10-23 用户改成只放这一张。由 site/scripts/build-work-gallery.py 生成 */
       { src: 'writing/assets/works/gallery/ai-visual-3.webp?v=3' },
       /* 整张 Figma 画板 2336:17407(金刚位 / 卡片区 / Banner 区等组件),由 site/scripts/build-work-gallery.py 生成 */
       { src: 'writing/assets/works/gallery/ai-visual-4.webp?v=8' },
+      ] },
+      { title: '公益主题 H5', gallery: [{ src: 'writing/assets/works/gallery/ai-visual-h5-1.webp?v=1' }, { src: 'writing/assets/works/gallery/ai-visual-h5-2.webp?v=3' }] },
     ],
   },
   {
@@ -139,4 +150,15 @@ export const WORKS: Work[] = [
   },
   /* 网易作品:只在本地测试版接在末尾,线上为空(见 vite.config.ts hiddenWorks) */
   ...(HIDDEN_WORKS as Work[]),
+  /* 放在最后(2026-11-21 用户),排在本地网易作品后面 */
+  {
+    date: '2022 – 2024',   /* 2026-11-20 用户新增 */
+    title: '运营视觉活动设计',
+    /* 简介(2026-11-21):按 Figma「创作者激励 活动视觉设计」章节 4-01~4-09 写 —— 拉新促活 H5(握手、权益、合伙人等级、收益进度)、
+       可视化周报(手绘插画、纸张肌理、仪表盘)、Midjourney 提示词生图 + 素材抠图 */
+    summary:
+      '{为创作者}{激励活动}{做运营视觉：}{拉新 H5 }{用合伙人等级}{激励持续参与，}{创作周报}{用手绘插画}{让数据}{更轻松易读。}',
+    /* 只放一张通栏(2026-11-20 用户):Figma 画板 1405:22699 运营视觉聚合页,由 site/scripts/build-work-gallery.py 生成 */
+    gallery: [{ src: 'writing/assets/works/gallery/ops-visual-1.webp?v=1' }],
+  },
 ];

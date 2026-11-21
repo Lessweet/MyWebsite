@@ -4,11 +4,11 @@
  * hover 微交互)→ 联系方式一句话 → 城市 + 时间(LocalTime)→ 细分割线 → 代表作单列 Feed(works.ts)。
  * 样式全部在 docs/simple.css。
  */
-import { useEffect, useLayoutEffect, useRef, useState, type ImgHTMLAttributes } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useRef, useState, type ImgHTMLAttributes } from 'react';
 import type { CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import NeteaseWordmark from './NeteaseWordmark';
-import { WORKS } from './works';
+import { WORKS, type GalleryItem } from './works';
 import LocalTime from './LocalTime';
 import RevealTuner from './RevealTuner';
 import DevOutline from './DevOutline';
@@ -338,8 +338,10 @@ export default function HomePage() {
             /* 单栏(2026-10-31 用户:双列的 Feed 入场很好,其他宽度也要一致):同样逐小段地来,
                只是首屏要排在介绍区后面(介绍区在上面);日期上方那条细线和日期一起浮现 */
             const twoCol = window.matchMedia(TWO_COL).matches;
-            const cover = el.querySelector('.work-cover');
-            const covers = cover?.matches('.gallery, .showcase') ? [...cover.querySelectorAll('.gl-item, .sc-pane')] : [cover];
+            /* 有子项目时依次是 小标题 → 它的每张图 → 下一个小标题…(2026-11-20) */
+            const covers = [...el.querySelectorAll(':scope > .work-sub, :scope > .work-cover')].flatMap((c) =>
+              c.matches('.gallery, .showcase') ? [...c.querySelectorAll('.gl-item, .sc-pane')] : [c],
+            );
             const parts = [el.querySelector('.work-year'), el.querySelector('.work-title'), el.querySelector('.work-summary'), ...covers];
             const lead = now - t0 < 400 ? (twoCol ? sectionGap : blocksWorksAt()) : 0;
             parts.forEach((part, k) => {
@@ -533,7 +535,14 @@ export default function HomePage() {
             </div>
             {w.summary && <p className="work-summary">{feedChars(w.summary, !phoneWrap)}</p>}
             {/* hover 封面区域时图放大到 1.05(同 Signal 的 Feed 卡片);只认封面区域,不认整条(2026-10-23 用户) */}
-            {RENDER_SHOWCASE && w.showcase ? (
+            {w.projects ? (
+              w.projects.map((p, pi) => (
+                <Fragment key={p.title}>
+                  <h3 className="work-sub">{p.title}</h3>
+                  <Gallery eager={wi === 0 && pi === 0} items={p.gallery} />
+                </Fragment>
+              ))
+            ) : RENDER_SHOWCASE && w.showcase ? (
               <Showcase {...w.showcase} />
             ) : w.gallery ? (
               <Gallery eager={wi === 0} items={w.gallery} link={w.link} ratio={w.ratio} />
@@ -604,7 +613,7 @@ function Gallery({
   link,
   ratio,
 }: {
-  items: { src: string; zoom?: number }[];
+  items: GalleryItem[];
   eager?: boolean;
   link?: 'gzh';
   ratio?: string;
